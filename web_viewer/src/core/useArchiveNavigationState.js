@@ -5,7 +5,9 @@ import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 
 // Own URL-facing state; consumers receive the original refs, never copies.
 // Resource payloads, playback queues and async loading are feature-owned.
-export function useArchiveNavigationState() {
+// portalScopeShown names the lens an empty portalScope (follow the favorite) currently shows, so the address
+// always carries a lens and a shared portal link opens the same view for anyone.
+export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) {
   const view = ref('__boot__')
   const playerEntryRoute = ref(null)
   const currentPickTarget = ref('')
@@ -93,7 +95,7 @@ export function useArchiveNavigationState() {
       }
     }
     if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value,
-      ...(portalScope.value ? { portalScope: portalScope.value } : {}),
+      ...(portalScope.value || portalScopeShown() ? { portalScope: portalScope.value || portalScopeShown() } : {}),
       ...(portalQuery.value ? { portalQuery: portalQuery.value } : {}) }
     if (view.value === 'welcome' || view.value === 'idol_picker') return {
       view: view.value,

@@ -225,7 +225,7 @@ for (const [storyType, label, section] of [
 
 assert.deepEqual(
   buildArchiveBreadcrumbs({ view: 'external_story_resources' }).map(item => item.label),
-  ['资料馆', '社区熟肉'],
+  ['资料馆', '剧情', '社区剧情'],
 )
 assert.deepEqual(buildArchiveBreadcrumbs({ view: 'player', scenario: '1_4_001_01.json' }), [])
 assert.deepEqual(buildArchiveBreadcrumbs({ view: 'spine_lab' }), [])

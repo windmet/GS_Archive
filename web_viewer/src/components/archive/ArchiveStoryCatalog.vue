@@ -122,7 +122,7 @@
         <ul class="story-footprint" aria-label="生日剧情收录">
           <li><b>{{ count(birthdayDomain?.meta?.collectionCount) }}</b>位角色</li>
           <li><b>{{ count(birthdayDomain?.meta?.logicalEntryCount) }}</b>篇</li>
-          <li>其中<b class="inline-count">{{ count(birthdayDomain?.meta?.crossDomainSharedFileCount) }}</b>篇也收在个人故事</li>
+          <li>其中<b class="inline-count">{{ count(birthdayDomain?.meta?.crossDomainSharedFileCount) }}</b>篇也收在个人剧情</li>
         </ul>
       </header>
 

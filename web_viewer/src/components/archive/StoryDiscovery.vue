@@ -56,7 +56,7 @@ const updateViewport=event=>{compact.value=event.matches}
 onMounted(()=>viewport?.addEventListener('change',updateViewport))
 onBeforeUnmount(()=>viewport?.removeEventListener('change',updateViewport))
 const page=computed({get:()=>state.page,set:value=>{state.page=Math.max(1,Math.min(pages.value,value))}})
-const tabs=[{id:'',label:'全部剧情'},{id:'GROWING SIGN@L',label:'GROWING SIGN@L'},{id:'GROWING SELECTION',label:'GROWING SELECTION'},{id:'unit_story',label:'组合前传'},{id:'idol_story',label:'偶像个人剧情'}]
+const tabs=[{id:'',label:'全部剧情'},{id:'GROWING SIGN@L',label:'GROWING SIGN@L'},{id:'GROWING SELECTION',label:'GROWING SELECTION'},{id:'unit_story',label:'组合前传'},{id:'idol_story',label:'个人剧情'}]
 const units=computed(()=>[...new Set(props.idolDirectory.map(row=>row.unitName).filter(Boolean))])
 const knownIdols=computed(()=>new Set(props.idolDirectory.map(row=>row.id)))
 const cast=entry=>(storyEventResources(entry)?.storyCast||entry.characters||[]).filter(code=>knownIdols.value.has(code))

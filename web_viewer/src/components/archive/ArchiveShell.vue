@@ -3,13 +3,16 @@
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
         <img :src="getBrandMarkUrl()" alt="" />
-        <span class="archive-brand-name">SideM</span>
-        <span class="archive-brand-sub">资料馆</span>
+        <span class="archive-brand-name">{{ ARCHIVE_BRAND.mark }}</span>
+        <span class="archive-brand-sub">{{ ARCHIVE_BRAND.sub }}</span>
       </button>
       <slot name="sidebar-identity" />
       <nav class="archive-nav" aria-label="档案栏目">
         <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'home' }" :aria-current="activeSection === 'home' ? 'page' : undefined" @click="emit('navigate', 'home')">
-          <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>偶像主页</span>
+          <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ sectionLabel('home') }}</span>
+        </button>
+        <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')">
+          <LayoutGrid :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ sectionLabel('portal') }}</span>
         </button>
         <template v-for="group in navigationGroups" :key="group.id">
           <hr v-if="group.id === 'live'" class="archive-nav-divider" />
@@ -32,13 +35,18 @@
       <template #before-title>
         <div class="archive-mobile-brand">
           <img :src="getBrandMarkUrl()" alt="" />
-          <span>SideM Archive</span>
+          <span>{{ ARCHIVE_BRAND.english }}</span>
         </div>
       </template>
       <template #title>
         <div class="archive-heading">
           <ArchiveBreadcrumb :items="breadcrumbs" />
-          <h1>{{ title }}</h1>
+          <div class="archive-title-row">
+            <h1>{{ title }}</h1>
+            <nav v-if="siblingSections.length" class="archive-sibling-switch" aria-label="同组栏目">
+              <button v-for="section in siblingSections" :key="section.id" type="button" @click="emit('navigate', section.id)">{{ section.label }}</button>
+            </nav>
+          </div>
         </div>
       </template>
       <template #actions>
@@ -69,6 +77,7 @@
       <slot name="inspector" />
     </aside>
 
+    <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" @navigate="navigateFromDrawer" @close="closeDrawer(true)" />
     <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
@@ -81,18 +90,32 @@
         <component :is="item.icon" :size="21" :stroke-width="1.8" aria-hidden="true" />
         <span>{{ item.label }}</span>
       </button>
+      <button
+        ref="drawerToggle"
+        type="button"
+        class="archive-mobile-switch"
+        :class="{ active: drawerCell.active, 'is-open': drawerOpen }"
+        :aria-expanded="drawerOpen"
+        aria-controls="archive-navigation-drawer"
+        @click="drawerOpen ? closeDrawer(false) : drawerOpen = true"
+      >
+        <component :is="drawerCell.icon" :size="21" :stroke-width="1.8" aria-hidden="true" />
+        <span class="archive-switch-label">{{ drawerCell.label }}<component :is="drawerOpen ? ChevronDown : ChevronUp" class="archive-switch-caret" :size="12" :stroke-width="2.4" aria-hidden="true" /></span>
+      </button>
     </nav>
   </div>
 </template>
 
 <script setup>
-import { BookOpen, Box, CalendarDays, Clapperboard, FolderOpen, Home, Layers, LayoutGrid, Music, Search, Users } from '@lucide/vue'
+import { BookOpen, Box, CalendarDays, ChevronDown, ChevronUp, Clapperboard, FolderOpen, Home, Info, Layers, LayoutGrid, Menu, Music, Search, Users, X } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
+import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
-import { computed, ref, watch } from 'vue'
+import { ARCHIVE_BRAND, ARCHIVE_SECTIONS, sectionLabel } from '../../core/archiveSections.js'
+import { computed, defineAsyncComponent, nextTick, ref, watch } from 'vue'
 
 const props = defineProps({
   compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
@@ -104,6 +127,8 @@ const props = defineProps({
   showBack: { type: Boolean, default: false },
   hasInspector: { type: Boolean, default: false },
   breadcrumbs: { type: Array, default: () => [] },
+  // The section whose own root page is showing (剧情, 组合, 卡池…); '' on detail and other pages.
+  rootSection: { type: String, default: '' },
 })
 const mobileSearchOpen = ref(Boolean(props.modelValue))
 watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
@@ -117,23 +142,48 @@ const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, ico
 const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
 const activeNavigationGroup = computed(() => navigationGroups.find(group => group.ids.includes(navigationSection.value))?.id || '')
 
+// A root page names the other pages of its group beside its title (剧情 | 通信, 偶像 | 组合 | 卡片, 活动 | 卡池).
+// Groups larger than three (图鉴) keep their sections to the sidebar.
+const siblingSections = computed(() => {
+  const groupId = ARCHIVE_SECTIONS[props.rootSection]?.groupId
+  const group = groupId ? Object.values(ARCHIVE_SECTIONS).filter(section => section.groupId === groupId) : []
+  return group.length > 1 && group.length <= 3 ? group.filter(section => section.id !== props.rootSection) : []
+})
+
 // A destination opens its first section; its other sections appear beneath it while it is current.
 function openDestination(group) {
   if (activeNavigationGroup.value === group.id && group.items.length > 1) return
   emit('navigate', group.items[0].id)
 }
 
-// Phone bar: the four most-used destinations plus the archive home, which lists the rest.
-const mobileNavigation = computed(() => {
-  const current = activeNavigationGroup.value
-  return [
-    { id: 'home', label: '主页', icon: Home, active: props.activeSection === 'home' },
-    { id: 'stories', label: '故事', icon: BookOpen, active: current === 'stories' },
-    { id: 'idols', label: '偶像', icon: Users, active: current === 'people' },
-    { id: 'songs', label: '歌曲', icon: Music, active: current === 'songs' },
-    { id: 'portal', label: '资料馆', icon: LayoutGrid, active: props.activeSection === 'portal' || ['history', 'collection', 'live', 'studio', 'resources'].includes(current) },
-  ]
+// Phone bar, 2+1: the two homes, then one cell that opens every destination. Away from the homes that cell
+// names the current section, so the bar still says where the reader is. Three equal cells; only a caret
+// beside its label says that this one opens a switcher rather than staying on the page.
+const mobileNavigation = computed(() => [
+  { id: 'home', label: sectionLabel('home'), icon: Home, active: !drawerOpen.value && props.activeSection === 'home' },
+  { id: 'portal', label: sectionLabel('portal'), icon: LayoutGrid, active: !drawerOpen.value && props.activeSection === 'portal' },
+])
+// The drawer's code loads on first open; it holds the sidebar's destinations, nothing of its own.
+const ArchiveNavigationDrawer = defineAsyncComponent(() => import('./ArchiveNavigationDrawer.vue'))
+const drawerOpen = ref(false)
+const drawerToggle = ref(null)
+const drawerCell = computed(() => {
+  if (drawerOpen.value) return { label: '收起', icon: X, active: true }
+  const section = navigationSection.value
+  if (section !== 'home' && section !== 'portal' && sectionLabel(section)) {
+    return { label: sectionLabel(section), icon: archiveNavigationIcons[section] || Info, active: true }
+  }
+  return { label: '导航', icon: Menu, active: false }
 })
+function closeDrawer(returnFocus) {
+  drawerOpen.value = false
+  if (returnFocus) nextTick(() => drawerToggle.value?.focus())
+}
+function navigateFromDrawer(id) {
+  drawerOpen.value = false
+  emit('navigate', id)
+}
+watch(() => props.activeSection, () => { drawerOpen.value = false })
 </script>
 
 <style scoped>
@@ -289,6 +339,12 @@ const mobileNavigation = computed(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.archive-title-row { display: flex; align-items: baseline; gap: var(--gs-space-4); min-width: 0; }
+.archive-sibling-switch { display: flex; flex: none; align-items: baseline; gap: var(--gs-space-1); }
+.archive-sibling-switch button { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
+.archive-sibling-switch button + button::before { content: "·"; margin-right: var(--gs-space-3); color: var(--gs-line); }
+.archive-sibling-switch button:hover { color: var(--gs-mint-ink); }
+.archive-sibling-switch button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .archive-heading {
   display: flex;
   flex-direction: column;
@@ -380,6 +436,8 @@ const mobileNavigation = computed(() => {
   }
 }
 
+/* Phones reach a group's other pages from the navigation drawer. */
+@media (max-width: 760px) { .archive-sibling-switch { display: none; } }
 @media (max-width: 760px) {
   .archive-shell, .archive-shell.has-inspector {
     --archive-sidebar: 0px;
@@ -426,7 +484,7 @@ const mobileNavigation = computed(() => {
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     border-top: 1px solid var(--archive-border);
     background: var(--gs-surface);
@@ -451,6 +509,9 @@ const mobileNavigation = computed(() => {
   .archive-mobile-nav button.active svg { color: var(--gs-mint-ink); }
   .archive-mobile-nav button:active { background: var(--gs-mint-wash); }
   .archive-mobile-nav button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -4px; }
+  /* The caret hangs off the label, so the label stays centred under its icon like the two tabs. */
+  .archive-switch-label { position: relative; white-space: nowrap; }
+  .archive-switch-caret { position: absolute; top: 50%; left: 100%; margin: -6px 0 0 2px; opacity: .65; }
 }
 /* Same grid cell as content: never cover the separate mobile navigation row.
    Explicitly place main as well: leaving it auto-placed would push it to a new

@@ -606,7 +606,7 @@ assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'
 assert.match(viewerSource, /const NO_VOICE = NO_AUDIO \|\| URL_FLAGS\.get\('noVoice'\) === '1'/)
 assert.match(appSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
 assert.match(appSource, /:no-audio="NO_AUDIO"/)
-assert.match(appSource, /const\s*\{[^}]*\bview\b[^}]*\}\s*=\s*useArchiveNavigationState\(\)/)
+assert.match(appSource, /const\s*\{[^}]*\bview\b[^}]*\}\s*=\s*useArchiveNavigationState\((?:\{[^}]*\})?\)/, 'App takes view from the navigation state')
 assert.equal(useArchiveNavigationState().view.value, '__boot__', 'startup must not mount audible home before route restoration')
 // Route-specific loading is verified by verify-archive-startup-route. The
 // audio safety boundary is the non-audible __boot__ view until restoration,

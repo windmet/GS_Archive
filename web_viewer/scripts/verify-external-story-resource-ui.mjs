@@ -243,7 +243,7 @@ for (const [name, source] of [
     /rel="noopener noreferrer external"/,
     `${name} must isolate external navigation`,
   )
-  assert.match(source, /社区中文(?:资源|剧情)/, `${name} must label the link as a community resource`)
+  assert.match(source, /社区(?:中文资源|中文剧情|剧情)/, `${name} must label the link as a community resource`)
   assert.match(source, /(?:entry\.)?resource\.uploader\.name/, `${name} must show uploader attribution`)
 }
 
@@ -251,7 +251,7 @@ assert.match(navigationComponent, /emit\('open-internal', entry\)/, 'navigation 
 assert.match(navigationComponent, /不镜像视频、字幕、封面或头像/, 'navigation must state the mirror boundary')
 assert.deepEqual(
   storyGateways.filter(gateway => gateway.action === 'external-resources').map(gateway => gateway.label),
-  ['社区中文剧情'],
+  ['社区剧情'],
   'story portal must expose the dedicated navigation',
 )
 assert.match(storyCatalogComponent, /import \{storyGateways,storyGatewayCount(?:,storyGatewayNote)?\} from '\.\.\/\.\.\/presentation\/StoryGateways\.js'/, 'story portal renders the shared gateway list')

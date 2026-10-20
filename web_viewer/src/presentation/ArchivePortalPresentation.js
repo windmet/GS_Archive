@@ -1,3 +1,4 @@
+import { STORY_KINDS } from '../core/archiveSections.js'
 import { songMatchesIdol, storyMatchesIdol, idolEventIds, eventMatchesIdol, cardAttribute } from './CatalogIdolScope.js'
 import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortraitUrl } from '../utils/CardAssetResolver.js'
 import { getCharaIconUrl } from '../utils/AssetResolver.js'
@@ -24,8 +25,8 @@ const integer = value => Number.isInteger(value) && value >= 0 ? value : null
 const normalizeSearch = value => text(value).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim()
 const sourceText = (callback, source, ...args) => typeof callback === 'function' ? text(callback(source, ...args)) || source : source
 const safeAssetUrl = value => typeof value === 'string' && /^\/assets\/[a-zA-Z0-9_./-]+\.(?:png|webp|jpg|jpeg)$/u.test(value) && !value.includes('..')
-const storyLabels = { main: '主线剧情', event: '活动剧情', unit_story: '组合剧情', idol_story: '个人剧情',
-  card_scenarios: '电话', work: '工作剧情', birthday: '生日剧情', extra: '额外剧情' }
+const storyLabels = { main: '主线剧情', event: '活动剧情', unit_story: '组合剧情', idol_story: STORY_KINDS.idol_story.label,
+  card_scenarios: STORY_KINDS.card_scenarios.label, work: STORY_KINDS.work.label, birthday: '生日剧情', extra: '额外剧情' }
 
 function requireValue(condition, message) {
   if (!condition) throw new TypeError(`Portal read model: ${message}`)
@@ -224,7 +225,7 @@ function preferredStats(preferredId, detail) {
   if (detail !== null && detail !== undefined) requireValue(detail.id === preferredId && detail.view?.profile?.idol_code === preferredId,
     'preferred statistics belong to a different idol')
   const stats = detail?.view?.stats
-  return [['cards', '卡片'], ['stories', '个人故事'], ['chats', '个人聊天'], ['phones', '电话通信']]
+  return [['cards', '卡片'], ['stories', STORY_KINDS.idol_story.label], ['chats', '个人聊天'], ['phones', STORY_KINDS.card_scenarios.label]]
     .map(([id, label]) => ({ id, label, value: integer(stats?.[id]) }))
 }
 
@@ -340,7 +341,7 @@ export function buildPortalSearchResults({ query = '', rowsByDomain = {}, bootst
           sourceText(idolSearch, row.character_id, text(directory.get(row.character_id)?.name)), row.rarity, row.resource_id]
       } else if (domain === 'songs') {
         const label = sourceText(songTitle, text(row.title)), unit = text(row.performance?.unitName)
-        result = { key: `songs:${row.song_code}`, domain, label, subtitle: unit || '歌曲档案', image: songImage(row), target: songTarget(row) }
+        result = { key: `songs:${row.song_code}`, domain, label, subtitle: unit || '歌曲', image: songImage(row), target: songTarget(row) }
         searchable = [row.title, label, row.kana, row.song_code, unit,
           ...(Array.isArray(row.performance?.performers) ? row.performance.performers.flatMap(idol =>
             [text(idol.displayName), sourceText(idolName, text(idol.id), text(idol.displayName)), sourceText(idolSearch, text(idol.id), text(idol.displayName))]) : []),

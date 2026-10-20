@@ -29,7 +29,7 @@
 
     <section class="story-section chapter-section" aria-labelledby="idol-story-title">
       <div class="story-section-head">
-        <h3 id="idol-story-title">个人故事</h3>
+        <h3 id="idol-story-title">个人剧情</h3>
         <small>{{ story.sectionCount }} 话</small>
       </div>
 
@@ -117,7 +117,7 @@
         <span class="follow-up-icon"><Cake :size="18" /></span>
         <span class="story-row-copy">
           <strong>生日档案</strong>
-          <small>独立的生日问候收在生日档案；与生日同期公开的个人故事留在这里。</small>
+          <small>独立的生日问候收在生日档案；与生日同期公开的个人剧情留在这里。</small>
         </span>
         <ChevronRight :size="18" aria-hidden="true" />
       </button>

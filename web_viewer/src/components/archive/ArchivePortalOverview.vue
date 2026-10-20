@@ -50,8 +50,9 @@
           <b>{{ formatCount(count.value) }}<small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></b> <span>{{ count.label }}</span>
         </button>
       </p>
-      <!-- Phones have no sidebar: the archive home doubles as the index of every destination. -->
-      <nav class="overview-directory" aria-label="全部栏目">
+      <!-- Phones have no sidebar: the archive home doubles as the index of every destination. Following an
+           idol, that idol's hero comes first and the index follows it (inside the featured section below). -->
+      <nav v-if="!preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
         <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
       </nav>
 
@@ -79,7 +80,7 @@
                 <p v-if="desktopOverview.preferredUnitName" class="overview-unit-name"><img v-if="unitLogoUrl && !unitLogoFailed" :src="unitLogoUrl" :alt="desktopOverview.preferredUnitName" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ desktopOverview.preferredUnitName }}</span></p>
               </div>
             </header>
-            <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">进入主页<small v-if="homeVoiceLabel" class="overview-home-voices">{{ homeVoiceLabel }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
+            <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">去{{ sectionLabel('home') }}<small v-if="homeVoiceLabel" class="overview-home-voices">{{ homeVoiceLabel }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
             <nav v-if="preferredReference?.actionable" class="overview-preferred-actions" aria-label="当前偶像快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', {action: action.id, idolCode: preferredReference.idolCode})"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
             <!-- Quiet settings for this hero, as one caption line under the shortcuts. -->
             <p class="overview-personal-meta">
@@ -87,6 +88,9 @@
               <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
             </p>
           </div>
+          <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
+            <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
+          </nav>
           <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><span class="overview-heading-actions"><button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组<Shuffle :size="15" aria-hidden="true" /></button><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></span></header>
             <PortalCardBento :cards="collections.cards || []" :counts="desktopOverview.cardCounts" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openDirectory('cards', $event)" />
@@ -125,7 +129,7 @@
         <div class="overview-scope-actions"><button type="button" :aria-pressed="!preferredReference?.actionable" @click="chooseScope('')"><Users :size="18" />全站档案大厅</button><button v-if="savedIdolCode" type="button" @click="chooseScope(savedIdolCode)"><ArchiveIdolAvatar :idol-code="savedIdolCode" :size="28" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>
         <ArchiveIdolPickerPanel compact :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
       </ArchiveTerminalDialog>
-      <footer class="overview-footer">SideM Archive · 非官方资料存档 · <button type="button" class="overview-footer-link" @click="emit('navigate', 'about')">关于本站</button></footer>
+      <footer class="overview-footer">{{ ARCHIVE_BRAND.english }} · 非官方资料存档 · <button type="button" class="overview-footer-link" @click="emit('navigate', 'about')">关于本站</button></footer>
     </div>
   </div>
 </template>
@@ -141,6 +145,7 @@ import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNavigationGroups.js'
+import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import PortalCardBento from './PortalCardBento.vue'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
@@ -511,7 +516,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 /* Phones have no sidebar: 资料馆 and the tools share the first row, the scope chip the second, then
    the search, then the index of every section. */
 @media (max-width:760px) {
-  .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-4) var(--gs-space-8); }
+  .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-5) var(--gs-space-8); } /* the same 16px side margin as the other pages */
+  /* One column at every phone width: the page container's two-column hero (641–980px) would otherwise
+     put the hero beside its shortcuts on a large phone, with a hole under the shortcuts. */
+  .overview-personal { display:flex;align-items:stretch; }
   .overview-search-form input { font-size:var(--gs-text-subtitle); } /* touch input: 16px or iOS zooms on focus */
   .overview-toolbar { grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2); }
   .overview-brand { display:contents; }
@@ -531,8 +539,11 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-directory button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-2);min-width:0;min-height:60px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
   .overview-directory button svg { width:22px;height:22px;color:var(--gs-ink-2); }
   .overview-directory button:active { background:var(--gs-mint-wash); }
+  /* A large phone fits five columns: the fifteen sections fill three rows with nothing left over. */
+  @container portal (min-width:540px) { .overview-directory { grid-template-columns:repeat(5,minmax(0,1fr)); } }
   .overview-panel { margin-top:var(--gs-space-8); }
   .overview-featured { margin-top:var(--gs-space-6); }
+  .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
   .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button { min-height:var(--gs-control-touch); }
 }
 @media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }

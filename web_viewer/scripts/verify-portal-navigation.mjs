@@ -10,9 +10,9 @@ import { ARCHIVE_NAVIGATION_GROUPS, buildNavigationGroups } from '../src/core/ar
 // Seven reader destinations; readers never see the build-status section, maintainers get it as an eighth.
 const maintainerGroups = buildNavigationGroups(true)
 const readerGroups = buildNavigationGroups(false)
-assert.deepEqual(readerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', 'LIVE', '摄影工作台'])
+assert.deepEqual(readerGroups.map(group => group.label), ['剧情与通信', '偶像与卡片', '歌曲', '活动与卡池', '图鉴', 'LIVE', '摄影工作台'])
 assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 6, 1, 1])
-assert.deepEqual(maintainerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', 'LIVE', '摄影工作台', '资源'])
+assert.deepEqual(maintainerGroups.map(group => group.label), ['剧情与通信', '偶像与卡片', '歌曲', '活动与卡池', '图鉴', 'LIVE', '摄影工作台', '资源'])
 assert.ok(!readerGroups.some(group => group.items.some(item => item.id === 'resources')))
 assert.ok(readerGroups.every(group => group.items.every(item => item.label !== group.label || group.items.length === 1)), 'a destination never lists a section with its own name')
 assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 6, 1, 1], 'default module export is the reader view')
@@ -225,3 +225,95 @@ assert.equal(archiveSectionForRoute({ view: 'collection_catalog', entity: 'honor
 import { usePortalNavigation } from '../src/composables/usePortalNavigation.js'
 import { parse } from '@vue/compiler-sfc'
 import { parse as parseScript } from '@babel/parser'
+
+// The address always names the portal lens, so a shared link opens the same view for anyone; a lens equal to
+// what following the favorite shows is restored as that default, so a refreshed page keeps following.
+const shownNav = useArchiveNavigationState({ portalScopeShown: () => '040ren' })
+shownNav.view.value = 'portal'
+assert.equal(buildArchiveUrl('http://localhost/', shownNav.currentArchiveRoute()).searchParams.get('portal_scope'), '040ren', 'a following lens is written out')
+shownNav.portalScope.value = 'all'
+assert.equal(buildArchiveUrl('http://localhost/', shownNav.currentArchiveRoute()).searchParams.get('portal_scope'), 'all', 'an explicit lens wins')
+assert.match(app, /useArchiveNavigationState\(\{ portalScopeShown: \(\) => preferredArchiveIdol\.value\?\.id \|\| 'all' \}\)/, 'App names the lens an empty scope shows')
+restoreContext.preferredArchiveIdol = { value: { id: '001tom' } }
+restoreContext.archiveBootstrap.idols.push({ id: '040ren' })
+restoreContext.userPreferences.value.portalDefaultScope = 'favorite'
+await restoreContext.applyArchiveRoute({ view: 'portal', portalScope: '001tom' })
+assert.equal(restoreContext.portalScope.value, '', 'the favorite lens read back from the address keeps following')
+await restoreContext.applyArchiveRoute({ view: 'portal', portalScope: '040ren' })
+assert.equal(restoreContext.portalScope.value, '040ren', 'another idol stays a temporary lens')
+await restoreContext.applyArchiveRoute({ view: 'portal', portalScope: 'all' })
+assert.equal(restoreContext.portalScope.value, 'all', 'the all-archive lens stays explicit while a favorite exists')
+restoreContext.preferredArchiveIdol = { value: null }
+await restoreContext.applyArchiveRoute({ view: 'portal', portalScope: 'all' })
+assert.equal(restoreContext.portalScope.value, '', 'without a favorite the all-archive address is the default view')
+
+// One name per destination: navigation entry, breadcrumb root and browser tab agree, and every portal
+// directory entry has its own glyph.
+assert.equal(ARCHIVE_SECTIONS.stories.label, '剧情')
+assert.equal(ARCHIVE_SECTIONS.home.label, '事务所')
+for (const [view, section] of [['story_catalog', 'stories'], ['idols', 'idols'], ['unit_catalog', 'units'], ['cards', 'cards'], ['song_catalog', 'songs'],
+  ['event_catalog', 'events'], ['gashas', 'gashas'], ['photo_catalog', 'photos'], ['unused_archive', 'unused']]) {
+  const crumbs = buildArchiveBreadcrumbs({ view, category: view === 'idols' ? 'idol' : view === 'cards' ? 'cards' : '' })
+  assert.deepEqual(crumbs.map(item => item.label), [ARCHIVE_SECTIONS.portal.label, ARCHIVE_SECTIONS[section].label], `${view} breadcrumb`)
+  assert.equal(archiveDocumentTitle(view), `${ARCHIVE_SECTIONS[section].label} · GS Archive`, `${view} browser tab`)
+}
+for (const item of ARCHIVE_NAVIGATION) assert.equal(item.label, ARCHIVE_SECTIONS[item.id].label, `${item.id} navigation label`)
+assert.deepEqual(buildArchiveBreadcrumbs({ view: 'picture_studio' }).map(item => item.label), ['资料馆', '摄影工作台'], 'the studio hangs from the root')
+const iconSource = readFileSync(new URL('../src/components/archive/archiveNavigationIcons.js', import.meta.url), 'utf8')
+for (const item of ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items)) assert.match(iconSource, new RegExp(`[\\s,{]${item.id}\\s*:`), `${item.id} has a directory glyph`)
+// Desktop sidebar: an explicit 资料馆 entry, and each root page names its group's other pages beside its title.
+const shellSource = readFileSync(new URL('../src/components/archive/ArchiveShell.vue', import.meta.url), 'utf8')
+assert.match(shellSource, /@click="emit\('navigate', 'portal'\)">\s*<LayoutGrid[^>]*\/><span>\{\{ sectionLabel\('portal'\) \}\}<\/span>/, 'sidebar lists 资料馆 as an entry')
+assert.match(app, /:root-section="archiveRootSection"/, 'App tells the shell which root page is showing')
+assert.match(app, /else if \(section === 'units'\) openUnitCatalog\(\)/, '组合 in the switch opens the unit directory')
+// Phone bar 2+1: the two homes, then one cell that opens the drawer and otherwise names the current section.
+const barItems = shellSource.match(/const mobileNavigation = computed\(\(\) => \[([\s\S]*?)\n\]\)/)?.[1] || ''
+assert.deepEqual([...barItems.matchAll(/\{ id: '(\w+)'/g)].map(match => match[1]), ['home', 'portal'], 'the bar holds the two homes and nothing else')
+assert.match(shellSource, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/, 'the bar has three equal cells')
+assert.match(shellSource, /<span class="archive-switch-label">\{\{ drawerCell\.label \}\}<component :is="drawerOpen \? ChevronDown : ChevronUp"/, 'the third cell keeps the tab layout; a caret that flips with the drawer marks it')
+assert.match(shellSource, /\.archive-switch-caret \{ position: absolute;/, 'the caret does not push the label off centre')
+assert.match(shellSource, /if \(drawerOpen\.value\) return \{ label: '收起'/, 'the open drawer turns the third cell into 收起')
+assert.match(shellSource, /section !== 'home' && section !== 'portal' && sectionLabel\(section\)\)[\s\S]{0,40}return \{ label: sectionLabel\(section\), icon: archiveNavigationIcons\[section\]/, 'away from the homes the third cell names the current section')
+assert.match(shellSource, /return \{ label: '导航', icon: Menu/, 'on the homes the third cell says 导航')
+assert.match(shellSource, /:aria-expanded="drawerOpen"/, 'the third cell reports the drawer state')
+// The drawer loads on first open and shows the sidebar's own destination groups.
+assert.match(shellSource, /defineAsyncComponent\(\(\) => import\('\.\/ArchiveNavigationDrawer\.vue'\)\)/, 'the drawer is a lazy chunk')
+assert.doesNotMatch(shellSource, /^import ArchiveNavigationDrawer/m, 'the drawer is not in the startup bundle')
+assert.match(shellSource, /<ArchiveNavigationDrawer v-if="drawerOpen"[^>]*:groups="navigationGroups"/, 'the drawer renders only while open, from the sidebar groups')
+const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavigationDrawer.vue', import.meta.url), 'utf8')
+assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups/, 'the drawer keeps no destination list of its own')
+assert.deepEqual(drawerSource.match(/ARCHIVE_SECTIONS(?:\[[^\]]+\]\?\.\w+)?/g), ['ARCHIVE_SECTIONS', 'ARCHIVE_SECTIONS[item.id]?.blurb'], 'the drawer reads only descriptions from the dictionary')
+assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
+assert.doesNotMatch(drawerSource.split('<script')[0], /group\.label|<h2/, 'the drawer draws no group titles; each icon is labelled')
+assert.match(drawerSource, /props\.groups\.filter\(group => \(TIER_OF_GROUP\[group\.id\] \|\| 'core'\) === id\)/, 'every drawer tier is cut from the sidebar groups')
+// 图鉴 names run two to four characters; filled cells carry the column lines instead of the ragged text.
+assert.match(drawerSource, /\.archive-drawer \.is-collection button \{[^}]*background: var\(--gs-paper\)/, '图鉴 rows sit in filled cells so uneven names do not skew the columns')
+assert.match(drawerSource, /const TIER_OF_GROUP = \{ collection: 'collection', live: 'tools', studio: 'tools', resources: 'footer' \}/, 'catalogues, 图鉴, tools and the maintainer page each have their tier')
+// The tools are players and editors, not lists: cards that say what they open, from the dictionary.
+assert.match(drawerSource, /<span v-if="tier\.id === 'tools'" class="archive-drawer-tool-copy"><b>\{\{ item\.label \}\}<\/b><small v-if="item\.blurb">\{\{ item\.blurb \}\}<\/small><\/span>/, 'tool cards carry a name and a one-line description')
+assert.match(drawerSource, /blurb: ARCHIVE_SECTIONS\[item\.id\]\?\.blurb/, 'tool descriptions come from the dictionary')
+assert.deepEqual(Object.values(ARCHIVE_SECTIONS).filter(section => section.blurb).map(section => section.id), ['live', 'studio'], 'only the two tools carry a description')
+// 回到页顶 and 关于本站 close the drawer as a footer line; 回到页顶 scrolls the archive scroll area.
+assert.match(drawerSource, /<p class="archive-drawer-footer">[\s\S]*?<button type="button" class="archive-drawer-top" :disabled="!canScrollTop" @click="scrollToTop">回到页顶<\/button>[\s\S]*?sectionLabel\('about'\)[\s\S]*?<\/p>/, 'the footer offers 回到页顶 (disabled at the top) and 关于本站')
+assert.match(drawerSource, /const scrollArea = \(\) => document\.querySelector\('\[data-archive-scroll-container\]'\)/, '回到页顶 scrolls the archive scroll area')
+assert.match(drawerSource, /scrollArea\(\)\?\.scrollTo\(\{ top: 0,[^}]*\}\)\s*\n\s*emit\('close'\)/, '回到页顶 scrolls to the top and closes the drawer')
+// Phone portal: following an idol, the hero comes before the index of every section; the all-archive view keeps the index first.
+const overviewSource = readFileSync(new URL('../src/components/archive/ArchivePortalOverview.vue', import.meta.url), 'utf8')
+const allDirectory = overviewSource.indexOf('<nav v-if="!preferredReference?.actionable" class="overview-directory"')
+const hero = overviewSource.indexOf('class="overview-personal"')
+const heroDirectory = overviewSource.indexOf('<nav v-if="preferredReference?.actionable" class="overview-directory"')
+assert.ok(allDirectory > 0 && allDirectory < overviewSource.indexOf('class="overview-panel overview-featured"'), 'all-archive view: index above the featured section')
+assert.ok(hero > 0 && heroDirectory > hero && heroDirectory < overviewSource.indexOf('class="overview-card-showcase"'), 'favorite view: index right after the hero')
+// Phone layout at every width from 320 to 760, and in a narrowed desktop window: centred, one hero column,
+// the same side margin as the other pages, and a directory that fills its rows when five columns fit.
+const tokenSource = readFileSync(new URL('../src/styles/GS_UI_TOKENS.css', import.meta.url), 'utf8')
+assert.match(tokenSource, /@media \(max-width: 760px\) \{ \[data-archive-scroll-container\] \{ scrollbar-gutter: stable both-edges; \} \}/, 'a classic scrollbar reserves both sides in the phone layout')
+const phoneOverview = overviewSource.slice(overviewSource.lastIndexOf('@media (max-width:760px)'))
+assert.match(phoneOverview, /\.portal-overview-scroll \{ padding:var\(--gs-space-4\) var\(--gs-space-5\) /, 'the portal keeps the 16px side margin of the other pages')
+assert.match(phoneOverview, /\.overview-personal \{ display:flex;align-items:stretch; \}/, 'the hero stays one column at every phone width')
+assert.match(phoneOverview, /@container portal \(min-width:540px\) \{ \.overview-directory \{ grid-template-columns:repeat\(5,minmax\(0,1fr\)\); \} \}/, 'a large phone shows the fifteen sections as three full rows of five')
+assert.equal(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items).length % 5, 0, 'the five-column directory has no partial row')
+console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs; portal lens always in the address; phone 2+1 bar, lazy drawer and hero-first portal passed')
+import { ARCHIVE_SECTIONS } from '../src/core/archiveSections.js'
+import { buildArchiveBreadcrumbs } from '../src/core/archiveRoute.js'
+import { archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'
