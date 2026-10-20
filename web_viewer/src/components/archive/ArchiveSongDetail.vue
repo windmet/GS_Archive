@@ -359,8 +359,9 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 /* The audition sits on the paper like every other section; no floating card. */
 .song-record-column { display: grid; gap: var(--gs-space-section); min-width: 0; }
 .song-block { min-width: 0; }
-.song-block-heading h3, .song-block > summary { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
-.song-block-note { margin: var(--gs-space-4) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body); line-height: 1.7; }
+/* :deep so the player components' own block headings take the same role as the record blocks. */
+.song-block :deep(.song-block-heading h3), .song-block > summary { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
+.song-block :deep(.song-block-note) { margin: var(--gs-space-4) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body); line-height: 1.7; }
 .song-subsection { margin-top: var(--gs-space-6); }
 .song-subsection h4, .song-subsection > summary { margin: 0 0 var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 summary { display: flex; align-items: center; min-height: var(--gs-control-touch); color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }

@@ -355,7 +355,7 @@ function timeWindow(topic) {
 .mobile-tabs small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
 .mobile-content { box-sizing: border-box; max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-6) var(--gs-space-7) calc(var(--gs-space-8) + var(--gs-safe-bottom)); }
 .content-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-3); }
-.content-heading h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
+.content-heading h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .content-heading > strong { flex: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .unlock-explainer { margin: 0 0 var(--gs-space-3); color: var(--gs-ink-2); }
 .unlock-explainer summary { display: list-item; box-sizing: border-box; min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); cursor: pointer; }

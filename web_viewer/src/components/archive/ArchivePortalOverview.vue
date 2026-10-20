@@ -321,7 +321,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 /* Sections: heading and count on one baseline over a rule, the directory link at the end. */
 .overview-panel { min-width:0;margin-top:var(--gs-space-section); }
 .overview-section-heading { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-4);margin-bottom:var(--gs-space-4);padding-bottom:var(--gs-space-3);border-bottom:1px solid var(--gs-rule); }
-.overview-section-heading h2, .overview-section-heading h3 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-semibold);line-height:1.4; }
+.overview-section-heading h2, .overview-section-heading h3 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.4; }
 .overview-section-heading h2 > small { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-section-heading button, .overview-heading-actions { display:flex;flex:none;align-items:center;gap:var(--gs-space-2); }
 .overview-section-heading button { min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
@@ -388,8 +388,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
 .overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
-.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
-.overview-story-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui);white-space:nowrap; }
+.overview-story-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
 .overview-story-tabs small { margin-left:var(--gs-space-2);color:inherit;opacity:.75;font-variant-numeric:tabular-nums; }
 
 /* Rows: picture, title and one line of meta, split by hairlines; the whole row opens. */
@@ -506,6 +506,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
    the search, then the index of every section. */
 @media (max-width:760px) {
   .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-4) var(--gs-space-8); }
+  .overview-search-form input { font-size:var(--gs-text-subtitle); } /* touch input: 16px or iOS zooms on focus */
   .overview-toolbar { grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2); }
   .overview-brand { display:contents; }
   .overview-breadcrumb-divider { display:none; }

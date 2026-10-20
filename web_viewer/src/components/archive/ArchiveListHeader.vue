@@ -52,18 +52,23 @@ const emit = defineEmits(['back', 'update:modelValue'])
   padding: 8px 16px;
   background: var(--gs-paper);
 }
-.filter-input {
+.filter-input, :slotted(.filter-input) {
   width: 100%;
-  padding: 8px 12px;
+  box-sizing: border-box;
+  min-height: var(--gs-control-normal);
+  padding: 0 var(--gs-space-4);
   background: var(--gs-surface);
-  border: 1px solid var(--gs-rule);
+  border: 1px solid var(--gs-line);
   color: var(--gs-ink);
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: var(--gs-radius-field);
+  font: inherit;
+  font-size: var(--gs-text-ui);
 }
-.filter-input:focus {
-  outline: none;
-  border-color: var(--gs-rule);
-  box-shadow: 0 0 0 2px rgba(136,204,255,0.2);
+.filter-input:focus-visible, :slotted(.filter-input:focus-visible) {
+  outline: var(--gs-focus-ring) solid var(--gs-mint);
+  outline-offset: var(--gs-focus-offset);
+}
+@media (max-width: 760px) {
+  .filter-input, :slotted(.filter-input) { min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
 }
 </style>
