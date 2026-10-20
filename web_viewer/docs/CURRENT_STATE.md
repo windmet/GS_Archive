@@ -38,6 +38,8 @@
 
 [RED HOT BEAT!! 左右烟雾](NATIVE_REHOBE_SMOKE_20261020.md)已按原编舞接入现有 Noise 预览链路：20 秒烟雾可见，停止/倒回/切歌已验，仍保留 `noise_preview`。emitter 为 82 组 / 724 系统 / 95 纹理，consumer 分片为 201 片，三目录闭包 438 片；无 consumer 粒子 32→30，partial 资源 11→13。本批未部署。
 
+[Sprite 透明度公共诊断](NATIVE_OBJECT_SPRITE_FADE_AUDIT_20261020.md)已锁定 46 组 / 423 个 renderer 的 RAW 初值与原生 DOFade 链，确认首次从零淡入和初始 alpha 永久相乘两类消费者差异；544 次相邻命令重叠需保留旧 tween 语义。当前只提交来源与可复跑差异普查，未修改渲染；下一步先补原生逐帧 startup / 更新顺序样本，再做每个 renderer 的状态修复。
+
 ## 未合入但保留的分支
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。
