@@ -34,6 +34,7 @@ import { PRODUCER_NAME_WITH_P_TOKEN } from '../../localization/story/ProducerAdd
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.js'
 import { loadArchiveNames } from './useArchiveNamedText.js'
+import { STORY_KINDS, sectionLabel } from '../../core/archiveSections.js'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { Images, Settings2 } from '@lucide/vue'
 
@@ -53,7 +54,8 @@ watch(wallpaper.revision, () => { backdropFailed.value = false })
 const idolTheme = computed(() => props.viewReference?.actionable && normalizeIdolAccentColor(props.viewReference.accentColor)
   ? { '--portal-idol-color': normalizeIdolAccentColor(props.viewReference.accentColor) } : null)
 const producerDisplayName = computed(() => producerName.value ? presentProducerAddressingText(PRODUCER_NAME_WITH_P_TOKEN) : '未设置制作人')
-const preferredActions = [{ id: 'profile', label: '资料' }, { id: 'story', label: '故事' }, { id: 'cards', label: '卡片' }, { id: 'work', label: '工作' }, { id: 'mobile', label: '通信' }]
+const preferredActions = [{ id: 'profile', label: '资料' }, { id: 'story', label: STORY_KINDS.idol_story.label }, { id: 'cards', label: sectionLabel('cards') },
+  { id: 'work', label: STORY_KINDS.work.shortLabel }, { id: 'mobile', label: sectionLabel('interactions') }]
 
 onMounted(async () => {
   await nextTick()

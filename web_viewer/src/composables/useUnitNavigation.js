@@ -58,6 +58,28 @@ export function useUnitNavigation({
     })
   }
 
+  // The unit directory: 组合 in the 偶像 | 组合 | 卡片 switch.
+  function openUnitCatalog() {
+    const request = ++pendingUnitNavigation
+    navigation.invalidate()
+    const revision = navigation.getRevision()
+    unitReadModelStatus.value = '正在读取组合…'
+    loading.value = true
+    return prepareArchivePage('unit_catalog', loadUnitCatalog()).then(() => {
+      if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+      unitReadModelStatus.value = ''
+      currentCategoryId.value = 'idol'
+      currentCharacterId.value = ''
+      currentArchiveUnitCode.value = ''
+      commitView('unit_catalog')
+    }).catch(error => {
+      if (request !== pendingUnitNavigation || revision !== navigation.getRevision()) return
+      loading.value = false
+      console.error('[UnitReadModel] Failed to load unit catalog:', error)
+      unitReadModelStatus.value = '组合暂时无法读取，请重试。'
+    })
+  }
+
   function openUnitFromIdol(idol) {
     if (idol?.unit_code) return openArchiveUnit({ unit_code: idol.unit_code })
   }
@@ -120,7 +142,7 @@ export function useUnitNavigation({
       } catch (error) {
         if (!isCurrent()) return null
         console.error('[UnitReadModel] Failed to restore unit route:', error)
-        unitReadModelStatus.value = '组合资料暂时无法读取，请稍后重试。'
+        unitReadModelStatus.value = '组合暂时无法读取，请稍后重试。'
         route = { view: 'idols', category: 'idol' }
       }
     }
@@ -130,7 +152,7 @@ export function useUnitNavigation({
   function invalidateUnitNavigation() { ++pendingUnitNavigation }
 
   return {
-    openArchiveUnit, openUnitFromIdol, openUnitMember, openUnitStory,
+    openArchiveUnit, openUnitCatalog, openUnitFromIdol, openUnitMember, openUnitStory,
     openUnitEvent, loadUnitCatalog, loadUnitDetail, unitCatalogEntries,
     currentArchiveUnit, currentArchiveUnitEntry, currentArchiveUnitMembers, currentArchiveUnitStories,
     currentArchiveUnitSongs, prepareUnitRoute, invalidateUnitNavigation,

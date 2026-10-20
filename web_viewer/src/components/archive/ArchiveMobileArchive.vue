@@ -264,7 +264,7 @@ function unlockText(unlock) {
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
   if (story) return `「${presentProducerAddressingText(sourceTitle(null, story.scenarioTitle))}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} 完成`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
-  if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
+  if (unlock.kind === 'idol_story_episode_finished') return '个人剧情章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind)
     ? presentMissionText(unlock.text, { locale: uiLocale.value, name: props.idolNameFromSource }) : '开放条件待确认'
 }
@@ -272,9 +272,9 @@ function unlockTitle(unlock) {
   const card = unlockCard(unlock)
   if (card) return `卡片 · ${archiveCardFullTitle(card)} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `个人故事 · ${chapterLabel(story.sectionName)}「${presentProducerAddressingText(sourceTitle(null, story.scenarioTitle))}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
+  if (story) return `个人剧情 · ${chapterLabel(story.sectionName)}「${presentProducerAddressingText(sourceTitle(null, story.scenarioTitle))}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
-  if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
+  if (unlock.kind === 'idol_story_episode_finished') return '个人剧情章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind)
     ? presentMissionText(unlock.text, { locale: uiLocale.value, name: props.idolNameFromSource }) : '开放条件待确认'
 }

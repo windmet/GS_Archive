@@ -84,7 +84,7 @@ export function useCardNavigation({
 
   const currentCardCharacterName = computed(() => {
     const id = currentCharacterId.value
-    return id ? idolDisplayName(id) : '全部卡片'
+    return id ? idolDisplayName(id) : '卡片'
   })
 
   function openUnitCards() {

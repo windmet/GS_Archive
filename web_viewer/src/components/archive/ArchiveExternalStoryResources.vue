@@ -3,7 +3,7 @@
     <template v-if="EXTERNAL_STORY_RESOURCES_ENABLED">
     <header class="resource-hero">
       <div>
-        <h2>社区中文剧情</h2>
+        <h2>社区剧情</h2>
         <p>只收录已经与本地 GROWING STARS 剧情完成精确核对的原始投稿。</p>
       </div>
       <strong>{{ entries.length }} 条精确资源</strong>
@@ -44,7 +44,7 @@
       </article>
     </div>
 
-    <p v-else class="empty-state">当前没有通过精确关系校验的社区中文剧情。</p>
+    <p v-else class="empty-state">当前没有通过精确关系校验的社区剧情。</p>
 
     <footer>
       <ShieldCheck :size="16" />

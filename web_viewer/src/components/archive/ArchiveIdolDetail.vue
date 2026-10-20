@@ -232,7 +232,7 @@ const storyCount = computed(() => {
   return [`${sections} 话`, `${episodes} Episode`, talks ? `${talks} Small Talk` : ''].filter(Boolean).join(' · ')
 })
 const related = computed(() => [
-  { id: 'stories', label: '个人故事', count: storyCount.value, icon: BookOpenText },
+  { id: 'stories', label: '个人剧情', count: storyCount.value, icon: BookOpenText },
   // Every archive idol has a Valentine / White Day arc; the seasonal page opens on theirs.
   { id: 'seasonal', label: '季节企划', count: '情人节与白色情人节', icon: Heart },
   { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} 张`, icon: Images },
