@@ -403,7 +403,7 @@ def _project_step(step: dict[str, Any], previous: dict[str, Any] | None) -> tupl
         },
         "evidence": evidence,
     }
-    for key in ("episode_index", "episode_part", "chara_id", "auto_advance", "duration", "hide_dialogue", "lipSync"):
+    for key in ("episode_index", "episode_part", "chara_id", "auto_advance", "duration", "hide_dialogue", "lipSync", "pre_wait", "post_wait"):
         if key in step:
             output[key] = _clone(step[key])
     if step.get("dialogue") and (
