@@ -269,8 +269,9 @@ assert.match(app, /else if \(section === 'units'\) openUnitCatalog\(\)/, '组合
 // Phone bar 2+1: the two homes, then one cell that opens the drawer and otherwise names the current section.
 const barItems = shellSource.match(/const mobileNavigation = computed\(\(\) => \[([\s\S]*?)\n\]\)/)?.[1] || ''
 assert.deepEqual([...barItems.matchAll(/\{ id: '(\w+)'/g)].map(match => match[1]), ['home', 'portal'], 'the bar holds the two homes and nothing else')
-assert.match(shellSource, /grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\) minmax\(0, 1\.5fr\);/, 'the bar has three cells, the switcher widest')
-assert.match(shellSource, /<span class="archive-switch-pill">[\s\S]*?<component :is="drawerOpen \? ChevronDown : ChevronUp"/, 'the third cell is a pill whose caret flips with the drawer')
+assert.match(shellSource, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/, 'the bar has three equal cells')
+assert.match(shellSource, /<span class="archive-switch-label">\{\{ drawerCell\.label \}\}<component :is="drawerOpen \? ChevronDown : ChevronUp"/, 'the third cell keeps the tab layout; a caret that flips with the drawer marks it')
+assert.match(shellSource, /\.archive-switch-caret \{ position: absolute;/, 'the caret does not push the label off centre')
 assert.match(shellSource, /if \(drawerOpen\.value\) return \{ label: '收起'/, 'the open drawer turns the third cell into 收起')
 assert.match(shellSource, /section !== 'home' && section !== 'portal' && sectionLabel\(section\)\)[\s\S]{0,40}return \{ label: sectionLabel\(section\), icon: archiveNavigationIcons\[section\]/, 'away from the homes the third cell names the current section')
 assert.match(shellSource, /return \{ label: '导航', icon: Menu/, 'on the homes the third cell says 导航')
