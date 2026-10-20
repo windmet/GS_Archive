@@ -284,8 +284,12 @@ const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavi
 assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups|ARCHIVE_SECTIONS\b/, 'the drawer keeps no destination list of its own')
 assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
 assert.doesNotMatch(drawerSource.split('<script')[0], /group\.label|<h2/, 'the drawer draws no group titles; each icon is labelled')
-assert.match(drawerSource, /props\.groups\.filter\(group => SECONDARY_GROUPS\.has\(group\.id\) === secondary\)/, 'both drawer tiers are cut from the sidebar groups')
-assert.match(drawerSource, /const SECONDARY_GROUPS = new Set\(\['collection', 'studio', 'resources'\]\)/, 'the collection pages and tools sit beneath the rule')
+assert.match(drawerSource, /props\.groups\.filter\(group => \(TIER_OF_GROUP\[group\.id\] \|\| 'core'\) === id\)/, 'every drawer tier is cut from the sidebar groups')
+assert.match(drawerSource, /const TIER_OF_GROUP = \{ collection: 'collection', studio: 'tools', resources: 'tools' \}/, '图鉴 and the tools sit beneath the core tiles')
+// 回到页顶 lives in the drawer's tool strip and scrolls the one archive scroll area that view restoration uses.
+assert.match(drawerSource, /<template v-if="tier\.id === 'tools'">\s*<button type="button" class="archive-drawer-top" :disabled="!canScrollTop" @click="scrollToTop">/, 'the tool strip offers 回到页顶, disabled at the top')
+assert.match(drawerSource, /const scrollArea = \(\) => document\.querySelector\('\[data-archive-scroll-container\]'\)/, '回到页顶 scrolls the archive scroll area')
+assert.match(drawerSource, /scrollArea\(\)\?\.scrollTo\(\{ top: 0,[^}]*\}\)\s*\n\s*emit\('close'\)/, '回到页顶 scrolls to the top and closes the drawer')
 // Phone portal: following an idol, the hero comes before the index of every section; the all-archive view keeps the index first.
 const overviewSource = readFileSync(new URL('../src/components/archive/ArchivePortalOverview.vue', import.meta.url), 'utf8')
 const allDirectory = overviewSource.indexOf('<nav v-if="!preferredReference?.actionable" class="overview-directory"')
