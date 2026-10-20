@@ -1,5 +1,6 @@
 import { storyReleaseProbe } from './StoryReleaseProbe.js'
 import { withLoadDeadline } from '../AsyncLoadBoundary.js'
+import { MASTER_OUT, createNativeBusChain } from './nativeAudioBuses.js'
 
 const BUS_NAMES = Object.freeze(['bgm', 'ambient', 'voice', 'se'])
 const DEFAULT_BUS_VOLUMES = Object.freeze({ bgm: 1, ambient: 1, voice: 1, se: 1 })
@@ -32,6 +33,7 @@ export class StoryAudioSession {
     this._context = null
     this._masterGain = null
     this._buses = new Map()
+    this._nativeBuses = new Map()
     this._sources = new Map()
     this._media = new Map()
     this._pauseReasons = new Set()
@@ -77,6 +79,28 @@ export class StoryAudioSession {
     if (!BUS_NAMES.includes(bus)) throw new RangeError(`unknown audio bus: ${bus}`)
     this.ensureContext()
     return this._buses.get(bus)
+  }
+  /** Connect a source the way its CRI cue is routed: `route` is the cue's bus sends
+   * ({MasterOut: 0.5, bus_reverb: 0.4}); null keeps the default MasterOut 1.0.
+   * Effect buses sit before the channel bus so the player's volume still applies. */
+  routeSource(node, { bus, route = null } = {}) {
+    const channel = this.getBus(bus)
+    if (!route) { node.connect(channel); return () => { try { node.disconnect(channel) } catch {} } }
+    const sends = []
+    for (const [target, level] of Object.entries(route)) {
+      if (!(level > 0)) continue
+      const send = this._context.createGain()
+      send.gain.value = level
+      node.connect(send)
+      send.connect(target === MASTER_OUT ? channel : this._nativeBus(bus, target).input)
+      sends.push(send)
+    }
+    return () => { for (const send of sends) { try { node.disconnect(send) } catch {} try { send.disconnect() } catch {} } }
+  }
+  _nativeBus(bus, name) {
+    const key = `${bus}:${name}`
+    if (!this._nativeBuses.has(key)) this._nativeBuses.set(key, createNativeBusChain(this._context, name, this._buses.get(bus)))
+    return this._nativeBuses.get(key)
   }
   setBusVolume(bus, value) {
     const gain = this.getBus(bus)
@@ -225,6 +249,7 @@ export class StoryAudioSession {
     return Object.freeze({ context_state: this._context?.state || 'uninitialized',
       pause_reasons: [...this._pauseReasons], rate: this._rate, active_sources: sources.length,
       sources: Object.freeze(sources), buses: Object.freeze({ ...this._busVolumes }),
+      native_buses: Object.freeze([...this._nativeBuses.keys()].sort()),
       disabled: this._disabled, disposed: this._disposed, release_owner: this._releaseOwner,
       state_command: this._stateCommand && { ...this._stateCommand }, state_error: this._stateError })
   }
@@ -236,6 +261,8 @@ export class StoryAudioSession {
     this._media.clear()
     this._sources.clear()
     this._pauseReasons.clear()
+    for (const chain of this._nativeBuses.values()) chain.dispose()
+    this._nativeBuses.clear()
     for (const gain of this._buses.values()) { try { gain.disconnect() } catch {} }
     this._buses.clear()
     try { this._masterGain?.disconnect() } catch {}

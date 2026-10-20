@@ -12,7 +12,7 @@ export async function until(predicate, ms = 1000) {
   }
 }
 export class FakeNode {
-  constructor() { this.connections = []; this.playbackRate = { value: 1 }; this.gain = { value: 1, setValueAtTime(v) { this.value = v } }; this.stopped = false }
+  constructor() { this.connections = []; this.playbackRate = { value: 1 }; this.gain = { value: 1, setValueAtTime(v) { this.value = v } }; this.frequency = { value: 0 }; this.Q = { value: 0 }; this.stopped = false }
   connect(node) { this.connections.push(node); return node }
   disconnect() { this.disconnected = true }
   start() { this.started = true }
@@ -20,12 +20,15 @@ export class FakeNode {
 }
 export class FakeAudioContext extends EventTarget {
   constructor({ state = 'running', decode } = {}) {
-    super(); this.state = state; this.currentTime = 0; this.destination = new FakeNode(); this.sources = []
+    super(); this.state = state; this.currentTime = 0; this.sampleRate = 48000; this.destination = new FakeNode(); this.sources = []
     this.decode = decode; this.resumeCount = 0; this.suspendCount = 0; this.closeCount = 0; this.mediaSources = 0
   }
   setState(state) { this.state = state; this.dispatchEvent(new Event('statechange')) }
   createGain() { return new FakeNode() }
-  createBuffer() { return {} }
+  createBuffer(channels = 1, length = 0) { const data = Array.from({ length: channels }, () => new Float32Array(length)); return { numberOfChannels: channels, length, getChannelData: i => data[i] } }
+  // Native bus chains (phone / reverb routing) build filters and a convolver.
+  createBiquadFilter() { return new FakeNode() }
+  createConvolver() { return new FakeNode() }
   createBufferSource() { const node = new FakeNode(); this.sources.push(node); return node }
   createMediaElementSource() { this.mediaSources++; return new FakeNode() }
   async decodeAudioData(bytes) { return this.decode ? this.decode(bytes) : { duration: 2, length: 96000, numberOfChannels: 1, sampleRate: 48000 } }
