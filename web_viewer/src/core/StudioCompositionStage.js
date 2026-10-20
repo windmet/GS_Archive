@@ -12,6 +12,8 @@ import { createStoryAssetTransport } from "./StoryAssetTransport.js";
 import { decodeSpineAtlasText } from "../../shared/story/SpineAtlasPages.js";
 import { decodeUnitySpineSkeleton } from "../../shared/story/SpineBinary.js";
 import { neckOverlayAnimation } from "./spineNeckOverlay.js";
+import { installNativeFramePose } from "./spineFramePose.js";
+import { faceEffectSlots, hideFaceEffects } from "./spineFaceEffects.js";
 import { studioFramePlacement } from "./StudioFramePlacement.mjs";
 import { studioActorPlacement, studioActorPoseBounds, studioActorSelectionBounds } from "./StudioActorPlacement.mjs";
 import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls, studioSnapMove } from './StudioGestures.mjs';
@@ -27,6 +29,15 @@ import {
 } from "./PictureStudioPolicy.mjs";
 
 /** Per-instance requests, textures, animation state and transforms; no Player cache. */
+// An actor follows the client's IdolFigureSkeleton frame: setup pose before every
+// Apply, then the idol_face cheek/sweat hiding (see spineFramePose / spineFaceEffects).
+export function studioActorModel(fields) {
+  const model = { ...fields, faceSlots: faceEffectSlots(fields.spine.skeleton), faceFlags: null };
+  installNativeFramePose(fields.spine, () =>
+    hideFaceEffects(model.faceSlots, model.faceFlags),
+  );
+  return model;
+}
 export class StudioCompositionStage {
   constructor(container, { onSelect = () => {}, onTransform = () => {}, onInteraction = () => {} } = {}) {
     this.disposed = false;
@@ -292,16 +303,13 @@ export class StudioCompositionStage {
       const spine = result.spine;
       spine.name = row.instanceId;
       spine.autoUpdate = false;
-      const model = {
+      const model = studioActorModel({
         modelId: row.modelId,
         spine,
         textures,
         names: result.animNames,
-        neckBones: [],
-        neckSlots: [],
-        flags: {},
         row,
-      };
+      });
       this.actorInstances.set(row.instanceId, model);
       this.actorLayer.addChild(spine);
       this.setActorPose(row.instanceId, pose, face);
@@ -350,12 +358,11 @@ export class StudioCompositionStage {
       const command =
         face.commands.find((c) => c.type === "idol_face") ||
         pose.commands.find((c) => c.type === "idol_face");
-      model.flags = {
-        sweat: command?.values[4] === "汗",
-        blush: command?.values[5] === "チーク",
+      // IdolCommandData: idol_face [4] isSweatOff, [5] isCheekOff.
+      model.faceFlags = {
+        sweat_flag: command?.values[4],
+        blush_flag: command?.values[5],
       };
-      model.neckBones = [];
-      model.neckSlots = [];
       if (plan.neck) {
         const neck = spine.state.setAnimation(SPINE_TRACK.neck, plan.neck, false);
         neck.animation = neckOverlayAnimation(
@@ -365,20 +372,6 @@ export class StudioCompositionStage {
         neck.mixBlend = MixBlend.add;
         neck.mixDuration = 0;
         neck.trackTime = this.playing ? 0 : neck.animation.duration;
-        model.neckBones = [
-          ...new Set(
-            neck.animation.timelines
-              .map((t) => t.boneIndex)
-              .filter(Number.isInteger),
-          ),
-        ];
-        model.neckSlots = [
-          ...new Set(
-            neck.animation.timelines
-              .map((t) => t.slotIndex)
-              .filter(Number.isInteger),
-          ),
-        ];
       }
       model.presetKey = JSON.stringify([
         pose.label,
@@ -423,17 +416,8 @@ export class StudioCompositionStage {
   updateModel(model, delta) {
     this.recordWork("studioModelUpdateCount");
     const { spine } = model;
-    for (const index of model.neckBones)
-      spine.skeleton.bones[index]?.setToSetupPose();
-    for (const index of model.neckSlots)
-      if (spine.skeleton.slots[index]?.deform)
-        spine.skeleton.slots[index].deform.length = 0;
+    // The native frame pose resets the skeleton and hides cheek/sweat per Apply.
     spine.update(delta);
-    for (const slot of spine.skeleton.slots) {
-      if (/cheek/i.test(slot.data.name) && !model.flags.blush) slot.color.a = 0;
-      if (/^(swet|sweat)\b/i.test(slot.data.name) && !model.flags.sweat)
-        slot.color.a = 0;
-    }
     this.refreshActorPlacement(model);
   }
   setActorTransform(id, row) {
