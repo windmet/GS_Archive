@@ -22,7 +22,7 @@
 | 剧情 / ADV | PR #59 已合入 `master`（重编译候选工具 + 原生裸 wait 停顿，不含语料） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；晋升后才恢复翻译批次 |
 | 门户 portal | `portal/20261020-ux-audit`（PR #60，尚未合入；#56/#57/#58 已合入） | 盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定。启动 JS 预算只剩约 0.1 KB（204,677 / 204,800 gzip），下一个进启动 chunk 的功能要先拆分或由用户决定放宽 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，本轮同步 `origin/master` / `4d31a402`（#56–#59）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族、Sprite淡入公共语义检查。原片对照、32种无consumer粒子、旧悬灯9份partial仍开放 |
+| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，本轮同步 `origin/master` / `4d31a402`（#56–#59）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族、Sprite淡入公共语义检查。原片对照、30种无consumer粒子、旧悬灯9份partial仍开放 |
 
 舞台线同日加载进度：[编舞目录与逐编排分片](STAGE_CHOREOGRAPHY_SHARDS_20261020.md)已接入当前舞台；118份来源/轨道等价、156项门禁通过。新分片为本地派生资源，后续发布必须纳入目录引用的全部118片；本轮没有部署。其他全局大索引与加载预算仍待推进。
 
@@ -35,6 +35,8 @@
 舞台线已同步master #56–#59（`4d31a402`），合并记录见 [晚间同步](STAGE_MASTER_SYNC_EVENING_20261020.md)。[分片发布闭包门禁](STAGE_SHARD_PACKAGING_GATE_20261020.md)已覆盖3个目录和436份分片；旧分片保留在盘上但从新inventory排除，增量打包在创建输出前复核。冷加载/生产HTTP与GPU检查仍开放，本轮未部署。
 
 [舞台冷加载测量入口](STAGE_COLD_LOAD_MEASUREMENT_20261020.md)已支持4首代表曲、固定full/lite、场景就绪合同及就绪前CDP字节；失败与混构建样本不进中位数。源级回归与实际DOM正反例通过，尚未运行受控冷缓存新旧对比，没有新的耗时收益结论。
+
+[RED HOT BEAT!! 左右烟雾](NATIVE_REHOBE_SMOKE_20261020.md)已按原编舞接入现有 Noise 预览链路：20 秒烟雾可见，停止/倒回/切歌已验，仍保留 `noise_preview`。emitter 为 82 组 / 724 系统 / 95 纹理，consumer 分片为 201 片，三目录闭包 438 片；无 consumer 粒子 32→30，partial 资源 11→13。本批未部署。
 
 ## 未合入但保留的分支
 

@@ -156,6 +156,7 @@ def select_entries(index, mode, only=None):
     extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2','fx_in_strclb_starlight','fx_in_wtstry_glitter','fx_in_tkstp1_panel_1','fx_in_pavetl_crystal_1','fx_in_pavetl_crystal_2','fx_in_smlegg_crystal_1','fx_in_smlegg_crystal_2'}
     # Frozen source identities from the all-particle audit; no per-song visual parameters.
     extra.update(PROMOTIONS['assets'])
+    extra.update(PROMOTIONS.get('previewAssets',{}))
     return {k:v for k,v in index['assets'].items() if k in extra or k.startswith(('fx_in_rote77_','fx_in_tkstp1_linelight_','fx_in_plmask_incidentlight_','fx_in_infoct_Incidentlight_','fx_in_trhorz_','fx_in_swyrlv_incidentlight_'))}
 
 def extract(mode='current', only=None, partial=False):
@@ -182,6 +183,7 @@ def extract(mode='current', only=None, partial=False):
             except Exception as error:
                 models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=[],systems=[],deferred=[dict(source={'serializedFile':entry['bundle'],'pathId':None},reasons=[f'asset_inspect_failed: {error}'])],masks=[]);continue
             records.append(record);systems=[];deferred=[];distance_proof=None
+            asset_partial=partial or name in PROMOTIONS.get('previewAssets',{})
             if any(p.get('modules',{}).get('EmissionModule',{}).get('rateOverDistance',{}).get('scalar',0) for p in record['particles']):
                 try:distance_proof=stationary_distance_proof(record,env,a,choreography)
                 except (ValueError,KeyError):pass # Unproven motion stays explicitly deferred.
@@ -192,9 +194,9 @@ def extract(mode='current', only=None, partial=False):
                 if 'NoiseModule' in (p.get('modules') or {}):reasons.append('unity_noise_displacement')
                 ob=next((o for o in env.objects if str(o.path_id)==p.get('pathId')),None)
                 source=a.source_ref(ob) if ob else {k:p.get(k) for k in ['serializedFile','pathId']}
-                if reasons and not partial:deferred.append(dict(source=source,reasons=reasons));continue
+                if reasons and not asset_partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
-                    system=model(p,partial,bool(distance_proof))
+                    system=model(p,asset_partial,bool(distance_proof))
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')
@@ -218,6 +220,12 @@ def extract(mode='current', only=None, partial=False):
             if any(s.get('distanceRate') for s in systems):models[name]['distanceMotionProof']=distance_proof
             if name in PROMOTIONS['assets']:
                 w.require(not deferred and not any(s.get('partial') for s in systems) and len(systems)==PROMOTIONS['assets'][name]['systems'],'Promoted emitter source no longer passes the bounded profile: '+name)
+            if name in PROMOTIONS.get('previewAssets',{}):
+                expected=PROMOTIONS['previewAssets'][name]
+                w.require(not deferred and len(systems)==expected['systems'] and models[name]['bundleSha256']==expected['bundleSha256']
+                    and [s['source'] for s in systems]==expected['sources']
+                    and all(s.get('partial')==expected['partialMarkers'] and s.get('noise',{}).get('profile')=='native-high-curl-v1' for s in systems),
+                    'Preview emitter source or supported capability changed: '+name)
             for system in systems:
                 if system['maskTexture']:w.require(any(m['texture']==system['maskTexture'] for m in bound_masks),'Unbound per-particle mask')
     data=dict(schemaVersion=1,objectIndexSha256=w.sha(indexpath.read_bytes()),shaderBundleSha256=w.sha(depfile.read_bytes()),assets=models,textures=textures)

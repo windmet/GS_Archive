@@ -128,14 +128,14 @@ const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,80)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,82)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
 assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)
 assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreography binding/)
 const unproven=structuredClone(data)
 delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
 assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),720)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),724)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -241,8 +241,8 @@ assert.equal(data.assets.fx_in_swyrlv_leaf.deferred.length,0)
 assert.equal(data.assets.fx_in_swyrlv_leaf.systems.length,2)
 assert.ok(data.assets.fx_in_swyrlv_leaf.systems.some(s=>s.rotationX&&s.gravity))
 const partial=Object.values(data.assets).flatMap(m=>m.systems).filter(s=>s.partial)
-assert.equal(partial.length,28)
-assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,20)
+assert.equal(partial.length,32)
+assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,24)
 for(const s of partial.filter(s=>s.noise)) {
   assert.equal(s.noise.profile,'native-high-curl-v1')
   assert.equal(s.noise.octaveCount,1)
@@ -270,7 +270,7 @@ for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
   assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
   assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
 }
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,80)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,82)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const r of stretchProof.renderers) {
   const source=rawObjects.find(o=>o.asset===r.asset)
@@ -319,5 +319,26 @@ for(const [name,expected] of Object.entries(promotions.assets)) {
     assert.equal(sampleObjectEmitter(system,retire,0,0).length,0,`${name}: retained particles after stop`)
   }
 }
+// RED HOT BEAT smoke remains explicitly partial; bind all four native source trees.
+assert.equal(Object.keys(promotions.previewAssets).length,2)
+for(const [name,expected] of Object.entries(promotions.previewAssets)) {
+  const model=data.assets[name]
+  assert.equal(model.bundleSha256,expected.bundleSha256)
+  assert.equal(model.systems.length,expected.systems)
+  assert.deepEqual(model.systems.map(s=>s.source),expected.sources)
+  assert.deepEqual(model.deferred,[])
+  assert.ok(rawObjects.some(o=>o.asset===name),'RAW source record is required')
+  for(const system of model.systems) {
+    assert.deepEqual(system.partial,expected.partialMarkers)
+    assert.equal(system.noise.profile,'native-high-curl-v1')
+    const active=sampleObjectEmitter(system,20000,11000,24900)
+    assert.ok(active.length>0,`${name}: visible at requested 20-second position`)
+    assert.ok(sampleObjectEmitter(system,25000,11000,24900).length>0,'StopEmitting keeps existing smoke alive')
+    assert.equal(sampleObjectEmitter(system,26000,11000,24900).length,0,'Smoke retires before object hide completes at 27900')
+    assert.deepEqual(sampleObjectEmitter(system,20000,11000,24900),active,'Rewind after stop must recover smoke')
+    assert.deepEqual(sampleObjectEmitter(structuredClone(system),20000,11000,24900),active,'Cold seek and cached rewind agree')
+    assert.ok(sampleObjectEmitter(system,67000,66300,73050).length>0,'Later activation must emit again')
+  }
+}
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 80 provenance-bound resources / 720 consumed (28 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
+console.log('Object emitters: 82 provenance-bound resources / 724 consumed (32 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
