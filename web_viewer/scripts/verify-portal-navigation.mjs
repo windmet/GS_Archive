@@ -286,6 +286,8 @@ assert.deepEqual(drawerSource.match(/ARCHIVE_SECTIONS(?:\[[^\]]+\]\?\.\w+)?/g), 
 assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
 assert.doesNotMatch(drawerSource.split('<script')[0], /group\.label|<h2/, 'the drawer draws no group titles; each icon is labelled')
 assert.match(drawerSource, /props\.groups\.filter\(group => \(TIER_OF_GROUP\[group\.id\] \|\| 'core'\) === id\)/, 'every drawer tier is cut from the sidebar groups')
+// 图鉴 names run two to four characters; filled cells carry the column lines instead of the ragged text.
+assert.match(drawerSource, /\.archive-drawer \.is-collection button \{[^}]*background: var\(--gs-paper\)/, '图鉴 rows sit in filled cells so uneven names do not skew the columns')
 assert.match(drawerSource, /const TIER_OF_GROUP = \{ collection: 'collection', live: 'tools', studio: 'tools', resources: 'footer' \}/, 'catalogues, 图鉴, tools and the maintainer page each have their tier')
 // The tools are players and editors, not lists: cards that say what they open, from the dictionary.
 assert.match(drawerSource, /<span v-if="tier\.id === 'tools'" class="archive-drawer-tool-copy"><b>\{\{ item\.label \}\}<\/b><small v-if="item\.blurb">\{\{ item\.blurb \}\}<\/small><\/span>/, 'tool cards carry a name and a one-line description')

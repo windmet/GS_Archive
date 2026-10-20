@@ -96,7 +96,7 @@ onMounted(() => {
 .archive-drawer-items { display: grid; gap: var(--gs-space-1); }
 .archive-drawer-items + .archive-drawer-items { margin-top: var(--gs-space-3); padding-top: var(--gs-space-3); border-top: 1px solid var(--gs-line); }
 .archive-drawer-items.is-core { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.archive-drawer-items.is-collection { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.archive-drawer-items.is-collection { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gs-space-2); }
 .archive-drawer-items.is-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-2); }
 .archive-drawer button {
   display: flex;
@@ -118,6 +118,9 @@ onMounted(() => {
 .archive-drawer button svg { flex: none; color: var(--gs-ink-2); }
 /* Catalogue tiles: icon over label. */
 .archive-drawer .is-core button { flex-direction: column; justify-content: center; gap: var(--gs-space-1); min-height: 64px; padding: var(--gs-space-2) 0; }
+/* 图鉴 rows: names run two to four characters, so each sits in a filled cell; the cells' edges, not the
+   ragged text, carry the column lines, and they share the sheet's outer edges with the tool cards below. */
+.archive-drawer .is-collection button { padding: 0 var(--gs-space-3); background: var(--gs-paper); }
 /* Tool cards: a tinted glyph, the name, and what it opens. */
 .archive-drawer .is-tools button { gap: var(--gs-space-2); min-height: 60px; padding: var(--gs-space-2) var(--gs-space-3); border: 1px solid var(--gs-line); background: var(--gs-paper); }
 .archive-drawer .is-tools .archive-drawer-icon { box-sizing: content-box; padding: 6px; border-radius: var(--gs-radius-control); background: var(--gs-mint-wash); color: var(--gs-mint-ink); }
