@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import {
-  advHorizontalSqueeze, advStageUnit, advToScreen, advVisibleWidth, backgroundScreenSize, idolSlotPosition, skeletonFigureScreen, textureFigureScreen,
+  advHorizontalSqueeze, advStageUnit, advToScreen, advVisibleWidth, backgroundPanelRect, backgroundScreenSize, idolSlotPosition, skeletonFigureScreen, textureFigureScreen,
 } from '../shared/story/AdvStageLayout.js'
 
 const root = new URL('..', import.meta.url)
@@ -14,19 +14,41 @@ const viewHeight = 2 * 4.347826 * 72
 close(advStageUnit(1280, 720), 720 / viewHeight, '16:9')
 close(advStageUnit(2560, 720), 720 / viewHeight, 'wider keeps the height')
 close(advStageUnit(720, 720), 720 / (viewHeight * 16 / 9), 'narrower keeps the 16:9 width')
-// Portrait has no native rule: the visible width narrows continuously from the 16:9 width (aspect 1) to 620 (1:2).
+// Portrait has no native rule: the visible width narrows continuously from the 16:9 width (aspect 1) to 496 (1:2),
+// the 1.25x upper-body framing of 620.
 close(advVisibleWidth(1), viewHeight * 16 / 9, 'square keeps the native width')
 assert.ok(Math.abs(advVisibleWidth(0.999999) - advVisibleWidth(1)) < 0.01, 'continuous at square')
-close(advVisibleWidth(0.5), 620, 'narrowest')
-close(advVisibleWidth(0.3), 620, 'clamped')
-close(advStageUnit(390, 844), 390 / (620 + (viewHeight * 16 / 9 - 620) * Math.max(0, (390 / 844 - 0.5) / 0.5)), 'phone portrait')
+close(advVisibleWidth(0.5), 496, 'narrowest')
+close(advVisibleWidth(0.3), 496, 'clamped')
+close(advStageUnit(390, 844), 390 / (496 + (viewHeight * 16 / 9 - 496) * Math.max(0, (390 / 844 - 0.5) / 0.5)), 'phone portrait')
 assert.ok(advStageUnit(390, 844) > 390 / (viewHeight * 16 / 9), 'portrait figures are larger than the 16:9 width fit')
 close(advHorizontalSqueeze(1280, 720), 1, 'landscape not squeezed')
 close(advHorizontalSqueeze(720, 720), 1, 'square not squeezed')
-close(advHorizontalSqueeze(390, 844), 620 / (viewHeight * 16 / 9), 'portrait squeeze')
-close(advToScreen(390, 844, 350, 0).x, 195 + 350 * advStageUnit(390, 844) * advHorizontalSqueeze(390, 844), 'portrait x squeezed')
+close(advHorizontalSqueeze(390, 844), 496 / (viewHeight * 16 / 9), 'portrait squeeze')
+// Slot offsets do not grow with the figures: +-x lands where a 16:9-width fit puts it.
+close(advToScreen(390, 844, 350, 0).x, 195 + 350 * 390 / (viewHeight * 16 / 9), 'portrait x squeezed')
 assert.ok(advToScreen(390, 844, 350, 0).x < 390, 'a +-350 slot stays on a phone screen')
 assert.deepEqual(advToScreen(1280, 720, 0, 0), { x: 640, y: 360 })
+// Portrait figures grow down from the native view's top edge, which stays at its square-screen place (7/32 of
+// the height), so their cut-off lower edge passes below the screen instead of hanging in view.
+close(advToScreen(720, 720, 0, 0).y, 360, 'square stays centred')
+close(advToScreen(720, 720, 0, viewHeight / 2).y, 720 * 7 / 32, 'square view top')
+assert.ok(Math.abs(advToScreen(999.999, 1000, 0, 0).y - 500) < 0.01, 'continuous at square')
+for (const [width, height] of [[600, 800], [390, 780], [400, 800], [390, 844], [320, 740]]) {
+  close(advToScreen(width, height, 0, viewHeight / 2).y, height * 7 / 32, `${width}x${height} view top fixed`)
+}
+// Down to 1:2 the screen bottom never reaches lower into the canvas than on a square screen (-16:9 width / 2),
+// where figures' cut-off edges already sit below it; the centred placement at 620 reached past it and showed them.
+const bottomCanvasY = (width, height) => (advToScreen(width, height, 0, 0).y - height) / advStageUnit(width, height)
+for (const [width, height] of [[600, 800], [390, 780], [400, 800]]) {
+  assert.ok(bottomCanvasY(width, height) >= -viewHeight * 16 / 9 / 2 - 1e-9, `${width}x${height} screen bottom ${bottomCanvasY(width, height)}`)
+}
+// The background panel stays centred on the canvas origin and still covers the whole screen.
+for (const [width, height] of [[1280, 720], [2560, 720], [720, 720], [600, 800], [390, 844], [320, 740]]) {
+  const rect = backgroundPanelRect(width, height)
+  close(rect.y + rect.height / 2, advToScreen(width, height, 0, 0).y, `${width}x${height} panel centre`)
+  assert.ok(rect.x <= 1e-9 && rect.y <= 1e-9 && rect.x + rect.width >= width - 1e-9 && rect.y + rect.height >= height - 1e-9, `${width}x${height} panel covers`)
+}
 
 // IdolCharacter under NotChangedPriority (0, -50): idol_position + idol_zoom position.
 assert.deepEqual(idolSlotPosition({ posX: -200, posY: 10, zoomX: 5, zoomY: -50 }), { x: -195, y: -90 })
