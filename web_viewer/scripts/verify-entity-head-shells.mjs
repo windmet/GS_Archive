@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
-import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -31,8 +31,11 @@ const attr = (html, selector) => html.match(new RegExp(`<${selector} content="([
 function checkShells(shells, { idols, cards = [], songs = [], events = [], gashas = [], sections = false, origin, sourceTemplate }) {
   const unitCodes = [...new Set(idols.map(idol => idol.unitCode).filter(Boolean))]
   const sectionCount = sections ? ARCHIVE_SECTION_PATHS.length : 0
-  assert.equal(shells.length, idols.length + unitCodes.length + cards.length + songs.length + events.length + gashas.length + sectionCount,
-    'one shell per idol, unit, card, song, event, gasha and section root')
+  const offices = idols.filter(idol => idol.home_available !== false)
+  assert.equal(shells.length, idols.length + offices.length + idols.length + unitCodes.length + cards.length + songs.length + events.length + gashas.length + sectionCount,
+    'one shell per idol, office, mobile page, unit, card, song, event, gasha and section root')
+  assert.deepEqual(shells.filter(s => s.kind === 'office').map(s => s.path).sort(), offices.map(i => `office/${i.id}/index.html`).sort())
+  assert.deepEqual(shells.filter(s => s.kind === 'mobile').map(s => s.path).sort(), idols.map(i => `mobile/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'gasha').map(s => s.path).sort(), gashas.map(g => `gashas/${g.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'section').map(s => s.path).sort(), sections ? ARCHIVE_SECTION_PATHS.map(p => `${p}/index.html`).sort() : [])
   assert.deepEqual(shells.filter(s => s.kind === 'event').map(s => s.path).sort(), events.map(e => `events/${eventPathSegment(e.id)}/index.html`).sort())
@@ -63,7 +66,7 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
     { id: '001tom', name: '天ヶ瀬 冬馬', unitCode: '01jup', unitName: 'Jupiter' },
     { id: '002sht', name: '御手洗 翔太', unitCode: '01jup', unitName: 'Jupiter' },
     { id: '090xss', name: 'A<b>&"c\'', unitCode: '99tst', unitName: 'T&<U>' },
-    { id: '091nou', name: '無所属' },
+    { id: '091nou', name: '無所属', home_available: false },
   ]
   const shells = renderEntityHeadShells({ template, idols, idolNames: { '001tom': '天濑冬马' }, origin: 'https://example.test/' })
   checkShells(shells, { idols, origin: 'https://example.test', sourceTemplate: template })
@@ -77,6 +80,13 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   const unsafe = shells.find(s => s.id === '090xss').html
   assert.ok(!unsafe.includes('A<b>') && unsafe.includes(escapeHtml('A<b>&"c\'')), 'names are escaped')
   assert.ok(shells.find(s => s.id === '99tst').html.includes('<title>T&amp;&lt;U&gt; · GS Archive</title>'))
+  // An idol's 事务所 and 通信 carry the idol and the section; an idol the home does not list has no office.
+  const place = kind => shells.find(s => s.kind === kind && s.id === '001tom').html
+  assert.ok(place('office').includes('<title>天濑冬马 · 事务所 · GS Archive</title>') && place('office').includes('content="天濑冬马的事务所：'))
+  assert.ok(place('mobile').includes('<title>天濑冬马 · 通信 · GS Archive</title>') && place('mobile').includes('content="天濑冬马的通信：'))
+  assert.ok(place('office').includes('https://example.test/assets/idols/icons/image_chara_icon_001tom.png'))
+  assert.ok(!shells.some(s => s.kind === 'office' && s.id === '091nou') && shells.some(s => s.kind === 'mobile' && s.id === '091nou'))
+  assert.ok(shells.find(s => s.kind === 'mobile' && s.id === '090xss').html.includes(`<title>${escapeHtml(idols[2].name)} · 通信 · GS Archive</title>`), 'place names are escaped')
   const jup = shells.find(s => s.id === '01jup').html
   assert.ok(jup.includes('Jupiter（天濑冬马、御手洗 翔太）的成员'), 'units list their members by display name')
   assert.throws(() => renderEntityHeadShells({ template: template.replace('<title>', '<title>x</title><title>'), idols }), /exactly one <title>/)
@@ -156,6 +166,9 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   assert.equal(archiveCardName('起跑线', ''), '', 'a card without its idol name has no title yet')
   assert.equal(archiveDocumentTitle('idol_detail', ''), null, 'no name yet keeps the current (shell) title')
   assert.equal(archiveDocumentTitle('gasha_detail', 'Growing Twilight Live招募'), 'Growing Twilight Live招募 · GS Archive')
+  assert.equal(archiveDocumentTitle('home', archiveIdolPlaceName('home', '天濑冬马')), '天濑冬马 · 事务所 · GS Archive')
+  assert.equal(archiveDocumentTitle('mobile_archive', archiveIdolPlaceName('mobile_archive', '天濑冬马')), '天濑冬马 · 通信 · GS Archive')
+  assert.equal(archiveDocumentTitle('home', archiveIdolPlaceName('home', '')), null, 'no idol name yet keeps the current (shell) title')
   // Section roots carry their section name, as their shells do; other pages keep the site title.
   assert.equal(archiveDocumentTitle('cards'), '卡片 · GS Archive')
   assert.equal(archiveDocumentTitle('collection_catalog', '称号'), '称号 · GS Archive')
@@ -183,6 +196,15 @@ const sources = loadEntitySources(root)
   assert.equal(sources.events.length, 59)
   assert.equal(sources.events.filter(event => /^4[0-9]{5}$/.test(event.id)).length, 36)
   assert.ok(sources.events.every(event => event.image), 'every event has a banner or a logo')
+  // Every idol's 事务所 and 通信 path reads as that page and its shell is titled as the app titles it.
+  for (const [kind, view, param] of [['office', 'home', 'homeIdol'], ['mobile', 'mobile_archive', 'idol']]) {
+    for (const idol of sources.idols) {
+      const route = readArchiveRoute(`http://x/${kind}/${idol.id}/`, { history: false })
+      assert.equal(route.view, view, `${kind}/${idol.id}`); assert.equal(route[param], idol.id, `${kind}/${idol.id}`)
+      const shell = shells.find(s => s.kind === kind && s.id === idol.id)
+      assert.ok(shell.html.includes(`<title>${escapeHtml(archiveDocumentTitle(view, archiveIdolPlaceName(view, sources.idolNames[idol.id])))}</title>`), `${kind}/${idol.id}`)
+    }
+  }
 }
 
 // Gashas: the 61 read-model announcements and the 25 ticket-only pools, each at the path its page publishes.

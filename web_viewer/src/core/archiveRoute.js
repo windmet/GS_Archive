@@ -617,6 +617,9 @@ const PUBLIC_PATH_ROUTES = Object.freeze([
     fromPath: segment => segment.length === 5 ? `event:${segment}` : segment, toPath: id => id.replace(/^event:(?=[0-9]{5}$)/, '') }),
   // Gashas: announcement ids (210003, 1300012, 12007210) and ticket-only pools (ticket-<16 hex>).
   Object.freeze({ view: 'gasha_detail', prefix: 'gashas', param: 'gasha', implied: {}, pattern: /^([0-9]{6,8}|ticket-[0-9a-f]{16})$/ }),
+  // An idol's 事务所 and 通信 are addressed by the idol; the cue and costume, or the mode, unit and open call, stay in the query.
+  Object.freeze({ view: 'home', prefix: 'office', param: 'home_idol', implied: {}, pattern: /^[0-9]{3}[a-z]{3}$/ }),
+  Object.freeze({ view: 'mobile_archive', prefix: 'mobile', param: 'idol', implied: {}, pattern: /^[0-9]{3}[a-z]{3}$/ }),
 ])
 
 // Section roots: a catalogue's own address is its section path (/cards/); its filters stay in the query
