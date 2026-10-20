@@ -1,5 +1,6 @@
 // 关于本站 (?view=about) 的全部文字。只改这个文件即可更新页面；页面布局在
-// components/archive/ArchiveAbout.vue。段落是纯文本，空行分段；链接的 url 留空时页面显示「待补充」。
+// components/archive/ArchiveAbout.vue。段落是纯文本，空行分段。以【待填写开头的段落和 url 留空的链接只在维护者模式（?maintainer=1）
+// 显示（链接显示「待补充」）；读者看不到，整节都没内容时整节隐藏。
 
 export const ABOUT_CONTENT = {
   title: '关于本站',

@@ -12,7 +12,7 @@
 
 
       <section ref="searchPanel" class="overview-search" @keydown.esc.prevent="searchOpen = false" aria-labelledby="portal-search-title">
-        <h2 id="portal-search-title" class="overview-visually-hidden">搜索核心档案</h2>
+        <h2 id="portal-search-title" class="overview-visually-hidden">搜索全站档案</h2>
         <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; emit('search', query)">
           <Search :size="21" aria-hidden="true" />
           <input id="portal-global-search" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
@@ -38,7 +38,7 @@
               </ul>
             </section>
           </template>
-          <p v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-status" role="status">{{ query.trim() ? '没有找到匹配的核心档案。试试名称或关键词。' : '搜索全站的偶像、卡片、歌曲与故事。' }}</p>
+          <p v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-status" role="status">{{ query.trim() ? '没有找到相关内容，试试名称或关键词。' : '搜索全站的偶像、卡片、歌曲与故事。' }}</p>
         </div>
       </section>
       <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
@@ -62,7 +62,7 @@
       <section v-if="!preferredReference?.actionable" class="overview-panel overview-unit-hub" aria-labelledby="portal-units-title">
         <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length || unitPlaceholderCount || '' }} 个组合</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
         <div class="overview-unit-matrix"><article v-for="unit in desktopOverview.units || []" :key="unit.id" class="overview-unit-tile" :style="{'--unit-color':unit.color}">
-          <button type="button" class="overview-unit-logo" :aria-label="`打开组合 ${unit.title}`" :data-archive-focus-id="`portal-unit:${unit.id}`" @click="emit('open-result', unit)"><img :src="getUnitLogoUrl(unit.id)" :alt="unit.title" loading="lazy" /></button>
+          <button type="button" class="overview-unit-logo" :aria-label="`打开组合 ${unit.title}`" :data-archive-focus-id="`portal-unit:${unit.id}`" @click="emit('open-result', unit)"><span class="overview-unit-title" aria-hidden="true">{{ unit.title }}</span><img v-if="!failedUnitLogos.has(unit.id)" :src="getUnitLogoUrl(unit.id)" :alt="unit.title" decoding="async" @error="failedUnitLogos.add(unit.id)" /></button>
           <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :size="28" :ring-width="0" decorative /></button></div>
         </article><article v-for="n in unitPlaceholderCount" :key="`unit-placeholder-${n}`" class="overview-unit-tile is-placeholder" aria-hidden="true"></article></div>
       </section>
@@ -133,7 +133,7 @@
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
@@ -237,6 +237,8 @@ const heroStyle = computed(() => {
   }
 })
 const unitLogoFailed = ref(false)
+// Unit tiles whose logo failed keep the name in its place instead of a broken-image mark.
+const failedUnitLogos = reactive(new Set())
 watch(unitLogoUrl, () => { unitLogoFailed.value = false })
 function formatCount(value) { return typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN') : '—' }
 function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols: '偶像', stories: '故事' }[domain] || '档案' }
@@ -369,7 +371,11 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-unit-tile { position:relative;container:unit-tile / inline-size;min-width:0;height:100px;overflow:hidden;border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface)); }
 .overview-unit-tile.is-placeholder { --unit-color:var(--gs-ink-3); }
 .overview-unit-logo { display:grid;place-items:center;width:100%;height:100%;padding:10px 12px 40px;border:0;border-radius:inherit;background:transparent; }
-.overview-unit-logo img { width:100%;height:100%;max-width:118px;object-fit:contain; }
+.overview-unit-logo img { grid-area:1 / 1;width:100%;height:100%;max-width:118px;object-fit:contain; }
+/* The unit name holds the logo's place until the logo arrives (imageReveal keeps it transparent
+   till then), so a cold first screen reads as sixteen named units rather than empty frames. */
+.overview-unit-title { grid-area:1 / 1;max-width:100%;overflow:hidden;color:color-mix(in srgb,var(--unit-color) 55%,var(--gs-ink));font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);text-overflow:ellipsis;white-space:nowrap;transition:opacity var(--gs-motion-enter) var(--gs-ease-out); }
+.overview-unit-logo:has(img[data-gs-loaded]) .overview-unit-title { opacity:0; }
 .overview-unit-members { position:absolute;right:0;bottom:8px;left:0;display:flex;justify-content:center;gap:3px; }
 .overview-unit-members button { padding:0;border:0;border-radius:50%;background:transparent; }
 /* Members sit side by side while they fit; a narrow tile with four or more overlaps them. */
