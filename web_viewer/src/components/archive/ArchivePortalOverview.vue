@@ -388,8 +388,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
 .overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
-.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
-.overview-story-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui);white-space:nowrap; }
+.overview-story-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
 .overview-story-tabs small { margin-left:var(--gs-space-2);color:inherit;opacity:.75;font-variant-numeric:tabular-nums; }
 
 /* Rows: picture, title and one line of meta, split by hairlines; the whole row opens. */

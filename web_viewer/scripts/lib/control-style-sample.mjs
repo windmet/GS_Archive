@@ -4,8 +4,9 @@
 
 // Role -> selector. Text and icon buttons are split in the page by whether they carry text.
 export const CONTROL_ROLES = {
-  button: 'button:not([role=tab]), [role=button]:not([role=tab])',
-  tab: '[role=tab]',
+  button: 'button:not([role=tab]):not([aria-pressed]), [role=button]:not([role=tab]):not([aria-pressed])',
+  // Tabs, segments and filter chips: anything that shows a chosen state.
+  tab: '[role=tab], button[aria-pressed]',
   search: 'input[type=search]',
   field: 'input[type=text], input:not([type]), textarea',
   select: 'select',
