@@ -34,6 +34,15 @@ class ScenarioCompiler(ScenarioFileIO):
     Walks Command array, dispatches by Type, snapshots on dialogue.
     """
 
+    # Client cuts (native_cuts.py). A cut that yields no step but holds a wait
+    # keeps the screen for that long: post_wait on the step before it, or
+    # pre_wait on the next step when the cut opens a part or a jump label.
+    _cut_has_step = False
+    _part_has_step = False
+    _cut_wait = 0.0
+    _cut_label = False
+    _pending_pre_wait = 0.0
+
     LIPSYNC_ROOT = os.environ.get(
         "SIDEM_LIPSYNC_ROOT",
         r"E:\BaiduNetdiskDownload\SideM\scripts\lipsyncdata\adxlip",
@@ -103,14 +112,6 @@ class ScenarioCompiler(ScenarioFileIO):
         self._pending_parts_visible: dict[str, bool] = {}
         self._pending_fadeout_ids: set[str] = set()
         self._pending_bg_effect_end_ids: set[str] = set()
-        # Client cuts (native_cuts.py). A cut that yields no step but holds a
-        # wait keeps the screen for that long: post_wait on the step before it,
-        # or pre_wait on the next step when the cut opens a part or a jump label.
-        self._cut_step_mark: int = 0
-        self._part_step_mark: int = 0
-        self._cut_wait: float = 0.0
-        self._cut_label: bool = False
-        self._pending_pre_wait: float = 0.0
         # StoryView audio path per channel when the compile unit authors that row type;
         # compile_group re-evaluates these over all parts.
         self._story_view_bgm: bool = authors_story_audio([raw_data], "bgm")
@@ -331,25 +332,25 @@ class ScenarioCompiler(ScenarioFileIO):
 
     def _close_native_cut(self):
         wait = self._cut_wait
-        if wait > 0 and len(self.steps) == self._cut_step_mark and self._pending_selection is None:
+        if wait > 0 and not self._cut_has_step:
             # Later wait cuts behind the same label still precede the step it jumps to.
-            if self._cut_label or self._pending_pre_wait or len(self.steps) == self._part_step_mark:
+            if self._cut_label or self._pending_pre_wait or not self._part_has_step:
                 self._pending_pre_wait += wait
             else:
                 previous = self.steps[-1]
                 previous["post_wait"] = round(previous.get("post_wait", 0.0) + wait, 3)
-        self._cut_step_mark = len(self.steps)
+        self._cut_has_step = False
         self._cut_wait = 0.0
         self._cut_label = False
 
     def _begin_native_part(self):
-        self._part_step_mark = self._cut_step_mark = len(self.steps)
+        self._part_has_step = self._cut_has_step = False
         self._cut_wait = 0.0
         self._cut_label = False
 
     def _end_native_part(self):
         self._close_native_cut()
-        if self._pending_pre_wait and len(self.steps) > self._part_step_mark:
+        if self._pending_pre_wait and self._part_has_step:
             # A hold after the part's last step with no later step to enter.
             last = self.steps[-1]
             last["post_wait"] = round(last.get("post_wait", 0.0) + self._pending_pre_wait, 3)
@@ -1368,6 +1369,9 @@ class ScenarioCompiler(ScenarioFileIO):
             },
         }
         self.steps.append(step)
+        # The choice belongs to the selection's own cut, which already closed;
+        # a wait behind the branch labels still precedes the branch.
+        self._part_has_step = True
         self._pending_selection = None
         self._pending_choice_count += 1
 
@@ -1752,6 +1756,7 @@ class ScenarioCompiler(ScenarioFileIO):
             "evidence": self._step_evidence(),
         }
 
+        self._cut_has_step = self._part_has_step = True
         if self._pending_pre_wait:
             step["pre_wait"] = round(self._pending_pre_wait, 3)
             self._pending_pre_wait = 0.0

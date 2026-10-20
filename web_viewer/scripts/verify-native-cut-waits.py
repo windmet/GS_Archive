@@ -62,6 +62,27 @@ steps = ScenarioCompiler({'Command': talk}, 'fixture').compile()['steps']
 got = [(step['type'], step.get('pre_wait'), step.get('post_wait')) for step in steps]
 assert got == [('talk', 0.5, 2.0), ('talk', None, 3.0)], got
 
+# Branch labels after a talk choice: the wait behind them precedes the branch,
+# whichever option jumped there (2_3_001_01_09_a).
+branch = [{'Type': 'talk_start', 'Values': ['1', '1']},
+          {'Type': 'talk_text', 'Values': ['speaker', 'm1', '001tom', '0']}, wait(2),
+          {'Type': 'talk_select', 'Values': ['sel1', 'a', 'answer a']},
+          {'Type': 'talk_select', 'Values': ['sel2', 'b', 'answer b']},
+          {'Type': 'jump_point', 'Values': ['sel1']}, {'Type': 'jump_point', 'Values': ['sel2']}, wait(2),
+          {'Type': 'talk_text', 'Values': ['speaker', 'm2', '001tom', '2']}, wait(2),
+          {'Type': 'talk_end', 'Values': []}]
+steps = ScenarioCompiler({'Command': branch}, 'fixture').compile()['steps']
+got = [(step['type'], step.get('pre_wait'), step.get('post_wait')) for step in steps]
+assert got == [('talk', None, 2.0), ('choice', None, None), ('talk', 2.0, 2.0)], got
+
+# A wait straight after the options (no label) holds every branch after the choice.
+steps = ScenarioCompiler({'Command': branch[:5] + [wait(1)] + branch[8:]}, 'fixture').compile()['steps']
+got = [(step['type'], step.get('pre_wait'), step.get('post_wait')) for step in steps]
+assert got == [('talk', None, 2.0), ('choice', None, 1.0), ('talk', None, 2.0)], got
+steps = ScenarioCompiler({'Command': [branch[0], *branch[3:5], wait(1), *branch[8:]]}, 'fixture').compile()['steps']
+got = [(step['type'], step.get('pre_wait'), step.get('post_wait')) for step in steps]
+assert got == [('choice', None, 1.0), ('talk', None, 2.0)], 'a part opening with a choice has a step to hold'
+
 # Each part of a group starts its own cut list: a trailing wait stays in its part.
 group = ScenarioCompiler.compile_group([
     {'Command': [bg, text('a1'), wait(0.75)]},
