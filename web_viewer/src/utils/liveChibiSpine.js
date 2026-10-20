@@ -31,6 +31,7 @@ import { validatePenlightData } from '../core/chibiPenlights.js'
 import { NATIVE_MOUTH_CLOSED_RATE, validateMouthFixData } from '../core/chibiMouthFix.js'
 import { validateMotionOffsetData } from '../core/chibiMotionOffset.js'
 import { validateMotionClock } from '../core/chibiMotionClock.js'
+import { validateOriginalLineups } from '../core/chibiOriginalLineups.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -92,6 +93,7 @@ async function liveJson(relativePath, options={}, optional=false) {
   catch(error) {if(error.status===404 && optional)return null; if(error.name!=='AbortError')indexTransport.invalidate(url); throw error}
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
+export const fetchLiveChibiOriginalLineups = async options => validateOriginalLineups((await indexTransport.load('/data/stage-original-lineups.json',options)).data)
 export async function fetchLiveChibiChoreography(file,{signal,sharded=false}={}) {
   if(sharded)return (await loadChoreographyCatalog(indexTransport,file,{signal})).index
   const [text,spotlights,wholeScreen,searchlights]=await Promise.all([

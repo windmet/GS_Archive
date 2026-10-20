@@ -5,8 +5,9 @@ import {createHash} from 'node:crypto'
 import {validateChoreographyCatalog} from '../../src/core/chibiChoreographyShards.js'
 import {validateStageEffectCatalog} from '../../src/core/chibiStageEffectShards.js'
 import {validateConsumerCatalog} from '../../src/core/chibiConsumerShards.js'
+import {validateOriginalLineups} from '../../src/core/chibiOriginalLineups.js'
 
-const catalogKeys=['data/stage-choreography-shards.json','data/stage-effect-shards.json','data/stage-consumer-shards.json']
+const catalogKeys=['data/stage-choreography-shards.json','data/stage-effect-shards.json','data/stage-consumer-shards.json','data/stage-original-lineups.json']
 const prefixes=['assets/live-chibi/choreography/shards/','assets/live-chibi/stage-effects/shards/','assets/live-chibi/consumer-shards/']
 export const isStageShardKey=key=>prefixes.some(prefix=>key.startsWith(prefix))
 export const requiresStageShardValidation=inventory=>Object.hasOwn(inventory,'stage_shards')
@@ -24,6 +25,7 @@ export async function loadStageShardClosure(publicRoot) {
     catalogs.push(data)
   }
   const [choreography,effects,consumers]=catalogs
+  validateOriginalLineups(catalogs[3])
   validateChoreographyCatalog(choreography,'choreography/index.json')
   validateStageEffectCatalog(effects);validateConsumerCatalog(consumers)
   for(const catalog of [effects,consumers]) {

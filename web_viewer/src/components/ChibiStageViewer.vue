@@ -278,7 +278,7 @@
             </div>
 
             <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
-            <small class="lineup-note">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSlotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+            <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
             <!-- Who is heard: the official mix, or each formation idol's own part following SwitchSinger. -->
             <div v-if="stageVocalAvailable" class="lineup-vocal">
               <label class="camera-toggle"><input v-model="stageVocalEnabled" type="checkbox" :disabled="booting" @change="handleStageVocalToggle" /><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span></label>
@@ -547,6 +547,7 @@ import {
   X,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
+import { originalMemberSelection } from '../core/chibiOriginalLineups.js'
 import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import {
   LIVE_CHIBI_BASE,
@@ -555,6 +556,7 @@ import {
   destroyLiveChibi,
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
+  fetchLiveChibiOriginalLineups,
   fetchLiveChibiSongChoreography,
   fetchLiveChibiPenlights,
   fetchLiveChibiMouthFix,
@@ -1053,7 +1055,9 @@ const activePositions = computed(() => {
 const activeSlots = computed(() => lineup.value.filter(slot => activePositions.value.includes(slot.position)))
 const loadedPositions = computed(() => activePositions.value.filter(position => runtimes.has(position)))
 const editingSlot = computed(() => activeSlots.value.find(slot => slot.position === selectedPosition.value) || activeSlots.value[0] || null)
-const originalStageLineup = computed(() => buildOriginalStageLineup(selectedSong.value, props.originalPerformers, characters.value, props.idolDirectory, { slotOrdered: props.originalSlotOrdered }))
+const nativeOriginalLineups = shallowRef(null)
+const originalSelection = computed(() => originalMemberSelection(selectedSong.value, nativeOriginalLineups.value, props.originalPerformers, props.originalSlotOrdered))
+const originalStageLineup = computed(() => buildOriginalStageLineup(selectedSong.value, originalSelection.value.codes, characters.value, props.idolDirectory, originalSelection.value))
 const sharedQuickCostumes = computed(() => universalStageCostumes(characters.value, props.idolDirectory))
 const costumeSyncPlan = computed(() => editingSlot.value ? planStageCostumeSync(
   lineup.value, characters.value, activePositions.value, editingSlot.value.characterId, editingSlot.value.costumeId,
@@ -1256,13 +1260,15 @@ onMounted(async () => {
     if (stageDisposed) return
     // Native speed is required for both initial poses and transport. Missing
     // clocks must not silently render an assumed BPM/timeScale=1.
-    const [clock,music]=await Promise.all([
+    const [clock,music,originalLineups]=await Promise.all([
       fetchLiveChibiMotionClock(manifest.value.choreography.index,{signal:lifetime.signal,binding:choreography.value}),
       fetchLiveChibiMusicIndex({signal:lifetime.signal}),
+      fetchLiveChibiOriginalLineups({signal:lifetime.signal}),
     ])
     if (stageDisposed) return
     motionClockData.value=clock
     musicIndex.value=music
+    nativeOriginalLineups.value=originalLineups
     if (MAINTAINER) {
       commandInventoryState.value = 'loading'
       void fetchLiveChibiCommandInventory(manifest.value.choreography.index, {signal:lifetime.signal,binding:choreography.value})

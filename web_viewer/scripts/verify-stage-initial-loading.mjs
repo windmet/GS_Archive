@@ -7,18 +7,19 @@ const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve
 const flush=()=>new Promise(resolve=>setImmediate(resolve))
 const ref=value=>({value})
 function fixture(){
-  const jobs=Object.fromEntries(['manifest','catalog','clock','music','song','lighting','penlight','objects','lipsync'].map(k=>[k,deferred()]))
+  const jobs=Object.fromEntries(['manifest','catalog','clock','music','originals','song','lighting','penlight','objects','lipsync'].map(k=>[k,deferred()]))
   const starts=[],errors=[],song={id:'drvalv_live_effect',songCode:'drvalv'},catalog={songs:[song]}
   let mountedPromise
   const c={Promise,Map,JSON,handleStageShortcut(){},window:{addEventListener(){}},nextTick:async()=>{},stageDisposed:false,lifetime:new AbortController(),props:{},MAINTAINER:false,
     onMounted:fn=>{mountedPromise=fn()},createPixiApp(){starts.push('app')},initializeLineup(){},
-    manifest:ref(null),choreography:ref(null),motionClockData:ref(null),musicIndex:ref(null),songs:ref([song]),selectedSongId:ref(''),selectedSong:ref(song),
+    manifest:ref(null),choreography:ref(null),motionClockData:ref(null),musicIndex:ref(null),nativeOriginalLineups:ref(null),songs:ref([song]),selectedSongId:ref(''),selectedSong:ref(song),
     stageEffectIndex:ref(null),stagelightData:ref(null),characters:ref([]),lineup:ref([]),booting:ref(true),errorText:ref(''),
     stageVocalEnabled:ref(false),stageReady:ref(false),mouthFixData:ref(null),motionOffsetData:ref(null),
     backmonitorIndex:ref(null),imageLayerIndex:ref(null),imageObjectIndex:ref(null),stageBackgroundIndex:ref(null),
     resolveSongStageHandoff:()=>null,console:{warn(){},error(...v){errors.push(v)}},
     fetchLiveChibiManifest:()=>start('manifest'),fetchLiveChibiChoreography:()=>start('catalog'),
     fetchLiveChibiMotionClock:()=>start('clock'),fetchLiveChibiMusicIndex:()=>start('music'),
+    fetchLiveChibiOriginalLineups:()=>start('originals'),
     fetchLiveChibiSongChoreography:()=>start('song'),fetchLiveChibiStageEffectSong:()=>start('lighting'),
     loadCurrentPenlights:()=>start('penlight'),loadCurrentObjectIndex:()=>start('objects'),loadSongLipSync:()=>start('lipsync'),
     loadSongAudio:async()=>{starts.push('audio')},rebuildStage:async()=>{starts.push('actors')},
@@ -30,15 +31,18 @@ function fixture(){
   vm.createContext(c);vm.runInContext(mounted,c)
   return {c,jobs,starts,errors,catalog,done:()=>mountedPromise}
 }
-async function base(f){
+async function base(f,holdOriginals=false){
   await flush();f.jobs.manifest.resolve({choreography:{index:'choreography/index.json'}});await flush()
   f.jobs.catalog.resolve(f.catalog);await flush()
+  if(!holdOriginals)f.jobs.originals.resolve({songs:{}})
 }
 {
-  const f=fixture();await base(f)
+  const f=fixture();await base(f,true)
   assert.equal(f.errors.length,0,JSON.stringify(f.errors));assert(f.starts.includes('clock') && f.starts.includes('music'),'Clock and music must start before either resolves')
   f.jobs.music.resolve({songs:[]});await flush();assert(!f.starts.includes('song'))
   f.jobs.clock.resolve({native:true});await flush()
+  assert(!f.starts.includes('song'),'Original member source is required before member controls become ready')
+  f.jobs.originals.resolve({songs:{}});await flush()
   assert(f.starts.includes('song') && f.starts.includes('lighting'),'Song and lighting must start together')
   f.jobs.lighting.resolve({effects:{native:true},commands:{native:true}});await flush();assert(!f.starts.includes('penlight'))
   f.jobs.song.resolve(f.catalog);await flush()

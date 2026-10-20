@@ -10,7 +10,7 @@ const root=fileURLToPath(new URL('..',import.meta.url))
 const fixtureParent=await fs.realpath(os.tmpdir())
 const fixture=await fs.mkdtemp(path.join(fixtureParent,'stage-inventory-'))
 const hash=data=>createHash('sha256').update(data).digest('hex')
-const keys=['data/stage-choreography-shards.json','data/stage-effect-shards.json','data/stage-consumer-shards.json']
+const keys=['data/stage-choreography-shards.json','data/stage-effect-shards.json','data/stage-consumer-shards.json','data/stage-original-lineups.json']
 const write=async(key,content)=>{const file=path.join(fixture,key);await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,content)}
 try {
   // Keep real tracked catalog identities/contracts, replace only payload hashes
@@ -27,12 +27,14 @@ try {
   const closure=await loadStageShardClosure(fixture)
   const entries=[...closure.required].map(([request_key,item])=>({request_key,source:item.source,source_size:item.bytes,source_sha256:item.sha256}))
   const receipt=await assertStageShardInventory(entries,closure)
-  assert.equal(receipt.shardFiles,descriptors.length);assert.equal(receipt.catalogFiles,3)
+  assert.equal(receipt.shardFiles,descriptors.length);assert.equal(receipt.catalogFiles,4)
   assert(requiresStageShardValidation({entries,stage_shards:receipt}))
   assert(requiresStageShardValidation({entries:[entries[0]]}),'Legacy stage inputs still require validation')
   assert(requiresStageShardValidation({entries:[],stage_shards:receipt}),'Removing all rows cannot bypass a current inventory receipt')
   assert(!requiresStageShardValidation({entries:[{request_key:'assets/icon.txt'}]}),'Retain legacy non-stage scoped increments')
   await assert.rejects(assertStageShardInventory(entries.slice(1),closure),/Missing stage inventory dependency/)
+  await assert.rejects(assertStageShardInventory(entries.filter(row=>row.request_key!=='data/stage-original-lineups.json'),closure),
+    /Missing stage inventory dependency: data\/stage-original-lineups.json/)
   await assert.rejects(assertStageShardInventory([...entries,entries[0]],closure),/Duplicate stage inventory entry/)
   const stale='assets/live-chibi/stage-effects/shards/stale.json'
   assert(isStageShardKey(stale));assert(!closure.required.has(stale))

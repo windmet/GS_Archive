@@ -2,16 +2,28 @@ const validPosition = value => Number.isInteger(value) && value >= 1 && value <=
 const validCostumeId = value => typeof value === 'string' && /^\d{3}_\d{2}$/.test(value)
 const hasLabel = costume => typeof costume?.label === 'string' && Boolean(costume.label.trim())
 
-// Catalog member order identifies a roster, not an official stage placement.
-// This UI rule assigns that order to ascending script performer slots.
-// `slotOrdered`: performerCodes are in the original's performer-slot order (table 46 fields 30-34).
-// Without it a unit song falls back to idol-number order, which is not the original standing order.
-export function buildOriginalStageLineup(song, performerCodes, characters, idolDirectory, { slotOrdered = false } = {}) {
+// Members map to performer slots before stage positions. Ordered inputs may be
+// per-song table 46 records or the native table 2 unit default. Vocal Unit
+// variants retain their separate legacy UI rule until that native edit path is verified.
+export function buildOriginalStageLineup(song, performerCodes, characters, idolDirectory, { slotOrdered = false, activeSubset = false } = {}) {
   if (song?.vocalSetting?.mode === 'unit') return buildUnitStageLineup(song, characters, idolDirectory, slotOrdered ? performerCodes : null)
   if (!song || song.songCode === 'drv999' || !Array.isArray(performerCodes) || !performerCodes.length ||
       !Array.isArray(characters) || !Array.isArray(song.positions) || !Array.isArray(song.stagePositionMap)) return null
   const positions = song.positions
-  const map = song.stagePositionMap
+  const wholeMap = song.stagePositionMap
+  if (wholeMap.some(entry => !validPosition(entry?.performerSlot) || !validPosition(entry?.stagePosition)) ||
+      new Set(wholeMap.map(entry => entry.performerSlot)).size !== wholeMap.length ||
+      new Set(wholeMap.map(entry => entry.stagePosition)).size !== wholeMap.length) return null
+  let map = wholeMap
+  if (activeSubset) {
+    const slots = song.performerSlots, active = song.onStagePerformerSlots
+    if (!Array.isArray(slots) || !Array.isArray(active) || slots.length !== wholeMap.length ||
+        slots.some(slot => !validPosition(slot)) || new Set(slots).size !== slots.length ||
+        active.some(slot => !slots.includes(slot)) || new Set(active).size !== active.length ||
+        active.length !== performerCodes.length || active.some(slot => slot > performerCodes.length) ||
+        wholeMap.some(entry => !slots.includes(entry.performerSlot))) return null
+    map = wholeMap.filter(entry => active.includes(entry.performerSlot))
+  }
   if (performerCodes.length !== positions.length || map.length !== positions.length ||
       positions.some(position => !validPosition(position)) || new Set(positions).size !== positions.length ||
       performerCodes.some(code => typeof code !== 'string' || !code.trim() ||

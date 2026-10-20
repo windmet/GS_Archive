@@ -44,7 +44,7 @@
 
 ## 未合入但保留的分支
 
-10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)发现组合默认序来源：原生自动编队读取表2字段37 `IdolUnitSortOrder`。13首逐曲显式序之外，41首固定组合曲可取得默认序，24首与当前编号回退不同；`yknkmh`另有隐藏槽guard，48个Unit编排还涉及独立选组路径。本批仅审计，尚未接入数据/消费者或重建候选。
+10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)之后已完成[固定曲消费者接入](NATIVE_ORIGINAL_LINEUP_CONSUMER_20261021.md)：13首显式序优先，41首组合默认序来自表2字段37，纠正24首编号回退并修复`yknkmh`隐藏槽。舞台专用索引直接消费，冻结read-model未改；164项源码检查、最终build:check及Café/SEM/FRAME实际Browser通过。48个Unit编排的独立原生选组路径、原片/设备对照仍开放。未部署。
 
 10-21 舞台同步 master #60–#65 的后验收见 [同步记录](STAGE_MASTER_SYNC_20261021.md)：合并 `4dccabbd`，163/163 源码回归及 build:check 通过，5213 实际舞台与手机尺寸目标检查完成；未部署。
 
