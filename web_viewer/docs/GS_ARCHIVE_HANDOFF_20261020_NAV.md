@@ -59,7 +59,7 @@
 ## 第 4 步：静态路径（2026-10-21，`portal/20261020-nav-static-paths`）
 
 - `/office/<idol>/` 是 `view=home` 的偶像事务所，`/mobile/<idol>/` 是 `view=mobile_archive` 的偶像通信；台词与服装（`home_cue`/`home_costume`）、模式/组合/打开的通话（`mobile_mode`/`unit`/`mobile_scenario`）留在查询里。两者进 `ENFORCED_ROUTE_VIEWS`，不属于页面的字段写地址时被剪掉。
-- 没选偶像的事务所仍是 `/?view=home`；`/office/`、`/mobile/` 本身不是栏目根，读作裸入口（和 `/idols/xyz/` 一样，按既有 U6 行为落到事务所选人）。
+- 没选偶像的事务所仍是 `/?view=home`；`/office/`、`/mobile/` 本身不是栏目根。认不出的路径（`/office/010PIE/`、`/idols/xyz/`）现在按裸 `/` 启动：门户偏好进资料馆，事务所偏好进启动偶像的事务所。以前它们不算裸入口，查询里没有 view 就默认落到事务所选人页（`archiveStartup.js` 的 `isBareArchiveEntry` 改用 `isArchiveLocatorPath`，与读路由同一个 `locatorQuery`）。
 - 浏览器标签 `{偶像} · 事务所 · GS Archive` / `{偶像} · 通信 · GS Archive`（`archiveIdolPlaceName`，App 与 head shell 同源）；head shell 每位偶像各一份（事务所只给 `home_available` 的偶像）。
 - 预览包的 `_headers` 改为按实际生成的 head shell 目录写 `no-cache`，不再手抄目录名（顺带补上漏掉的 `/unused/*`）。
-- 验证：`verify-archive-path-locator`（往返、剪枝、负例；四个变异全红）、`verify-entity-head-shells`；浏览器实测 `/office/010pie/`、`/mobile/010pie/`、旧查询地址改写成路径、切换偶像后路径与标签同步。
+- 验证：`verify-archive-path-locator`（往返、剪枝、负例、认不出的路径按裸入口启动；五个变异全红）、`verify-entity-head-shells`；浏览器旅程 `verify-portal-path-locator-browser.mjs` 新增 P42–P46：冷开路径与标签、旧链接改写（通信保留 mode）、有担当时侧栏直接进担当的事务所/通信路径并能返回、切换偶像与刷新、认不出的路径按偏好启动。

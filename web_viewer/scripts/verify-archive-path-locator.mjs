@@ -196,6 +196,13 @@ assert.equal(isBareArchiveEntry('http://x/'), true)
   const startup = resolveArchiveStartup('http://x/idols/001tom/', { startupPage: 'home', startupIdol: '002sht' }, ['001tom', '002sht'])
   assert.equal(startup.source, 'explicit'); assert.equal(startup.route.view, 'idol_detail'); assert.equal(startup.route.idol, '001tom')
 }
+for (const href of ['http://x/office/010pie/', 'http://x/mobile/010pie/', 'http://x/idols/', 'http://x/gashas/ticket-02b623e0abc38ce0/']) assert.equal(isBareArchiveEntry(href), false, href)
+// A path that addresses nothing starts like `/`: the visitor's startup page, not whatever view a bare query defaults to.
+for (const href of ['http://x/idols/xyz/', 'http://x/office/', 'http://x/office/010PIE/', 'http://x/library/', 'http://x/mobile/010pie/x/']) {
+  assert.equal(isBareArchiveEntry(href), true, href)
+  assert.deepEqual(resolveArchiveStartup(href, { onboardingComplete: true, startupPage: 'portal' }).route, resolveArchiveStartup('http://x/', { onboardingComplete: true, startupPage: 'portal' }).route, href)
+}
+assert.equal(isBareArchiveEntry('http://x/idols/xyz/?view=cards'), false, 'a query still addresses its view')
 
 // writeArchiveRoute: the address bar takes the public form, and the navigation context still moves to history state.
 {

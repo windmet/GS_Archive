@@ -643,6 +643,11 @@ const SECTION_PATH_ROUTES = Object.freeze([
 export const OFFICE_VOICE_CUE = /^4_1_101_0[0-2]_a\d{4}$/
 export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(entry => entry.prefix))
 
+// Whether a pathname is one of the public locators (a section root or a detail path) the address bar can carry.
+export function isArchiveLocatorPath(pathname) {
+  return locatorQuery(new URL(pathname, 'http://localhost/')).has('view')
+}
+
 function locatorQuery(url) {
   const params = new URLSearchParams(url.searchParams)
   if (params.has('view')) return params
