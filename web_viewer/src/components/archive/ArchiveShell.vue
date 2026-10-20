@@ -93,20 +93,24 @@
       <button
         ref="drawerToggle"
         type="button"
-        :class="{ active: drawerCell.active }"
+        class="archive-mobile-switch"
+        :class="{ active: drawerCell.active, 'is-open': drawerOpen }"
         :aria-expanded="drawerOpen"
         aria-controls="archive-navigation-drawer"
         @click="drawerOpen ? closeDrawer(false) : drawerOpen = true"
       >
-        <component :is="drawerCell.icon" :size="21" :stroke-width="1.8" aria-hidden="true" />
-        <span>{{ drawerCell.label }}</span>
+        <span class="archive-switch-pill">
+          <component :is="drawerCell.icon" :size="18" :stroke-width="1.8" aria-hidden="true" />
+          <span>{{ drawerCell.label }}</span>
+          <component :is="drawerOpen ? ChevronDown : ChevronUp" class="archive-switch-caret" :size="14" :stroke-width="2.2" aria-hidden="true" />
+        </span>
       </button>
     </nav>
   </div>
 </template>
 
 <script setup>
-import { BookOpen, Box, CalendarDays, Clapperboard, FolderOpen, Home, Info, Layers, LayoutGrid, Menu, Music, Search, Users, X } from '@lucide/vue'
+import { BookOpen, Box, CalendarDays, ChevronDown, ChevronUp, Clapperboard, FolderOpen, Home, Info, Layers, LayoutGrid, Menu, Music, Search, Users, X } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
@@ -156,7 +160,8 @@ function openDestination(group) {
 }
 
 // Phone bar, 2+1: the two homes, then one cell that opens every destination. Away from the homes that cell
-// names the current section, so the bar still says where the reader is.
+// names the current section, so the bar still says where the reader is; it is drawn as a pill with a caret,
+// unlike the two tabs, because tapping it opens a switcher rather than staying on the page.
 const mobileNavigation = computed(() => [
   { id: 'home', label: sectionLabel('home'), icon: Home, active: !drawerOpen.value && props.activeSection === 'home' },
   { id: 'portal', label: sectionLabel('portal'), icon: LayoutGrid, active: !drawerOpen.value && props.activeSection === 'portal' },
@@ -482,7 +487,7 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr); /* the switcher pill names a section of up to four characters */
     padding-bottom: env(safe-area-inset-bottom, 0px);
     border-top: 1px solid var(--archive-border);
     background: var(--gs-surface);
@@ -507,6 +512,30 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
   .archive-mobile-nav button.active svg { color: var(--gs-mint-ink); }
   .archive-mobile-nav button:active { background: var(--gs-mint-wash); }
   .archive-mobile-nav button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -4px; }
+  .archive-mobile-nav .archive-mobile-switch { padding: 0 var(--gs-space-2); }
+  .archive-switch-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    min-height: 40px;
+    padding: 0 12px 0 11px;
+    border: 1px solid var(--gs-line);
+    border-radius: var(--gs-radius-pill);
+    background: var(--gs-paper);
+    color: var(--gs-ink-2);
+    font-size: var(--gs-text-ui);
+  }
+  .archive-switch-pill > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .archive-switch-pill svg { flex: none; }
+  .archive-switch-caret { margin-left: -1px; opacity: .7; }
+  .archive-mobile-nav .archive-mobile-switch.active .archive-switch-pill {
+    border-color: color-mix(in srgb, var(--gs-mint) 45%, transparent);
+    background: var(--gs-mint-wash);
+    color: var(--gs-ink);
+  }
+  .archive-mobile-nav .archive-mobile-switch:active { background: transparent; }
+  .archive-mobile-nav .archive-mobile-switch:active .archive-switch-pill { filter: brightness(.96); }
 }
 /* Same grid cell as content: never cover the separate mobile navigation row.
    Explicitly place main as well: leaving it auto-placed would push it to a new

@@ -269,7 +269,8 @@ assert.match(app, /else if \(section === 'units'\) openUnitCatalog\(\)/, '组合
 // Phone bar 2+1: the two homes, then one cell that opens the drawer and otherwise names the current section.
 const barItems = shellSource.match(/const mobileNavigation = computed\(\(\) => \[([\s\S]*?)\n\]\)/)?.[1] || ''
 assert.deepEqual([...barItems.matchAll(/\{ id: '(\w+)'/g)].map(match => match[1]), ['home', 'portal'], 'the bar holds the two homes and nothing else')
-assert.match(shellSource, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/, 'the bar has three cells')
+assert.match(shellSource, /grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\) minmax\(0, 1\.5fr\);/, 'the bar has three cells, the switcher widest')
+assert.match(shellSource, /<span class="archive-switch-pill">[\s\S]*?<component :is="drawerOpen \? ChevronDown : ChevronUp"/, 'the third cell is a pill whose caret flips with the drawer')
 assert.match(shellSource, /if \(drawerOpen\.value\) return \{ label: '收起'/, 'the open drawer turns the third cell into 收起')
 assert.match(shellSource, /section !== 'home' && section !== 'portal' && sectionLabel\(section\)\)[\s\S]{0,40}return \{ label: sectionLabel\(section\), icon: archiveNavigationIcons\[section\]/, 'away from the homes the third cell names the current section')
 assert.match(shellSource, /return \{ label: '导航', icon: Menu/, 'on the homes the third cell says 导航')
@@ -281,6 +282,9 @@ assert.match(shellSource, /<ArchiveNavigationDrawer v-if="drawerOpen"[^>]*:group
 const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavigationDrawer.vue', import.meta.url), 'utf8')
 assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups|ARCHIVE_SECTIONS\b/, 'the drawer keeps no destination list of its own')
 assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
+assert.doesNotMatch(drawerSource.split('<script')[0], /group\.label|<h2/, 'the drawer draws no group titles; each icon is labelled')
+assert.match(drawerSource, /props\.groups\.filter\(group => SECONDARY_GROUPS\.has\(group\.id\) === secondary\)/, 'both drawer tiers are cut from the sidebar groups')
+assert.match(drawerSource, /const SECONDARY_GROUPS = new Set\(\['collection', 'studio', 'resources'\]\)/, 'the collection pages and tools sit beneath the rule')
 // Phone portal: following an idol, the hero comes before the index of every section; the all-archive view keeps the index first.
 const overviewSource = readFileSync(new URL('../src/components/archive/ArchivePortalOverview.vue', import.meta.url), 'utf8')
 const allDirectory = overviewSource.indexOf('<nav v-if="!preferredReference?.actionable" class="overview-directory"')
