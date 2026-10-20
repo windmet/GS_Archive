@@ -13,6 +13,7 @@ import {
 } from '../utils/AssetResolver.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { sampleUnityCurve } from './story-runtime/storyAmbienceCurves.js'
+import { nativeCueRoute, nativeSeRoute } from './story-runtime/nativeAudioBuses.js'
 
 export const NON_WAVEFORM_SE_CUES = Object.freeze([
   '00_action_volume_default_sebgm',
@@ -100,8 +101,16 @@ export class AudioManager {
     return this._loadSE(cueName).catch(() => null)
   }
 
-  /** Play a one-shot SE. Multiple SE can overlap. */
-  async playSE(cueName) {
+  /** Connect through the cue's CRI bus sends; the release also drops the routing. */
+  _connect(source, gain, { bus, kind, cue, route }) {
+    source.connect(gain)
+    const unroute = this._audioSession.routeSource(gain, { bus, route })
+    const unregister = this._audioSession.registerSource(source, { bus, kind, cue })
+    return () => { unregister(); unroute() }
+  }
+
+  /** Play a one-shot SE. Multiple SE can overlap. `sheet` is the row's acb column. */
+  async playSE(cueName, { sheet = null } = {}) {
     if (!cueName || this._audioSession.disabled) return
     if (NON_WAVEFORM_SE_CUE_SET.has(cueName)) {
       this._nonWaveformControlCues.add(cueName)
@@ -114,8 +123,7 @@ export class AudioManager {
       source.buffer = audioBuf
       const gain = this._ctx.createGain()
       gain.gain.value = 0.6
-      source.connect(gain).connect(this._audioSession.getBus('se'))
-      const release = this._audioSession.registerSource(source, { bus: 'se', kind: 'one-shot', cue: cueName })
+      const release = this._connect(source, gain, { bus: 'se', kind: 'one-shot', cue: cueName, route: nativeSeRoute(cueName, sheet) })
       source.start(0)
       source.onended = () => { release(); source.disconnect(); gain.disconnect() }
     } catch (_) { /* unknown SE cue — silent skip */ }
@@ -128,8 +136,9 @@ export class AudioManager {
    * @param {string} cueName — e.g. "ambi_room", "ambi_tvshow_setting_t"
    * @param {number} [fadeTime=0.5] — crossfade duration in seconds
    * @param {number} [volume] — volume level 0.0-1.0; if omitted, uses default 0.4
+   * @param {string} [options.cue] — the row's awb (cue in the `cueName` sheet), for its bus sends
    */
-  async playAmbient(cueName, fadeTime = 0.5, volume = null, { curve = null } = {}) {
+  async playAmbient(cueName, fadeTime = 0.5, volume = null, { curve = null, cue = null } = {}) {
     if (!cueName || this._audioSession.disabled || cueName === this._currentAmbientCue) return
     this.ensureContext()
     const generation = ++this._ambientGeneration
@@ -179,8 +188,7 @@ export class AudioManager {
       gain.gain.value = 0
       gain.gain.linearRampToValueAtTime(this._currentAmbientVolume, this._ctx.currentTime + fadeTime)
 
-      source.connect(gain).connect(this._audioSession.getBus('ambient'))
-      const release = this._audioSession.registerSource(source, { bus: 'ambient', kind: 'loop', cue: cueName })
+      const release = this._connect(source, gain, { bus: 'ambient', kind: 'loop', cue: cueName, route: nativeCueRoute(cueName, cue) })
       source.start(0)
 
       this._ambientSource = source
@@ -296,8 +304,7 @@ export class AudioManager {
       gain.gain.value = 0
       gain.gain.linearRampToValueAtTime(0.5, this._ctx.currentTime + fadeTime)
 
-      source.connect(gain).connect(this._audioSession.getBus('bgm'))
-      const release = this._audioSession.registerSource(source, { bus: 'bgm', kind: 'loop', cue: bgmId })
+      const release = this._connect(source, gain, { bus: 'bgm', kind: 'loop', cue: bgmId, route: nativeCueRoute(bgmId) })
       source.start(0)
 
       this._bgmSource = source

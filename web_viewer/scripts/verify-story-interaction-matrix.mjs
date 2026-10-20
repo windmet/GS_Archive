@@ -4,6 +4,8 @@ import vm from 'node:vm'
 import { computed, ref, reactive } from 'vue'
 import { useStoryNavigation } from '../src/core/useStoryNavigation.js'
 import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
+import { createNativeCutWait, nativeWaitSeconds } from '../src/core/story-runtime/NativeCutWait.js'
+import { finiteBranchNextIndex } from '../shared/story/FiniteBranchFlow.js'
 
 // Exercise production navigation + transition timers + the actual viewer input
 // gate together. Timers are controlled; no compiled corpus or GPU is needed.
@@ -38,6 +40,7 @@ const context = { currentStep, currentStepIndex, episodeFinished: ref(false), ba
   setTitleAnimationPending: noop, markStepRead: noop, recordHistoryStep: noop, leaveRestoredScene: noop,
   _stopCurrentVoice: noop, storyRuntimeCues: { hasNonSkippable: () => false, cancelCurrentStep: noop, settleCurrentStep: () => false },
   isLastStep: navigation.isLastStep, finishEpisode: noop, advanceStep: navigation.goNext,
+  compiledData: ref({ steps }), nativeCutWait: createNativeCutWait(), nativeWaitSeconds, finiteBranchNextIndex, runtimePauseReasons: new Set(),
 }
 const next = vm.runInNewContext(`${method}\ngoNext`, context)
 function tick() { const callbacks = [...timers.values()]; timers.clear(); callbacks.forEach(fn => fn()) }

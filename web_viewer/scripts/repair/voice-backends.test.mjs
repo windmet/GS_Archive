@@ -29,6 +29,8 @@ test('HTTP 200 HTML shell falls through to the real story voice alias', async ()
     assert.deepEqual(urls, ['/assets/voice/1_4_002_07_t01_j1000.m4a', '/assets/voice/1_4_002_07_j1000.m4a'])
     assert.equal(t.player.getDiagnostics().attempt.transport.contentType, 'audio/mp4')
     assert.equal(t.session.inspect().active_sources, 1)
+    // The alias is a phone line in the client (bus_phone only), so it plays through that bus.
+    assert.ok(t.session.inspect().native_buses.some(key => key.includes('bus_phone')))
   } finally { await t.cleanup() }
 })
 

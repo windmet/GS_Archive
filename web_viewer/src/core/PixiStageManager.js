@@ -35,8 +35,8 @@ import { CameraController } from './CameraController.js'
 import { SpineManager } from './SpineManager.js'
 
 import { LipSyncController } from './LipSyncController.js'
-import { cancelBlinkCover } from './spineBlinkCover.js'
-import { detectBlinkSlots } from './spineBlinkSlots.js'
+import { installNativeFramePose } from './spineFramePose.js'
+import { faceEffectSlots, hideFaceEffects } from './spineFaceEffects.js'
 
 // IdolFigureSkeleton._trackIndexCloseEye / ANIMATION_EYE_CLOSE (client 2.6.10).
 const EYE_TRACK = SPINE_TRACK.eye
@@ -982,102 +982,12 @@ export class PixiStageManager {
       // timeline body cue opts into its own 0.3s crossfade at dispatch time.
       spine.stateData.defaultMix = 0
 
-      const origStateUpdate = spine.state.update.bind(spine.state)
-      spine.state.update = (dt) => {
-        origStateUpdate(dt)
-        for (const i of [SPINE_TRACK.body, SPINE_TRACK.face]) {
-          const track = spine.state.tracks[i]
-          if (!track || track.alpha <= 0 || track.alpha >= 1 || track.mixDuration <= 0) continue
-          const t = track.alpha
-          if (i === 0) {
-            const smoothstep = t * t * (3 - 2 * t)
-            track.alpha = t * 0.5 + smoothstep * 0.5
-          } else {
-            const c1 = 5.0
-            const c3 = c1 + 1
-            track.alpha = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
-          }
-        }
-      }
-
-      spine._blinkCfg = this._detectBlinkSlots(spine)
-      spine._effectCfg = this._detectEffectSlots(spine)
+      spine._faceEffectSlots = faceEffectSlots(spine.skeleton)
       spine._optionalPartsSlots = this._detectOptionalPartsSlots(spine, idolId, modelId)
-
-      const origApply = spine.state.apply.bind(spine.state)
-      spine.state.apply = (skeleton) => {
-        // Additive neck clips must start from a stable body/face baseline on
-        // every frame. Pixi Spine otherwise retains the prior local pose, so
-        // unkeyed controls such as chara_MIX accumulate their Y offset and the
-        // whole character drifts down. Keep the targets for one extra apply
-        // after the neck track is cleared so its final offset cannot leak into state.
-        const neckTargets = spine._neckAdditiveTargets
-        const finishNeckCleanup = !!spine._neckAdditiveCleanupPending
-        if (neckTargets) {
-          for (const boneIndex of neckTargets.boneIndices || []) {
-            skeleton.bones?.[boneIndex]?.setToSetupPose?.()
-          }
-          for (const slotIndex of neckTargets.deformSlotIndices || []) {
-            const deform = skeleton.slots?.[slotIndex]?.deform
-            if (deform) deform.length = 0
-          }
-        }
-        origApply(skeleton)
-        if (finishNeckCleanup) {
-          spine._neckAdditiveTargets = null
-          spine._neckAdditiveCleanupPending = false
-        }
-
-        const blinkCfg = spine._blinkCfg
-        if (blinkCfg) {
-          const now = performance.now()
-          const blinking = spine._blinkCoverEndTime && now < spine._blinkCoverEndTime
-          if (blinking) {
-            if (!spine._savedEyeAtts) {
-              spine._savedEyeAtts = {}
-              for (const name of blinkCfg.hide) {
-                const slot = skeleton.findSlot(name)
-                if (slot) spine._savedEyeAtts[name] = slot.attachment?.name || null
-              }
-            }
-            for (const name of blinkCfg.hide) {
-              try { skeleton.setAttachment(name, null) } catch (_) {}
-            }
-            for (const item of blinkCfg.show) {
-              try { skeleton.setAttachment(item.slot, item.att) } catch (_) {}
-            }
-          } else if (spine._savedEyeAtts) {
-            for (const [slotName, attName] of Object.entries(spine._savedEyeAtts)) {
-              if (attName) {
-                try { skeleton.setAttachment(slotName, attName) } catch (_) {}
-              }
-            }
-            for (const item of blinkCfg.show) {
-              try { skeleton.setAttachment(item.slot, null) } catch (_) {}
-            }
-            spine._savedEyeAtts = null
-            spine._blinkCoverEndTime = undefined
-          } else {
-            spine._blinkCoverEndTime = undefined
-          }
-        }
-
-        const effectCfg = spine._effectCfg
-        const eFlags = spine._faceFlags || {}
-        if (effectCfg && effectCfg.blush.length > 0 && eFlags.blush_flag !== '¥Á©`¥¯') {
-          for (const name of effectCfg.blush) {
-            const slot = skeleton.findSlot(name)
-            if (slot) slot.color.a = 0
-          }
-        }
-        if (effectCfg && effectCfg.sweat.length > 0 && eFlags.sweat_flag !== 'º¹') {
-          for (const name of effectCfg.sweat) {
-            const slot = skeleton.findSlot(name)
-            if (slot) slot.color.a = 0
-          }
-        }
+      installNativeFramePose(spine, () => {
+        hideFaceEffects(spine._faceEffectSlots, spine._faceFlags)
         this._applyOptionalPartsSlots(spine)
-      }
+      })
 
       // Off-stage until finalize places the figure (placeActor / the default placement).
       spine.position.set(this.width / 2, this.height * 2)
@@ -1137,8 +1047,6 @@ export class PixiStageManager {
             console.log(`  slot=${slotName} attName='${a.name}' path='${a.attachmentName}'`)
           })
         }
-        const cfg = s._blinkCfg
-        console.log('=== BlinkCfg ===', cfg ? JSON.stringify(cfg, null, 2) : 'null')
       }
 
       finalizeSpawnedSpine({
@@ -1263,33 +1171,6 @@ export class PixiStageManager {
 
   _decodeAtlasText(buf) {
     return decodeSpineAtlasText(buf)
-  }
-
-  /**
-  /**
-   * Detect blink-related slots from skeleton slot names.
-   */
-  _detectBlinkSlots(spine) {
-    const config = detectBlinkSlots(spine)
-    if (config) console.log('[BlinkCfg]', config)
-    return config
-  }
-
-  /**
-   * Detect effect slots (blush/sweat) from slot names.
-   */
-  _detectEffectSlots(spine) {
-    const blush = []
-    const sweat = []
-    const slotNames = spine?.skeleton?.data?.slots?.map(s => s.name) || []
-    for (const name of slotNames) {
-      const low = String(name).toLowerCase()
-      if (/cheek/.test(low)) blush.push(name)
-      if (/^swet\b/.test(low) || /^sweat\b/.test(low)) sweat.push(name)
-    }
-    const result = { blush, sweat }
-    if (blush.length > 0 || sweat.length > 0) console.log("[EffectCfg]", result)
-    return result
   }
 
   _getTextureUrl(modelId, textureFile) {
@@ -1526,7 +1407,7 @@ export class PixiStageManager {
    *   { anim_flag: '目' | 'off', blush_flag: 'チーク' | 'off', sweat_flag: '汗' | 'off' }
    *
    * anim_flag is the client's isEyeOff: 'off' holds eye_close on the eye track,
-   * anything else clears it (eyes open). The face switch itself has no blink cover.
+   * anything else clears it (eyes open).
    */
   updateSpineFace(idolId, faceName, faceFlags) {
     const entry = this.spineInstances[idolId]
@@ -1548,10 +1429,6 @@ export class PixiStageManager {
         }
       }
 
-      // A rapid step change can interrupt the temporary blink cover. Restore
-      // its open-eye attachments before replacing or reusing the face track.
-      cancelBlinkCover(spine)
-
       if (allAnims.includes(animName)) {
         if (spine._currentFaceKey === faceKey) return
         const trackEntry = spine.state.setAnimation(SPINE_TRACK.face, animName, true)
@@ -1560,8 +1437,6 @@ export class PixiStageManager {
         if (trackEntry) {
           trackEntry.mixAttachmentThreshold = 0.0
           trackEntry.mixDuration = 0
-          spine._blinkCoverEndTime = 0
-          spine._savedEyeAtts = null
         }
         // Client idol_face [3] is isEyeOff (== "off"): IdolCharacter.CoPlayAnimation
         // calls PlayCloseEye (eye_close held on the eye track) for "off" and

@@ -7,7 +7,7 @@ import {
   PathAttachment, PointAttachment, ClippingAttachment,
 } from '@pixi-spine/runtime-3.8';
 import { decodeUnitySpineSkeleton } from '../shared/story/SpineBinary.js';
-import { StudioCompositionStage } from '../src/core/StudioCompositionStage.js';
+import { StudioCompositionStage, studioActorModel } from '../src/core/StudioCompositionStage.js';
 
 // Real animation/skeleton state; no GPU, HTTP, or replacement animation data.
 class Attachments {
@@ -36,10 +36,10 @@ for (const [idolId, modelId, motion, neck, faceTime] of [
   const skeleton = new Skeleton(data), state = new AnimationState(new AnimationStateData(data));
   const id = `actor-${stage.actorInstances.size}`;
   const row = { instanceId: id, poseTime: null, faceTime, scale: 1, layoutBasis: 'source-bounds' };
-  const model = {
-    row, names: data.animations.map(a => a.name), neckBones: [], neckSlots: [], flags: {},
+  const model = studioActorModel({
+    row, names: data.animations.map(a => a.name),
     spine: Object.assign(new Container(), { skeleton, state, update(delta) { state.update(delta); state.apply(skeleton); skeleton.updateWorldTransform(); } }),
-  };
+  });
   stage.actorInstances.set(id, model);
   stage.setActorPose(id, { motion, neck, commands: [], label: id }, { face: 'face_trouble', commands: [], label: 'face' });
 }

@@ -1,5 +1,4 @@
 import { SPINE_TRACK, applySpineTrackTime } from './spineTracks.js'
-import { neckOverlayAnimation } from './spineNeckOverlay.js'
 import { playClientMotion } from './spineClientMotion.js'
 
 // IdolNeckExtension: held neck poses and their back animations, in lookup order.
@@ -8,7 +7,6 @@ const NECK_BACK_ANIMATIONS = Object.freeze({
   neck_question: Object.freeze(['neck_back', 'neck_back_question']),
 })
 import * as PIXI from 'pixi.js'
-import { DeformTimeline } from '@pixi-spine/runtime-3.8'
 import { MixBlend } from '@pixi-spine/base'
 import { easeOutCubic, runRafTween } from './rafTween.js'
 
@@ -242,26 +240,13 @@ export class SpineManager {
       const playbackToken = (spine._neckPlaybackToken || 0) + 1
       spine._neckPlaybackToken = playbackToken
       spine._lastNeckEventKey = eventKey || ''
-      // SideM neck clips contain offsets authored around the setup pose. They
-      // are an additive performance layer over the current body animation;
-      // replace blending would snap hello/angry poses back to setup at t=0.
+      // Client PlayNeckInternal sets MixBlend.Add (3) on the neck track: the clip's
+      // offsets add to the body pose, and installNativeFramePose resets the
+      // skeleton every frame so they never accumulate. Track order (neck below
+      // face and eye) lets those tracks override the clip's face attachments.
       const prepareNeckTrack = (neckTrack, mixDuration) => {
-        neckTrack.animation = neckOverlayAnimation(neckTrack.animation, spine.state.data.skeletonData)
         neckTrack.mixBlend = MixBlend.add
         neckTrack.mixDuration = mixDuration
-        const previousTargets = spine._neckAdditiveTargets || { boneIndices: [], deformSlotIndices: [] }
-        const boneIndices = new Set(previousTargets.boneIndices)
-        const deformSlotIndices = new Set(previousTargets.deformSlotIndices)
-        for (const timeline of neckTrack.animation?.timelines || []) {
-          if (Number.isInteger(timeline?.boneIndex)) boneIndices.add(timeline.boneIndex)
-          if (timeline instanceof DeformTimeline && Number.isInteger(timeline.slotIndex)) {
-            deformSlotIndices.add(timeline.slotIndex)
-          }
-        }
-        spine._neckAdditiveTargets = {
-          boneIndices: [...boneIndices],
-          deformSlotIndices: [...deformSlotIndices],
-        }
       }
       // Client PlayNeckInternal: leaving a held neck pose first plays its back
       // animation (the first one the skeleton has; mix 0.25 s), then the new neck.
@@ -281,7 +266,6 @@ export class SpineManager {
       spine._currentNeckAnim = animName
       if (track) {
         prepareNeckTrack(track, back ? track.mixDuration : 0)
-        spine._neckAdditiveCleanupPending = false
         track.listener = {
           complete: () => {
             if (spine._neckPlaybackToken !== playbackToken) return
@@ -307,7 +291,6 @@ export class SpineManager {
       spine._neckPlaybackToken = (spine._neckPlaybackToken || 0) + 1
       spine.state.clearTrack(SPINE_TRACK.neck)
       spine._currentNeckAnim = null
-      if (spine._neckAdditiveTargets) spine._neckAdditiveCleanupPending = true
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to stop neck anim on "${idolId}":`, err.message)
     }

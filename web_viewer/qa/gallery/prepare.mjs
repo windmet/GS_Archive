@@ -3,6 +3,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { buildMobileRecords } from '../../readmodels/lib/mobile_projection.mjs'
+import { buildSeasonalLedger } from '../../readmodels/lib/seasonal_ledger.mjs'
 import * as selectors from '../../src/data/idolCommunicationSelectors.js'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
@@ -21,6 +22,7 @@ export function prepareGalleryData() {
     idolEpisode: json('masterdata/idol_episode_index.json'),
   }, selectors)
   writeFileSync(`${out}mobile-001tom.json`, JSON.stringify(records.idolRecords.find(record => record.id === '001tom')))
+  writeFileSync(`${out}seasonal-ledger.json`, JSON.stringify(buildSeasonalLedger(json('masterdata/seasonal_campaign_index.json'), json('reading/manifest.json').entries)))
 }
 
 if (import.meta.url === `file:///${process.argv[1]?.replaceAll('\\', '/')}`) prepareGalleryData()

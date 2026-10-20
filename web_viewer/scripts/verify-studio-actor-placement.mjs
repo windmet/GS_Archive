@@ -6,7 +6,7 @@ import { Skeleton, SkeletonBinary, AtlasAttachmentLoader, AnimationState, Animat
 import { decodeUnitySpineSkeleton } from '../shared/story/SpineBinary.js';
 import { decodeSpineAtlasText } from '../shared/story/SpineAtlasPages.js';
 import { studioActorPlacement, studioActorSelectionBounds } from '../src/core/StudioActorPlacement.mjs';
-import { StudioCompositionStage } from '../src/core/StudioCompositionStage.js';
+import { StudioCompositionStage, studioActorModel } from '../src/core/StudioCompositionStage.js';
 
 // Source atlas dimensions and actual attachment geometry, with no image copy,
 // GPU, fake animation data or replacement bones.
@@ -30,7 +30,7 @@ for (let idol = 1; idol <= 49; idol++) {
           update(dt) { state.update(dt); state.apply(skeleton); skeleton.updateWorldTransform(); },
           getLocalBounds() { const offset = new Point(), size = new Point(); skeleton.getBounds(offset, size); return {x:offset.x,y:offset.y,width:size.x,height:size.y}; },
         });
-        return {row:{instanceId:'a',layoutBasis:basis,scale:2.1,x:.3,y:2,rotation:8,poseTime:null,faceTime:3.4},spine,names:data.animations.map(a=>a.name),neckBones:[],neckSlots:[],flags:{}};
+        return studioActorModel({row:{instanceId:'a',layoutBasis:basis,scale:2.1,x:.3,y:2,rotation:8,poseTime:null,faceTime:3.4},spine,names:data.animations.map(a=>a.name)});
       };
       const set = (value, motion) => {
         stage.actorInstances.set('a',value);
