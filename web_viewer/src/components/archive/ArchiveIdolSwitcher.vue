@@ -43,7 +43,7 @@ function move(delta) {
 .idol-switcher > button { display: grid; flex: 0 0 var(--gs-control-normal); place-items: center; width: var(--gs-control-normal); height: var(--gs-control-normal); padding: 0; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink-2); cursor: pointer; }
 .idol-switcher label { display: flex; flex: 1; flex-direction: column; gap: var(--gs-space-2); min-width: 0; }
 .idol-switcher label span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.idol-switcher select { width: 100%; min-width: 230px; height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.idol-switcher select { width: 100%; min-width: 230px; height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .idol-switcher > button:focus-visible, .idol-switcher select:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (max-width: 760px) { .idol-switcher { width: 100%; } .idol-switcher select { min-width: 0; } }
 </style>

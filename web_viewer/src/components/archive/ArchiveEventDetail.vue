@@ -471,7 +471,7 @@ button.episode-main { cursor: pointer; }
 .detail-section :deep(.domain-reward-name small), .detail-section :deep(.domain-reward-unresolved), .detail-section :deep(.domain-reward-campaigns) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .detail-section :deep(.domain-table-controls) { flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-5); font-size: var(--gs-text-meta); }
 .detail-section :deep(.domain-table-controls label) { flex: 1 1 220px; gap: var(--gs-space-3); min-width: 0; font-size: var(--gs-text-ui); }
-.detail-section :deep(.domain-table-controls select) { flex: 1; min-width: 0; min-height: var(--gs-control-normal); padding: var(--gs-space-3) var(--gs-space-4); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); border-radius: var(--gs-radius-field); }
+.detail-section :deep(.domain-table-controls select) { flex: 1; box-sizing: border-box; min-width: 0; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); border-radius: var(--gs-radius-field); }
 .detail-section :deep(.domain-pagination) { flex-wrap: wrap; gap: var(--gs-space-4); margin-top: var(--gs-space-6); font-size: var(--gs-text-meta); }
 .detail-section :deep(.domain-pagination button) { min-height: var(--gs-control-normal); padding: var(--gs-space-3) var(--gs-space-4); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); border-radius: var(--gs-radius-control); }
 .detail-section :deep(.archive-technical), .event-detail > :deep(.archive-technical) { margin-top: var(--gs-space-5); border-radius: var(--gs-radius-control); }

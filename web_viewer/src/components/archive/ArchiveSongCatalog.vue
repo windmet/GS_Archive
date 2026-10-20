@@ -193,18 +193,18 @@ const filteredSongs = computed(() => {
   align-items: center;
   gap: 6px;
   min-height: var(--gs-control-compact);
-  padding: 0 11px;
+  padding: 0 var(--gs-space-4);
   border: 1px solid var(--gs-line);
-  border-radius: 999px;
+  border-radius: var(--gs-radius-pill);
   background: var(--gs-surface);
   color: var(--gs-ink-2);
   font: inherit;
   font-size: var(--gs-text-ui);
   cursor: pointer;
-  font-weight: var(--gs-weight-semibold);
+  font-weight: var(--gs-weight-regular);
 }
 .song-filters button span { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); }
-.song-filters button.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
+.song-filters button.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
 .song-filters button.active span { color: inherit; }
 .song-search {
   display: inline-flex;
