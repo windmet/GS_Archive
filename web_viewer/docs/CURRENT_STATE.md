@@ -2,13 +2,13 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-20 晚（master 与门户/剧情线；舞台行由舞台线维护，站点/R2 仍为历史记录，未重新验收）
+更新：2026-10-21（舞台同步 master #60–#65；站点/R2 仍为历史记录，未重新验收）
 
 ## 基线
 
 | 项 | 值 |
 |---|---|
-| master | 10-14 整合合并 PR #48，tag `baseline/2026-10-14`；之后并入 #49（codex R2 上传记录）、#50（release 绑定 + i18n 线）、#52（10-15 翻译）、#54（B036 情人节 2022 上）、#55（舞台原生还原收尾），以及本页所在的 #53（门户原生 ADV 站位、其他语音、事务所 ADV 预览、剧情服装、歌曲中心线）。#53 合入后打 `baseline/2026-10-20`。之后 10-20 再合 #56（门户视觉收敛）、#57（ADV 每帧姿势重置、脸红/汗、摄影工坊原生脸部 flags）、#58（电话/电视/混响走 CRI `bus_phone` / `bus_reverb`），以及 #59（重编译候选工具与原生裸 wait 停顿，不含语料），头 `4d31a402` |
+| master | 10-14 整合合并 PR #48，tag `baseline/2026-10-14`；之后并入 #49（codex R2 上传记录）、#50（release 绑定 + i18n 线）、#52（10-15 翻译）、#54（B036 情人节 2022 上）、#55（舞台原生还原收尾），以及本页所在的 #53（门户原生 ADV 站位、其他语音、事务所 ADV 预览、剧情服装、歌曲中心线）。#53 合入后打 `baseline/2026-10-20`。之后 10-20 再合 #56（门户视觉收敛）、#57（ADV 每帧姿势重置、脸红/汗、摄影工坊原生脸部 flags）、#58（电话/电视/混响走 CRI `bus_phone` / `bus_reverb`），以及 #59（重编译候选工具与原生裸 wait 停顿，不含语料）；之后 #60（门户 UX）、#61（导航命名与响应式导航）、#62（ADV 立绘缩放锚点）、#63（工作树共享语料服务）、#64（完整源码门禁报告）、#65（事务所/手机静态路径），当前头 `d2bbdf0a` |
 | read-model release | `2430ef3db583a07878f1967b45e039eb326212cda386b063f6c4f9f8d8a772c3`；候选目录 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261015` |
 | R2 data revision | `fda1a54c6df58cabc13e7a0d86b40ab14ff831270ca0d197fc9a7298279ec3ab`（worktree `.deploy/release-20261015`，6,397 个对象，已上传）。下一批的叠加链最新一项：worktree `.analysis/release-20261015/overlay-20261015.json` |
 | media epoch | `voice64-gzip-all-20260924` |
@@ -20,9 +20,9 @@
 | 线 | 当前分支 | 下一步 |
 |---|---|---|
 | 剧情 / ADV | PR #59 已合入 `master`（重编译候选工具 + 原生裸 wait 停顿，不含语料） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；晋升后才恢复翻译批次 |
-| 门户 portal | `portal/20261020-ux-audit`（PR #60，尚未合入；#56/#57/#58 已合入） | 盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定。启动 JS 预算只剩约 0.1 KB（204,677 / 204,800 gzip），下一个进启动 chunk 的功能要先拆分或由用户决定放宽 |
+| 门户 portal | #60 / #61 / #62 / #65 已合入 `master`，后续分支从最新 master 开 | 盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定。启动 JS 预算已由 master 的导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，本轮同步 `origin/master` / `4d31a402`（#56–#59）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族、Sprite淡入公共语义检查。原片对照、30种无consumer粒子、旧悬灯9份partial仍开放 |
+| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，已同步 `origin/master` / `d2bbdf0a`（#60–#65）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族及 Sprite 参考时钟、mixed/内置分支边界。原片对照、30种无consumer粒子、旧悬灯9份partial仍开放 |
 
 舞台线同日加载进度：[编舞目录与逐编排分片](STAGE_CHOREOGRAPHY_SHARDS_20261020.md)已接入当前舞台；118份来源/轨道等价、156项门禁通过。新分片为本地派生资源，后续发布必须纳入目录引用的全部118片；本轮没有部署。其他全局大索引与加载预算仍待推进。
 
@@ -51,8 +51,8 @@
 ## 本机环境
 
 - 主 checkout `E:/Web_build/SideM_Archived`，保存完整语料（public/assets）和 `.deploy` 历史批次。
-- 领域 worktree 在 `E:/Web_build/GS_Archive_Domain_Work/<名字>`，用目录联接引用主 checkout 的语料（`web_viewer/public` 常是联接，删 worktree 前先解联接）。资产清单要加 `--follow-junctions`；`build:check` 在这里重写的 `config/resource-audit.json` 不要提交。
-- 本地验收服务：5177，`SIDEM_READMODEL_CANDIDATE=<候选目录>`。
+- 领域 worktree 在 `E:/Web_build/GS_Archive_Domain_Work/<名字>`，只需联接 `node_modules`，语料不拷不联接：dev 服务把 worktree `public/` 里没有的 `/assets`、`/data` 文件从主 checkout 的 `public/` 读（`scripts/lib/public-corpus-plugin.mjs`，两边都没有就是 404），源配置读主 checkout 的 `config/archive_sources.local.json`（JS 与 `data_pipeline/archive_paths.py` 同一规则）。旧 worktree 若 `web_viewer/public` 是联接，删 worktree 前先解联接。资产清单要加 `--follow-junctions`；`build:check` 在这里重写的 `config/resource-audit.json` 不要提交。
+- 本地验收服务：5177。不设 `SIDEM_READMODEL_CANDIDATE` 时，dev 服务在本地配置的 `readmodel_candidates_root`（本机为 `E:/Web_build/GS_Archive_Domain_Work`）里挑 release 与 `readmodels/bootstrap.inline.json` 相同的候选；找不到会在启动日志里警告，`/_catalog` 请求返回 404。要看别的候选仍可显式设置。
 - 本轮舞台分支服务：5213，主 checkout `web_viewer`，候选 `rm-release-20261015`；5212 仍服务旧舞台 worktree。复用前检查实际 HTTP 模块和 bootstrap，不凭端口判断分支。
 - 复现 CI：`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录>`，`node_modules` 用联接；主 checkout 有语料又是 CRLF，会把 CI 红项跑绿。
 - 10-19 整理后的旧发布包、任务包、worktree 快照在 `E:/GS_Archive_cold/20261019/`。

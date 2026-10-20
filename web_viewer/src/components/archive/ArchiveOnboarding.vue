@@ -2,7 +2,7 @@
   <dialog ref="dialog" class="onboarding gs-dialog-motion" aria-labelledby="onboarding-title" @cancel.prevent="finish(false)">
     <form class="onboarding-sheet" method="dialog" @submit.prevent="next">
       <header class="onboarding-header">
-        <span class="onboarding-brand">SideM <b>资料馆</b></span>
+        <span class="onboarding-brand">GS <b>资料馆</b></span>
         <ol class="onboarding-steps" aria-label="设置步骤">
           <li v-for="(item, index) in STEPS" :key="item" :aria-current="index === step ? 'step' : undefined" :class="{ done: index < step }"><span>{{ index + 1 }}</span>{{ item }}</li>
         </ol>
@@ -17,7 +17,7 @@
 
       <section v-else-if="step === 1" class="onboarding-body">
         <h1 id="onboarding-title" ref="heading" tabindex="-1">选一位担当</h1>
-        <p class="onboarding-lede">资料馆首页会围绕担当展开：他的故事、卡片、歌曲，以及随时能去的主页。以后可以在设置里更换。</p>
+        <p class="onboarding-lede">资料馆首页会围绕担当展开：他的故事、卡片、歌曲，以及随时能去的事务所。以后可以在设置里更换。</p>
         <ArchiveIdolPickerPanel v-model="favorite" class="onboarding-picker" :idols="idols" :idol-name="idolName" :idol-search="idolSearch" />
       </section>
 
@@ -25,8 +25,8 @@
         <ArchiveIdolAvatar v-if="favoriteIdol" :idol-code="favoriteIdol.id" :accent-color="favoriteIdol.color" :size="96" decorative />
         <h1 id="onboarding-title" ref="heading" tabindex="-1">{{ favoriteIdol ? `${favoriteName}在事务所等你` : '准备好了' }}</h1>
         <p class="onboarding-lede">{{ canOpenHome
-          ? `在${favoriteName}的主页，可以听他打招呼、换衣装、点他说话。之后从资料馆首页的「我的担当」随时回来。`
-          : '资料馆里有全部故事、歌曲、卡片与活动。偶像主页在左侧导航的最上方，选一位偶像就能听他说话。' }}</p>
+          ? `在事务所里，可以听${favoriteName}打招呼、换衣装、点他说话。之后点导航里的房子图标就能随时回来。`
+          : '资料馆里有全部故事、歌曲、卡片与活动。导航里的「事务所」随时能去，选一位偶像就能听他说话。' }}</p>
       </section>
 
       <footer class="onboarding-actions">

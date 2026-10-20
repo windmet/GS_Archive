@@ -21,9 +21,9 @@
 
       <section class="settings-group" aria-labelledby="settings-startup">
         <h2 id="settings-startup">启动与显示</h2>
-        <label class="settings-row"><span>默认启动页面</span><select aria-label="默认启动页面" :value="preferences.startupPage" @change="emit('save-startup',{startupPage:$event.target.value,onboardingComplete:true})"><option value="unset" disabled>尚未设置</option><option value="home">315 事务所 · 偶像主页</option><option value="portal">资料馆</option></select></label>
-        <label class="settings-row"><span>主页展示方式</span><select aria-label="主页展示方式" :value="preferences.homeMode" @change="emit('save-startup',{homeMode:$event.target.value})"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
-        <label class="settings-row"><span>默认主页偶像</span><select aria-label="默认主页偶像" :value="preferences.startupIdol || ''" @change="emit('save-startup',{startupIdol:$event.target.value || null})"><option value="">打开时选择</option><option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option></select></label>
+        <label class="settings-row"><span>默认启动页面</span><select aria-label="默认启动页面" :value="preferences.startupPage" @change="emit('save-startup',{startupPage:$event.target.value,onboardingComplete:true})"><option value="unset" disabled>尚未设置</option><option value="home">事务所</option><option value="portal">资料馆</option></select></label>
+        <label class="settings-row"><span>事务所展示方式</span><select aria-label="事务所展示方式" :value="preferences.homeMode" @change="emit('save-startup',{homeMode:$event.target.value})"><option value="card">卡面</option><option value="spine">立绘</option></select></label>
+        <label class="settings-row"><span>事务所默认偶像</span><select aria-label="事务所默认偶像" :value="preferences.startupIdol || ''" @change="emit('save-startup',{startupIdol:$event.target.value || null})"><option value="">打开时选择</option><option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option></select></label>
         <label class="settings-row"><span>资料馆默认视角</span><select aria-label="资料馆默认视角" :value="preferences.portalDefaultScope || 'favorite'" @change="emit('save-startup',{portalDefaultScope:$event.target.value})"><option value="favorite">我的担当档案</option><option value="all">全站档案大厅</option></select></label>
         <label class="settings-row"><span>资料语言</span><select aria-label="资料语言" :value="uiLocale" @change="saveArchiveLocale($event.target.value)"><option value="zh-CN">中文译文</option><option value="ja-JP">日本語原文</option></select></label>
         <label class="settings-row"><span>剧情正文</span><select aria-label="剧情正文" :value="player.story_content_mode" @change="savePlayer({story_content_mode:$event.target.value})"><option value="original">原文</option><option value="translation">中文译文</option><option value="bilingual">双语</option></select></label>
@@ -32,16 +32,16 @@
 
       <section class="settings-group" aria-labelledby="settings-sound">
         <h2 id="settings-sound">声音</h2>
-        <label class="settings-row"><span>主页自动语音</span><input type="checkbox" aria-label="主页自动语音" :checked="home.autoVoice" @change="home=saveArchiveHomePreferences({...home,autoVoice:$event.target.checked})" /></label>
+        <label class="settings-row"><span>事务所自动语音</span><input type="checkbox" aria-label="事务所自动语音" :checked="home.autoVoice" @change="home=saveArchiveHomePreferences({...home,autoVoice:$event.target.checked})" /></label>
         <label class="settings-row"><span>主音量</span><span class="volume-control"><input type="range" aria-label="主音量" min="0" max="1" step="0.01" :value="player.volumes.master" @input="savePlayer({volumes:{master:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.master*100) }}%</output></span></label>
         <label class="settings-row"><span>剧情 BGM</span><span class="volume-control"><input type="range" aria-label="剧情 BGM 音量" min="0" max="1" step="0.01" :value="player.volumes.bgm" @input="savePlayer({volumes:{bgm:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.bgm*100) }}%</output></span></label>
         <label class="settings-row"><span>语音</span><span class="volume-control"><input type="range" aria-label="语音音量" min="0" max="1" step="0.01" :value="player.volumes.voice" @input="savePlayer({volumes:{voice:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.voice*100) }}%</output></span></label>
-        <p class="settings-note">主音量用于剧情、主页语音和歌曲单曲／谱面试听；主页自动语音仍需浏览器允许播放。</p>
+        <p class="settings-note">主音量用于剧情、事务所语音和歌曲单曲／谱面试听；事务所自动语音仍需浏览器允许播放。</p>
       </section>
 
       <section class="settings-group" aria-labelledby="settings-backup">
         <h2 id="settings-backup">本地备份</h2>
-        <p class="settings-note">设置只保存在当前浏览器。配置文件包含姓名、担当、启动与显示、主页、声音和壁纸偏好，换设备后可导入恢复；不包含游戏资源、阅读进度或收藏。</p>
+        <p class="settings-note">设置只保存在当前浏览器。配置文件包含姓名、担当、启动与显示、事务所、声音和壁纸偏好，换设备后可导入恢复；不包含游戏资源、阅读进度或收藏。</p>
         <div class="settings-actions">
           <button type="button" class="settings-button" @click="download"><Download :size="16" />导出配置</button>
           <label class="settings-button import-control"><Upload :size="16" />导入配置<input type="file" accept=".json,application/json" aria-label="导入配置文件" @change="readImport" /></label>
@@ -50,8 +50,8 @@
       </section>
     </div>
     <ArchiveTerminalDialog :open="favoriteOpen" title="选择担当" title-id="settings-favorite-title" @close="favoriteOpen=false"><ArchiveIdolPickerPanel :idols="preferredIdols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferences.preferredIdol || ''" @update:model-value="emit('save-preferred',$event);favoriteOpen=false" /><button type="button" class="settings-text-button" @click="emit('save-preferred','');favoriteOpen=false">暂不设置担当</button></ArchiveTerminalDialog>
-    <ArchiveTerminalDialog :open="Boolean(pendingImport)" title="恢复配置" title-id="settings-import-title" @close="pendingImport=null"><p>将恢复姓名、担当、启动、主页、语言、声音与壁纸偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class="settings-button settings-primary" type="button" @click="restore(pendingImport)">确认恢复</button></ArchiveTerminalDialog>
-    <ArchiveTerminalDialog :open="resetOpen" title="重置本站偏好" title-id="settings-reset-title" @close="resetOpen=false"><p>姓名、担当、启动、语言、声音、主页和壁纸偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class="settings-button settings-primary" type="button" @click="restore(defaultArchiveSettings())">确认重置偏好</button></ArchiveTerminalDialog>
+    <ArchiveTerminalDialog :open="Boolean(pendingImport)" title="恢复配置" title-id="settings-import-title" @close="pendingImport=null"><p>将恢复姓名、担当、启动、事务所、语言、声音与壁纸偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class="settings-button settings-primary" type="button" @click="restore(pendingImport)">确认恢复</button></ArchiveTerminalDialog>
+    <ArchiveTerminalDialog :open="resetOpen" title="重置本站偏好" title-id="settings-reset-title" @close="resetOpen=false"><p>姓名、担当、启动、语言、声音、事务所和壁纸偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class="settings-button settings-primary" type="button" @click="restore(defaultArchiveSettings())">确认重置偏好</button></ArchiveTerminalDialog>
   </section>
 </template>
 <script setup>

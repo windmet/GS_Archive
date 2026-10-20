@@ -45,6 +45,8 @@ export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
   'idol_detail', 'unit_detail', 'card_detail', 'song_detail',
   // Their address is only the event or gasha; the owned opened-from fields move to history state on write (archiveRoute.js).
   'event_detail', 'gasha_detail',
+  // Published at /office/<idol>/ and /mobile/<idol>/; App.vue applyRoute reads only their entries' fields.
+  'home', 'mobile_archive',
 ]))
 
 // Context parameters are moved into history state by writeArchiveRoute; the builder may still carry them.

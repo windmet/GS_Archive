@@ -209,7 +209,7 @@ export function useStoryArchiveNavigation({
     const request = ++pendingWorkNavigation
     navigation.invalidate()
     const revision = navigation.getRevision()
-    workReadModelStatus.value = '正在读取工作档案…'
+    workReadModelStatus.value = '正在读取工作剧情…'
     loading.value = true
     return prepareArchivePage('work_archive', loadWorkDetail(idolCode)).then(detail => {
       if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
@@ -227,7 +227,7 @@ export function useStoryArchiveNavigation({
       if (request !== pendingWorkNavigation || revision !== navigation.getRevision()) return
       loading.value = false
       console.error('[WorkReadModel] Failed to open idol:', error)
-      workReadModelStatus.value = '工作档案暂时无法读取，请重试。'
+      workReadModelStatus.value = '工作剧情暂时无法读取，请重试。'
     })
   }
 
@@ -236,7 +236,7 @@ export function useStoryArchiveNavigation({
     const request = ++pendingWorkNavigation
     navigation.invalidate()
     const revision = navigation.getRevision()
-    workReadModelStatus.value = '正在切换工作档案…'
+    workReadModelStatus.value = '正在切换工作剧情…'
     loading.value = true
     return prepareArchivePage('work_archive', loadWorkDetail(idolCode)).then(detail => {
       if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
@@ -249,7 +249,7 @@ export function useStoryArchiveNavigation({
       if (request !== pendingWorkNavigation || revision !== navigation.getRevision()) return
       loading.value = false
       console.error('[WorkReadModel] Failed to switch idol:', error)
-      workReadModelStatus.value = '工作档案切换失败，请重试。'
+      workReadModelStatus.value = '工作剧情切换失败，请重试。'
     })
   }
 
@@ -269,7 +269,7 @@ export function useStoryArchiveNavigation({
     const request = ++pendingIdolStoryNavigation
     navigation.invalidate()
     const revision = navigation.getRevision()
-    idolStoryReadModelStatus.value = '正在读取个人故事…'
+    idolStoryReadModelStatus.value = '正在读取个人剧情…'
     loading.value = true
     return prepareArchivePage('idol_story_archive', loadIdolStoryDetail(idolCode)).then(detail => {
       if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
@@ -288,7 +288,7 @@ export function useStoryArchiveNavigation({
       if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision()) return
       loading.value = false
       console.error('[IdolStoryReadModel] Failed to open idol:', error)
-      idolStoryReadModelStatus.value = '个人故事暂时无法读取，请重试。'
+      idolStoryReadModelStatus.value = '个人剧情暂时无法读取，请重试。'
     })
   }
 
@@ -297,7 +297,7 @@ export function useStoryArchiveNavigation({
     const request = ++pendingIdolStoryNavigation
     navigation.invalidate()
     const revision = navigation.getRevision()
-    idolStoryReadModelStatus.value = '正在切换个人故事…'
+    idolStoryReadModelStatus.value = '正在切换个人剧情…'
     loading.value = true
     return prepareArchivePage('idol_story_archive', loadIdolStoryDetail(idolCode)).then(detail => {
       if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
@@ -312,7 +312,7 @@ export function useStoryArchiveNavigation({
       if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision()) return
       loading.value = false
       console.error('[IdolStoryReadModel] Failed to switch idol:', error)
-      idolStoryReadModelStatus.value = '个人故事切换失败，请重试。'
+      idolStoryReadModelStatus.value = '个人剧情切换失败，请重试。'
     })
   }
 
@@ -366,7 +366,7 @@ export function useStoryArchiveNavigation({
     catch (error) {
       if (revision !== navigation.getRevision()) return
       console.error('[IdolStoryReadModel] Failed to open mobile relation:', error)
-      idolStoryReadModelStatus.value = '个人故事暂时无法读取，请重试。'
+      idolStoryReadModelStatus.value = '个人剧情暂时无法读取，请重试。'
       return
     }
     if (revision !== navigation.getRevision() || navigation.isDisposed()) return
@@ -428,7 +428,7 @@ export function useStoryArchiveNavigation({
       } catch (error) {
         if (!isCurrent()) return null
         console.error('[WorkReadModel] Failed to restore idol:', error)
-        workReadModelStatus.value = '工作档案暂时无法读取，请稍后重试。'
+        workReadModelStatus.value = '工作剧情暂时无法读取，请稍后重试。'
         route = { view: 'idol_picker', pickTarget: 'work' }
       }
     }
@@ -441,7 +441,7 @@ export function useStoryArchiveNavigation({
       } catch (error) {
         if (!isCurrent()) return null
         console.error('[IdolStoryReadModel] Failed to restore idol:', error)
-        idolStoryReadModelStatus.value = '个人故事暂时无法读取，请稍后重试。'
+        idolStoryReadModelStatus.value = '个人剧情暂时无法读取，请稍后重试。'
         route = { view: 'idol_picker', pickTarget: 'story' }
       }
     }

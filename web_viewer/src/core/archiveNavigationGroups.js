@@ -1,31 +1,24 @@
 import { ARCHIVE_NAVIGATION } from './archiveRoute.js'
+import { ARCHIVE_SECTIONS, ARCHIVE_SECTION_GROUPS } from './archiveSections.js'
 import { isMaintainerMode } from './maintainerMode.js'
 
 // Sections that only describe the archive's own build state, not the game.
 const MAINTAINER_SECTIONS = new Set(['resources'])
 
 // Seven destinations (eight in maintainer mode) organised by what a reader came for. Sub-sections keep their
-// route identities; a destination with one visible section renders as a direct link.
-// `names` relabels a section inside its destination so a menu never reads "故事 → 故事".
-const DESTINATIONS = [
-  { id: 'stories', label: '故事', ids: ['stories', 'interactions'], names: { stories: '剧情' } },
-  { id: 'people', label: '偶像与卡片', ids: ['idols', 'cards'] },
-  { id: 'songs', label: '歌曲', ids: ['songs'] },
-  { id: 'history', label: '活动与卡池', ids: ['events', 'gashas'] },
-  { id: 'collection', label: '收藏', ids: ['collections', 'honors', 'currencies', 'costumes', 'photos', 'unused'] },
-  // Things to do rather than browse: each opens its own landing page and has no sub-sections.
-  { id: 'live', label: 'LIVE', ids: ['live'] },
-  { id: 'studio', label: '摄影工作台', ids: ['studio'] },
-  { id: 'resources', label: '资源', ids: ['resources'] },
-]
+// route identities; a destination with one visible section renders as a direct link. Group and section
+// names come from archiveSections.js.
+const NAVIGABLE = new Set(ARCHIVE_NAVIGATION.map(item => item.id))
+const DESTINATIONS = ARCHIVE_SECTION_GROUPS.map(group => ({
+  ...group, ids: Object.values(ARCHIVE_SECTIONS).filter(section => section.groupId === group.id && NAVIGABLE.has(section.id)).map(section => section.id),
+}))
 
 export function buildNavigationGroups(maintainer = isMaintainerMode()) {
   return DESTINATIONS.map(group => ({
     ...group,
     items: group.ids
       .filter(id => maintainer || !MAINTAINER_SECTIONS.has(id))
-      .map(id => ARCHIVE_NAVIGATION.find(item => item.id === id))
-      .map(item => group.names?.[item.id] ? { ...item, label: group.names[item.id] } : item),
+      .map(id => ARCHIVE_NAVIGATION.find(item => item.id === id)),
   })).filter(group => group.items.length)
 }
 

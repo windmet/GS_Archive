@@ -5,6 +5,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { createArchiveAssetResolver } from './scripts/lib/archive-assets.mjs'
 import { archiveBootstrapPlugin } from './scripts/lib/archive-bootstrap-plugin.mjs'
+import { loadArchiveSources } from './scripts/lib/archive-sources.mjs'
+import { publicCorpusPlugin } from './scripts/lib/public-corpus-plugin.mjs'
 
 const assetResolver = createArchiveAssetResolver()
 const STORY_CANDIDATE_ROOT = path.resolve(
@@ -433,6 +435,8 @@ export default defineConfig({
     rawBackgroundCandidatePlugin(),
     rawCharacterImageCandidatePlugin(),
     rawAudioCandidatePlugin(),
+    // Last: the plugins above answer their own /assets and /data mounts first.
+    publicCorpusPlugin({ corpusPublic: loadArchiveSources().publishRoot }),
   ],
   optimizeDeps: {
     noDiscovery: true,

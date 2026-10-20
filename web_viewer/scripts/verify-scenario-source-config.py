@@ -65,7 +65,8 @@ with tempfile.TemporaryDirectory() as temporary:
     config.write_text(json.dumps(payload))
     fallback = LocalScenarioResources.from_archive_sources(archive_paths.load_archive_sources(config), environment={})
     assert Path(fallback.LIPSYNC_ROOT) == root/'sources/legacy_curated/scripts/lipsyncdata/adxlip'
-    with patch.dict(os.environ, {}, clear=True), patch.object(archive_paths, 'DEFAULT_LOCAL_CONFIG', root/'missing-local.json'):
+    # No local config anywhere: neither this checkout's nor, in a linked worktree, the main checkout's.
+    with patch.dict(os.environ, {}, clear=True), patch.object(archive_paths, 'DEFAULT_LOCAL_CONFIG', root/'missing-local.json'),             patch.object(archive_paths, 'main_checkout_root', lambda *_: None):
         defaults = LocalScenarioResources.from_archive_sources(archive_paths.load_archive_sources())
         assert Path(defaults.AUDIO_ROOT) == archive_paths.REPO_ROOT/'sources/legacy_curated/GS_Res/Audio'
 print('Scenario source config: configured/overridden/default roots, JS serving parity, actual candidate CLI and missing-config failure passed')

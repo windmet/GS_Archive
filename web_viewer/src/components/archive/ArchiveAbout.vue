@@ -9,15 +9,15 @@
       <p v-for="(text, index) in section.paragraphs" :key="index">{{ text }}</p>
     </section>
 
-    <section class="about-section" aria-labelledby="about-contact">
+    <section v-if="content.contact.paragraphs.length || content.contact.links.length" class="about-section" aria-labelledby="about-contact">
       <h2 id="about-contact">{{ content.contact.heading }}</h2>
       <p v-for="(text, index) in content.contact.paragraphs" :key="index">{{ text }}</p>
-      <ul class="about-links">
+      <ul v-if="content.contact.links.length" class="about-links">
         <li v-for="link in content.contact.links" :key="link.label"><AboutLink :link="link" /></li>
       </ul>
     </section>
 
-    <section class="about-section" aria-labelledby="about-links">
+    <section v-if="content.linkGroups.length" class="about-section" aria-labelledby="about-links">
       <h2 id="about-links">友情链接</h2>
       <div class="about-link-groups">
         <div v-for="group in content.linkGroups" :key="group.heading">
@@ -29,7 +29,7 @@
       </div>
     </section>
 
-    <section class="about-section" aria-labelledby="about-thanks">
+    <section v-if="content.thanks.paragraphs.length" class="about-section" aria-labelledby="about-thanks">
       <h2 id="about-thanks">{{ content.thanks.heading }}</h2>
       <p v-for="(text, index) in content.thanks.paragraphs" :key="index">{{ text }}</p>
     </section>
@@ -39,9 +39,26 @@
 <script setup>
 import { h } from 'vue'
 import { ArrowUpRight } from '@lucide/vue'
-import { ABOUT_CONTENT as content } from '../../content/aboutContent.js'
+import { ABOUT_CONTENT } from '../../content/aboutContent.js'
+import { isMaintainerMode } from '../../core/maintainerMode.js'
 
-// A link with an empty url is still listed, as "待补充", so missing entries stay visible.
+// Unfinished entries (a 【待填写…】 paragraph, a link without url) stay visible to maintainers, so
+// the gaps are easy to find; readers see only what is written, and a section left empty is dropped.
+const isPending = text => /^【待填写/.test(text)
+function readerContent(source) {
+  const paragraphs = list => list.filter(text => !isPending(text))
+  const links = list => list.filter(link => link.url)
+  return {
+    ...source,
+    sections: source.sections.map(section => ({ ...section, paragraphs: paragraphs(section.paragraphs) })).filter(section => section.paragraphs.length),
+    contact: { ...source.contact, paragraphs: paragraphs(source.contact.paragraphs), links: links(source.contact.links) },
+    linkGroups: source.linkGroups.map(group => ({ ...group, links: links(group.links) })).filter(group => group.links.length),
+    thanks: { ...source.thanks, paragraphs: paragraphs(source.thanks.paragraphs) },
+  }
+}
+const content = isMaintainerMode() ? ABOUT_CONTENT : readerContent(ABOUT_CONTENT)
+
+// For maintainers a link with an empty url is still listed, as "待补充".
 const AboutLink = {
   props: { link: Object },
   setup: props => () => props.link.url

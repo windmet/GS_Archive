@@ -59,6 +59,8 @@ for (const shell of entityShells) {
   await fs.mkdir(path.dirname(path.join(dist, shell.path)), { recursive: true })
   await fs.writeFile(path.join(dist, shell.path), shell.html, { flag: 'wx' })
 }
+// Every folder that holds a head shell revalidates, so a new release is never hidden behind a cached shell.
+const shellSections = [...new Set(entityShells.map(shell => shell.path.split('/')[0]))].sort()
 const workRelease = '2026-09-28-story-work-text-backfill-001'
 const readingManifest = JSON.parse(await fs.readFile(path.join(root, 'public/data/reading/manifest.json'), 'utf8'))
 const workEntries = readingManifest.entries.filter(entry => entry.domain === 'work')
@@ -108,31 +110,9 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
   Cache-Control: no-store
 /index.html
   Cache-Control: no-cache
-/idols/*
+${shellSections.map(section => `/${section}/*
   Cache-Control: no-cache
-/units/*
-  Cache-Control: no-cache
-/cards/*
-  Cache-Control: no-cache
-/songs/*
-  Cache-Control: no-cache
-/events/*
-  Cache-Control: no-cache
-/gashas/*
-  Cache-Control: no-cache
-/stories/*
-  Cache-Control: no-cache
-/items/*
-  Cache-Control: no-cache
-/honors/*
-  Cache-Control: no-cache
-/currencies/*
-  Cache-Control: no-cache
-/costumes/*
-  Cache-Control: no-cache
-/photos/*
-  Cache-Control: no-cache
-`)
+`).join('')}`)
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',
   vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_DATA_REVISION: a['--data-revision'],
