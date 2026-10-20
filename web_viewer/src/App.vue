@@ -16,6 +16,7 @@
       :search-placeholder="archiveSearchPlaceholder"
       :show-back="archiveShowBack"
       :breadcrumbs="archiveBreadcrumbs"
+      :root-section="archiveRootSection"
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
@@ -1361,7 +1362,7 @@ const {
 })
 
 const {
-  openArchiveUnit, openUnitFromIdol, openUnitMember, openUnitStory,
+  openArchiveUnit, openUnitCatalog, openUnitFromIdol, openUnitMember, openUnitStory,
   openUnitEvent, loadUnitCatalog, loadUnitDetail, unitCatalogEntries,
   currentArchiveUnit, currentArchiveUnitEntry, currentArchiveUnitMembers, currentArchiveUnitStories,
   currentArchiveUnitSongs, prepareUnitRoute, invalidateUnitNavigation,
@@ -1571,6 +1572,11 @@ watch(() => archiveDocumentTitle(view.value, archiveTabEntityName.value), title 
   if (title) document.title = title
 }, { immediate: true })
 
+// A section's own root page, for the sibling switch beside its title; detail and sub-pages have none.
+const ROOT_PAGE_SECTIONS = { story_catalog: 'stories', mobile_archive: 'interactions', idols: 'idols', unit_catalog: 'units', cards: 'cards',
+  event_catalog: 'events', gashas: 'gashas' }
+const archiveRootSection = computed(() => archiveBreadcrumbs.value.length === 2 && !(view.value === 'idols' && currentCategoryId.value !== 'idol')
+  ? ROOT_PAGE_SECTIONS[view.value] || '' : '')
 const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
   const entityByView = {
@@ -2070,7 +2076,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','about'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'units', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2078,6 +2084,7 @@ function navigateArchiveSection(section) {
   else if (section === 'stories') openStoryCatalog()
   else if (section === 'songs') openSongCatalog()
   else if (section === 'idols') openIdolDirectory()
+  else if (section === 'units') openUnitCatalog()
   else if (section === 'cards') openPrimaryCards(preferredArchiveIdol.value?.id || '')
   else if (section === 'interactions') {
     if (preferredArchiveIdol.value) openMobileArchive({ idolCode: preferredArchiveIdol.value.id, mode: 'personal', fromSection: true })

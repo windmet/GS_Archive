@@ -11,6 +11,9 @@
         <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'home' }" :aria-current="activeSection === 'home' ? 'page' : undefined" @click="emit('navigate', 'home')">
           <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ sectionLabel('home') }}</span>
         </button>
+        <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')">
+          <LayoutGrid :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ sectionLabel('portal') }}</span>
+        </button>
         <template v-for="group in navigationGroups" :key="group.id">
           <hr v-if="group.id === 'live'" class="archive-nav-divider" />
           <div class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id }">
@@ -38,7 +41,12 @@
       <template #title>
         <div class="archive-heading">
           <ArchiveBreadcrumb :items="breadcrumbs" />
-          <h1>{{ title }}</h1>
+          <div class="archive-title-row">
+            <h1>{{ title }}</h1>
+            <nav v-if="siblingSections.length" class="archive-sibling-switch" aria-label="同组栏目">
+              <button v-for="section in siblingSections" :key="section.id" type="button" @click="emit('navigate', section.id)">{{ section.label }}</button>
+            </nav>
+          </div>
         </div>
       </template>
       <template #actions>
@@ -92,7 +100,7 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
-import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
+import { ARCHIVE_BRAND, ARCHIVE_SECTIONS, sectionLabel } from '../../core/archiveSections.js'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -105,6 +113,8 @@ const props = defineProps({
   showBack: { type: Boolean, default: false },
   hasInspector: { type: Boolean, default: false },
   breadcrumbs: { type: Array, default: () => [] },
+  // The section whose own root page is showing (剧情, 组合, 卡池…); '' on detail and other pages.
+  rootSection: { type: String, default: '' },
 })
 const mobileSearchOpen = ref(Boolean(props.modelValue))
 watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
@@ -117,6 +127,14 @@ const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: Ca
 const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, icon: groupIcons[group.id] }))
 const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
 const activeNavigationGroup = computed(() => navigationGroups.find(group => group.ids.includes(navigationSection.value))?.id || '')
+
+// A root page names the other pages of its group beside its title (剧情 | 通信, 偶像 | 组合 | 卡片, 活动 | 卡池).
+// Groups larger than three (图鉴) keep their sections to the sidebar.
+const siblingSections = computed(() => {
+  const groupId = ARCHIVE_SECTIONS[props.rootSection]?.groupId
+  const group = groupId ? Object.values(ARCHIVE_SECTIONS).filter(section => section.groupId === groupId) : []
+  return group.length > 1 && group.length <= 3 ? group.filter(section => section.id !== props.rootSection) : []
+})
 
 // A destination opens its first section; its other sections appear beneath it while it is current.
 function openDestination(group) {
@@ -290,6 +308,12 @@ const mobileNavigation = computed(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.archive-title-row { display: flex; align-items: baseline; gap: var(--gs-space-4); min-width: 0; }
+.archive-sibling-switch { display: flex; flex: none; align-items: baseline; gap: var(--gs-space-1); }
+.archive-sibling-switch button { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
+.archive-sibling-switch button + button::before { content: "·"; margin-right: var(--gs-space-3); color: var(--gs-line); }
+.archive-sibling-switch button:hover { color: var(--gs-mint-ink); }
+.archive-sibling-switch button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .archive-heading {
   display: flex;
   flex-direction: column;
@@ -381,6 +405,8 @@ const mobileNavigation = computed(() => {
   }
 }
 
+/* Phones reach a group's other pages from the navigation drawer. */
+@media (max-width: 760px) { .archive-sibling-switch { display: none; } }
 @media (max-width: 760px) {
   .archive-shell, .archive-shell.has-inspector {
     --archive-sidebar: 0px;

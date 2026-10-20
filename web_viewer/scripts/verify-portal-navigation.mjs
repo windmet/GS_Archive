@@ -261,6 +261,11 @@ for (const item of ARCHIVE_NAVIGATION) assert.equal(item.label, ARCHIVE_SECTIONS
 assert.deepEqual(buildArchiveBreadcrumbs({ view: 'picture_studio' }).map(item => item.label), ['资料馆', '摄影工作台'], 'the studio hangs from the root')
 const iconSource = readFileSync(new URL('../src/components/archive/archiveNavigationIcons.js', import.meta.url), 'utf8')
 for (const item of ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items)) assert.match(iconSource, new RegExp(`[\\s,{]${item.id}\\s*:`), `${item.id} has a directory glyph`)
+// Desktop sidebar: an explicit 资料馆 entry, and each root page names its group's other pages beside its title.
+const shellSource = readFileSync(new URL('../src/components/archive/ArchiveShell.vue', import.meta.url), 'utf8')
+assert.match(shellSource, /@click="emit\('navigate', 'portal'\)">\s*<LayoutGrid[^>]*\/><span>\{\{ sectionLabel\('portal'\) \}\}<\/span>/, 'sidebar lists 资料馆 as an entry')
+assert.match(app, /:root-section="archiveRootSection"/, 'App tells the shell which root page is showing')
+assert.match(app, /else if \(section === 'units'\) openUnitCatalog\(\)/, '组合 in the switch opens the unit directory')
 console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs; portal lens always in the address passed')
 import { ARCHIVE_SECTIONS } from '../src/core/archiveSections.js'
 import { buildArchiveBreadcrumbs } from '../src/core/archiveRoute.js'
