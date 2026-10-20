@@ -1251,8 +1251,13 @@ onMounted(async () => {
     if (stageDisposed) return
     // Native speed is required for both initial poses and transport. Missing
     // clocks must not silently render an assumed BPM/timeScale=1.
-    motionClockData.value = await fetchLiveChibiMotionClock(manifest.value.choreography.index,{signal:lifetime.signal,binding:choreography.value})
+    const [clock,music]=await Promise.all([
+      fetchLiveChibiMotionClock(manifest.value.choreography.index,{signal:lifetime.signal,binding:choreography.value}),
+      fetchLiveChibiMusicIndex({signal:lifetime.signal}),
+    ])
     if (stageDisposed) return
+    motionClockData.value=clock
+    musicIndex.value=music
     if (MAINTAINER) {
       commandInventoryState.value = 'loading'
       void fetchLiveChibiCommandInventory(manifest.value.choreography.index, {signal:lifetime.signal,binding:choreography.value})
@@ -1266,8 +1271,6 @@ onMounted(async () => {
           console.warn('[ChibiStage] RAW command inventory unavailable', error)
         })
     }
-    musicIndex.value = await fetchLiveChibiMusicIndex({signal:lifetime.signal})
-    if (stageDisposed) return
     initializeLineup()
     selectedSongId.value = props.stageTargetId
       ? (songs.value.find(song => song.id === props.stageTargetId && song.songCode === props.stageSongCode)?.id || '')
@@ -1277,14 +1280,14 @@ onMounted(async () => {
       errorText.value = '所选歌曲的舞台版本与本地编舞资源不一致。'
       return
     }
-    choreography.value = await fetchLiveChibiSongChoreography(manifest.value.choreography.index,selectedSongId.value,{signal:lifetime.signal})
+    const [index,lighting]=await Promise.all([
+      fetchLiveChibiSongChoreography(manifest.value.choreography.index,selectedSongId.value,{signal:lifetime.signal}),
+      fetchLiveChibiStageEffectSong(selectedSongId.value,{signal:lifetime.signal,binding:choreography.value}),
+    ])
     if (stageDisposed) return
-    const lighting=await fetchLiveChibiStageEffectSong(selectedSongId.value,{signal:lifetime.signal,binding:choreography.value})
-    if (stageDisposed) return
+    choreography.value=index
     stageEffectIndex.value=lighting.effects
     stagelightData.value=lighting.commands
-    await Promise.all([loadCurrentPenlights(),loadCurrentObjectIndex()])
-    if (stageDisposed) return
     const resolvedHandoff = resolveSongStageHandoff(props.stageHandoff, selectedSong.value, characters.value)
     if (resolvedHandoff) {
       handoffLineup.value = resolvedHandoff.stageLineup
@@ -1338,7 +1341,9 @@ onMounted(async () => {
       try {install(target,await load(optionalOptions),sync)}
       catch(error) {if(!stageDisposed)console.warn('[ChibiStage] optional index unavailable',error)}
     })
-    await Promise.all([loadSongLipSync(), loadSongAudio(), stageVocalEnabled.value ? loadStageVocalAudio() : Promise.resolve()])
+    // These inputs share the selected song, but do not depend on one another.
+    // Keep the actor/seek barrier after all required input jobs have settled.
+    await Promise.all([loadCurrentPenlights(),loadCurrentObjectIndex(),loadSongLipSync(), loadSongAudio(), stageVocalEnabled.value ? loadStageVocalAudio() : Promise.resolve()])
     if (stageDisposed) return
     await rebuildStage()
   } catch (error) {
