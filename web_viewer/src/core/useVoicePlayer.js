@@ -4,6 +4,7 @@ import { sampleLipCurve, sampleLipScale } from '../utils/LipSyncHelpers.js'
 import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
+import { nativeVoiceRoute } from './story-runtime/nativeAudioBuses.js'
 import { compressedVoiceCache } from './CompressedVoiceCache.js'
 import { VoiceMediaOutput } from './VoiceMediaOutput.js'
 import { createVoiceLipStore } from './VoiceLipStore.js'
@@ -191,6 +192,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
       owner.controller.abort()
       owner.source && (owner.source.onended = null)
       try { owner.source?.stop(); owner.source?.disconnect() } catch {}
+      owner.unroute?.()
       owner.release?.()
       releasePreparedVoice(owner.prepared)
     }
@@ -225,13 +227,15 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
         // In manual compatibility retry this executes before the first await,
         // preserving the user's play gesture when the context is already running.
         const started = await media.start(prepared.url, { signal: owner.controller.signal, cue: prepared.voice,
+          route: nativeVoiceRoute(prepared.url),
           onEnded: ended, onFailure: failed, onState: state => { if (isCurrent()) setVoiceState(state) } })
         if (!started || !isCurrent()) return false
       } else {
         const source = audioCtx.createBufferSource()
         owner.source = source
         source.buffer = prepared.audioBuffer
-        source.connect(session.getBus('voice'))
+        // Phone/TV lines and reverb come from the voice cue's CRI bus sends.
+        owner.unroute = session.routeSource(source, { bus: 'voice', route: nativeVoiceRoute(prepared.url) })
         owner.release = session.registerSource(source, { bus: 'voice', kind: 'dialogue', cue: prepared.voice })
         owner.startedAt = session.currentTime()
         source.onended = ended

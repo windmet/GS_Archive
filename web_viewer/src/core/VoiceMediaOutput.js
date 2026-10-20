@@ -15,6 +15,7 @@ export class VoiceMediaOutput {
     this.timeoutMs = timeoutMs
     this.element = null
     this.node = null
+    this.unroute = null
     this.active = null
   }
   ensureElement() {
@@ -24,14 +25,20 @@ export class VoiceMediaOutput {
       this.element.preload = 'auto'
       this.element.playsInline = true
       this.node = this.session.ensureContext().createMediaElementSource(this.element)
-      this.node.connect(this.session.getBus('voice'))
+      this.unroute = this.session.routeSource(this.node, { bus: 'voice' })
     }
     return this.element
   }
-  start(url, { signal, cue, onEnded = () => {}, onFailure = () => {}, onState = () => {} } = {}) {
+  /** The element is reused, so each line re-applies its own CRI bus sends. */
+  setRoute(route) {
+    this.unroute?.()
+    this.unroute = this.session.routeSource(this.node, { bus: 'voice', route })
+  }
+  start(url, { signal, cue, route = null, onEnded = () => {}, onFailure = () => {}, onState = () => {} } = {}) {
     this.stop()
     signal?.throwIfAborted()
     const element = this.ensureElement()
+    this.setRoute(route)
     const owner = { element, timer: null, cleanup: null, release: null }
     this.active = owner
     const current = () => this.active === owner && !signal?.aborted
@@ -112,5 +119,5 @@ export class VoiceMediaOutput {
       readyState: element.readyState, networkState: element.networkState, paused: element.paused,
       muted: element.muted, volume: element.volume, mediaError: element.error?.code || null } : null
   }
-  dispose() { this.stop(); this.node?.disconnect(); this.node = null; this.element = null }
+  dispose() { this.stop(); this.unroute?.(); this.unroute = null; this.node?.disconnect(); this.node = null; this.element = null }
 }

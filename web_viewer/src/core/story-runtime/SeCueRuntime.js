@@ -11,7 +11,7 @@ export function createSeCueHandle(cue, audioManager) {
     metadata: { action: cue.action, cue },
     onStart: () => {
       console.debug('[StoryRuntime] cue start', cue.cue_id)
-      audioManager.playSE(cue.payload.cue)
+      audioManager.playSE(cue.payload.cue, { sheet: cue.payload.sheet })
     },
     // A transient cue settled before its authored timestamp is suppressed.
     onSettle: () => console.debug('[StoryRuntime] cue suppress', cue.cue_id),
