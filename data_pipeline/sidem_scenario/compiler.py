@@ -22,6 +22,7 @@ from .audio_commands import (
     authors_story_audio,
 )
 from .commands import COMMAND_HANDLERS, SELECTION_COMMANDS
+from .native_cuts import is_cut_end, wait_seconds
 from . import text_identity
 from .file_io import ScenarioFileIO
 from .resources import ScenarioResources, LegacyCompilerResources
@@ -32,6 +33,15 @@ class ScenarioCompiler(ScenarioFileIO):
     State-machine compiler for raw SideM scenario JSON.
     Walks Command array, dispatches by Type, snapshots on dialogue.
     """
+
+    # Client cuts (native_cuts.py). A cut that yields no step but holds a wait
+    # keeps the screen for that long: post_wait on the step before it, or
+    # pre_wait on the next step when the cut opens a part or a jump label.
+    _cut_has_step = False
+    _part_has_step = False
+    _cut_wait = 0.0
+    _cut_label = False
+    _pending_pre_wait = 0.0
 
     LIPSYNC_ROOT = os.environ.get(
         "SIDEM_LIPSYNC_ROOT",
@@ -136,8 +146,10 @@ class ScenarioCompiler(ScenarioFileIO):
                 source: Optional[dict] = None,
                 compiler_version: str = "scenario-compiler-python-v2") -> dict:
         commands = self.raw.get("Command", [])
+        self._begin_native_part()
         for command_index, cmd in enumerate(commands):
             self._process(cmd, command_index)
+        self._end_native_part()
         self._flush_pending_text_disable()
         result = self._output()
         if source is not None:
@@ -181,8 +193,10 @@ class ScenarioCompiler(ScenarioFileIO):
             compiler._set_source_context(source_id, source_file)
             compiler._raw_control_parts[source_id] = (source_file, data)
             compiler._begin_episode(source_id)
+            compiler._begin_native_part()
             for command_index, cmd in enumerate(data.get("Command", [])):
                 compiler._process(cmd, command_index)
+            compiler._end_native_part()
             compiler._flush_pending_text_disable()
             compiler._end_episode()
         result = compiler._output()
@@ -309,6 +323,38 @@ class ScenarioCompiler(ScenarioFileIO):
         if handler:
             handler(vals)
         # else: silently skip unknown / no-op commands
+        if ctype == "wait":
+            self._cut_wait = wait_seconds(vals)
+        elif ctype == "jump_point" and vals and vals[0]:
+            self._cut_label = True
+        if is_cut_end(ctype):
+            self._close_native_cut()
+
+    def _close_native_cut(self):
+        wait = self._cut_wait
+        if wait > 0 and not self._cut_has_step:
+            # Later wait cuts behind the same label still precede the step it jumps to.
+            if self._cut_label or self._pending_pre_wait or not self._part_has_step:
+                self._pending_pre_wait += wait
+            else:
+                previous = self.steps[-1]
+                previous["post_wait"] = round(previous.get("post_wait", 0.0) + wait, 3)
+        self._cut_has_step = False
+        self._cut_wait = 0.0
+        self._cut_label = False
+
+    def _begin_native_part(self):
+        self._part_has_step = self._cut_has_step = False
+        self._cut_wait = 0.0
+        self._cut_label = False
+
+    def _end_native_part(self):
+        self._close_native_cut()
+        if self._pending_pre_wait and self._part_has_step:
+            # A hold after the part's last step with no later step to enter.
+            last = self.steps[-1]
+            last["post_wait"] = round(last.get("post_wait", 0.0) + self._pending_pre_wait, 3)
+        self._pending_pre_wait = 0.0
 
     # ----------------------------------------------------------------
     # Scene state commands
@@ -1323,6 +1369,9 @@ class ScenarioCompiler(ScenarioFileIO):
             },
         }
         self.steps.append(step)
+        # The choice belongs to the selection's own cut, which already closed;
+        # a wait behind the branch labels still precedes the branch.
+        self._part_has_step = True
         self._pending_selection = None
         self._pending_choice_count += 1
 
@@ -1706,6 +1755,11 @@ class ScenarioCompiler(ScenarioFileIO):
             "state": self.state.snapshot(),
             "evidence": self._step_evidence(),
         }
+
+        self._cut_has_step = self._part_has_step = True
+        if self._pending_pre_wait:
+            step["pre_wait"] = round(self._pending_pre_wait, 3)
+            self._pending_pre_wait = 0.0
 
         if step_type == "stage":
             step["duration"] = duration if duration is not None else 0.6

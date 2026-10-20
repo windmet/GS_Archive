@@ -267,6 +267,8 @@ import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRe
 import { playerLanguageStatus } from '../components/player/PlayerLanguageStatus.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
+import { createNativeCutWait, nativeWaitSeconds } from './story-runtime/NativeCutWait.js'
+import { finiteBranchNextIndex, finiteChoiceTargetIndex } from '../../shared/story/FiniteBranchFlow.js'
 import { releaseSoakRecorder } from './story-runtime/ReleaseSoakRecorder.js'
 import { storyReleaseProbe } from './story-runtime/StoryReleaseProbe.js'
 import {
@@ -446,6 +448,8 @@ let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
 let playbackController = null
 let pendingStepEffects = null
+// A cut that only waits holds the screen between two steps (NativeCutWait.js).
+const nativeCutWait = createNativeCutWait({ onChange: () => playbackController?.notifyStateChanged() })
 
 // True while a title step is playing its FX. The FX is a transition the player
 // owns, not a screen the user dismisses: it always advances when it ends, which
@@ -904,6 +908,17 @@ function goNext(source = 'user', onSettled) {
     // skip) drops the pending animation and moves on immediately.
     setTitleAnimationPending(false)
   }
+  // A tap during a cut wait clears it (client OnClickBackgroundPanel); auto mode waits it out.
+  if (nativeCutWait.pending) {
+    if (source === 'auto') return 'blocked'
+    const held = nativeCutWait.step
+    nativeCutWait.cancel()
+    if (held?.step === currentStep.value) {
+      if (!held.option) return leaveStep(held.manual)
+      commitChoice(held.option)
+      return 'advanced'
+    }
+  }
   const manual = typeof source !== 'string' || source === 'user'
   if (currentStep.value.type === 'choice') return 'blocked'
   const reason = typeof source === 'string' ? `${source}-next` : 'user-next'
@@ -912,6 +927,32 @@ function goNext(source = 'user', onSettled) {
     storyRuntimeCues.cancelCurrentStep(reason)
     _stopCurrentVoice(reason)
   } else if (storyRuntimeCues.settleCurrentStep(reason, onSettled)) return 'settled'
+  if (source !== 'skip') {
+    const hold = nativeWaitSeconds(compiledData.value?.steps, currentStepIndex.value,
+      finiteBranchNextIndex(compiledData.value, currentStepIndex.value))
+    if (hold > 0) {
+      const step = currentStep.value
+      holdNativeCut({ step, manual }, hold, () => leaveStep(manual))
+      return 'held'
+    }
+  }
+  return leaveStep(manual)
+}
+
+// The wait counts down only while the story is running; an open menu or backlog
+// (or any runtime pause) keeps it pending until the story resumes.
+function holdNativeCut(entry, seconds, resume) {
+  nativeCutWait.start(entry, seconds, function finish() {
+    if (currentStep.value !== entry.step) return
+    if (backlogOpen.value || menuOpen.value || viewingOfferOpen.value || runtimePauseReasons.size > 0) {
+      nativeCutWait.start(entry, 0.05, finish)
+      return
+    }
+    resume()
+  })
+}
+
+function leaveStep(manual) {
   markStepRead()
   recordHistoryStep()
   leaveRestoredScene()
@@ -946,6 +987,24 @@ function goPrev() {
 }
 
 function onChoice(option) {
+  if (nativeCutWait.pending) {
+    // Choosing again during the wait skips it, like a tap.
+    const held = nativeCutWait.step
+    nativeCutWait.cancel()
+    if (held?.step === currentStep.value && held.option) return commitChoice(held.option)
+  }
+  const hold = nativeWaitSeconds(compiledData.value?.steps, currentStepIndex.value,
+    finiteChoiceTargetIndex(compiledData.value, currentStepIndex.value, option))
+  if (hold > 0 && !playbackController?.skipEnabled) {
+    storyRuntimeCues.cancelCurrentStep('choice')
+    const step = currentStep.value
+    holdNativeCut({ step, option }, hold, () => commitChoice(option))
+    return
+  }
+  commitChoice(option)
+}
+
+function commitChoice(option) {
   if (RUNTIME_DEBUG) releaseSoakRecorder.record('choice-selected')
   storyRuntimeCues.cancelCurrentStep('choice')
   const choiceStepIndex = currentStepIndex.value
@@ -984,6 +1043,7 @@ const stepSceneEffects = useStepSceneEffects({
     leaveRestoredScene()
   },
   beforeStepChange: beginFrameHold,
+  getSteps: () => compiledData.value?.steps,
 })
 
 const runtimePauseReasons = reactive(new Set())
@@ -1128,7 +1188,7 @@ function unvoicedReadingMs() {
 playbackController = new PlaybackModeController({
   getStep: () => storyRuntimeCues.getNormalizedStep(),
   getVoiceState: () => voicePlayer?.getVoiceState?.() || 'idle',
-  hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto() || titleAnimationPending.value,
+  hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto() || titleAnimationPending.value || nativeCutWait.pending,
   hasNonSkippable: () => storyRuntimeCues.hasNonSkippable(),
   isRead: isStepRead,
   getReadingMs: unvoicedReadingMs,
@@ -1231,6 +1291,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateViewingViewport)
   titleAdvancePending = null
+  nativeCutWait.cancel()
   pendingStepEffects = null
   releaseFrameHold()
   if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
@@ -1264,6 +1325,7 @@ watch(currentStep, (newStep, oldStep) => {
   // incoming title card re-claims it from its own onMounted.
   titleAdvancePending = null
   setTitleAnimationPending(false)
+  nativeCutWait.cancel()
   pendingStepEffects = {
     step: newStep,
     oldStep,

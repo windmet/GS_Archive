@@ -256,6 +256,8 @@
         "auto_advance": { "type": "boolean" },
         "duration": { "type": "number", "minimum": 0 },
         "hide_dialogue": { "type": "boolean" },
+        "pre_wait": { "type": "number", "exclusiveMinimum": 0 },
+        "post_wait": { "type": "number", "exclusiveMinimum": 0 },
         "lipSync": { "type": "boolean" },
         "entry_snapshot": { "$ref": "#/$defs/snapshot" },
         "settled_snapshot": { "$ref": "#/$defs/snapshot" },

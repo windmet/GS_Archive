@@ -2,13 +2,13 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-20
+更新：2026-10-20 晚（master 与门户/剧情线；舞台行由舞台线维护，站点/R2 仍为历史记录，未重新验收）
 
 ## 基线
 
 | 项 | 值 |
 |---|---|
-| master | 10-14 整合合并 PR #48，tag `baseline/2026-10-14`；之后并入 #49（codex R2 上传记录）、#50（release 绑定 + i18n 线）、#52（10-15 翻译）、#54（B036 情人节 2022 上）、#55（舞台原生还原收尾），以及本页所在的 #53（门户原生 ADV 站位、其他语音、事务所 ADV 预览、剧情服装、歌曲中心线）。#53 合入后打 `baseline/2026-10-20` |
+| master | 10-14 整合合并 PR #48，tag `baseline/2026-10-14`；之后并入 #49（codex R2 上传记录）、#50（release 绑定 + i18n 线）、#52（10-15 翻译）、#54（B036 情人节 2022 上）、#55（舞台原生还原收尾），以及本页所在的 #53（门户原生 ADV 站位、其他语音、事务所 ADV 预览、剧情服装、歌曲中心线）。#53 合入后打 `baseline/2026-10-20`。之后 10-20 再合 #56（门户视觉收敛）、#57（ADV 每帧姿势重置、脸红/汗、摄影工坊原生脸部 flags）、#58（电话/电视/混响走 CRI `bus_phone` / `bus_reverb`），头 `dd1035dc` |
 | read-model release | `2430ef3db583a07878f1967b45e039eb326212cda386b063f6c4f9f8d8a772c3`；候选目录 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261015` |
 | R2 data revision | `fda1a54c6df58cabc13e7a0d86b40ab14ff831270ca0d197fc9a7298279ec3ab`（worktree `.deploy/release-20261015`，6,397 个对象，已上传）。下一批的叠加链最新一项：worktree `.analysis/release-20261015/overlay-20261015.json` |
 | media epoch | `voice64-gzip-all-20260924` |
@@ -19,8 +19,9 @@
 
 | 线 | 当前分支 | 下一步 |
 |---|---|---|
-| 门户 portal | `portal/20261015-native-adv-placement`（PR #53，合入后删除，同时删已包含在内的 `portal/20261015-song-voice-slot`） | 商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定。启动 JS 预算只剩约 0.1 KB（204,677 / 204,800 gzip），下一个进启动 chunk 的功能要先拆分或由用户决定放宽 |
-| 翻译 i18n | 无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
+| 剧情 / ADV | `portal/20261020-story-recompile`（PR #59：重编译候选工具 + 原生裸 wait 停顿，不含语料） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。合 master 后可先合 #59；语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；晋升后才恢复翻译批次 |
+| 门户 portal | 无进行中分支（#56/#57/#58 已合入；UX 盲测已完成，结果待按线分拣） | 盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定。启动 JS 预算只剩约 0.1 KB（204,677 / 204,800 gzip），下一个进启动 chunk 的功能要先拆分或由用户决定放宽 |
+| 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
 | 舞台 stage | 无进行中分支（10-14 轮已随 #55 合入） | 下一轮以加载策略为主、MV 消费检查为辅，起点见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)。未完成项在 [STAGE_LAYER_AUDIT_TODO_20261014.md](STAGE_LAYER_AUDIT_TODO_20261014.md)：Time Before Time、Change to Chance 接线未完成，32 个粒子资源无消费者 |
 
 ## 未合入但保留的分支
