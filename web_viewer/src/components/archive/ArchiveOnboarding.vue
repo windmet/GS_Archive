@@ -25,7 +25,7 @@
         <ArchiveIdolAvatar v-if="favoriteIdol" :idol-code="favoriteIdol.id" :accent-color="favoriteIdol.color" :size="96" decorative />
         <h1 id="onboarding-title" ref="heading" tabindex="-1">{{ favoriteIdol ? `${favoriteName}在事务所等你` : '准备好了' }}</h1>
         <p class="onboarding-lede">{{ canOpenHome
-          ? `在${favoriteName}的主页，可以听他打招呼、换衣装、点他说话。之后从资料馆首页的「我的担当」随时回来。`
+          ? `在${favoriteName}的主页，可以听他打招呼、换衣装、点他说话。之后点导航里的房子图标就能随时回来。`
           : '资料馆里有全部故事、歌曲、卡片与活动。偶像主页在左侧导航的最上方，选一位偶像就能听他说话。' }}</p>
       </section>
 

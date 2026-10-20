@@ -250,6 +250,20 @@ const mobileNavigation = computed(() => {
   .archive-nav-divider { margin-block: var(--gs-space-2); }
   .archive-sidebar-about { min-height: var(--gs-control-compact); }
 }
+/* A phone on its side (wide but short): the sidebar folds to an icon rail so the page keeps the
+   width. Labels stay in the accessibility tree; a destination's sections are reached on its page. */
+@media (min-width: 761px) and (max-height: 500px) {
+  .archive-shell { --archive-sidebar: 64px; }
+  .archive-brand { justify-content: center; margin: var(--gs-space-3) var(--gs-space-2); padding: var(--gs-space-3) 0; }
+  .archive-brand-name, .archive-brand-sub, .archive-nav-link span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .archive-sidebar :deep(.stage-idol-switch) { justify-content: center; width: auto; margin: 0 var(--gs-space-2) var(--gs-space-3); padding: var(--gs-space-2) 0; }
+  .archive-sidebar :deep(.stage-idol-copy), .archive-sidebar :deep(.stage-idol-switch > svg) { display: none; }
+  .archive-nav { padding: 0 var(--gs-space-2) var(--gs-space-3); }
+  .archive-nav-link { justify-content: center; padding: 0; }
+  .archive-nav-sub { display: none; }
+  .archive-nav-divider { margin-inline: var(--gs-space-2); }
+  .archive-sidebar-about { padding: 0; font-size: var(--gs-text-caption); text-align: center; }
+}
 @media (hover: hover) {
   .archive-brand:hover, .archive-nav-link:hover, .archive-nav-sub button:hover { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
 }
