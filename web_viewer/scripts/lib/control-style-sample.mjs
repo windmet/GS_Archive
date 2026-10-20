@@ -23,13 +23,20 @@ export const controlStyleExpression = `(() => {
   const out = []
   for (const [role, selector] of Object.entries(roles)) {
     for (const element of document.querySelectorAll(selector)) {
-      const rect = element.getBoundingClientRect(), style = getComputedStyle(element)
-      if (!rect.width || !rect.height || style.visibility === 'hidden' || style.display === 'none') continue
+      const own = getComputedStyle(element)
+      if (own.visibility === 'hidden' || own.display === 'none') continue
+      // A borderless input inside a bordered label or form is drawn by that wrapper: sample the box.
+      const wrapper = /^(search|field)$/.test(role) && own.borderTopWidth === '0px' && element.parentElement
+      const box = wrapper && getComputedStyle(wrapper).borderTopWidth !== '0px' ? wrapper : element
+      const rect = box.getBoundingClientRect(), style = getComputedStyle(box)
+      if (!rect.width || !rect.height) continue
       const text = (element.innerText || element.value || '').trim()
       const kind = role === 'button' ? (text ? 'text-button' : 'icon-button') : role
       const sample = { role: kind, height: Math.round(rect.height), width: role === 'dialog' ? Math.round(rect.width) : undefined,
-        cls: [...element.classList].slice(0, 2).join('.'), text: text.slice(0, 24) }
+        cls: [...box.classList].slice(0, 2).join('.'), text: text.slice(0, 24) }
       for (const prop of props) sample[prop] = style[prop]
+      // The text itself keeps the input's own size and weight.
+      if (box !== element) { sample.fontSize = own.fontSize; sample.fontWeight = own.fontWeight }
       out.push(sample)
     }
   }

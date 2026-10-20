@@ -212,9 +212,9 @@ const filteredSongs = computed(() => {
   gap: var(--gs-space-3);
   height: var(--gs-control-normal);
   min-width: 240px;
-  padding: 0 11px;
+  padding: 0 var(--gs-space-4);
   border: 1px solid var(--gs-line);
-  border-radius: 6px;
+  border-radius: var(--gs-radius-field);
   color: var(--gs-ink-3);
   background: var(--gs-surface);
 }
