@@ -11,6 +11,7 @@ import { validateStagelightData } from '../core/chibiStagelights.js'
 import {createBoundedTextTransport} from './BoundedTextTransport.js'
 import {createStageIndexTransport} from './StageIndexTransport.js'
 import {loadChoreographyCatalog,loadChoreographySong,validateChoreographyBinding} from '../core/chibiChoreographyShards.js'
+import {loadStageEffectSong} from '../core/chibiStageEffectShards.js'
 import * as PIXI from 'pixi.js'
 import {
   AtlasAttachmentLoader,
@@ -164,6 +165,7 @@ export async function fetchLiveChibiStagelights(file,{signal,binding}={}) {
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
 export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
+export const fetchLiveChibiStageEffectSong = (id,options) => loadStageEffectSong(indexTransport,id,options)
 export async function fetchLiveChibiStageEffectIndex({signal}={}) {
   const [text,native,sprites]=await Promise.all([
     indexTransport.load(`${LIVE_CHIBI_BASE}/stage-effects/index.json`,{signal}),

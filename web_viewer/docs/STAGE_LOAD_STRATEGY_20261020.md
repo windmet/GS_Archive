@@ -27,6 +27,8 @@
 
 ## 建议顺序
 
+10-20续进 [舞台效果/Stagelight成对分片](STAGE_EFFECT_SHARDS_20261020.md)：实际舞台改为41KB清单、244KB公共文件和逐编排片，保留原生合同与signed zero。默认DRIVE固定索引序列22.86MB→6.26MB、HND22.94MB→7.40MB，所选消费者一致。stage-effects/Stagelight两份全局读取已移除；emitter/Penlight索引、加载并行、真实开播预算继续开放。
+
 1. **按歌曲分片全局索引。** 一个小清单记每首歌的分片文件和 sha256。现在若干 sidecar 用「整个 choreography 文件的哈希」绑定（`choreographyIndexSha256`、`objectIndexSha256` 等，见 `attachNativeSpotlights`、`attachObjectEmitters`、`attachNativeOldSuspension`），分片后改为绑定分片哈希。这是先要定的设计。生成器和 verifier 必须 import 运行时同一个解析函数，不写镜像。
 2. **每个索引只读一次、只哈希一次。** `fetchLiveChibiObjectLayerIndex` 现在同一个文件读 4 次、哈希 3 次。整个开场主线程上有 13 次 SHA-256 和约 34 MB 的 JSON.parse；分片后大部分会消失。
 3. **加载阶段并行。** 现在严格串行：索引 → 歌曲 → skel → 服装 → 粒子（`ChibiStageViewer.vue` 选歌初始化约 1268–1325 行）。歌曲一确定，音频、skel、服装就可以同时开始，灯光和粒子之后到。前提是写清「可开播」的定义：哪些必须到齐，哪些可以在播放中补上并有可见状态。

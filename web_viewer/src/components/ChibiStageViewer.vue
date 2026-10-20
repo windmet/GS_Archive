@@ -558,7 +558,6 @@ import {
   fetchLiveChibiMouthFix,
   fetchLiveChibiMotionOffset,
   fetchLiveChibiMotionClock,
-  fetchLiveChibiStagelights,
   fetchLiveChibiCommandInventory,
   fetchLiveChibiImageLayerIndex,
   fetchLiveChibiImageObjectIndex,
@@ -567,7 +566,7 @@ import {
   fetchLiveChibiManifest,
   fetchLiveChibiMusicIndex,
   fetchLiveChibiStageBackgroundIndex,
-  fetchLiveChibiStageEffectIndex,
+  fetchLiveChibiStageEffectSong,
   fetchLiveChibiOldSuspensionTrack,
   injectLiveChibiMotion,
   playLiveChibiMotion,
@@ -1279,6 +1278,10 @@ onMounted(async () => {
     }
     choreography.value = await fetchLiveChibiSongChoreography(manifest.value.choreography.index,selectedSongId.value,{signal:lifetime.signal})
     if (stageDisposed) return
+    const lighting=await fetchLiveChibiStageEffectSong(selectedSongId.value,{signal:lifetime.signal,binding:choreography.value})
+    if (stageDisposed) return
+    stageEffectIndex.value=lighting.effects
+    stagelightData.value=lighting.commands
     const resolvedHandoff = resolveSongStageHandoff(props.stageHandoff, selectedSong.value, characters.value)
     if (resolvedHandoff) {
       handoffLineup.value = resolvedHandoff.stageLineup
@@ -1298,10 +1301,6 @@ onMounted(async () => {
       stageVocalEnabled.value = stageVocalAvailable.value
     }
     const optionalOptions={signal:lifetime.signal,binding:choreography.value}
-    void fetchLiveChibiStagelights(manifest.value.choreography.index,optionalOptions).then(value=>{
-      if(stageDisposed)return
-      stagelightData.value=value;applyStageLighting();requestPausedSuspensionRender()
-    }).catch(error=>{if(!stageDisposed)console.warn('[ChibiStage] Stagelight input unavailable',error)})
     void fetchLiveChibiMotionOffset(manifest.value.choreography.index,optionalOptions).then(async value=>{
       if(stageDisposed)return
       const signature=()=>JSON.stringify([...performanceEventsByPosition.value.values()]
@@ -1342,7 +1341,6 @@ onMounted(async () => {
       [imageObjectIndex,fetchLiveChibiImageObjectIndex,syncImageLayers],
       [objectLayerIndex,options=>fetchLiveChibiObjectLayerIndex({...options,onOptional:value=>install(objectLayerIndex,value,syncObjectLayers)}),syncObjectLayers],
       [stageBackgroundIndex,options=>fetchLiveChibiStageBackgroundIndex({...options,onOptional:value=>install(stageBackgroundIndex,value,syncStageBackground)}),syncStageBackground],
-      [stageEffectIndex,fetchLiveChibiStageEffectIndex,async()=> {await Promise.allSettled([...runtimes.values()].map(attachStageShadow));applyStageLighting();syncBackmonitor(true);requestPausedBackmonitorRender()}],
     ].map(async ([target,load,sync])=> {
       try {install(target,await load(optionalOptions),sync)}
       catch(error) {if(!stageDisposed)console.warn('[ChibiStage] optional index unavailable',error)}
@@ -3557,9 +3555,14 @@ async function handleSongChange() {
   songMotionsReady.value = false
   errorText.value = ''
   try {
-    const index=await fetchLiveChibiSongChoreography(manifest.value.choreography.index,selectedSongId.value,{signal:lifetime.signal})
+    const [index,lighting]=await Promise.all([
+      fetchLiveChibiSongChoreography(manifest.value.choreography.index,selectedSongId.value,{signal:lifetime.signal}),
+      fetchLiveChibiStageEffectSong(selectedSongId.value,{signal:lifetime.signal,binding:choreography.value}),
+    ])
     if(stageDisposed || buildSequence !== stageBuildSequence)return
     choreography.value=index
+    stageEffectIndex.value=lighting.effects
+    stagelightData.value=lighting.commands
     await Promise.all([loadSongLipSync(), loadSongAudio()])
     if (buildSequence !== stageBuildSequence) return
     for (const position of allPositions) {
@@ -3872,9 +3875,10 @@ async function prepareStageLighting() {
   const song=selectedSong.value
   if(!song)return false
   if(!stageEffectIndex.value){
-    const index=await fetchLiveChibiStageEffectIndex({signal:lifetime.signal})
+    const lighting=await fetchLiveChibiStageEffectSong(song.id,{signal:lifetime.signal,binding:choreography.value})
     if(stageDisposed || selectedSong.value!==song)return false
-    stageEffectIndex.value=index
+    stageEffectIndex.value=lighting.effects
+    stagelightData.value=lighting.commands
   }
   const index=stageEffectIndex.value,jobs=[]
   if(song.spotlightEvents?.some(e=>!e.hide))

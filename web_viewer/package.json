@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "prepare:stage-effect-shards": "node scripts/prepare-stage-effect-shards.mjs --write",
+    "verify:stage-effect-shards": "node scripts/verify-stage-effect-shards.mjs",
     "prepare:choreography-shards": "node scripts/prepare-choreography-shards.mjs --write",
     "verify:choreography-shards": "node scripts/verify-choreography-shards.mjs",
     "verify:cutover-routes": "node readmodels/tools/check_cutover_routes.mjs --progress",

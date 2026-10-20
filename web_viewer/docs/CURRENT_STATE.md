@@ -25,6 +25,8 @@
 
 舞台线同日加载进度：[编舞目录与逐编排分片](STAGE_CHOREOGRAPHY_SHARDS_20261020.md)已接入当前舞台；118份来源/轨道等价、156项门禁通过。新分片为本地派生资源，后续发布必须纳入目录引用的全部118片；本轮没有部署。其他全局大索引与加载预算仍待推进。
 
+舞台线随后已接入 [效果/Stagelight成对分片](STAGE_EFFECT_SHARDS_20261020.md)，实际舞台不读这两份全局大文件；发布还需新清单引用的119份效果文件。默认DRIVE索引序列降至6.26MB，emitter/Penlight、并行开播和真实预算仍开放。
+
 ## 未合入但保留的分支
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。
