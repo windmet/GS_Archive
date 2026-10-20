@@ -1,4 +1,4 @@
-import { readArchiveRoute } from './archiveRoute.js'
+import { isArchiveLocatorPath, readArchiveRoute } from './archiveRoute.js'
 
 const TRACKING_KEYS = new Set(['gclid', 'fbclid', 'msclkid'])
 
@@ -6,9 +6,10 @@ function isTrackingKey(key) {
   return TRACKING_KEYS.has(key) || key.startsWith('utm_')
 }
 
+// A path that is not a locator (/idols/xyz/, /office/) addresses nothing, so it starts like `/`.
 export function isBareArchiveEntry(input) {
   const url = new URL(input, 'http://localhost/')
-  if (!['/', '/index.html'].includes(url.pathname)) return false
+  if (!['/', '/index.html'].includes(url.pathname) && isArchiveLocatorPath(url.pathname)) return false
   for (const key of url.searchParams.keys()) {
     if (!isTrackingKey(key)) return false
   }

@@ -1,4 +1,4 @@
-// Public path locators: /idols/<id>/, /units/<code>/, /cards/<resource_id>/, /songs/<song_code>/, /events/<id>/ and /gashas/<id>/ read as their
+// Public path locators: /idols/<id>/, /units/<code>/, /cards/<resource_id>/, /songs/<song_code>/, /events/<id>/, /gashas/<id>/, /office/<idol>/ and /mobile/<idol>/ read as their
 // detail routes and the section roots (/idols/, /cards/, /items/, …) as their catalogues; the address bar writes
 // them, and every internal query form (buildArchiveUrl, source frames, restoration keys) is unchanged.
 import assert from 'node:assert/strict'
@@ -100,6 +100,28 @@ for (const id of ['210003', '1300012', '12007210', 'ticket-02b623e0abc38ce0']) {
   const route = read(`http://x/gashas/${id}/`)
   assert.equal(route.view, 'gasha_detail', id); assert.equal(route.gasha, id, id)
 }
+// An idol's 事务所 and 通信: the idol is the path; the cue and costume, or the mode, unit and open call, stay in the query.
+for (const [route, href] of [
+  [{ view: 'home', homeIdol: '010pie' }, 'http://x/office/010pie/'],
+  [{ view: 'home', homeIdol: '010pie', homeCue: 'c1', homeCostume: '010pie_002_00' }, 'http://x/office/010pie/?home_cue=c1&home_costume=010pie_002_00'],
+  [{ view: 'mobile_archive', idol: '010pie' }, 'http://x/mobile/010pie/'],
+  [{ view: 'mobile_archive', idol: '010pie', mobileMode: 'unit', unit: '04hig' }, 'http://x/mobile/010pie/?unit=04hig&mobile_mode=unit'],
+]) {
+  const url = buildPublicArchiveUrl('http://x/', route)
+  assert.equal(url.pathname, new URL(href).pathname, href)
+  assert.deepEqual([...url.searchParams].sort(), [...new URL(href).searchParams].sort(), href)
+  same(read(url.href), read(buildArchiveUrl('http://x/', route).href), href)
+}
+// Fields the pages do not own (a story, card or event the route object still carries) are pruned, not published.
+const stray = { group: 'g1', unitFilter: '1', storyType: 'event', storySection: 's', episode: 'e1', card: '001tom_ssr01', song: 'brndnf', event: '410018', gasha: '210003', voice: 'v', parentView: 'cards' }
+assert.equal(buildPublicArchiveUrl('http://x/', { view: 'home', homeIdol: '010pie', ...stray }).href, 'http://x/office/010pie/')
+assert.equal(buildPublicArchiveUrl('http://x/', { view: 'mobile_archive', idol: '010pie', ...stray }).href, 'http://x/mobile/010pie/')
+// Without an idol there is nothing to address: the office stays a query, and an empty or malformed idol is the bare entry.
+assert.equal(buildPublicArchiveUrl('http://x/', { view: 'home' }).href, 'http://x/?view=home')
+assert.equal(buildPublicArchiveUrl('http://x/', { view: 'mobile_archive', idol: 'idol-1' }).pathname, '/')
+for (const href of ['http://x/office/', 'http://x/office/10pie/', 'http://x/office/010PIE/', 'http://x/mobile/', 'http://x/mobile/10pie/', 'http://x/mobile/010PIE/', 'http://x/mobile/010pie/x/']) {
+  same(read(href), read('http://x/'), href)
+}
 // Section roots: the catalogue is its path, its filters stay in the query, and an implied identity must match.
 for (const [route, href] of [
   [{ view: 'idols', category: 'idol' }, 'http://x/idols/'], [{ view: 'unit_catalog' }, 'http://x/units/'], [{ view: 'cards', rarity: 'SSR' }, 'http://x/cards/?rarity=SSR'],
@@ -174,6 +196,13 @@ assert.equal(isBareArchiveEntry('http://x/'), true)
   const startup = resolveArchiveStartup('http://x/idols/001tom/', { startupPage: 'home', startupIdol: '002sht' }, ['001tom', '002sht'])
   assert.equal(startup.source, 'explicit'); assert.equal(startup.route.view, 'idol_detail'); assert.equal(startup.route.idol, '001tom')
 }
+for (const href of ['http://x/office/010pie/', 'http://x/mobile/010pie/', 'http://x/idols/', 'http://x/gashas/ticket-02b623e0abc38ce0/']) assert.equal(isBareArchiveEntry(href), false, href)
+// A path that addresses nothing starts like `/`: the visitor's startup page, not whatever view a bare query defaults to.
+for (const href of ['http://x/idols/xyz/', 'http://x/office/', 'http://x/office/010PIE/', 'http://x/library/', 'http://x/mobile/010pie/x/']) {
+  assert.equal(isBareArchiveEntry(href), true, href)
+  assert.deepEqual(resolveArchiveStartup(href, { onboardingComplete: true, startupPage: 'portal' }).route, resolveArchiveStartup('http://x/', { onboardingComplete: true, startupPage: 'portal' }).route, href)
+}
+assert.equal(isBareArchiveEntry('http://x/idols/xyz/?view=cards'), false, 'a query still addresses its view')
 
 // writeArchiveRoute: the address bar takes the public form, and the navigation context still moves to history state.
 {
@@ -218,4 +247,4 @@ assert.equal(isBareArchiveEntry('http://x/'), true)
   delete globalThis.window
 }
 
-console.log('Archive path locators: /idols/, /units/, /cards/, /songs/, /events/ and /gashas/ details and the section roots read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')
+console.log('Archive path locators: /idols/, /units/, /cards/, /songs/, /events/, /gashas/, /office/ and /mobile/ details and the section roots read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')

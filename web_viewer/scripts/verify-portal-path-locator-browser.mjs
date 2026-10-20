@@ -1,9 +1,10 @@
 // Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/,
 // /songs/<song_code>/, /events/<id>/): plan section 3.6, P1-P15, the card steps P16-P19, the song steps P20-P24
-// the event steps P25-P31 and the song/event/main-story relation steps P32-P36 and the Reader revision step P37.
+// the event steps P25-P31, the song/event/main-story relation steps P32-P36, the Reader revision step P37, the gasha and
+// section-root steps P38-P41 and the office/mobile steps P42-P46.
 //   node scripts/verify-portal-path-locator-browser.mjs [base] [outDir]
-// Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server started with
-// SIDEM_READMODEL_CANDIDATE and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
+// Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server with the read-model candidate (picked
+// automatically, or SIDEM_READMODEL_CANDIDATE) and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
@@ -379,6 +380,50 @@ try {
   const sidebarGashas = await loc()
   check('P41 section roots open at their path with section titles', roots.length === 5 && roots.every(row => row.endsWith(' · GS Archive')) && sidebarEvents === '/events/' && sidebarGashas === '/gashas/' && errors.length === 0,
     `${roots.join(' ')}; sidebar ${sidebarEvents} -> ${sidebarGashas}; errors=${errors.join(' | ') || 0}`)
+  // P42: an idol's office opens cold at /office/<idol>/ with the place title; the legacy query link is rewritten to it.
+  const atOffice = idol => `location.pathname === '/office/${idol}/' && / · 事务所 · GS Archive$/.test(document.title)`
+  const atMobile = idol => `location.pathname === '/mobile/${idol}/' && / · 通信 · GS Archive$/.test(document.title)`
+  await open('/office/010pie/', atOffice('010pie')); await shot('p42-office')
+  const officeCold = `${await loc()}=${await ev('document.title')}`
+  await open('/?view=home&home_idol=010pie', atOffice('010pie'))
+  const officeLegacy = await loc()
+  check('P42 office path opens cold; legacy link becomes the path', officeCold.startsWith('/office/010pie/') && officeLegacy.startsWith('/office/010pie/') && errors.length === 0,
+    `${officeCold}; legacy -> ${officeLegacy}; errors=${errors.join(' | ') || 0}`)
+  // P43: the same for 通信; the mode stays in the query.
+  await open('/mobile/010pie/', atMobile('010pie')); await shot('p43-mobile')
+  const mobileCold = `${await loc()}=${await ev('document.title')}`
+  await open('/?view=mobile_archive&idol=010pie&mobile_mode=phone', atMobile('010pie'))
+  const mobileLegacy = await loc()
+  check('P43 mobile path opens cold; legacy link keeps its mode', mobileCold.startsWith('/mobile/010pie/') && mobileLegacy.startsWith('/mobile/010pie/?') && mobileLegacy.includes('mobile_mode=phone') && errors.length === 0,
+    `${mobileCold}; legacy -> ${mobileLegacy}; errors=${errors.join(' | ') || 0}`)
+  // P44: with a favorite idol (002sht) the sidebar 事务所 opens that idol's office path directly; history back returns.
+  await open('/idols/', atRoot('idols'))
+  await clickText('.archive-nav button', '事务所'); await waitFor(atOffice('002sht'))
+  const officeFavorite = `${await loc()}=${await ev('document.title')}`
+  await historyStep('back')
+  check('P44 sidebar office opens the favorite idol path and backs out', officeFavorite.startsWith('/office/002sht/') && (await loc()) === '/idols/' && errors.length === 0,
+    `/idols/ -> ${officeFavorite} -> back ${await loc()}; errors=${errors.join(' | ') || 0}`)
+  // P45: sidebar 通信 opens the favorite's /mobile/<idol>/; switching idol rewrites the path and title, and a reload keeps it.
+  await clickText('.archive-nav button', '剧情与通信'); await waitFor(atRoot('stories'))
+  await clickText('.archive-nav-sub button', '通信'); await waitFor(atMobile('002sht'))
+  const mobileFavorite = await loc()
+  await navigate(() => ev(`(() => { const s = [...document.querySelectorAll('select')].find(x => [...x.options].some(o => o.value === '001tom')); s.value = '001tom'; s.dispatchEvent(new Event('change', { bubbles: true })) })()`))
+  await waitFor(atMobile('001tom'))
+  const mobileSwitched = `${await loc()}=${await ev('document.title')}`
+  await send('Page.reload', { ignoreCache: true }); await waitFor(atMobile('001tom')); await settle()
+  check('P45 sidebar mobile path; idol switch and reload', mobileFavorite.startsWith('/mobile/002sht/') && mobileSwitched.startsWith('/mobile/001tom/') && (await loc()).startsWith('/mobile/001tom/') && errors.length === 0,
+    `${mobileFavorite} -> ${mobileSwitched} -> reload ${await loc()}; errors=${errors.join(' | ') || 0}`)
+  // P46: a path that addresses nothing starts like `/`: the 资料馆 for a portal preference, the startup idol's office for a Home one.
+  await open('/', `document.body.innerText.trim().length > 40 && location.search.includes('view=')`)
+  const bareStart = await loc()
+  const malformed = []
+  for (const bad of ['/office/010PIE/', '/mobile/', '/idols/xyz/']) { await open(bad, `location.pathname === '/' && location.search.includes('view=')`); malformed.push(`${bad}->${await loc()}`) }
+  await usePreferences('home')
+  await open('/office/xyz/', atOffice('002sht'))
+  const homeStart = await loc()
+  await usePreferences('portal')
+  check('P46 malformed paths start like the bare entry', bareStart.startsWith('/?view=portal') && malformed.every(row => row.endsWith('->' + bareStart)) && homeStart.startsWith('/office/002sht/'),
+    `/ -> ${bareStart}; ${malformed.join(' ')}; home preference /office/xyz/ -> ${homeStart}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {

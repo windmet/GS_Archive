@@ -1,4 +1,5 @@
-// Entity head shells: a copy of the built index.html per idol (/idols/<id>/index.html), unit
+// Entity head shells: a copy of the built index.html per idol (/idols/<id>/index.html, and its 事务所 /office/<id>/ and
+// 通信 /mobile/<id>/), unit
 // (/units/<code>/index.html), card (/cards/<resource_id>/index.html), song (/songs/<song_code>/index.html) and event
 // (/events/<410001 | 10019>/index.html) and gasha (/gashas/<210003 | ticket-…>/index.html), plus one per section root
 // (/cards/index.html, /items/index.html, …), whose <head> carries that page's title, description, canonical and Open Graph
@@ -13,7 +14,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { archiveCardName, archiveEntityTitle, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveEntityTitle, archiveIdolPlaceName, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS } from '../src/core/archiveRoute.js'
 import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
@@ -100,6 +101,24 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
         type: 'profile',
       })),
     })
+    // The idol's 事务所 (only idols the home lists) and 通信 (every idol), named as their tabs (archiveIdolPlaceName).
+    for (const place of [
+      idol.home_available !== false && { kind: 'office', view: 'home', description: `${name}的事务所：立绘、服装与事务所语音。` },
+      { kind: 'mobile', view: 'mobile_archive', description: `${name}的通信：个人聊天、电话通信、组合聊天与随机话题。` },
+    ].filter(Boolean)) {
+      const placeLocation = `/${place.kind}/${idol.id}/`
+      shells.push({
+        path: `${place.kind}/${idol.id}/index.html`,
+        kind: place.kind, id: idol.id, url: base + placeLocation,
+        html: withHead(template, headTags({
+          title: archiveEntityTitle(archiveIdolPlaceName(place.view, name)),
+          description: place.description,
+          url: base + placeLocation,
+          image: `${base}/assets/idols/icons/image_chara_icon_${idol.id}.png`,
+          type: 'website',
+        })),
+      })
+    }
     if (idol.unitCode) {
       if (!units.has(idol.unitCode)) units.set(idol.unitCode, { code: idol.unitCode, name: idol.unitName || idol.unitCode, members: [] })
       units.get(idol.unitCode).members.push(name)
@@ -285,5 +304,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events + ${count('gasha')} gashas + ${count('section')} section roots in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events + ${count('gasha')} gashas + ${count('office')} offices + ${count('mobile')} mobile pages + ${count('section')} section roots in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }

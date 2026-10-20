@@ -655,7 +655,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
-import { archiveCardName, archiveDocumentTitle, archiveSectionTitle } from './presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle } from './presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_BRAND, STORY_KINDS, sectionLabel } from './core/archiveSections.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
@@ -1564,6 +1564,9 @@ const archiveTabEntityName = computed(() => {
   if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name, uiLocale.value) || ''
   if (!idolNamesSettled.value) return ''
   if (view.value === 'idol_detail') return currentIdolDisplayName.value
+  // Same name as the /office/<idol>/ and /mobile/<idol>/ head shells.
+  if (view.value === 'home') return archiveIdolPlaceName('home', homeSelectedId.value && idolDisplayName(homeSelectedId.value))
+  if (view.value === 'mobile_archive') return archiveIdolPlaceName('mobile_archive', currentCharacterId.value && idolDisplayName(currentCharacterId.value))
   if (view.value !== 'card_detail' || !currentCard.value || !archiveNamesSettled('cards')) return ''
   return archiveCardName(archiveNamedText('card', currentCard.value.title, 'title'), idolDisplayName(currentCard.value.character_id))
 })
