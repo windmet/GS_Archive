@@ -77,6 +77,7 @@
       <slot name="inspector" />
     </aside>
 
+    <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" @navigate="navigateFromDrawer" @close="closeDrawer(true)" />
     <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
@@ -89,19 +90,31 @@
         <component :is="item.icon" :size="21" :stroke-width="1.8" aria-hidden="true" />
         <span>{{ item.label }}</span>
       </button>
+      <button
+        ref="drawerToggle"
+        type="button"
+        :class="{ active: drawerCell.active }"
+        :aria-expanded="drawerOpen"
+        aria-controls="archive-navigation-drawer"
+        @click="drawerOpen ? closeDrawer(false) : drawerOpen = true"
+      >
+        <component :is="drawerCell.icon" :size="21" :stroke-width="1.8" aria-hidden="true" />
+        <span>{{ drawerCell.label }}</span>
+      </button>
     </nav>
   </div>
 </template>
 
 <script setup>
-import { BookOpen, Box, CalendarDays, Clapperboard, FolderOpen, Home, Layers, LayoutGrid, Music, Search, Users } from '@lucide/vue'
+import { BookOpen, Box, CalendarDays, Clapperboard, FolderOpen, Home, Info, Layers, LayoutGrid, Menu, Music, Search, Users, X } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
+import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, ARCHIVE_SECTIONS, sectionLabel } from '../../core/archiveSections.js'
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, ref, watch } from 'vue'
 
 const props = defineProps({
   compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
@@ -142,17 +155,33 @@ function openDestination(group) {
   emit('navigate', group.items[0].id)
 }
 
-// Phone bar: the four most-used destinations plus the archive home, which lists the rest.
-const mobileNavigation = computed(() => {
-  const current = activeNavigationGroup.value
-  return [
-    { id: 'home', label: sectionLabel('home'), icon: Home, active: props.activeSection === 'home' },
-    { id: 'stories', label: sectionLabel('stories'), icon: BookOpen, active: current === 'stories' },
-    { id: 'idols', label: sectionLabel('idols'), icon: Users, active: current === 'people' },
-    { id: 'songs', label: sectionLabel('songs'), icon: Music, active: current === 'songs' },
-    { id: 'portal', label: sectionLabel('portal'), icon: LayoutGrid, active: props.activeSection === 'portal' || ['history', 'collection', 'live', 'studio', 'resources'].includes(current) },
-  ]
+// Phone bar, 2+1: the two homes, then one cell that opens every destination. Away from the homes that cell
+// names the current section, so the bar still says where the reader is.
+const mobileNavigation = computed(() => [
+  { id: 'home', label: sectionLabel('home'), icon: Home, active: !drawerOpen.value && props.activeSection === 'home' },
+  { id: 'portal', label: sectionLabel('portal'), icon: LayoutGrid, active: !drawerOpen.value && props.activeSection === 'portal' },
+])
+// The drawer's code loads on first open; it holds the sidebar's destinations, nothing of its own.
+const ArchiveNavigationDrawer = defineAsyncComponent(() => import('./ArchiveNavigationDrawer.vue'))
+const drawerOpen = ref(false)
+const drawerToggle = ref(null)
+const drawerCell = computed(() => {
+  if (drawerOpen.value) return { label: '收起', icon: X, active: true }
+  const section = navigationSection.value
+  if (section !== 'home' && section !== 'portal' && sectionLabel(section)) {
+    return { label: sectionLabel(section), icon: archiveNavigationIcons[section] || Info, active: true }
+  }
+  return { label: '导航', icon: Menu, active: false }
 })
+function closeDrawer(returnFocus) {
+  drawerOpen.value = false
+  if (returnFocus) nextTick(() => drawerToggle.value?.focus())
+}
+function navigateFromDrawer(id) {
+  drawerOpen.value = false
+  emit('navigate', id)
+}
+watch(() => props.activeSection, () => { drawerOpen.value = false })
 </script>
 
 <style scoped>
@@ -453,7 +482,7 @@ const mobileNavigation = computed(() => {
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     border-top: 1px solid var(--archive-border);
     background: var(--gs-surface);

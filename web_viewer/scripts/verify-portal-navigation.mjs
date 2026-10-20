@@ -266,7 +266,29 @@ const shellSource = readFileSync(new URL('../src/components/archive/ArchiveShell
 assert.match(shellSource, /@click="emit\('navigate', 'portal'\)">\s*<LayoutGrid[^>]*\/><span>\{\{ sectionLabel\('portal'\) \}\}<\/span>/, 'sidebar lists 资料馆 as an entry')
 assert.match(app, /:root-section="archiveRootSection"/, 'App tells the shell which root page is showing')
 assert.match(app, /else if \(section === 'units'\) openUnitCatalog\(\)/, '组合 in the switch opens the unit directory')
-console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs; portal lens always in the address passed')
+// Phone bar 2+1: the two homes, then one cell that opens the drawer and otherwise names the current section.
+const barItems = shellSource.match(/const mobileNavigation = computed\(\(\) => \[([\s\S]*?)\n\]\)/)?.[1] || ''
+assert.deepEqual([...barItems.matchAll(/\{ id: '(\w+)'/g)].map(match => match[1]), ['home', 'portal'], 'the bar holds the two homes and nothing else')
+assert.match(shellSource, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/, 'the bar has three cells')
+assert.match(shellSource, /if \(drawerOpen\.value\) return \{ label: '收起'/, 'the open drawer turns the third cell into 收起')
+assert.match(shellSource, /section !== 'home' && section !== 'portal' && sectionLabel\(section\)\)[\s\S]{0,40}return \{ label: sectionLabel\(section\), icon: archiveNavigationIcons\[section\]/, 'away from the homes the third cell names the current section')
+assert.match(shellSource, /return \{ label: '导航', icon: Menu/, 'on the homes the third cell says 导航')
+assert.match(shellSource, /:aria-expanded="drawerOpen"/, 'the third cell reports the drawer state')
+// The drawer loads on first open and shows the sidebar's own destination groups.
+assert.match(shellSource, /defineAsyncComponent\(\(\) => import\('\.\/ArchiveNavigationDrawer\.vue'\)\)/, 'the drawer is a lazy chunk')
+assert.doesNotMatch(shellSource, /^import ArchiveNavigationDrawer/m, 'the drawer is not in the startup bundle')
+assert.match(shellSource, /<ArchiveNavigationDrawer v-if="drawerOpen"[^>]*:groups="navigationGroups"/, 'the drawer renders only while open, from the sidebar groups')
+const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavigationDrawer.vue', import.meta.url), 'utf8')
+assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups|ARCHIVE_SECTIONS\b/, 'the drawer keeps no destination list of its own')
+assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
+// Phone portal: following an idol, the hero comes before the index of every section; the all-archive view keeps the index first.
+const overviewSource = readFileSync(new URL('../src/components/archive/ArchivePortalOverview.vue', import.meta.url), 'utf8')
+const allDirectory = overviewSource.indexOf('<nav v-if="!preferredReference?.actionable" class="overview-directory"')
+const hero = overviewSource.indexOf('class="overview-personal"')
+const heroDirectory = overviewSource.indexOf('<nav v-if="preferredReference?.actionable" class="overview-directory"')
+assert.ok(allDirectory > 0 && allDirectory < overviewSource.indexOf('class="overview-panel overview-featured"'), 'all-archive view: index above the featured section')
+assert.ok(hero > 0 && heroDirectory > hero && heroDirectory < overviewSource.indexOf('class="overview-card-showcase"'), 'favorite view: index right after the hero')
+console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs; portal lens always in the address; phone 2+1 bar, lazy drawer and hero-first portal passed')
 import { ARCHIVE_SECTIONS } from '../src/core/archiveSections.js'
 import { buildArchiveBreadcrumbs } from '../src/core/archiveRoute.js'
 import { archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'

@@ -50,8 +50,9 @@
           <b>{{ formatCount(count.value) }}<small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></b> <span>{{ count.label }}</span>
         </button>
       </p>
-      <!-- Phones have no sidebar: the archive home doubles as the index of every destination. -->
-      <nav class="overview-directory" aria-label="全部栏目">
+      <!-- Phones have no sidebar: the archive home doubles as the index of every destination. Following an
+           idol, that idol's hero comes first and the index follows it (inside the featured section below). -->
+      <nav v-if="!preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
         <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
       </nav>
 
@@ -87,6 +88,9 @@
               <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
             </p>
           </div>
+          <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
+            <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
+          </nav>
           <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><span class="overview-heading-actions"><button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组<Shuffle :size="15" aria-hidden="true" /></button><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></span></header>
             <PortalCardBento :cards="collections.cards || []" :counts="desktopOverview.cardCounts" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openDirectory('cards', $event)" />
@@ -534,6 +538,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-directory button:active { background:var(--gs-mint-wash); }
   .overview-panel { margin-top:var(--gs-space-8); }
   .overview-featured { margin-top:var(--gs-space-6); }
+  .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
   .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button { min-height:var(--gs-control-touch); }
 }
 @media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }
