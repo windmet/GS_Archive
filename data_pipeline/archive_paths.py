@@ -153,6 +153,28 @@ def _built_in_sources() -> ArchiveSources:
     )
 
 
+def main_checkout_root(repo_root: Path = REPO_ROOT) -> Path | None:
+    """The main checkout of a linked git worktree (whose .git is a file); None otherwise."""
+    marker = repo_root / ".git"
+    if not marker.is_file():
+        return None
+    for line in marker.read_text("utf-8").splitlines():
+        if line.startswith("gitdir:"):
+            common = (repo_root / line[len("gitdir:"):].strip()).resolve().parents[1]
+            return common.parent if common.name == ".git" else None
+    return None
+
+
+def local_config_path(repo_root: Path | None = None) -> Path | None:
+    """The ignored local config: this checkout's, else the main checkout's (worktrees share its corpus)."""
+    own = repo_root / "web_viewer" / "config" / "archive_sources.local.json" if repo_root else DEFAULT_LOCAL_CONFIG
+    if own.is_file():
+        return own.resolve()
+    main = main_checkout_root(repo_root or REPO_ROOT)
+    shared = main / "web_viewer" / "config" / "archive_sources.local.json" if main else None
+    return shared.resolve() if shared and shared.is_file() else None
+
+
 def _configured_path(explicit_path: Path | None) -> Path | None:
     if explicit_path is not None:
         resolved = explicit_path.resolve()
@@ -167,7 +189,7 @@ def _configured_path(explicit_path: Path | None) -> Path | None:
             raise FileNotFoundError(resolved)
         return resolved
 
-    return DEFAULT_LOCAL_CONFIG.resolve() if DEFAULT_LOCAL_CONFIG.is_file() else None
+    return local_config_path()
 
 
 def load_archive_sources(config_path: Path | None = None) -> ArchiveSources:

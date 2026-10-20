@@ -29,9 +29,12 @@ export function advStageUnit(width, height) {
 }
 
 // The client is landscape-only, so portrait has no native rule: from a square screen down to 1:2 the visible
-// stage width narrows from the 16:9 width to ADV_PORTRAIT_VISIBLE_WIDTH, which keeps figures large enough to
-// read while a centred pair at the usual +-200 slots stays in view. Landscape and square are unchanged.
-export const ADV_PORTRAIT_VISIBLE_WIDTH = 620
+// stage width narrows from the 16:9 width to ADV_PORTRAIT_VISIBLE_WIDTH. Figures grow by the same ratio; slot
+// offsets do not (advHorizontalSqueeze), so a centred pair at the usual +-200 slots stays in view. 496 is the
+// 1.25x upper-body framing calibrated against game captures (620 / 1.25): with advViewOriginY it keeps a
+// figure's cut-off lower edge below the screen, as the client always does, and the face above the text box.
+// Landscape and square are unchanged.
+export const ADV_PORTRAIT_VISIBLE_WIDTH = 496
 export function advVisibleWidth(aspect) {
   if (aspect >= 1) return ADV_VIEW_WIDTH
   const t = Math.min(1, Math.max(0, (aspect - 0.5) / 0.5))
@@ -46,9 +49,19 @@ export function advHorizontalSqueeze(width, height) {
   return advVisibleWidth(width / height) / ADV_VIEW_WIDTH
 }
 
+// Screen y of the canvas origin (the native view centre). Landscape and square centre it, as the client does.
+// On portrait the figures grow (advVisibleWidth); centring them would leave the figure's cut-off lower edge
+// floating in view above the screen bottom. Instead the native view's top edge stays where a square screen puts
+// it, ADV_PORTRAIT_VIEW_TOP of the height, and figures grow downward from there past the screen bottom.
+export const ADV_PORTRAIT_VIEW_TOP = (1 - 1 / ADV_REFERENCE_ASPECT) / 2
+export function advViewOriginY(width, height) {
+  if (!(width > 0) || !(height > 0) || width >= height) return height / 2
+  return height * ADV_PORTRAIT_VIEW_TOP + ADV_VIEW_HEIGHT / 2 * advStageUnit(width, height)
+}
+
 export function advToScreen(width, height, x, y) {
   const unit = advStageUnit(width, height)
-  return { x: width / 2 + x * unit * advHorizontalSqueeze(width, height), y: height / 2 - y * unit }
+  return { x: width / 2 + x * unit * advHorizontalSqueeze(width, height), y: advViewOriginY(width, height) - y * unit }
 }
 
 // IdolCharacter origin in canvas units.
@@ -80,13 +93,15 @@ export function backgroundScreenSize(width, height) {
   return { width: BACKGROUND_PANEL_SIZE[0] * unit, height: BACKGROUND_PANEL_SIZE[1] * unit }
 }
 
-// Background sprite rect in background-container space: the panel, centred; only stages wider than the
-// panel (about 2.5:1) enlarge it further to stay covered.
+// Background sprite rect in background-container space: the panel, centred on the canvas origin
+// (advViewOriginY); only stages wider than the panel (about 2.5:1), or portrait screens taller than it, enlarge
+// it further to stay covered on every side.
 export function backgroundPanelRect(width, height) {
   const panel = backgroundScreenSize(width, height)
-  const cover = Math.max(1, width / panel.width, height / panel.height)
+  const originY = advViewOriginY(width, height)
+  const cover = Math.max(1, width / panel.width, 2 * originY / panel.height, 2 * (height - originY) / panel.height)
   const rectWidth = panel.width * cover, rectHeight = panel.height * cover
-  return { x: (width - rectWidth) / 2, y: (height - rectHeight) / 2, width: rectWidth, height: rectHeight }
+  return { x: (width - rectWidth) / 2, y: originY - rectHeight / 2, width: rectWidth, height: rectHeight }
 }
 
 // StoryCamera.MoveCamera at camera (x, y) canvas units and zoom: the actor layer scales by zoom about the view
@@ -96,8 +111,9 @@ export function cameraScreenTransform(width, height, { zoom = 1, x = 0, y = 0 } 
   const unit = advStageUnit(width, height)
   const shiftX = -x * unit * zoom * advHorizontalSqueeze(width, height), shiftY = y * unit * zoom
   const bgScale = Math.max(1, zoom)
+  const originY = advViewOriginY(width, height)
   return {
-    scale: zoom, x: width / 2 * (1 - zoom) + shiftX, y: height / 2 * (1 - zoom) + shiftY,
-    bgScale, bgX: width / 2 * (1 - bgScale) + shiftX, bgY: height / 2 * (1 - bgScale) + shiftY,
+    scale: zoom, x: width / 2 * (1 - zoom) + shiftX, y: originY * (1 - zoom) + shiftY,
+    bgScale, bgX: width / 2 * (1 - bgScale) + shiftX, bgY: originY * (1 - bgScale) + shiftY,
   }
 }

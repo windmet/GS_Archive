@@ -1,0 +1,63 @@
+// Runs every step of the Web Viewer Source Gate locally, in workflow order, and reports all failures at the end
+// instead of stopping at the first one. The steps come from the workflow file itself (lib/source-gate-workflow.mjs).
+//   npm run gate:source                      every run step (npm ci is skipped; node_modules must exist)
+//   npm run gate:source -- --only=camera     steps whose name contains the text
+//   npm run gate:source -- --from="Verify Home"   start at the first step whose name contains the text
+//   npm run gate:source -- --base=<sha>      diff base for the whitespace and publication-ledger steps
+// The base defaults to the merge base with origin/master. A main checkout with the corpus and CRLF files can pass
+// steps that fail in CI, and a CRLF checkout fails byte checks that CI passes: run it in an LF worktree.
+import { execFileSync, spawn } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
+import { localExpressions, parseSourceGateSteps, substituteExpressions } from './lib/source-gate-workflow.mjs'
+
+const webViewer = fileURLToPath(new URL('..', import.meta.url))
+const repo = path.dirname(webViewer)
+const option = name => process.argv.slice(2).find(arg => arg.startsWith(`--${name}=`))?.split('=').slice(1).join('=')
+const gitOutput = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', maxBuffer: 1 << 28 })
+const git = (...args) => gitOutput(...args).trim()
+const status = () => gitOutput('status', '--porcelain').split('\n').filter(Boolean)
+
+const head = git('rev-parse', 'HEAD')
+const base = option('base') || git('merge-base', 'HEAD', 'origin/master')
+const expressions = localExpressions({ repo, base, head })
+const skip = new Set(['Install dependencies'])
+let steps = parseSourceGateSteps().filter(step => step.run && !skip.has(step.name))
+const from = option('from'), only = option('only')
+if (from) steps = steps.slice(Math.max(0, steps.findIndex(step => step.name.includes(from))))
+if (only) steps = steps.filter(step => step.name.includes(only))
+
+function run(step) {
+  const cwd = step.workingDirectory ? path.resolve(webViewer, substituteExpressions(step.workingDirectory, expressions)) : webViewer
+  const env = { ...process.env, CI: 'true' }
+  for (const [key, value] of Object.entries(step.env)) env[key] = substituteExpressions(value, expressions)
+  const command = substituteExpressions(step.run, expressions)
+  return new Promise(resolve => {
+    const started = Date.now()
+    const output = []
+    const child = spawn('bash', ['-eo', 'pipefail', '-c', command], { cwd, env })
+    for (const stream of [child.stdout, child.stderr]) stream.on('data', chunk => output.push(chunk))
+    child.on('close', code => resolve({ code, seconds: (Date.now() - started) / 1000, output: Buffer.concat(output).toString() }))
+  })
+}
+
+// CI checks out LF. A CRLF working tree (core.autocrlf=true) fails byte and hash checks that pass in CI.
+const crlf = gitOutput('ls-files', '--eol', '--', 'web_viewer').split('\n').filter(line => /^i\/lf\s+w\/crlf\s/.test(line) && !/eol=crlf/.test(line))
+if (crlf.length) console.log(`WARNING: ${crlf.length} files are checked out with CRLF; byte and hash checks fail here but not in CI.\n  Use an LF worktree: git -c core.autocrlf=false -c core.eol=lf worktree add <dir> <ref>\n`)
+const dirtyBefore = new Set(status())
+const failures = []
+for (const [index, step] of steps.entries()) {
+  const result = await run(step)
+  const label = `[${index + 1}/${steps.length}] ${step.name} (${result.seconds.toFixed(1)} s)`
+  if (result.code === 0) { console.log(`PASS ${label}`); continue }
+  failures.push(step.name)
+  console.log(`FAIL ${label}`)
+  console.log(result.output.split('\n').slice(-30).map(line => `  | ${line}`).join('\n'))
+}
+const touched = status().filter(line => !dirtyBefore.has(line))
+if (touched.length) console.log(`\nFiles the steps rewrote (generators such as build:check; do not commit by accident):\n${touched.map(line => `  ${line}`).join('\n')}`)
+console.log(`\nSource gate: ${steps.length - failures.length}/${steps.length} steps passed (base ${base.slice(0, 8)}${crlf.length ? ', CRLF checkout' : ''})`)
+if (failures.length) {
+  console.log(`Failed:\n${failures.map(name => `  - ${name}`).join('\n')}`)
+  process.exitCode = 1
+}
