@@ -86,7 +86,9 @@ onMounted(() => {
   overflow: auto;
   overscroll-behavior: contain;
   padding: var(--gs-space-4) max(var(--gs-space-4), env(safe-area-inset-right, 0px)) var(--gs-space-2) max(var(--gs-space-4), env(safe-area-inset-left, 0px));
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--gs-radius-panel); /* a floating layer; its foot meets the bar */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   background: var(--gs-surface);
   color: var(--gs-ink);
   box-shadow: 0 -8px 32px rgb(16 42 64 / 12%);
@@ -118,7 +120,7 @@ onMounted(() => {
 .archive-drawer .is-core button { flex-direction: column; justify-content: center; gap: var(--gs-space-1); min-height: 64px; padding: var(--gs-space-2) 0; }
 /* Tool cards: a tinted glyph, the name, and what it opens. */
 .archive-drawer .is-tools button { gap: var(--gs-space-2); min-height: 60px; padding: var(--gs-space-2) var(--gs-space-3); border: 1px solid var(--gs-line); background: var(--gs-paper); }
-.archive-drawer .is-tools .archive-drawer-icon { box-sizing: content-box; padding: 6px; border-radius: 10px; background: var(--gs-mint-wash); color: var(--gs-mint-ink); }
+.archive-drawer .is-tools .archive-drawer-icon { box-sizing: content-box; padding: 6px; border-radius: var(--gs-radius-control); background: var(--gs-mint-wash); color: var(--gs-mint-ink); }
 .archive-drawer-tool-copy { display: grid; gap: 1px; }
 .archive-drawer-tool-copy b { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; }
 .archive-drawer .archive-drawer-tool-copy small { overflow: visible; color: var(--gs-ink-3); font-size: var(--gs-text-caption); line-height: 1.35; white-space: normal; }

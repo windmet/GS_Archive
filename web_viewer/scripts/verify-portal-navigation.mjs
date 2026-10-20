@@ -302,6 +302,15 @@ const hero = overviewSource.indexOf('class="overview-personal"')
 const heroDirectory = overviewSource.indexOf('<nav v-if="preferredReference?.actionable" class="overview-directory"')
 assert.ok(allDirectory > 0 && allDirectory < overviewSource.indexOf('class="overview-panel overview-featured"'), 'all-archive view: index above the featured section')
 assert.ok(hero > 0 && heroDirectory > hero && heroDirectory < overviewSource.indexOf('class="overview-card-showcase"'), 'favorite view: index right after the hero')
+// Phone layout at every width from 320 to 760, and in a narrowed desktop window: centred, one hero column,
+// the same side margin as the other pages, and a directory that fills its rows when five columns fit.
+const tokenSource = readFileSync(new URL('../src/styles/GS_UI_TOKENS.css', import.meta.url), 'utf8')
+assert.match(tokenSource, /@media \(max-width: 760px\) \{ \[data-archive-scroll-container\] \{ scrollbar-gutter: stable both-edges; \} \}/, 'a classic scrollbar reserves both sides in the phone layout')
+const phoneOverview = overviewSource.slice(overviewSource.lastIndexOf('@media (max-width:760px)'))
+assert.match(phoneOverview, /\.portal-overview-scroll \{ padding:var\(--gs-space-4\) var\(--gs-space-5\) /, 'the portal keeps the 16px side margin of the other pages')
+assert.match(phoneOverview, /\.overview-personal \{ display:flex;align-items:stretch; \}/, 'the hero stays one column at every phone width')
+assert.match(phoneOverview, /@container portal \(min-width:540px\) \{ \.overview-directory \{ grid-template-columns:repeat\(5,minmax\(0,1fr\)\); \} \}/, 'a large phone shows the fifteen sections as three full rows of five')
+assert.equal(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items).length % 5, 0, 'the five-column directory has no partial row')
 console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs; portal lens always in the address; phone 2+1 bar, lazy drawer and hero-first portal passed')
 import { ARCHIVE_SECTIONS } from '../src/core/archiveSections.js'
 import { buildArchiveBreadcrumbs } from '../src/core/archiveRoute.js'

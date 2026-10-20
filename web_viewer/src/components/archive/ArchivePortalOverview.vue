@@ -516,7 +516,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 /* Phones have no sidebar: 资料馆 and the tools share the first row, the scope chip the second, then
    the search, then the index of every section. */
 @media (max-width:760px) {
-  .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-4) var(--gs-space-8); }
+  .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-5) var(--gs-space-8); } /* the same 16px side margin as the other pages */
+  /* One column at every phone width: the page container's two-column hero (641–980px) would otherwise
+     put the hero beside its shortcuts on a large phone, with a hole under the shortcuts. */
+  .overview-personal { display:flex;align-items:stretch; }
   .overview-search-form input { font-size:var(--gs-text-subtitle); } /* touch input: 16px or iOS zooms on focus */
   .overview-toolbar { grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2); }
   .overview-brand { display:contents; }
@@ -536,6 +539,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-directory button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-2);min-width:0;min-height:60px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
   .overview-directory button svg { width:22px;height:22px;color:var(--gs-ink-2); }
   .overview-directory button:active { background:var(--gs-mint-wash); }
+  /* A large phone fits five columns: the fifteen sections fill three rows with nothing left over. */
+  @container portal (min-width:540px) { .overview-directory { grid-template-columns:repeat(5,minmax(0,1fr)); } }
   .overview-panel { margin-top:var(--gs-space-8); }
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
