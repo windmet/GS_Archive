@@ -34,6 +34,8 @@
 
 舞台线已同步master #56–#59（`4d31a402`），合并记录见 [晚间同步](STAGE_MASTER_SYNC_EVENING_20261020.md)。[分片发布闭包门禁](STAGE_SHARD_PACKAGING_GATE_20261020.md)已覆盖3个目录和436份分片；旧分片保留在盘上但从新inventory排除，增量打包在创建输出前复核。冷加载/生产HTTP与GPU检查仍开放，本轮未部署。
 
+[舞台冷加载测量入口](STAGE_COLD_LOAD_MEASUREMENT_20261020.md)已支持4首代表曲、固定full/lite、场景就绪合同及就绪前CDP字节；失败与混构建样本不进中位数。源级回归与实际DOM正反例通过，尚未运行受控冷缓存新旧对比，没有新的耗时收益结论。
+
 ## 未合入但保留的分支
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。
