@@ -32,6 +32,8 @@
 
 舞台初次加载已完成 [独立输入并行](STAGE_INITIAL_PARALLEL_20261020.md)：时钟/音乐、编舞/效果同时读取，Penlight与对象索引不再挡住音频初始化。保留人物构建与初始seek屏障，Browser播放/刷新/返回通过；尚未宣称冷加载时间收益，可晚到分层及真实预算继续开放。
 
+舞台线已同步master #56–#59（`4d31a402`），合并记录见 [晚间同步](STAGE_MASTER_SYNC_EVENING_20261020.md)。[分片发布闭包门禁](STAGE_SHARD_PACKAGING_GATE_20261020.md)已覆盖3个目录和436份分片；旧分片保留在盘上但从新inventory排除，增量打包在创建输出前复核。冷加载/生产HTTP与GPU检查仍开放，本轮未部署。
+
 ## 未合入但保留的分支
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。

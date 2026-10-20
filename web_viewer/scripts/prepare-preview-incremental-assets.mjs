@@ -4,6 +4,7 @@ import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {hashFile} from './lib/preview-source-baseline.mjs'
+import {loadStageShardClosure,requiresStageShardValidation,assertStageShardInventory} from './lib/stage-shard-inventory.mjs'
 import {loadPreviewUploadedBaseline} from './lib/preview-uploaded-baseline.mjs'
 import {encodeStructuredGzip} from './lib/structured-gzip.mjs'
 import {encodeLosslessWebp, runPool, shutdownEncoderPool} from './lib/lossless-webp.mjs'
@@ -43,6 +44,10 @@ const {sources:oldSources,evidence:baselineEvidence}=await loadPreviewUploadedBa
   overlayFiles,remote:option('--baseline-remote')})
 const requestKeys=new Set(inventory.entries.map(entry=>entry.request_key))
 assert.equal(requestKeys.size,inventory.entries.length,'Duplicate source request')
+// New full inventories carry stage_shards. Also validate legacy inventories
+// containing any stage dependency, while retaining small non-stage increments.
+const stageClosure=requiresStageShardValidation(inventory)?await loadStageShardClosure(path.join(root,'public')):null
+if(stageClosure)await assertStageShardInventory(inventory.entries,stageClosure)
 const output=path.resolve(option('--out')), relative=path.relative(path.join(root,'.deploy'),output)
 assert(relative && !relative.startsWith('..') && !path.isAbsolute(relative),'Output must stay inside .deploy')
 assert.equal(await fs.realpath(path.join(root,'.deploy')),path.join(root,'.deploy'),'Linked staging parent')
@@ -57,6 +62,8 @@ await runPool(inventory.entries,4,async entry=>{
   entry.source_sha256=hash.sha256
   if (++hashed%10000===0) console.log(`Hashed ${hashed}/${inventory.entries.length}`)
 })
+// Tie the hashes just computed to the same catalog snapshot as preflight.
+if(stageClosure)await assertStageShardInventory(inventory.entries,stageClosure)
 const dataRevision=createHash('sha256').update(JSON.stringify(inventory.entries
   .filter(entry=>isPreviewDataSnapshotKey(entry.request_key))
   .map(entry=>[entry.request_key,entry.source_sha256]))).digest('hex')

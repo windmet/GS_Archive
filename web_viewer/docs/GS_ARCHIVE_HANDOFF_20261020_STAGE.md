@@ -41,3 +41,9 @@
 
 - 主 checkout 是 CRLF 环境，记录原始字节哈希的生成器在这里跑会把 CRLF 写进目录；生成后一律到 LF worktree 复跑门禁。
 - 主 checkout 里 `040ren_child.txt` 的删除和若干未跟踪文件不是舞台线的，提交时用显式路径。
+
+## 后续已推进（0654100c之后）
+
+舞台线已同步master #56–#59（`4d31a402`），合并记录见 [晚间同步](STAGE_MASTER_SYNC_EVENING_20261020.md)。[分片发布闭包门禁](STAGE_SHARD_PACKAGING_GATE_20261020.md)已覆盖3个目录和436份分片；旧分片保留在盘上但从新inventory排除，增量打包在创建输出前复核。冷加载/生产HTTP与GPU检查仍开放，本轮未部署。
+
+上表未推送/未合master状态是历史快照；最新HEAD与远端状态以git核实。

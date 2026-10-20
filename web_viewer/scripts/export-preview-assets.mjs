@@ -11,6 +11,7 @@ import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { getBgmUrl, getSeUrl, getAmbientUrl, getLipSyncUrl } from '../src/utils/AssetResolver.js'
 import { getCardPortraitUrl, getCardLandscapeUrl } from '../src/utils/CardAssetResolver.js'
 import { writeSourceBaseline } from './lib/preview-source-baseline.mjs'
+import {loadStageShardClosure,isStageShardKey,assertStageShardInventory} from './lib/stage-shard-inventory.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const publicRoot = path.join(root, 'public')
@@ -41,6 +42,7 @@ function typeFor(key) {
 async function isFile(file) {
   try { return (await fs.lstat(file)).isFile() } catch (error) { if (error.code === 'ENOENT') return false; throw error }
 }
+const stageClosure=await loadStageShardClosure(publicRoot)
 const files = new Map()
 const missing = new Map()
 const terminalAssetKeys = new Set()
@@ -73,6 +75,7 @@ async function walk(dir, prefix) {
       // Content-addressed prior derivatives stay on disk for recovery, but only
       // current menu references belong to the deployable dependency closure.
       if (terminalMenusPresent && key.startsWith('assets/terminal/') && !terminalAssetKeys.has(key)) continue
+      if (isStageShardKey(key) && !stageClosure.required.has(key)) continue
       await add(`/${key.replaceAll('\\', '/')}`, absolute, 'public')
     }
     else if (followJunctions && entry.isSymbolicLink() && (await fs.stat(absolute)).isDirectory()) await walk(await fs.realpath(absolute), key)
@@ -170,6 +173,7 @@ for (const item of entries) {
   delete item.size
   delete item['content-type']
 }
+const stageShardReceipt=await assertStageShardInventory(entries,stageClosure)
 const objectKeys = new Set()
 for (const item of entries) {
   if (objectKeys.has(item.object_key)) throw new Error(`Deployment object key collision: ${item.object_key}`)
@@ -185,7 +189,7 @@ if (mode === '--inventory') {
   if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) throw new Error('Inventory output must stay inside this checkout .analysis')
   await fs.mkdir(path.dirname(destination),{recursive:true})
   await fs.writeFile(destination,JSON.stringify({schema_version:3,kind:'current-source-inventory',
-    created_at:new Date().toISOString(),totals,missing:missingEntries,entries},null,2)+'\n')
+    created_at:new Date().toISOString(),stage_shards:stageShardReceipt,totals,missing:missingEntries,entries},null,2)+'\n')
   console.log(JSON.stringify({inventory:destination,totals}))
   process.exit(0)
 }
@@ -213,6 +217,11 @@ async function stage(item) {
   const content = await fs.readFile(target)
   item.deployed_size = content.length
   item.sha256 = createHash('sha256').update(content).digest('hex')
+  const requiredStage=stageClosure.required.get(item.request_key)
+  if(requiredStage) {
+    assert.equal(content.length,requiredStage.bytes,`Staged stage dependency size drift: ${item.request_key}`)
+    assert.equal(item.sha256,requiredStage.sha256,`Staged stage dependency SHA-256 drift: ${item.request_key}`)
+  }
   deployedBytes += content.length
   if (++staged % 2000 === 0) console.log(`Staged ${staged}/${entries.length}`)
 }
