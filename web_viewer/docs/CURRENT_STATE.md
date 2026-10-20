@@ -44,6 +44,8 @@
 
 ## 未合入但保留的分支
 
+10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)发现组合默认序来源：原生自动编队读取表2字段37 `IdolUnitSortOrder`。13首逐曲显式序之外，41首固定组合曲可取得默认序，24首与当前编号回退不同；`yknkmh`另有隐藏槽guard，48个Unit编排还涉及独立选组路径。本批仅审计，尚未接入数据/消费者或重建候选。
+
 10-21 舞台同步 master #60–#65 的后验收见 [同步记录](STAGE_MASTER_SYNC_20261021.md)：合并 `4dccabbd`，163/163 源码回归及 build:check 通过，5213 实际舞台与手机尺寸目标检查完成；未部署。
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。
