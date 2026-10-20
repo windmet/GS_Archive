@@ -8,6 +8,8 @@
 
 ## 实测基线（drvalv 默认曲，1280×800，冷缓存，dev 服务）
 
+10-20进一步落地 [编舞逐编排分片](STAGE_CHOREOGRAPHY_SHARDS_20261020.md)：342KB目录、118份按需片；实际舞台不再读取全局编舞及Spotlight/Whole_screen/Searchlight三份全局轨道。默认DRIVE的固定loader序列原始字节43.58MB→22.86MB、请求22→19、输出一致。它不是本节Browser冷加载测量的重跑；stage-effects、Stagelight、emitter全局数据和后续预算仍待推进。
+
 - 2504 个请求，0 个错误，堆 157 MB。除开发态代码外约 51 MiB。
 - 全局索引 34.4 MB 原始 / 1.95 MB gzip，其中约 26 MB 按歌曲键组织，可以分片：
   - `live-chibi/choreography/index.json` 9.4 MB（`songs` 8.74 MB）

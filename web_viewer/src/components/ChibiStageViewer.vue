@@ -400,8 +400,8 @@
           </details>
           <section v-if="MAINTAINER" class="control-section statistics-section">
             <div class="song-facts">
-              <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
-              <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
+              <span>{{ selectedSong?.events?.length || 0 }} 条动作</span>
+              <span>{{ selectedSong?.singerEvents?.length || 0 }} 次演唱切换</span>
               <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
               <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
               <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
@@ -553,6 +553,7 @@ import {
   destroyLiveChibi,
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
+  fetchLiveChibiSongChoreography,
   fetchLiveChibiPenlights,
   fetchLiveChibiMouthFix,
   fetchLiveChibiMotionOffset,
@@ -1057,6 +1058,7 @@ const stageAmbientImage = computed(() => {
   return file && staticStageEnabled.value ? `${LIVE_CHIBI_BASE}/${file}` : ''
 })
 const stageReady = computed(() => Boolean(selectedSong.value)
+  && Array.isArray(selectedSong.value.events)
   && !errorText.value
   && (isSpecialSingle.value || (activePositions.value.length > 0
     && loadedPositions.value.length === activePositions.value.length))
@@ -1245,15 +1247,15 @@ onMounted(async () => {
     createPixiApp()
     manifest.value = await fetchLiveChibiManifest({signal:lifetime.signal})
     if (stageDisposed) return
-    choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index,{signal:lifetime.signal})
+    choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index,{signal:lifetime.signal,sharded:true})
     if (stageDisposed) return
     // Native speed is required for both initial poses and transport. Missing
     // clocks must not silently render an assumed BPM/timeScale=1.
-    motionClockData.value = await fetchLiveChibiMotionClock(manifest.value.choreography.index,{signal:lifetime.signal})
+    motionClockData.value = await fetchLiveChibiMotionClock(manifest.value.choreography.index,{signal:lifetime.signal,binding:choreography.value})
     if (stageDisposed) return
     if (MAINTAINER) {
       commandInventoryState.value = 'loading'
-      void fetchLiveChibiCommandInventory(manifest.value.choreography.index, {signal:lifetime.signal})
+      void fetchLiveChibiCommandInventory(manifest.value.choreography.index, {signal:lifetime.signal,binding:choreography.value})
         .then(value => {
           if (stageDisposed) return
           commandInventory.value = value
@@ -1275,6 +1277,8 @@ onMounted(async () => {
       errorText.value = '所选歌曲的舞台版本与本地编舞资源不一致。'
       return
     }
+    choreography.value = await fetchLiveChibiSongChoreography(manifest.value.choreography.index,selectedSongId.value,{signal:lifetime.signal})
+    if (stageDisposed) return
     const resolvedHandoff = resolveSongStageHandoff(props.stageHandoff, selectedSong.value, characters.value)
     if (resolvedHandoff) {
       handoffLineup.value = resolvedHandoff.stageLineup
@@ -1293,7 +1297,7 @@ onMounted(async () => {
       stageVocalBackingGain.value = resolvedHandoff.backingGain
       stageVocalEnabled.value = stageVocalAvailable.value
     }
-    const optionalOptions={signal:lifetime.signal}
+    const optionalOptions={signal:lifetime.signal,binding:choreography.value}
     void fetchLiveChibiStagelights(manifest.value.choreography.index,optionalOptions).then(value=>{
       if(stageDisposed)return
       stagelightData.value=value;applyStageLighting();requestPausedSuspensionRender()
@@ -3553,6 +3557,9 @@ async function handleSongChange() {
   songMotionsReady.value = false
   errorText.value = ''
   try {
+    const index=await fetchLiveChibiSongChoreography(manifest.value.choreography.index,selectedSongId.value,{signal:lifetime.signal})
+    if(stageDisposed || buildSequence !== stageBuildSequence)return
+    choreography.value=index
     await Promise.all([loadSongLipSync(), loadSongAudio()])
     if (buildSequence !== stageBuildSequence) return
     for (const position of allPositions) {
@@ -3835,7 +3842,7 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
 async function prepareStageLighting() {
   if(objectLayersEnabled.value && selectedSong.value) {
     const song=selectedSong.value
-    if(!objectLayerIndex.value)objectLayerIndex.value=await fetchLiveChibiObjectLayerIndex({signal:lifetime.signal})
+    if(!objectLayerIndex.value)objectLayerIndex.value=await fetchLiveChibiObjectLayerIndex({signal:lifetime.signal,binding:choreography.value})
     if(stageDisposed || selectedSong.value!==song)return false
     if(objectLayerSongId!==song.id){releaseObjectLayers();objectLayerSongId=song.id}
     const sequence=objectLayerSequence

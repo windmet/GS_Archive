@@ -10,6 +10,7 @@ import { attachBloom } from '../core/chibiBloomParticles.js'
 import { validateStagelightData } from '../core/chibiStagelights.js'
 import {createBoundedTextTransport} from './BoundedTextTransport.js'
 import {createStageIndexTransport} from './StageIndexTransport.js'
+import {loadChoreographyCatalog,loadChoreographySong,validateChoreographyBinding} from '../core/chibiChoreographyShards.js'
 import * as PIXI from 'pixi.js'
 import {
   AtlasAttachmentLoader,
@@ -89,7 +90,8 @@ async function liveJson(relativePath, options={}, optional=false) {
   catch(error) {if(error.status===404 && optional)return null; if(error.name!=='AbortError')indexTransport.invalidate(url); throw error}
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
-export async function fetchLiveChibiChoreography(file,{signal}={}) {
+export async function fetchLiveChibiChoreography(file,{signal,sharded=false}={}) {
+  if(sharded)return (await loadChoreographyCatalog(indexTransport,file,{signal})).index
   const [text,spotlights,wholeScreen,searchlights]=await Promise.all([
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
     indexTransport.load('/data/stage-spotlight-commands.json',{signal}),
@@ -100,61 +102,62 @@ export async function fetchLiveChibiChoreography(file,{signal}={}) {
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return attachSearchlights(attachWholeScreen(attachNativeSpotlights(text.data,spotlights.data,hash),wholeScreen.data,hash),searchlights.data,hash)
 }
-export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
-  // Both texts use the bounded transport. Hash the actual loaded choreography,
-  // so an old RAW snapshot cannot silently describe a newer resource corpus.
+export const fetchLiveChibiSongChoreography = (file,id,options) => loadChoreographySong(indexTransport,file,id,options)
+export async function fetchLiveChibiCommandInventory(file, {signal,binding} = {}) {
+  // Sharded playback uses the catalog's explicit canonical-source binding.
+  // Full-corpus callers continue to digest the actual canonical document.
   const [text, choreographyText] = await Promise.all([
     indexTransport.load('/data/stage-command-inventory.json', {signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`, {signal}),
+    binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`, {signal}),
   ])
-  const hash = await choreographyText.hash()
+  const hash = binding ? validateChoreographyBinding(binding,file).sha256 : await choreographyText.hash()
   if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
   return validateStageCommandInventory(text.data, hash)
 }
 export const fetchLiveChibiMusicIndex = options => liveJson('music/index.json',options,true)
-export async function fetchLiveChibiPenlights(file, {signal}={}) {
+export async function fetchLiveChibiPenlights(file, {signal,binding}={}) {
   const [text,modelText,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-penlight-commands.json',{signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/penlight/index.json`,{signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+    binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const [choreographyHash,modelHash]=await Promise.all([choreographyText.hash(),modelText.hash()])
+  const [choreographyHash,modelHash]=await Promise.all([binding ? validateChoreographyBinding(binding,file).sha256 : choreographyText.hash(),modelText.hash()])
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return {commands:validatePenlightData(text.data,choreographyHash,modelHash),model:modelText.data}
 }
-export async function fetchLiveChibiMouthFix(file,{signal}={}) {
+export async function fetchLiveChibiMouthFix(file,{signal,binding}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-mouth-fix.json',{signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+    binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=await choreographyText.hash()
+  const hash=binding ? validateChoreographyBinding(binding,file).sha256 : await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return validateMouthFixData(text.data,hash)
 }
-export async function fetchLiveChibiMotionOffset(file,{signal}={}) {
+export async function fetchLiveChibiMotionOffset(file,{signal,binding}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-motion-offset.json',{signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+    binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=await choreographyText.hash()
+  const hash=binding ? validateChoreographyBinding(binding,file).sha256 : await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return validateMotionOffsetData(text.data,hash)
 }
-export async function fetchLiveChibiMotionClock(file,{signal}={}) {
+export async function fetchLiveChibiMotionClock(file,{signal,binding}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-motion-clock.json',{signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+    binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=await choreographyText.hash()
+  const hash=binding ? validateChoreographyBinding(binding,file).sha256 : await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return validateMotionClock(text.data,hash,choreographyText.data.songs)
+  return validateMotionClock(text.data,hash,binding?.songs ?? choreographyText.data.songs)
 }
-export async function fetchLiveChibiStagelights(file,{signal}={}) {
+export async function fetchLiveChibiStagelights(file,{signal,binding}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-stagelight-commands.json',{signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+    binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=await choreographyText.hash()
+  const hash=binding ? validateChoreographyBinding(binding,file).sha256 : await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return validateStagelightData(text.data,hash)
 }
@@ -178,13 +181,13 @@ export async function fetchLiveChibiOldSuspensionTrack(descriptor,{signal}={}) {
   return validateOldSuspensionTrack(text.data,descriptor,hash)
 }
 export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,options) : Promise.resolve(null)
-export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
+export async function fetchLiveChibiObjectLayerIndex({signal,onOptional,binding}={}) {
   let objectText
   try {objectText=await indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})}
   catch(error) {if(error.status===404)return null;throw error}
   let index=objectText.data
-  const [emitterText,choreographyText,builtInText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal}),indexTransport.load('/data/stage-built-in-objects.json',{signal})])
-  const [objectHash,choreographyHash]=await Promise.all([objectText.hash(),choreographyText.hash()])
+  const [emitterText,choreographyText,builtInText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal}),indexTransport.load('/data/stage-built-in-objects.json',{signal})])
+  const [objectHash,choreographyHash]=await Promise.all([objectText.hash(),binding ? validateChoreographyBinding(binding,'choreography/index.json').sha256 : choreographyText.hash()])
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   index=attachObjectEmitters(index,emitterText.data,objectHash,choreographyHash)
   index=attachBuiltInObjects(index,builtInText.data,objectHash)
