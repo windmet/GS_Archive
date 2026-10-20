@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -18,6 +18,33 @@ const DEFAULT_EXAMPLE_CONFIG = path.join(
   'archive_sources.example.json',
 )
 
+// A linked git worktree (its .git is a file, `gitdir: <main>/.git/worktrees/<name>`) returns the main checkout's
+// root; the main checkout and CI checkouts return null.
+export function mainCheckoutRoot(repoRoot = path.dirname(WEB_VIEWER_ROOT)) {
+  const marker = path.join(repoRoot, '.git')
+  let text
+  try {
+    if (!statSync(marker).isFile()) return null
+    text = readFileSync(marker, 'utf8')
+  } catch {
+    return null
+  }
+  const gitdir = /^gitdir:\s*(.+)$/m.exec(text)?.[1]?.trim()
+  if (!gitdir) return null
+  const common = path.resolve(repoRoot, gitdir, '..', '..')
+  return path.basename(common) === '.git' ? path.dirname(common) : null
+}
+
+// The ignored local config lives in the main checkout only; a worktree reads that one, so its scripts and dev
+// server see the same corpus (published files, legacy roots, read-model candidates) without copying anything.
+export function localConfigPath(webViewerRoot = WEB_VIEWER_ROOT) {
+  const own = path.join(webViewerRoot, 'config', 'archive_sources.local.json')
+  if (existsSync(own)) return own
+  const main = mainCheckoutRoot(path.dirname(webViewerRoot))
+  const shared = main && path.join(main, 'web_viewer', 'config', 'archive_sources.local.json')
+  return shared && existsSync(shared) ? shared : null
+}
+
 function resolveConfigPath(configPath, environment) {
   const explicit = configPath || environment.SIDEM_ARCHIVE_SOURCES_CONFIG
   if (explicit) {
@@ -25,9 +52,7 @@ function resolveConfigPath(configPath, environment) {
     if (!existsSync(resolved)) throw new Error(`Archive source config not found: ${resolved}`)
     return resolved
   }
-  return existsSync(DEFAULT_LOCAL_CONFIG)
-    ? DEFAULT_LOCAL_CONFIG
-    : DEFAULT_EXAMPLE_CONFIG
+  return localConfigPath() || DEFAULT_EXAMPLE_CONFIG
 }
 
 function requiredPath(value, base, field) {
@@ -72,6 +97,10 @@ export function loadArchiveSources({
   return {
     configPath: resolvedConfig,
     archiveRoot,
+    // The checkout whose public/ holds the full published corpus (git ignores most of it).
+    publishRoot: requiredPath(payload.publish_root || 'web_viewer/public', archiveRoot, 'publish_root'),
+    // Optional: a folder of build_readmodels outputs; the dev server picks the one matching the checked-in release.
+    readmodelCandidatesRoot: optionalPath(payload.readmodel_candidates_root, archiveRoot, 'readmodel_candidates_root'),
     legacyRoot,
     legacyConfigured: configuredLegacyRoot !== null,
     legacyPath: (...parts) => path.resolve(legacyRoot, ...parts),
