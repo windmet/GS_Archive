@@ -281,13 +281,18 @@ assert.match(shellSource, /defineAsyncComponent\(\(\) => import\('\.\/ArchiveNav
 assert.doesNotMatch(shellSource, /^import ArchiveNavigationDrawer/m, 'the drawer is not in the startup bundle')
 assert.match(shellSource, /<ArchiveNavigationDrawer v-if="drawerOpen"[^>]*:groups="navigationGroups"/, 'the drawer renders only while open, from the sidebar groups')
 const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavigationDrawer.vue', import.meta.url), 'utf8')
-assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups|ARCHIVE_SECTIONS\b/, 'the drawer keeps no destination list of its own')
+assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups/, 'the drawer keeps no destination list of its own')
+assert.deepEqual(drawerSource.match(/ARCHIVE_SECTIONS(?:\[[^\]]+\]\?\.\w+)?/g), ['ARCHIVE_SECTIONS', 'ARCHIVE_SECTIONS[item.id]?.blurb'], 'the drawer reads only descriptions from the dictionary')
 assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
 assert.doesNotMatch(drawerSource.split('<script')[0], /group\.label|<h2/, 'the drawer draws no group titles; each icon is labelled')
 assert.match(drawerSource, /props\.groups\.filter\(group => \(TIER_OF_GROUP\[group\.id\] \|\| 'core'\) === id\)/, 'every drawer tier is cut from the sidebar groups')
-assert.match(drawerSource, /const TIER_OF_GROUP = \{ collection: 'collection', studio: 'tools', resources: 'tools' \}/, '图鉴 and the tools sit beneath the core tiles')
-// 回到页顶 lives in the drawer's tool strip and scrolls the one archive scroll area that view restoration uses.
-assert.match(drawerSource, /<template v-if="tier\.id === 'tools'">\s*<button type="button" class="archive-drawer-top" :disabled="!canScrollTop" @click="scrollToTop">/, 'the tool strip offers 回到页顶, disabled at the top')
+assert.match(drawerSource, /const TIER_OF_GROUP = \{ collection: 'collection', live: 'tools', studio: 'tools', resources: 'footer' \}/, 'catalogues, 图鉴, tools and the maintainer page each have their tier')
+// The tools are players and editors, not lists: cards that say what they open, from the dictionary.
+assert.match(drawerSource, /<span v-if="tier\.id === 'tools'" class="archive-drawer-tool-copy"><b>\{\{ item\.label \}\}<\/b><small v-if="item\.blurb">\{\{ item\.blurb \}\}<\/small><\/span>/, 'tool cards carry a name and a one-line description')
+assert.match(drawerSource, /blurb: ARCHIVE_SECTIONS\[item\.id\]\?\.blurb/, 'tool descriptions come from the dictionary')
+assert.deepEqual(Object.values(ARCHIVE_SECTIONS).filter(section => section.blurb).map(section => section.id), ['live', 'studio'], 'only the two tools carry a description')
+// 回到页顶 and 关于本站 close the drawer as a footer line; 回到页顶 scrolls the archive scroll area.
+assert.match(drawerSource, /<p class="archive-drawer-footer">[\s\S]*?<button type="button" class="archive-drawer-top" :disabled="!canScrollTop" @click="scrollToTop">回到页顶<\/button>[\s\S]*?sectionLabel\('about'\)[\s\S]*?<\/p>/, 'the footer offers 回到页顶 (disabled at the top) and 关于本站')
 assert.match(drawerSource, /const scrollArea = \(\) => document\.querySelector\('\[data-archive-scroll-container\]'\)/, '回到页顶 scrolls the archive scroll area')
 assert.match(drawerSource, /scrollArea\(\)\?\.scrollTo\(\{ top: 0,[^}]*\}\)\s*\n\s*emit\('close'\)/, '回到页顶 scrolls to the top and closes the drawer')
 // Phone portal: following an idol, the hero comes before the index of every section; the all-archive view keeps the index first.

@@ -1,7 +1,8 @@
 // One name per destination. The sidebar, phone bar, portal directory, page titles, breadcrumbs and browser
 // tabs all read these labels, so a page is called what its navigation entry is called. Ids are route
 // sections (archiveRoute.js); glyphs live with the components (components/archive/archiveNavigationIcons.js),
-// keyed by the same ids. `shortLabel` is for narrow buttons only.
+// keyed by the same ids. `shortLabel` is for narrow buttons only; `blurb` is the one-line description a
+// tool (not a catalogue) carries where it is offered as a card — what its landing page opens.
 export const ARCHIVE_BRAND = Object.freeze({ name: 'GS 资料馆', mark: 'GS', sub: '资料馆', english: 'GS Archive' })
 
 export const ARCHIVE_SECTIONS = Object.freeze(Object.fromEntries([
@@ -21,8 +22,8 @@ export const ARCHIVE_SECTIONS = Object.freeze(Object.fromEntries([
   { id: 'costumes', label: '服装', groupId: 'collection' },
   { id: 'photos', label: '摄影资源', groupId: 'collection' },
   { id: 'unused', label: '其他语音', groupId: 'collection' },
-  { id: 'live', label: 'LIVE', groupId: 'live' },
-  { id: 'studio', label: '摄影工作台', groupId: 'studio' },
+  { id: 'live', label: 'LIVE', groupId: 'live', blurb: '谱面 · 2D舞台' },
+  { id: 'studio', label: '摄影工作台', groupId: 'studio', blurb: '图层拼贴' },
   { id: 'resources', label: '资源', groupId: 'resources' },
   { id: 'about', label: '关于本站' },
 ].map(section => [section.id, Object.freeze(section)])))
