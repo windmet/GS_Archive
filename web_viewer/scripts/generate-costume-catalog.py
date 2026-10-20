@@ -18,10 +18,13 @@ import json
 import os
 import re
 import struct
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 VIEWER = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(VIEWER.parent / 'data_pipeline'))
+from archive_paths import local_config_path  # noqa: E402
 MASTERDATA = VIEWER / 'public' / 'data' / 'masterdata'
 OUTPUT = MASTERDATA / 'domains' / 'costume_catalog.json'
 ICON_DIR = 'image/image_costume_icon'
@@ -40,8 +43,8 @@ def domain_image_root() -> Path:
     override = os.environ.get('SIDEM_DOMAIN_IMAGE_ROOT')
     if override:
         return Path(override)
-    local = VIEWER / 'config' / 'archive_sources.local.json'
-    config = read(local if local.is_file() else VIEWER / 'config' / 'archive_sources.example.json')
+    local = local_config_path()
+    config = read(local or VIEWER / 'config' / 'archive_sources.example.json')
     return Path(config['legacy_root']) / 'GS_Res' / 'ALL_PHOTOS' / 'assets' / 'resources'
 
 
