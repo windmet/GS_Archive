@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { createSpineCueHandle } from '../src/core/story-runtime/SpineCueRuntime.js'
+import { installNativeFramePose } from '../src/core/spineFramePose.js'
+import { faceEffectSlots, hideFaceEffects } from '../src/core/spineFaceEffects.js'
 
 // Execute the production methods with controlled asset loading. Keep Vue/Pixi
 // initialization out of this ordering test; no copied scene implementation.
@@ -30,7 +32,7 @@ function setup() {
   const manager = {
     app: { stage: { on: noop } }, width: 1280, _spawnTokens: {}, _spawnLoads: new Map(), spineInstances: {},
     removeSpine(id) { removals.push(id); delete this.spineInstances[id]; this._spawnTokens[id] = (this._spawnTokens[id] || 0) + 1 },
-    _detectBlinkSlots: noop, _detectEffectSlots: noop, _detectOptionalPartsSlots: noop,
+    _detectOptionalPartsSlots: noop,
     setSpineColor: noop, placeActor: noop,
     setSpineAlpha: noop, updateSpineFace: noop, bringToFront: noop,
     showSilhouette(id, model) { this.spineInstances[id] = { modelId: model, silhouette: true } },
@@ -52,6 +54,7 @@ function setup() {
     syncBoundsSnapshot: noop, scheduleStageDebugPublish: noop, applyStateBodyMotion: noop,
     getSpineAtlasUrl: id => id, getSpineSkelUrl: id => id,
     Spine: {}, SkeletonBinary: {}, AtlasAttachmentLoader: {}, TextureAtlas: {},
+    installNativeFramePose, faceEffectSlots, hideFaceEffects,
     loadAndCreateSpine: ({ signal }) => {
       const load = { ...deferred(), signal }; loads.push(load); return load.promise
     },

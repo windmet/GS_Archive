@@ -245,7 +245,6 @@ function installDebugGlobals() {
           idolId: id,
           modelId: entry?.modelId || '',
           face: spine?._currentFaceAnim || '',
-          blink: spine?._blinkCfg || null,
           slots: slots.map((slot, index) => ({
             index,
             name: slot.name,
@@ -346,7 +345,6 @@ function collectStageDebugData() {
       tracks: snap?.tracks || [],
       poseBones,
       face: spine?._currentFaceAnim || '',
-      blink: spine?._blinkCfg || null,
       eyeSlots: slotData.map((slot, index) => ({
         name: slot.name,
         defaultAttachment: slot.attachmentName || null,

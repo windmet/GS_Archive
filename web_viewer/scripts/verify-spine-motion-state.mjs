@@ -90,10 +90,8 @@ function verifyNeckLifecycle() {
   const firstEntry = calls.find(call => call[0] === 'set' && call[1] === 1)[4]
   assert.equal(firstEntry.mixBlend, 3, 'neck motion must add offsets without replacing the body pose at frame zero')
   assert.equal(firstEntry.mixDuration, 0)
-  assert.deepEqual(spine._neckAdditiveTargets, {
-    boneIndices: [3, 7],
-    deformSlotIndices: [2],
-  }, 'neck playback must record exactly which local pose values need a per-frame baseline reset')
+  assert.equal(firstEntry.animation, spine.state.data.skeletonData.animations.find(item => item.name === 'neck_lookup'),
+    'client PlayNeckInternal plays the source clip; the per-frame setup pose keeps its offsets from accumulating')
   assert.equal(typeof firstEntry.listener?.complete, 'function')
 
   spineManager.playSpineNeckAnim('idol', 'neck_question', 'step:10:event:1')
@@ -120,8 +118,6 @@ function verifyNeckLifecycle() {
   spineManager.stopSpineNeckAnim('idol', 'step:11:event:1')
   assert.equal(calls.at(-1)[0], 'clear')
   assert.equal(calls.at(-1)[1], 1)
-  assert.equal(spine._neckAdditiveCleanupPending, true,
-    'an explicit stop must retain the reset targets for one final base-pose apply')
 }
 
 function verifyScheduledNeckSettle() {
