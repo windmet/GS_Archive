@@ -1,0 +1,1758 @@
+{
+  "schemaVersion": 1,
+  "elfSha256": "9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e",
+  "emulator": "unicorn-2.1.4-arm64",
+  "scope": "controlled positive-duration single-loop alpha-only tweens; not Unity Player/device parity",
+  "nativeMethods": {
+    "TweenManager.AddActiveTween": {
+      "start": "0x18062e4",
+      "end": "0x18065a0",
+      "sha256": "a84a466dd10632147e1c4eac01e5d5974bbadfd5fbfea66d41fa3045ed51e42e"
+    },
+    "TweenManager.Update": {
+      "start": "0x1807be8",
+      "end": "0x1808048",
+      "sha256": "3382d3d0089ffb3a878624647c412a13d08ee9d894cc50822267ac0372086653"
+    },
+    "TweenManager.ReorganizeActiveTweens": {
+      "start": "0x18077d0",
+      "end": "0x1807a70",
+      "sha256": "dc38b047244851097261d8f67997ade563007997bfc099ff17a827f26327c3af"
+    },
+    "TweenManager.MarkForKilling": {
+      "start": "0x1807a70",
+      "end": "0x1807b04",
+      "sha256": "52532558ca65ae8d5981e756e91bfa04906db16e07ba71145c46efb1951e15ca"
+    },
+    "TweenManager.DespawnTweens": {
+      "start": "0x1807b04",
+      "end": "0x1807be8",
+      "sha256": "84258435abcce4b54223ac7f91424e2395adc3cc52538b08289f404e3555058c"
+    },
+    "TweenManager.RemoveActiveTween": {
+      "start": "0x1806ab4",
+      "end": "0x1806f68",
+      "sha256": "c5eb1e33d0014799925ea5931b81453a65d8946bcbab9849cbd7d17e749d11d1"
+    },
+    "Tween.DoGoto": {
+      "start": "0x1802b6c",
+      "end": "0x1802e70",
+      "sha256": "94714437d3002975d35038f387d2003fb23a07f61ebbf89cd9e6c7c9e3a1fc03"
+    },
+    "ColorTweener.DoStartup": {
+      "start": "0x2be6c58",
+      "end": "0x2be6e68",
+      "sha256": "6f7c28ac04a74e43b5a3e0e4622084dad29011fd79b8830551a6190659f55c59"
+    },
+    "ColorTweener.DOStartupDurationBased": {
+      "start": "0x2bdfc78",
+      "end": "0x2bdfcf8",
+      "sha256": "1740498fc05b431f23bc1d0a10862e815ee85adfe03befa08a001f2c179a15db"
+    },
+    "ColorTweener.ApplyTween": {
+      "start": "0x2b937bc",
+      "end": "0x2b93988",
+      "sha256": "4ad5db43adf59c85240fa3f91c8e52132f9fcac5b32ee8bc90d11761b504a9f5"
+    },
+    "ColorPlugin.ConvertToStartValue": {
+      "start": "0x13efa20",
+      "end": "0x13efa24",
+      "sha256": "110f46b5b35c069160560c6ad6786f647dd44e8760a52a46fc22dbbcd7630b91"
+    },
+    "ColorPlugin.SetChangeValue": {
+      "start": "0x13efa80",
+      "end": "0x13efadc",
+      "sha256": "a9aede22f097662fc9dbb4a3c926326757d7db8d50a4f1f87e286583075ef48c"
+    },
+    "ColorPlugin.EvaluateAndApply": {
+      "start": "0x13efae8",
+      "end": "0x13efd44",
+      "sha256": "e5a6dbe72c83d2dfeb21e7cf545af3a796351fd5445a4dec752b018a3418b716"
+    },
+    "EaseManager.Evaluate": {
+      "start": "0x13eed70",
+      "end": "0x13ef8a0",
+      "sha256": "592807e3b08f8d9ab7b0a2ff5f05e43f6e2a275975238c0b106f2658cf34a977"
+    },
+    "ObjectLayer.EraseSpriteComplete": {
+      "start": "0x1c9e114",
+      "end": "0x1c9e144",
+      "sha256": "9c2b0da5c2ee1fdc5a947d622e612a2d8fd561b4e24e8874c09a5f19f0157516"
+    }
+  },
+  "boundaries": [
+    "IL2CPP metadata/class init and managed array cast",
+    "Managed List.Add/Clear and pool allocation/despawn",
+    "Color getter/setter delegates, callback delegate dispatch, Component.gameObject and GameObject.SetActive",
+    "Concrete Color generic method context/vtable supplied; positive duration, one loop, alpha-only, default OutQuad",
+    "Show activation and external test alpha supplied by host; native erase completion callback executes",
+    "Explicit synthetic frame deltas and command dispatch; original Conductor/device frame history unmeasured"
+  ],
+  "executed": {
+    "TweenManager.AddActiveTween": 14,
+    "TweenManager.Update": 21,
+    "TweenManager.ReorganizeActiveTweens": 5,
+    "TweenManager.MarkForKilling": 7,
+    "TweenManager.DespawnTweens": 7,
+    "TweenManager.RemoveActiveTween": 7,
+    "Tween.DoGoto": 31,
+    "ColorTweener.DoStartup": 14,
+    "ColorTweener.DOStartupDurationBased": 14,
+    "ColorTweener.ApplyTween": 31,
+    "ColorPlugin.ConvertToStartValue": 14,
+    "ColorPlugin.SetChangeValue": 14,
+    "ColorPlugin.EvaluateAndApply": 31,
+    "EaseManager.Evaluate": 31,
+    "ObjectLayer.EraseSpriteComplete": 3
+  },
+  "cases": [
+    {
+      "name": "first-unit-alpha",
+      "initialAlpha": 1,
+      "actions": [
+        [
+          "add",
+          "show",
+          1,
+          1
+        ],
+        [
+          "step",
+          0.25
+        ],
+        [
+          "step",
+          0.25
+        ],
+        [
+          "step",
+          0.5
+        ]
+      ],
+      "observations": [
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            1
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": true,
+              "alpha": 1.0
+            }
+          }
+        },
+        {
+          "time": 0.5,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": true,
+              "alpha": 1.0
+            }
+          }
+        },
+        {
+          "time": 1.0,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            null
+          ],
+          "starts": {
+            "show": {
+              "captured": true,
+              "alpha": 1.0
+            }
+          }
+        }
+      ],
+      "trace": [
+        [
+          "getter",
+          0.25,
+          "show",
+          1
+        ],
+        [
+          "getter",
+          0.25,
+          "show",
+          1
+        ],
+        [
+          "setter",
+          0.25,
+          "show",
+          1.0
+        ],
+        [
+          "getter",
+          0.5,
+          "show",
+          1.0
+        ],
+        [
+          "setter",
+          0.5,
+          "show",
+          1.0
+        ],
+        [
+          "getter",
+          1.0,
+          "show",
+          1.0
+        ],
+        [
+          "setter",
+          1.0,
+          "show",
+          1.0
+        ]
+      ],
+      "executed": {
+        "TweenManager.AddActiveTween": 1,
+        "TweenManager.Update": 3,
+        "ColorTweener.DoStartup": 1,
+        "ColorPlugin.ConvertToStartValue": 1,
+        "ColorPlugin.SetChangeValue": 1,
+        "ColorTweener.DOStartupDurationBased": 1,
+        "Tween.DoGoto": 3,
+        "ColorTweener.ApplyTween": 3,
+        "ColorPlugin.EvaluateAndApply": 3,
+        "EaseManager.Evaluate": 3,
+        "TweenManager.MarkForKilling": 1,
+        "TweenManager.DespawnTweens": 1,
+        "TweenManager.RemoveActiveTween": 1
+      }
+    },
+    {
+      "name": "first-translucent-alpha",
+      "initialAlpha": 0.5882353186607361,
+      "actions": [
+        [
+          "add",
+          "show",
+          1,
+          1
+        ],
+        [
+          "step",
+          0.25
+        ],
+        [
+          "step",
+          0.25
+        ],
+        [
+          "step",
+          0.5
+        ]
+      ],
+      "observations": [
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.5882353186607361
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.7683823704719543
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": true,
+              "alpha": 0.5882353186607361
+            }
+          }
+        },
+        {
+          "time": 0.5,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.8970588445663452
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": true,
+              "alpha": 0.5882353186607361
+            }
+          }
+        },
+        {
+          "time": 1.0,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            null
+          ],
+          "starts": {
+            "show": {
+              "captured": true,
+              "alpha": 0.5882353186607361
+            }
+          }
+        }
+      ],
+      "trace": [
+        [
+          "getter",
+          0.25,
+          "show",
+          0.5882353186607361
+        ],
+        [
+          "getter",
+          0.25,
+          "show",
+          0.5882353186607361
+        ],
+        [
+          "setter",
+          0.25,
+          "show",
+          0.7683823704719543
+        ],
+        [
+          "getter",
+          0.5,
+          "show",
+          0.7683823704719543
+        ],
+        [
+          "setter",
+          0.5,
+          "show",
+          0.8970588445663452
+        ],
+        [
+          "getter",
+          1.0,
+          "show",
+          0.8970588445663452
+        ],
+        [
+          "setter",
+          1.0,
+          "show",
+          1.0
+        ]
+      ],
+      "executed": {
+        "TweenManager.AddActiveTween": 1,
+        "TweenManager.Update": 3,
+        "ColorTweener.DoStartup": 1,
+        "ColorPlugin.ConvertToStartValue": 1,
+        "ColorPlugin.SetChangeValue": 1,
+        "ColorTweener.DOStartupDurationBased": 1,
+        "Tween.DoGoto": 3,
+        "ColorTweener.ApplyTween": 3,
+        "ColorPlugin.EvaluateAndApply": 3,
+        "EaseManager.Evaluate": 3,
+        "TweenManager.MarkForKilling": 1,
+        "TweenManager.DespawnTweens": 1,
+        "TweenManager.RemoveActiveTween": 1
+      }
+    },
+    {
+      "name": "lazy-getter",
+      "initialAlpha": 0.6,
+      "actions": [
+        [
+          "add",
+          "show",
+          1,
+          1
+        ],
+        [
+          "external-alpha",
+          0.2
+        ],
+        [
+          "step",
+          0.25
+        ]
+      ],
+      "observations": [
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.6
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.2
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.550000011920929
+          ],
+          "active": true,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            }
+          }
+        }
+      ],
+      "trace": [
+        [
+          "getter",
+          0.25,
+          "show",
+          0.2
+        ],
+        [
+          "getter",
+          0.25,
+          "show",
+          0.2
+        ],
+        [
+          "setter",
+          0.25,
+          "show",
+          0.550000011920929
+        ]
+      ],
+      "executed": {
+        "TweenManager.AddActiveTween": 1,
+        "TweenManager.Update": 1,
+        "ColorTweener.DoStartup": 1,
+        "ColorPlugin.ConvertToStartValue": 1,
+        "ColorPlugin.SetChangeValue": 1,
+        "ColorTweener.DOStartupDurationBased": 1,
+        "Tween.DoGoto": 1,
+        "ColorTweener.ApplyTween": 1,
+        "ColorPlugin.EvaluateAndApply": 1,
+        "EaseManager.Evaluate": 1
+      }
+    },
+    {
+      "name": "short-tween-then-old-write",
+      "initialAlpha": 0.2,
+      "actions": [
+        [
+          "add",
+          "old-show",
+          1,
+          2
+        ],
+        [
+          "step",
+          0.25
+        ],
+        [
+          "add",
+          "short-hide",
+          0,
+          0.1
+        ],
+        [
+          "step",
+          0.1
+        ],
+        [
+          "step",
+          0.15
+        ],
+        [
+          "add",
+          "new-show",
+          1,
+          0.25
+        ],
+        [
+          "step",
+          0.1
+        ],
+        [
+          "step",
+          0.15
+        ],
+        [
+          "step",
+          0.1
+        ]
+      ],
+      "observations": [
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.2
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.38749998807907104
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.38749998807907104
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show",
+            "short-hide"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.35,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.0
+          ],
+          "active": false,
+          "activeSlots": [
+            "old-show",
+            null
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.4555000066757202
+            }
+          }
+        },
+        {
+          "time": 0.5,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.550000011920929
+          ],
+          "active": false,
+          "activeSlots": [
+            "old-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.4555000066757202
+            }
+          }
+        },
+        {
+          "time": 0.5,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.550000011920929
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show",
+            "new-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.4555000066757202
+            },
+            "new-show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.6,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.8588800430297852
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show",
+            "new-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.4555000066757202
+            },
+            "new-show": {
+              "captured": true,
+              "alpha": 0.6080000400543213
+            }
+          }
+        },
+        {
+          "time": 0.75,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show",
+            null
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.4555000066757202
+            },
+            "new-show": {
+              "captured": true,
+              "alpha": 0.6080000400543213
+            }
+          }
+        },
+        {
+          "time": 0.85,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.7355000376701355
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.4555000066757202
+            },
+            "new-show": {
+              "captured": true,
+              "alpha": 0.6080000400543213
+            }
+          }
+        }
+      ],
+      "trace": [
+        [
+          "getter",
+          0.25,
+          "old-show",
+          0.2
+        ],
+        [
+          "getter",
+          0.25,
+          "old-show",
+          0.2
+        ],
+        [
+          "setter",
+          0.25,
+          "old-show",
+          0.38749998807907104
+        ],
+        [
+          "getter",
+          0.35,
+          "old-show",
+          0.38749998807907104
+        ],
+        [
+          "setter",
+          0.35,
+          "old-show",
+          0.4555000066757202
+        ],
+        [
+          "getter",
+          0.35,
+          "short-hide",
+          0.4555000066757202
+        ],
+        [
+          "getter",
+          0.35,
+          "short-hide",
+          0.4555000066757202
+        ],
+        [
+          "setter",
+          0.35,
+          "short-hide",
+          0.0
+        ],
+        [
+          "active",
+          0.35,
+          "short-hide",
+          false
+        ],
+        [
+          "getter",
+          0.5,
+          "old-show",
+          0.0
+        ],
+        [
+          "setter",
+          0.5,
+          "old-show",
+          0.550000011920929
+        ],
+        [
+          "getter",
+          0.6,
+          "old-show",
+          0.550000011920929
+        ],
+        [
+          "setter",
+          0.6,
+          "old-show",
+          0.6080000400543213
+        ],
+        [
+          "getter",
+          0.6,
+          "new-show",
+          0.6080000400543213
+        ],
+        [
+          "getter",
+          0.6,
+          "new-show",
+          0.6080000400543213
+        ],
+        [
+          "setter",
+          0.6,
+          "new-show",
+          0.8588800430297852
+        ],
+        [
+          "getter",
+          0.75,
+          "old-show",
+          0.8588800430297852
+        ],
+        [
+          "setter",
+          0.75,
+          "old-show",
+          0.6875
+        ],
+        [
+          "getter",
+          0.75,
+          "new-show",
+          0.6875
+        ],
+        [
+          "setter",
+          0.75,
+          "new-show",
+          1.0
+        ],
+        [
+          "getter",
+          0.85,
+          "old-show",
+          1.0
+        ],
+        [
+          "setter",
+          0.85,
+          "old-show",
+          0.7355000376701355
+        ]
+      ],
+      "executed": {
+        "TweenManager.AddActiveTween": 3,
+        "TweenManager.Update": 6,
+        "ColorTweener.DoStartup": 3,
+        "ColorPlugin.ConvertToStartValue": 3,
+        "ColorPlugin.SetChangeValue": 3,
+        "ColorTweener.DOStartupDurationBased": 3,
+        "Tween.DoGoto": 9,
+        "ColorTweener.ApplyTween": 9,
+        "ColorPlugin.EvaluateAndApply": 9,
+        "EaseManager.Evaluate": 9,
+        "ObjectLayer.EraseSpriteComplete": 1,
+        "TweenManager.MarkForKilling": 2,
+        "TweenManager.DespawnTweens": 2,
+        "TweenManager.RemoveActiveTween": 2,
+        "TweenManager.ReorganizeActiveTweens": 2
+      }
+    },
+    {
+      "name": "same-frame-startup-order",
+      "initialAlpha": 0.2,
+      "actions": [
+        [
+          "add",
+          "old-show",
+          1,
+          2
+        ],
+        [
+          "add",
+          "short-hide",
+          0,
+          0.1
+        ],
+        [
+          "step",
+          0.1
+        ],
+        [
+          "step",
+          0.15
+        ]
+      ],
+      "observations": [
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.2
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.2
+          ],
+          "active": true,
+          "activeSlots": [
+            "old-show",
+            "short-hide"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": false,
+              "alpha": 0.0
+            },
+            "short-hide": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.1,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.0
+          ],
+          "active": false,
+          "activeSlots": [
+            "old-show",
+            null
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.27799999713897705
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.38749998807907104
+          ],
+          "active": false,
+          "activeSlots": [
+            "old-show"
+          ],
+          "starts": {
+            "old-show": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "short-hide": {
+              "captured": true,
+              "alpha": 0.27799999713897705
+            }
+          }
+        }
+      ],
+      "trace": [
+        [
+          "getter",
+          0.1,
+          "old-show",
+          0.2
+        ],
+        [
+          "getter",
+          0.1,
+          "old-show",
+          0.2
+        ],
+        [
+          "setter",
+          0.1,
+          "old-show",
+          0.27799999713897705
+        ],
+        [
+          "getter",
+          0.1,
+          "short-hide",
+          0.27799999713897705
+        ],
+        [
+          "getter",
+          0.1,
+          "short-hide",
+          0.27799999713897705
+        ],
+        [
+          "setter",
+          0.1,
+          "short-hide",
+          0.0
+        ],
+        [
+          "active",
+          0.1,
+          "short-hide",
+          false
+        ],
+        [
+          "getter",
+          0.25,
+          "old-show",
+          0.0
+        ],
+        [
+          "setter",
+          0.25,
+          "old-show",
+          0.38749998807907104
+        ]
+      ],
+      "executed": {
+        "TweenManager.AddActiveTween": 2,
+        "TweenManager.Update": 2,
+        "ColorTweener.DoStartup": 2,
+        "ColorPlugin.ConvertToStartValue": 2,
+        "ColorPlugin.SetChangeValue": 2,
+        "ColorTweener.DOStartupDurationBased": 2,
+        "Tween.DoGoto": 3,
+        "ColorTweener.ApplyTween": 3,
+        "ColorPlugin.EvaluateAndApply": 3,
+        "EaseManager.Evaluate": 3,
+        "ObjectLayer.EraseSpriteComplete": 1,
+        "TweenManager.MarkForKilling": 1,
+        "TweenManager.DespawnTweens": 1,
+        "TweenManager.RemoveActiveTween": 1,
+        "TweenManager.ReorganizeActiveTweens": 1
+      }
+    },
+    {
+      "name": "old-erase-after-show",
+      "initialAlpha": 1,
+      "actions": [
+        [
+          "add",
+          "hide",
+          0,
+          1
+        ],
+        [
+          "step",
+          0.25
+        ],
+        [
+          "add",
+          "show",
+          1,
+          2
+        ],
+        [
+          "step",
+          0.75
+        ],
+        [
+          "step",
+          0.1
+        ]
+      ],
+      "observations": [
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            1
+          ],
+          "active": false,
+          "activeSlots": [
+            "hide"
+          ],
+          "starts": {
+            "hide": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.5625
+          ],
+          "active": false,
+          "activeSlots": [
+            "hide"
+          ],
+          "starts": {
+            "hide": {
+              "captured": true,
+              "alpha": 1.0
+            }
+          }
+        },
+        {
+          "time": 0.25,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.5625
+          ],
+          "active": true,
+          "activeSlots": [
+            "hide",
+            "show"
+          ],
+          "starts": {
+            "hide": {
+              "captured": true,
+              "alpha": 1.0
+            },
+            "show": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 1.0,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.609375
+          ],
+          "active": false,
+          "activeSlots": [
+            null,
+            "show"
+          ],
+          "starts": {
+            "hide": {
+              "captured": true,
+              "alpha": 1.0
+            },
+            "show": {
+              "captured": true,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 1.1,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            0.6693750619888306
+          ],
+          "active": false,
+          "activeSlots": [
+            "show"
+          ],
+          "starts": {
+            "hide": {
+              "captured": true,
+              "alpha": 1.0
+            },
+            "show": {
+              "captured": true,
+              "alpha": 0.0
+            }
+          }
+        }
+      ],
+      "trace": [
+        [
+          "getter",
+          0.25,
+          "hide",
+          1
+        ],
+        [
+          "getter",
+          0.25,
+          "hide",
+          1
+        ],
+        [
+          "setter",
+          0.25,
+          "hide",
+          0.5625
+        ],
+        [
+          "getter",
+          1.0,
+          "hide",
+          0.5625
+        ],
+        [
+          "setter",
+          1.0,
+          "hide",
+          0.0
+        ],
+        [
+          "active",
+          1.0,
+          "hide",
+          false
+        ],
+        [
+          "getter",
+          1.0,
+          "show",
+          0.0
+        ],
+        [
+          "getter",
+          1.0,
+          "show",
+          0.0
+        ],
+        [
+          "setter",
+          1.0,
+          "show",
+          0.609375
+        ],
+        [
+          "getter",
+          1.1,
+          "show",
+          0.609375
+        ],
+        [
+          "setter",
+          1.1,
+          "show",
+          0.6693750619888306
+        ]
+      ],
+      "executed": {
+        "TweenManager.AddActiveTween": 2,
+        "TweenManager.Update": 3,
+        "ColorTweener.DoStartup": 2,
+        "ColorPlugin.ConvertToStartValue": 2,
+        "ColorPlugin.SetChangeValue": 2,
+        "ColorTweener.DOStartupDurationBased": 2,
+        "Tween.DoGoto": 4,
+        "ColorTweener.ApplyTween": 4,
+        "ColorPlugin.EvaluateAndApply": 4,
+        "EaseManager.Evaluate": 4,
+        "ObjectLayer.EraseSpriteComplete": 1,
+        "TweenManager.MarkForKilling": 1,
+        "TweenManager.DespawnTweens": 1,
+        "TweenManager.RemoveActiveTween": 1,
+        "TweenManager.ReorganizeActiveTweens": 1
+      }
+    },
+    {
+      "name": "active-array-compaction",
+      "initialAlpha": 0.2,
+      "actions": [
+        [
+          "add",
+          "A",
+          1,
+          2
+        ],
+        [
+          "add",
+          "B",
+          1,
+          0.1
+        ],
+        [
+          "add",
+          "C",
+          1,
+          3
+        ],
+        [
+          "step",
+          0.1
+        ],
+        [
+          "step",
+          0.1
+        ],
+        [
+          "add",
+          "D",
+          1,
+          4
+        ],
+        [
+          "step",
+          0.1
+        ]
+      ],
+      "observations": [
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.2
+          ],
+          "active": true,
+          "activeSlots": [
+            "A"
+          ],
+          "starts": {
+            "A": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.2
+          ],
+          "active": true,
+          "activeSlots": [
+            "A",
+            "B"
+          ],
+          "starts": {
+            "A": {
+              "captured": false,
+              "alpha": 0.0
+            },
+            "B": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0,
+          "color": [
+            0.2,
+            0.3,
+            0.4,
+            0.2
+          ],
+          "active": true,
+          "activeSlots": [
+            "A",
+            "B",
+            "C"
+          ],
+          "starts": {
+            "A": {
+              "captured": false,
+              "alpha": 0.0
+            },
+            "B": {
+              "captured": false,
+              "alpha": 0.0
+            },
+            "C": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.1,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            "A",
+            null,
+            "C"
+          ],
+          "starts": {
+            "A": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "B": {
+              "captured": true,
+              "alpha": 0.27799999713897705
+            },
+            "C": {
+              "captured": true,
+              "alpha": 1.0
+            }
+          }
+        },
+        {
+          "time": 0.2,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            "A",
+            "C"
+          ],
+          "starts": {
+            "A": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "B": {
+              "captured": true,
+              "alpha": 0.27799999713897705
+            },
+            "C": {
+              "captured": true,
+              "alpha": 1.0
+            }
+          }
+        },
+        {
+          "time": 0.2,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            "A",
+            "C",
+            "D"
+          ],
+          "starts": {
+            "A": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "B": {
+              "captured": true,
+              "alpha": 0.27799999713897705
+            },
+            "C": {
+              "captured": true,
+              "alpha": 1.0
+            },
+            "D": {
+              "captured": false,
+              "alpha": 0.0
+            }
+          }
+        },
+        {
+          "time": 0.30000000000000004,
+          "color": [
+            0.20000000298023224,
+            0.30000001192092896,
+            0.4000000059604645,
+            1.0
+          ],
+          "active": true,
+          "activeSlots": [
+            "A",
+            "C",
+            "D"
+          ],
+          "starts": {
+            "A": {
+              "captured": true,
+              "alpha": 0.20000000298023224
+            },
+            "B": {
+              "captured": true,
+              "alpha": 0.27799999713897705
+            },
+            "C": {
+              "captured": true,
+              "alpha": 1.0
+            },
+            "D": {
+              "captured": true,
+              "alpha": 1.0
+            }
+          }
+        }
+      ],
+      "trace": [
+        [
+          "getter",
+          0.1,
+          "A",
+          0.2
+        ],
+        [
+          "getter",
+          0.1,
+          "A",
+          0.2
+        ],
+        [
+          "setter",
+          0.1,
+          "A",
+          0.27799999713897705
+        ],
+        [
+          "getter",
+          0.1,
+          "B",
+          0.27799999713897705
+        ],
+        [
+          "getter",
+          0.1,
+          "B",
+          0.27799999713897705
+        ],
+        [
+          "setter",
+          0.1,
+          "B",
+          1.0
+        ],
+        [
+          "getter",
+          0.1,
+          "C",
+          1.0
+        ],
+        [
+          "getter",
+          0.1,
+          "C",
+          1.0
+        ],
+        [
+          "setter",
+          0.1,
+          "C",
+          1.0
+        ],
+        [
+          "getter",
+          0.2,
+          "A",
+          1.0
+        ],
+        [
+          "setter",
+          0.2,
+          "A",
+          0.35199999809265137
+        ],
+        [
+          "getter",
+          0.2,
+          "C",
+          0.35199999809265137
+        ],
+        [
+          "setter",
+          0.2,
+          "C",
+          1.0
+        ],
+        [
+          "getter",
+          0.30000000000000004,
+          "A",
+          1.0
+        ],
+        [
+          "setter",
+          0.30000000000000004,
+          "A",
+          0.421999990940094
+        ],
+        [
+          "getter",
+          0.30000000000000004,
+          "C",
+          0.421999990940094
+        ],
+        [
+          "setter",
+          0.30000000000000004,
+          "C",
+          1.0
+        ],
+        [
+          "getter",
+          0.30000000000000004,
+          "D",
+          1.0
+        ],
+        [
+          "getter",
+          0.30000000000000004,
+          "D",
+          1.0
+        ],
+        [
+          "setter",
+          0.30000000000000004,
+          "D",
+          1.0
+        ]
+      ],
+      "executed": {
+        "TweenManager.AddActiveTween": 4,
+        "TweenManager.Update": 3,
+        "ColorTweener.DoStartup": 4,
+        "ColorPlugin.ConvertToStartValue": 4,
+        "ColorPlugin.SetChangeValue": 4,
+        "ColorTweener.DOStartupDurationBased": 4,
+        "Tween.DoGoto": 8,
+        "ColorTweener.ApplyTween": 8,
+        "ColorPlugin.EvaluateAndApply": 8,
+        "EaseManager.Evaluate": 8,
+        "TweenManager.MarkForKilling": 1,
+        "TweenManager.DespawnTweens": 1,
+        "TweenManager.RemoveActiveTween": 1,
+        "TweenManager.ReorganizeActiveTweens": 1
+      }
+    }
+  ]
+}
