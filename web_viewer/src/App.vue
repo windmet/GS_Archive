@@ -655,6 +655,7 @@ import {
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
 import { archiveCardName, archiveDocumentTitle, archiveSectionTitle } from './presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_BRAND, STORY_KINDS, sectionLabel } from './core/archiveSections.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import {
@@ -832,9 +833,9 @@ const routePendingMessage = ref('正在准备下一页…')
 let componentLoadRevision = 0
 function primeArchiveRouteComponent(routeView) {
   const revision = ++componentLoadRevision
-  const labels = {reader:'阅读器',cards:'卡片目录',card_detail:'卡片详情',idol_picker:'偶像选择',
-    portal:'资料馆',event_catalog:'活动目录',event_detail:'活动详情',collection_catalog:'收藏',
-    picture_studio:'摄影工作台',photo_catalog:'摄影资源',story_catalog:'故事目录'}
+  const labels = {reader:'阅读器',cards:sectionLabel('cards'),card_detail:'卡片详情',idol_picker:'偶像选择',
+    portal:sectionLabel('portal'),event_catalog:sectionLabel('events'),event_detail:'活动详情',collection_catalog:'图鉴',
+    picture_studio:sectionLabel('studio'),photo_catalog:sectionLabel('photos'),story_catalog:sectionLabel('stories')}
   routePendingMessage.value = `正在打开${labels[routeView] || '下一页'}…`
   const load = archiveRouteLoaders[routeView]
   archiveComponentPending.value = Boolean(load)
@@ -905,7 +906,7 @@ const {
   currentPreviewCue,
   storyDetailParentView,
   currentArchiveRoute,
-} = useArchiveNavigationState()
+} = useArchiveNavigationState({ portalScopeShown: () => preferredArchiveIdol.value?.id || 'all' })
 const stageHandoff = ref(null)
 
 const PLAYER_TRACE = new URLSearchParams(window.location.search).get('playerTrace') === '1'
@@ -1101,12 +1102,12 @@ const preferredArchiveIdolReference = computed(() => preferredArchiveIdol.value
     bootstrapMembership, 'portal:preferred')
   : null)
 const idolPickerLabel = computed(() => ({
-  home: '首页',
+  home: sectionLabel('home'),
   profile: '偶像资料',
-  work: '工作档案',
-  story: '个人故事',
-  mobile: '通信档案',
-})[currentPickTarget.value] || '首页')
+  work: STORY_KINDS.work.label,
+  story: STORY_KINDS.idol_story.label,
+  mobile: sectionLabel('interactions'),
+})[currentPickTarget.value] || sectionLabel('home'))
 const {
   loadHomeIndex, loadHomeIdol, openGameHome, closeHomeVisit,
   homeVisits, handleHomeIdolChange, prepareHomeRoute, invalidateHomeNavigation,
@@ -1233,10 +1234,10 @@ const {
 })
 
 const categoryHeaderText = computed(() => {
-  if (currentCategoryId.value === 'cards') return '卡片档案'
-  if (currentCategoryId.value === 'idol_chat') return '短信聊天'
-  if (currentCategoryId.value === 'idol_phone') return '电话聊天'
-  return '偶像与组合档案'
+  if (currentCategoryId.value === 'cards') return sectionLabel('cards')
+  if (currentCategoryId.value === 'idol_chat') return '个人聊天'
+  if (currentCategoryId.value === 'idol_phone') return STORY_KINDS.card_scenarios.label
+  return sectionLabel('idols')
 })
 
 const categoryFilterPlaceholder = computed(() => {
@@ -1492,36 +1493,37 @@ const archiveSection = computed(() => archiveSectionForRoute({
 
 const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
-  if (view.value === 'portal') return '我的资料馆'
-  if (view.value === 'home') return 'SideM Archive'
-  if (view.value === 'live') return 'LIVE'
-  if (view.value === 'studio') return '摄影工作台'
-  if (view.value === 'about') return '关于本站'
-  if (view.value === 'unused_archive') return '其他语音存档'
+  // Section pages carry their navigation name, without a suffix (core/archiveSections.js).
+  if (view.value === 'portal') return sectionLabel('portal')
+  if (view.value === 'home') return sectionLabel('home')
+  if (view.value === 'live') return sectionLabel('live')
+  if (view.value === 'studio') return sectionLabel('studio')
+  if (view.value === 'about') return sectionLabel('about')
+  if (view.value === 'unused_archive') return sectionLabel('unused')
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value.kind)
-  if (view.value === 'photo_catalog') return '摄影资源'
-  if (view.value === 'picture_studio') return '摄影工作台'
-  if (view.value === 'event_catalog') return '活动一览'
+  if (view.value === 'photo_catalog') return sectionLabel('photos')
+  if (view.value === 'picture_studio') return sectionLabel('studio')
+  if (view.value === 'event_catalog') return sectionLabel('events')
   if (view.value === 'story_catalog') {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'birthday') return '生日剧情'
-    return '故事目录'
+    return sectionLabel('stories')
   }
-  if (view.value === 'external_story_resources') return '社区中文剧情'
+  if (view.value === 'external_story_resources') return STORY_KINDS.external.label
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'story_collection') return storyCollectionTitle(currentStoryCollection.value, idolDisplayName) || '故事章节'
   if (view.value === 'seasonal_campaign') return '季节企划'
-  if (view.value === 'work_archive') return `${currentWorkIdol.value ? idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name) : ''} 工作档案`.trim()
-  if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value ? idolDisplayName(currentIdolStoryPage.value.idol_code, currentIdolStoryPage.value.idol_name) : ''} 个人故事`.trim()
-  if (view.value === 'mobile_archive') return '通信'
-  if (view.value === 'gashas') return '卡池档案'
+  if (view.value === 'work_archive') return `${currentWorkIdol.value ? idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name) : ''} ${STORY_KINDS.work.label}`.trim()
+  if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value ? idolDisplayName(currentIdolStoryPage.value.idol_code, currentIdolStoryPage.value.idol_name) : ''} ${STORY_KINDS.idol_story.label}`.trim()
+  if (view.value === 'mobile_archive') return sectionLabel('interactions')
+  if (view.value === 'gashas') return sectionLabel('gashas')
   if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value) || '卡池详情'
-  if (view.value === 'song_catalog') return '歌曲档案'
+  if (view.value === 'song_catalog') return sectionLabel('songs')
   if (view.value === 'song_detail') return currentSong.value?.title || '歌曲详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
-  if (view.value === 'unit_catalog') return '组合资料'
+  if (view.value === 'unit_catalog') return sectionLabel('units')
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || '组合详情'
   if (view.value === 'idols') return categoryHeaderText.value
   if (view.value === 'idol_detail') return currentIdolDisplayName.value || '偶像详情'
@@ -1531,7 +1533,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'episode_zero_units') return '第零话'
   if (view.value === 'episodes') return currentUnit.value?.unit_name || '章节'
   if (view.value === 'files') return currentGroup.value?.title || '剧情文件'
-  return 'SideM Archive'
+  return ARCHIVE_BRAND.english
 })
 
 const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value))
@@ -1819,7 +1821,9 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     }
     if (route.view === 'portal') {
       portalFrom.value = route.portalFrom || ''
-      portalScope.value = route.portalScope === 'all' || archiveBootstrap.idols.some(row => row.id === route.portalScope) ? route.portalScope : userPreferences.value.portalDefaultScope === 'all' ? 'all' : ''
+      const lens = route.portalScope === 'all' || archiveBootstrap.idols.some(row => row.id === route.portalScope) ? route.portalScope : userPreferences.value.portalDefaultScope === 'all' ? 'all' : ''
+      // The address always names a lens; one equal to what following the favorite shows is that default, so it keeps following.
+      portalScope.value = lens && userPreferences.value.portalDefaultScope !== 'all' && lens === (preferredArchiveIdol.value?.id || 'all') ? '' : lens
       portalQuery.value = route.portalQuery || ''
       playbackController.reset()
       view.value = 'portal'
@@ -2715,7 +2719,7 @@ watch([filterQuery, currentSongScope, currentCardRarity, currentCardAttribute, c
   syncArchiveRoute({ replace: true, restoreView: false })
 })
 
-watch([portalScope, portalQuery], () => {
+watch([portalScope, portalQuery, () => preferredArchiveIdol.value?.id], () => {
   if (view.value === 'portal' && !navigation.isRestoring()) { captureActiveArchiveView(); syncArchiveRoute({replace:true,restoreView:false}) }
 })
 

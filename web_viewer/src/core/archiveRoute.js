@@ -1,6 +1,7 @@
 import { normalizeCollectionRoute, collectionKindLabel } from './CollectionRouteState.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 import { pruneToRouteSchema } from './routeSchema.js'
+import { STORY_KINDS, sectionLabel } from './archiveSections.js'
 const ROUTE_QUERY_KEYS = [
   'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
   'event_kind','event_sort','event_page',
@@ -165,25 +166,10 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   chibi_stage: { section: 'live', required: [] },
 })
 
-const ARCHIVE_NAVIGATION = Object.freeze([
-  { id: 'home', label: '偶像主页' },
-  { id: 'stories', label: '故事' },
-  { id: 'songs', label: '歌曲' },
-  { id: 'idols', label: '偶像' },
-  { id: 'cards', label: '卡片' },
-  { id: 'gashas', label: '卡池' },
-  { id: 'interactions', label: '通信' },
-  { id: 'events', label: '活动' },
-  { id: 'collections', label: '道具' },
-  { id: 'honors', label: '称号' },
-  { id: 'currencies', label: '货币' },
-  { id: 'costumes', label: '服装' },
-  { id: 'photos', label: '摄影资源' },
-  { id: 'unused', label: '其他语音' },
-  { id: 'live', label: 'LIVE' },
-  { id: 'studio', label: '摄影工作台' },
-  { id: 'resources', label: '资源' },
-])
+// Route sections that have a navigation entry; their names come from archiveSections.js.
+const ARCHIVE_NAVIGATION = Object.freeze(['home', 'stories', 'songs', 'idols', 'cards', 'gashas', 'interactions', 'events',
+  'collections', 'honors', 'currencies', 'costumes', 'photos', 'unused', 'live', 'studio', 'resources']
+  .map(id => Object.freeze({ id, label: sectionLabel(id) })))
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
 const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage', 'chart_lab'])
@@ -473,16 +459,17 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   const route = normalizeArchiveRoute(inputRoute)
   if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
 
-  const home = { label: '资料馆', route: { view: 'portal' } }
-  if(route.view==='picture_studio')return [home,{label:'摄影资源',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
-  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? collectionKindLabel(route.collection?.kind) : ({event_catalog:'活动一览',photo_catalog:'摄影资源'})[route.view]}]
+  const home = { label: sectionLabel('portal'), route: { view: 'portal' } }
+  // The studio is a tool, not a photo-catalogue page: it hangs from the root like LIVE.
+  if (route.view === 'picture_studio') return [home, { label: sectionLabel('studio') }]
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? collectionKindLabel(route.collection?.kind) : sectionLabel({event_catalog:'events',photo_catalog:'photos'}[route.view])}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })
 
   if (['idols', 'idol_detail'].includes(route.view)) {
     const idols = {
-      label: '偶像',
+      label: sectionLabel('idols'),
       route: breadcrumbRoute(route, 'idols', { idol: '', category: '' }),
     }
     return route.view === 'idols' ? [home, { label: idols.label }] : [
@@ -493,7 +480,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (['unit_catalog', 'unit_detail'].includes(route.view)) {
-    const units = { label: '组合', route: breadcrumbRoute(route, 'unit_catalog', { unit: '' }) }
+    const units = { label: sectionLabel('units'), route: breadcrumbRoute(route, 'unit_catalog', { unit: '' }) }
     return route.view === 'unit_catalog' ? [home, { label: units.label }] : [
       home,
       units,
@@ -503,7 +490,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   if (['cards', 'card_detail'].includes(route.view)) {
     const cards = {
-      label: '卡片',
+      label: sectionLabel('cards'),
       route: breadcrumbRoute(route, 'cards', {
         idol: route.idol,
         card: '',
@@ -518,7 +505,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (['gashas', 'gasha_detail'].includes(route.view)) {
-    const gashas = { label: '卡池', route: breadcrumbRoute(route, 'gashas', { gasha: '' }) }
+    const gashas = { label: sectionLabel('gashas'), route: breadcrumbRoute(route, 'gashas', { gasha: '' }) }
     return route.view === 'gashas' ? [home, { label: gashas.label }] : [
       home,
       gashas,
@@ -527,7 +514,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (['song_catalog', 'song_detail'].includes(route.view)) {
-    const songs = { label: '歌曲', route: breadcrumbRoute(route, 'song_catalog', { song: '' }) }
+    const songs = { label: sectionLabel('songs'), route: breadcrumbRoute(route, 'song_catalog', { song: '' }) }
     return route.view === 'song_catalog' ? [home, { label: songs.label }] : [
       home,
       songs,
@@ -539,7 +526,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     return [
       home,
       {
-        label: '活动',
+        label: sectionLabel('events'),
         route: breadcrumbRoute(route, 'event_catalog', {
           storyType: '',
           storySection: '',
@@ -552,7 +539,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (route.view === 'external_story_resources') {
-    return [home, { label: '社区熟肉' }]
+    return [home, { label: sectionLabel('stories'), route: breadcrumbRoute(route, 'story_catalog') }, { label: STORY_KINDS.external.label }]
   }
 
   if (['story_catalog', 'story_collection', 'story_detail'].includes(route.view)) {
@@ -563,7 +550,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     }
     const formalDomainLabel = formalDomainLabels[route.storyType] || ''
     const stories = {
-      label: '剧情',
+      label: sectionLabel('stories'),
       route: breadcrumbRoute(route, 'story_catalog', {
         storyType: '',
         storySection: '',
@@ -593,13 +580,14 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     return items.length <= 4 ? items : [items[0], ...items.slice(-3)]
   }
 
-  if (route.view === 'archive_status') return [home, { label: '资源' }]
-  if (route.view === 'about') return [home, { label: '关于本站' }]
-  if (route.view === 'unused_archive') return [home, { label: '其他语音存档' }]
-  if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
-  if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
-  if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
-  if (route.view === 'mobile_archive') return [home, current('通信', route.idol)]
+  if (route.view === 'archive_status') return [home, { label: sectionLabel('resources') }]
+  if (route.view === 'about') return [home, { label: sectionLabel('about') }]
+  if (route.view === 'unused_archive') return [home, { label: sectionLabel('unused') }]
+  const storyRoot = { label: sectionLabel('stories'), route: breadcrumbRoute(route, 'story_catalog') }
+  if (route.view === 'seasonal_campaign') return [home, storyRoot, current('季节企划', route.storySection)]
+  if (route.view === 'work_archive') return [home, storyRoot, current(STORY_KINDS.work.label, route.idol)]
+  if (route.view === 'idol_story_archive') return [home, storyRoot, current(STORY_KINDS.idol_story.label, route.idol)]
+  if (route.view === 'mobile_archive') return [home, current(sectionLabel('interactions'), route.idol)]
 
   const fallbackDomains = {
     groups: '剧情',

@@ -2,7 +2,7 @@
   <article class="event-catalog" data-archive-scroll-container :aria-busy="busy">
     <ArchiveCatalogScope :idol="scopeIdol" :name="scopeIdol ? idolName(scopeIdol.id) : ''" @clear="emit('clear-idol')" />
     <ul class="catalog-footprint" aria-label="活动收录"><li><b>{{ ready ? rows.length : '—' }}</b>历史活动</li><li><b>{{ ready ? storyCount : '—' }}</b>段关联剧情</li><li v-if="ready && reprintCount"><b>{{ reprintCount }}</b>次复刻</li></ul>
-    <p v-if="busy" role="status">正在读取活动一览…</p>
+    <p v-if="busy" role="status">正在读取活动…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load">重试</button></p>
     <div class="catalog-filter">
       <label class="catalog-search"><span>搜索</span><input :value="query" type="search" placeholder="活动名称或编号" @input="emit('query',$event.target.value)" /></label>

@@ -7,7 +7,7 @@
         <h1 id="welcome-title" ref="heading" tabindex="-1">选择偶像</h1>
         <ArchiveLanguageSwitch />
       </header>
-      <p class="idol-select-lede">{{ targetLabel === '首页' ? '选择的偶像将用于首页，可随时更改。' : '只用于本次打开，不改变已保存的启动方式。' }}</p>
+      <p class="idol-select-lede">{{ targetLabel === '事务所' ? '选择的偶像将用于事务所，可随时更改。' : '只用于本次打开，不改变已保存的启动方式。' }}</p>
       <p v-if="notice" class="idol-select-notice" role="status">{{ notice }}</p>
       <p v-if="!dataReady" class="idol-select-notice" role="status">正在准备人物名单…</p>
       <ArchiveIdolPickerPanel v-model="selectedIdol" :idols="idols" :idol-name="idolName" :idol-search="idolSearch" />
@@ -33,7 +33,7 @@ const props = defineProps({
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' },
   preferences: { type: Object, default: () => ({}) }, notice: { type: String, default: '' },
   dataReady: Boolean, selectionOnly: Boolean, canCancel: Boolean,
-  targetLabel: { type: String, default: '立绘主页' },
+  targetLabel: { type: String, default: '事务所' },
 })
 // The producer settings page (opened from the archive) or the idol picker for a page that needs one.
 // The first-run mode chooser is retired: new visitors start in the archive with ArchiveOnboarding.

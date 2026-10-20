@@ -79,7 +79,7 @@
                 <p v-if="desktopOverview.preferredUnitName" class="overview-unit-name"><img v-if="unitLogoUrl && !unitLogoFailed" :src="unitLogoUrl" :alt="desktopOverview.preferredUnitName" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ desktopOverview.preferredUnitName }}</span></p>
               </div>
             </header>
-            <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">进入主页<small v-if="homeVoiceLabel" class="overview-home-voices">{{ homeVoiceLabel }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
+            <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">去{{ sectionLabel('home') }}<small v-if="homeVoiceLabel" class="overview-home-voices">{{ homeVoiceLabel }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
             <nav v-if="preferredReference?.actionable" class="overview-preferred-actions" aria-label="当前偶像快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', {action: action.id, idolCode: preferredReference.idolCode})"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
             <!-- Quiet settings for this hero, as one caption line under the shortcuts. -->
             <p class="overview-personal-meta">
@@ -125,7 +125,7 @@
         <div class="overview-scope-actions"><button type="button" :aria-pressed="!preferredReference?.actionable" @click="chooseScope('')"><Users :size="18" />全站档案大厅</button><button v-if="savedIdolCode" type="button" @click="chooseScope(savedIdolCode)"><ArchiveIdolAvatar :idol-code="savedIdolCode" :size="28" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>
         <ArchiveIdolPickerPanel compact :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
       </ArchiveTerminalDialog>
-      <footer class="overview-footer">SideM Archive · 非官方资料存档 · <button type="button" class="overview-footer-link" @click="emit('navigate', 'about')">关于本站</button></footer>
+      <footer class="overview-footer">{{ ARCHIVE_BRAND.english }} · 非官方资料存档 · <button type="button" class="overview-footer-link" @click="emit('navigate', 'about')">关于本站</button></footer>
     </div>
   </div>
 </template>
@@ -141,6 +141,7 @@ import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNavigationGroups.js'
+import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import PortalCardBento from './PortalCardBento.vue'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'

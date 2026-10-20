@@ -4,7 +4,7 @@
 
 export const ABOUT_CONTENT = {
   title: '关于本站',
-  lead: 'SideM 资料馆是《アイドルマスター SideM GROWING STARS》的非官方粉丝资料站。',
+  lead: 'GS 资料馆是《アイドルマスター SideM GROWING STARS》的非官方粉丝资料站。',
 
   sections: [
     {

@@ -120,7 +120,7 @@ export function useUnitNavigation({
       } catch (error) {
         if (!isCurrent()) return null
         console.error('[UnitReadModel] Failed to restore unit route:', error)
-        unitReadModelStatus.value = '组合资料暂时无法读取，请稍后重试。'
+        unitReadModelStatus.value = '组合暂时无法读取，请稍后重试。'
         route = { view: 'idols', category: 'idol' }
       }
     }

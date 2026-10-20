@@ -246,7 +246,7 @@ for (const kind of ['detail', 'unit', 'list']) {
   c.selectCardIdol('unknown'); assert.equal(c.currentCharacterId.value, '001tom')
   c.selectCardIdol('002sht'); assert.equal(c.currentCharacterId.value, '002sht'); assert.equal(c.currentCardId.value, '')
   assert.equal(t.commits.at(-1), 'selection'); assert.equal(c.currentCardRarity.value, 'all')
-  c.selectCardIdol(''); assert.equal(c.currentCardCharacterName.value, '全部卡片')
+  c.selectCardIdol(''); assert.equal(c.currentCardCharacterName.value, '卡片', 'the unfiltered card page carries its navigation name')
 }
 {
   const t = setup(), c = t.context

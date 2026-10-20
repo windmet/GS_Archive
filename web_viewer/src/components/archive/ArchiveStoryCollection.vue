@@ -9,7 +9,7 @@
         <h2>{{ collectionTitle }}</h2>
         <ul v-if="collection.domain === 'birthday'" class="story-footprint" aria-label="收录">
           <li><b>{{ collection.independentChapterCount }}</b>篇生日剧情</li>
-          <li v-if="collection.sharedChapterCount">另有<b class="inline-count">{{ collection.sharedChapterCount }}</b>篇在个人故事</li>
+          <li v-if="collection.sharedChapterCount">另有<b class="inline-count">{{ collection.sharedChapterCount }}</b>篇在个人剧情</li>
           <li v-if="collection.officialBirthdayLabel">生日 {{ collection.officialBirthdayLabel }}</li>
         </ul>
         <ul v-else class="story-footprint" aria-label="收录">
@@ -20,7 +20,7 @@
         </ul>
         <p v-if="['extra', 'unit_story'].includes(collection.domain) && collection.description" class="story-lede">{{ collection.description }}</p>
         <p v-if="collection.subject?.kind === 'shared'" class="story-note">该篇由山村贤登场引导，内容为制作人生日问候，归入公共篇。</p>
-        <p v-else-if="collection.domain === 'birthday' && collection.sharedChapterCount" class="story-note">生日同期开放的个人故事收在个人故事页，这里只保留入口。</p>
+        <p v-else-if="collection.domain === 'birthday' && collection.sharedChapterCount" class="story-note">生日同期开放的个人剧情收在个人剧情页，这里只保留入口。</p>
         <div v-if="collection.gasha || relatedSong || collection.sourceUrl" class="collection-relations">
           <button v-if="collection.gasha" type="button" class="story-row" @click="emit('open-gasha', collection.gasha)">
             <span class="story-row-thumb"><img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" /></span>
@@ -74,7 +74,7 @@
           <div v-if="expandedChapterId === chapter.id" class="chapter-panel">
             <div v-if="chapter.canonicalRelation" class="canonical-note">
               <p><strong>{{ chapterLabel(chapter.canonicalRelation.sectionName) }}「{{ chapter.canonicalRelation.sectionTitle }}」</strong>本篇就是 {{ chapter.canonicalRelation.episodeNames.map(sourceName => presentIdolEpisodeLabel({ sourceName })).join('、') }}，完整章节与连续播放在个人故事页。</p>
-              <button class="story-action" @click="emit('open-idol-story', chapter.canonicalRelation)"><BookOpen :size="16" />去个人故事阅读</button>
+              <button class="story-action" @click="emit('open-idol-story', chapter.canonicalRelation)"><BookOpen :size="16" />去个人剧情阅读</button>
             </div>
             <CollectionStorySynopsis class="chapter-synopsis" :key="chapter.id" :entry="chapter.episodes.map(readingEntry).find(Boolean)" :load-document="loadReadingDocument" :fallback="chapter.synopsis" :title="chapter.synopsis?.title || chapter.title" />
             <p v-if="!chapter.exists && !chapter.synopsis" class="story-note">这一{{ chapterUnit }}暂未收录。</p>

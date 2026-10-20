@@ -3,13 +3,13 @@
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
         <img :src="getBrandMarkUrl()" alt="" />
-        <span class="archive-brand-name">SideM</span>
-        <span class="archive-brand-sub">资料馆</span>
+        <span class="archive-brand-name">{{ ARCHIVE_BRAND.mark }}</span>
+        <span class="archive-brand-sub">{{ ARCHIVE_BRAND.sub }}</span>
       </button>
       <slot name="sidebar-identity" />
       <nav class="archive-nav" aria-label="档案栏目">
         <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'home' }" :aria-current="activeSection === 'home' ? 'page' : undefined" @click="emit('navigate', 'home')">
-          <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>偶像主页</span>
+          <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ sectionLabel('home') }}</span>
         </button>
         <template v-for="group in navigationGroups" :key="group.id">
           <hr v-if="group.id === 'live'" class="archive-nav-divider" />
@@ -32,7 +32,7 @@
       <template #before-title>
         <div class="archive-mobile-brand">
           <img :src="getBrandMarkUrl()" alt="" />
-          <span>SideM Archive</span>
+          <span>{{ ARCHIVE_BRAND.english }}</span>
         </div>
       </template>
       <template #title>
@@ -92,6 +92,7 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
+import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -127,11 +128,11 @@ function openDestination(group) {
 const mobileNavigation = computed(() => {
   const current = activeNavigationGroup.value
   return [
-    { id: 'home', label: '主页', icon: Home, active: props.activeSection === 'home' },
-    { id: 'stories', label: '故事', icon: BookOpen, active: current === 'stories' },
-    { id: 'idols', label: '偶像', icon: Users, active: current === 'people' },
-    { id: 'songs', label: '歌曲', icon: Music, active: current === 'songs' },
-    { id: 'portal', label: '资料馆', icon: LayoutGrid, active: props.activeSection === 'portal' || ['history', 'collection', 'live', 'studio', 'resources'].includes(current) },
+    { id: 'home', label: sectionLabel('home'), icon: Home, active: props.activeSection === 'home' },
+    { id: 'stories', label: sectionLabel('stories'), icon: BookOpen, active: current === 'stories' },
+    { id: 'idols', label: sectionLabel('idols'), icon: Users, active: current === 'people' },
+    { id: 'songs', label: sectionLabel('songs'), icon: Music, active: current === 'songs' },
+    { id: 'portal', label: sectionLabel('portal'), icon: LayoutGrid, active: props.activeSection === 'portal' || ['history', 'collection', 'live', 'studio', 'resources'].includes(current) },
   ]
 })
 </script>

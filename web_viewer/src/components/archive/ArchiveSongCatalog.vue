@@ -5,7 +5,7 @@
       <div>
         <p>浏览歌曲作品、演唱成员与不同演出版本；进入歌曲详情查看收录资料和可用试听。</p>
       </div>
-      <dl aria-label="歌曲档案统计">
+      <dl aria-label="歌曲统计">
         <div><dt>歌曲作品</dt><dd>{{ catalog ? songs.length : '—' }}</dd></div>
         <div><dt>3DMV</dt><dd>{{ catalog ? summary.three_d_movie_count : '—' }}</dd></div>
         <div><dt>MV LIVE</dt><dd>{{ catalog ? summary.mvlive_count : '—' }}</dd></div>

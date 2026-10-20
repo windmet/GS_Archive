@@ -122,7 +122,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     }).catch(error => {
       loading.value = false
       console.error('[StoryReadModel] Failed to load catalog:', error)
-      storyReadModelStatus.value = '故事目录暂时无法读取，请重试。'
+      storyReadModelStatus.value = '剧情暂时无法读取，请重试。'
     })
   }
 
@@ -397,7 +397,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     if (view.value !== 'story_catalog' || landingOnly) return
     const options = navigation.getLoadOptions()
     void loadStoryReadModelCatalog(options).catch(error => {
-      if (!options.signal?.aborted) storyReadModelStatus.value = '故事目录暂时无法读取，请重试。'
+      if (!options.signal?.aborted) storyReadModelStatus.value = '剧情暂时无法读取，请重试。'
     })
   })
 
