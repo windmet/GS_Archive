@@ -572,6 +572,7 @@ import {
   playLiveChibiMotion,
   seekLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
+import {createSongIndexSession} from '../core/chibiSongIndexSession.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
@@ -1282,6 +1283,8 @@ onMounted(async () => {
     if (stageDisposed) return
     stageEffectIndex.value=lighting.effects
     stagelightData.value=lighting.commands
+    await Promise.all([loadCurrentPenlights(),loadCurrentObjectIndex()])
+    if (stageDisposed) return
     const resolvedHandoff = resolveSongStageHandoff(props.stageHandoff, selectedSong.value, characters.value)
     if (resolvedHandoff) {
       handoffLineup.value = resolvedHandoff.stageLineup
@@ -1321,15 +1324,6 @@ onMounted(async () => {
     }).catch(error=>{
       if(!stageDisposed)console.warn('[ChibiStage] mouth fix input unavailable',error)
     })
-    void fetchLiveChibiPenlights(manifest.value.choreography.index,optionalOptions).then(value=>{
-      if(stageDisposed)return
-      penlightResources.value=value
-      syncPenlights();requestPausedSuspensionRender()
-    }).catch(error=>{
-      if(stageDisposed)return
-      penlightLoadFailed.value=true
-      console.warn('[ChibiStage] Penlight input unavailable',error)
-    })
     const install=(target,value,sync)=> {
       if(stageDisposed || !value)return
       target.value=value
@@ -1339,14 +1333,11 @@ onMounted(async () => {
       [backmonitorIndex,fetchLiveChibiBackmonitorIndex,async()=>syncBackmonitor(true)],
       [imageLayerIndex,fetchLiveChibiImageLayerIndex,syncImageLayers],
       [imageObjectIndex,fetchLiveChibiImageObjectIndex,syncImageLayers],
-      [objectLayerIndex,options=>fetchLiveChibiObjectLayerIndex({...options,onOptional:value=>install(objectLayerIndex,value,syncObjectLayers)}),syncObjectLayers],
       [stageBackgroundIndex,options=>fetchLiveChibiStageBackgroundIndex({...options,onOptional:value=>install(stageBackgroundIndex,value,syncStageBackground)}),syncStageBackground],
     ].map(async ([target,load,sync])=> {
       try {install(target,await load(optionalOptions),sync)}
       catch(error) {if(!stageDisposed)console.warn('[ChibiStage] optional index unavailable',error)}
     })
-    // The president's silhouette is an authored object, required for that stage.
-    if(isSpecialSingle.value)await visualJobs[3]
     await Promise.all([loadSongLipSync(), loadSongAudio(), stageVocalEnabled.value ? loadStageVocalAudio() : Promise.resolve()])
     if (stageDisposed) return
     await rebuildStage()
@@ -1378,6 +1369,9 @@ onBeforeUnmount(() => {
   releaseObjectLayers()
   wholeScreenRenderer.clear()
   searchlightRenderer.release()
+  objectLayerIndex.value=null
+  penlightResources.value=null
+  penlightLoadFailed.value=false
   releaseSpotlights()
   stagelightSprites.release()
   suspensionSprites.release()
@@ -3518,6 +3512,28 @@ function resizeStage() {
   app?.render()
 }
 
+const objectIndexSession=createSongIndexSession({
+  load:options=>fetchLiveChibiObjectLayerIndex(options),
+  isCurrent:id=>!stageDisposed && selectedSong.value?.id===id,
+  install:value=>{objectLayerIndex.value=value},
+  onRefinement:()=>{void syncObjectLayers().then(()=>{if(!stageDisposed && !playing.value)app?.render()})
+    .catch(error=>{if(!stageDisposed)console.warn('[ChibiStage] optional object visual unavailable',error)})},
+  onError:error=>{objectLayerIndex.value=null;console.warn('[ChibiStage] object index unavailable',error)},
+})
+const penlightIndexSession=createSongIndexSession({
+  load:options=>fetchLiveChibiPenlights(manifest.value.choreography.index,{...options,songId:options.song.id}),
+  isCurrent:id=>!stageDisposed && selectedSong.value?.id===id,
+  install:value=>{penlightResources.value=value;penlightLoadFailed.value=false},
+  onRefinement:()=>{syncPenlights();requestPausedSuspensionRender()},
+  onError:error=>{penlightResources.value=null;penlightLoadFailed.value=true;console.warn('[ChibiStage] Penlight input unavailable',error)},
+})
+function loadCurrentObjectIndex() {
+  return objectIndexSession.load({signal:lifetime.signal,binding:choreography.value,song:selectedSong.value})
+}
+function loadCurrentPenlights() {
+  return penlightIndexSession.load({signal:lifetime.signal,binding:choreography.value,song:selectedSong.value})
+}
+
 async function selectStageScript(id) {
   if (booting.value || id === selectedSongId.value || !songs.value.some(song => song.id === id)) return
   costumeNotice.value = ''
@@ -3539,6 +3555,9 @@ async function handleSongChange() {
   releaseObjectLayers()
   wholeScreenRenderer.clear()
   searchlightRenderer.release()
+  objectLayerIndex.value=null
+  penlightResources.value=null
+  penlightLoadFailed.value=false
   releaseBackmonitor()
   app?.render()
   booting.value = true
@@ -3563,7 +3582,7 @@ async function handleSongChange() {
     choreography.value=index
     stageEffectIndex.value=lighting.effects
     stagelightData.value=lighting.commands
-    await Promise.all([loadSongLipSync(), loadSongAudio()])
+    await Promise.all([loadSongLipSync(), loadSongAudio(),loadCurrentPenlights(),loadCurrentObjectIndex()])
     if (buildSequence !== stageBuildSequence) return
     for (const position of allPositions) {
       const runtime = runtimes.get(position)
@@ -3845,7 +3864,7 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
 async function prepareStageLighting() {
   if(objectLayersEnabled.value && selectedSong.value) {
     const song=selectedSong.value
-    if(!objectLayerIndex.value)objectLayerIndex.value=await fetchLiveChibiObjectLayerIndex({signal:lifetime.signal,binding:choreography.value})
+    if(!objectLayerIndex.value && !await loadCurrentObjectIndex())throw Error('舞台对象资源尚未就绪')
     if(stageDisposed || selectedSong.value!==song)return false
     if(objectLayerSongId!==song.id){releaseObjectLayers();objectLayerSongId=song.id}
     const sequence=objectLayerSequence

@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "prepare:consumer-shards": "node scripts/prepare-consumer-shards.mjs --write",
+    "verify:consumer-shards": "node scripts/verify-consumer-shards.mjs",
     "prepare:stage-effect-shards": "node scripts/prepare-stage-effect-shards.mjs --write",
     "verify:stage-effect-shards": "node scripts/verify-stage-effect-shards.mjs",
     "prepare:choreography-shards": "node scripts/prepare-choreography-shards.mjs --write",

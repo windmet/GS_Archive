@@ -46,3 +46,7 @@
 ## 注意
 
 - CI 没有语料。读 `public/assets/**` 或其他 gitignore 语料的检查只能在 `--published-assets` 下运行；合并前在 LF worktree 里把门步骤拆成单条命令逐个跑，链式步骤会把后面的失败藏住。
+
+## Penlight与emitter加载续批
+
+舞台线已继续接入 [Penlight与emitter按需分片](STAGE_CONSUMER_SHARDS_20261020.md)：118份应援棒轨道、80份原生模型按歌曲引用读取，并修复缓存refinement早到与切歌代次归属。固定索引序列DRIVE降至1.79MB、HND降至2.96MB；请求18→19/21。158项源码门禁、build:check与桌面/手机尺寸Browser通过；后续发布另需199份派生文件，本轮未部署。真实开播预算与原片/设备对照仍开放。

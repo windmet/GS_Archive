@@ -12,6 +12,7 @@ import {createBoundedTextTransport} from './BoundedTextTransport.js'
 import {createStageIndexTransport} from './StageIndexTransport.js'
 import {loadChoreographyCatalog,loadChoreographySong,validateChoreographyBinding} from '../core/chibiChoreographyShards.js'
 import {loadStageEffectSong} from '../core/chibiStageEffectShards.js'
+import {loadPenlightSong,loadObjectEmitterSelection} from '../core/chibiConsumerShards.js'
 import * as PIXI from 'pixi.js'
 import {
   AtlasAttachmentLoader,
@@ -116,7 +117,8 @@ export async function fetchLiveChibiCommandInventory(file, {signal,binding} = {}
   return validateStageCommandInventory(text.data, hash)
 }
 export const fetchLiveChibiMusicIndex = options => liveJson('music/index.json',options,true)
-export async function fetchLiveChibiPenlights(file, {signal,binding}={}) {
+export async function fetchLiveChibiPenlights(file, {signal,binding,songId}={}) {
+  if(songId){validateChoreographyBinding(binding,file);return loadPenlightSong(indexTransport,songId,{signal,binding})}
   const [text,modelText,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-penlight-commands.json',{signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/penlight/index.json`,{signal}),
@@ -183,12 +185,12 @@ export async function fetchLiveChibiOldSuspensionTrack(descriptor,{signal}={}) {
   return validateOldSuspensionTrack(text.data,descriptor,hash)
 }
 export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,options) : Promise.resolve(null)
-export async function fetchLiveChibiObjectLayerIndex({signal,onOptional,binding}={}) {
+export async function fetchLiveChibiObjectLayerIndex({signal,onOptional,binding,song}={}) {
   let objectText
   try {objectText=await indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})}
   catch(error) {if(error.status===404)return null;throw error}
   let index=objectText.data
-  const [emitterText,choreographyText,builtInText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal}),indexTransport.load('/data/stage-built-in-objects.json',{signal})])
+  const [emitterText,choreographyText,builtInText]=await Promise.all([song ? loadObjectEmitterSelection(indexTransport,song,{signal,binding}).then(data=>({data})) : indexTransport.load('/data/stage-object-emitters.json',{signal}),binding ? null : indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal}),indexTransport.load('/data/stage-built-in-objects.json',{signal})])
   const [objectHash,choreographyHash]=await Promise.all([objectText.hash(),binding ? validateChoreographyBinding(binding,'choreography/index.json').sha256 : choreographyText.hash()])
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   index=attachObjectEmitters(index,emitterText.data,objectHash,choreographyHash)

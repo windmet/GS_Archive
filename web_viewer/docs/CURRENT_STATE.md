@@ -27,6 +27,8 @@
 
 舞台线随后已接入 [效果/Stagelight成对分片](STAGE_EFFECT_SHARDS_20261020.md)，实际舞台不读这两份全局大文件；发布还需新清单引用的119份效果文件。默认DRIVE索引序列降至6.26MB，emitter/Penlight、并行开播和真实预算仍开放。
 
+舞台线已继续接入 [Penlight与emitter按需分片](STAGE_CONSUMER_SHARDS_20261020.md)：118份应援棒轨道、80份原生模型按歌曲引用读取，并修复缓存refinement早到与切歌代次归属。固定索引序列DRIVE降至1.79MB、HND降至2.96MB；请求18→19/21。158项源码门禁、build:check与桌面/手机尺寸Browser通过；后续发布另需199份派生文件，本轮未部署。真实开播预算与原片/设备对照仍开放。
+
 ## 未合入但保留的分支
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。
