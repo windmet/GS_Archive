@@ -110,7 +110,7 @@ export function useStepSceneEffects({
       _ambienceDucked = startDucked
       afterAudioWait(wait(env?.delay), () => audioManager.playAmbient(envCue, 0.5,
         startDucked || restoring ? AMBIENCE_DUCKED_LEVEL : 1,
-        { curve: restoring ? AMBIENCE_RESTORE_CURVE : null }))
+        { curve: restoring ? AMBIENCE_RESTORE_CURVE : null, cue: env?.cue_name }))
     } else if (!envCue && (activeEnvCue || hasAmbientSource)) {
       _lastEnvCue = null
       afterAudioWait(wait(sceneState?.environmental_stop_delay), () => audioManager.stopAmbient())

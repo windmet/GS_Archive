@@ -62,6 +62,10 @@ def _se(state, vals, safe_float):
             event["delay"] = safe_float(vals[1], 0.0)
         if len(vals) > 2 and vals[2] not in (None, ''):
             event["volume"] = safe_float(vals[2], 1.0)
+        # The cue sheet decides the CRI bus sends: se_telephone cues reach bus_phone,
+        # the same names in the default se_commu sheet play dry.
+        if len(vals) > 4 and vals[4]:
+            event["sheet"] = vals[4]
         state.se = event
         state.se_events.append(event)
         changed = True

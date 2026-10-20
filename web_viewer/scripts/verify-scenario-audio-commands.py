@@ -85,9 +85,12 @@ contract += 6
 # bgm [cueSheet, cueName, startTime]; se [cue, startTime, volume, "loop", acb]
 state, _ = apply('bgm', ['bgm_commu_01', 'bgm_commu_01', '3'])
 assert state.bgm == 'bgm_commu_01' and state.bgm_delay == 3.0
-state, _ = apply('se', ['se_door', '0.2', '0.7', 'loop', 'se_door'])
-assert state.se_events == [{'cue': 'se_door', 'delay': 0.2, 'volume': 0.7}]
-contract += 2
+state, _ = apply('se', ['door_ent', '0.2', '0.7', 'loop', 'se_telephone'])
+assert state.se_events == [{'cue': 'door_ent', 'delay': 0.2, 'volume': 0.7, 'sheet': 'se_telephone'}]
+# An empty acb column plays from the default sheet; nothing is recorded.
+state, _ = apply('se', ['door_ent', '0', '', '', ''])
+assert state.se_events == [{'cue': 'door_ent', 'delay': 0.0}]
+contract += 3
 # Delays are one-shot: cleared after the step that authored them.
 state, _ = apply('environmental', ['ambi_room', 'ambi_room', '', '1'])
 state.bgm_stop_delay = 1.0
