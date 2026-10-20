@@ -33,6 +33,8 @@ jobs:
       run:
         working-directory: web_viewer
 
+    # Every check after the install runs even when an earlier one fails, so one push reports all failures; the job
+    # still fails. Run the same steps locally with `npm run gate:source` (web_viewer/scripts/run-source-gate.mjs).
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -52,19 +54,25 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
+        id: install
         run: npm ci
 
       - name: Verify read-model tools and assembler rejection contracts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:source --prefix readmodels
       - name: Verify engineering lifecycle, stage intent and collection route regressions
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:engineering
       - name: Verify expanded editorial and translation contracts (source only)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:editorial-source
 
       - name: Validate route progress ledger against public routes
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:cutover-routes
 
       - name: Check patch whitespace
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         working-directory: ${{ github.workspace }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -77,337 +85,448 @@ jobs:
           fi
 
       - name: Verify authoritative schema
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-schema
 
       - name: Verify localization runtime
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-localization
 
       - name: Verify reading artifacts and repository
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:reading
 
       - name: Audit Producer placeholder boundaries
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:producer-placeholders && npm run audit:producer-placeholders
 
       - name: Verify Producer addressing Bible evidence
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:producer-addressing-bible
 
       - name: Verify Producer addressing runtime
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:producer-addressing-runtime
 
       - name: Verify playback interaction matrix
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-interaction-matrix
 
       - name: Verify neck overlay and personal Reader entry
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:spine-neck-contract && npm run verify:home-neck-contract && npm run verify:idol-story-reading
 
       - name: Verify visual asset transport ownership
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-asset-transport
 
       - name: Verify displayed stage pixel budget
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:stage-render-budget
 
       - name: Verify bounded particle timeline and source identity
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:chibi-particles
 
       - name: Verify song center-line oneshot slot
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:song-oneshot-voices
 
       - name: Verify story costume labels and thumbnails
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-costumes
 
       - name: Verify chibi color plane timelines
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:chibi-color-layers
 
       - name: Verify independently addressed chibi performer colors
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:chibi-body-colors
       - name: Verify authored chibi image color timelines
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:chibi-image-colors
 
       - name: Verify chibi ground registration across viewport sizes
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:chibi-stage-coordinates
 
       - name: Verify backmonitor aperture coverage and raw controls
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:chibi-backmonitor-registration && python scripts/verify-chibi-backmonitor-parser.py && node scripts/verify-chibi-backmonitor-controls.mjs && python scripts/verify-chibi-backmonitor-logo.py && node scripts/verify-chibi-backmonitor-logo.mjs
 
       - name: Verify authored chibi Camera erase controls and reset sampling
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-live-chibi-camera-controls.py && node scripts/verify-chibi-camera-reset.mjs
 
       - name: Verify native chibi streamed animation decoding
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-streamed-animation.py
 
       - name: Verify native chibi Penlight object and controller bindings
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-penlight-bindings.py
 
       - name: Verify Take stage lamp bindings and timeline sampling
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-stagelight-prefabs.py && node scripts/verify-chibi-stagelights.mjs && python scripts/verify-chibi-suspensionlight-parser.py && node scripts/verify-chibi-suspensionlights.mjs && python scripts/verify-chibi-old-suspension.py && node scripts/verify-chibi-old-suspension.mjs && python scripts/verify-chibi-laser-parser.py && node scripts/verify-chibi-laser-particles.mjs
       - name: Verify independent formations and native shadow followers
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-character-shadow-parser.py && node scripts/verify-chibi-placement-shadows.mjs
 
       - name: Verify native Not Alone beam and pool atlas particles
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-spotbeam-parser.py && node scripts/verify-chibi-spotbeam-particles.mjs
 
       - name: Verify native turning laser Animator particle bindings
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-turnlaser-parser.py && node scripts/verify-chibi-turnlaser-particles.mjs
 
       - name: Verify native Take floor particles and masked timeline
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-floor.py && node scripts/verify-chibi-floor.mjs
 
       - name: Verify native Penlight hierarchy, tight mesh and render inputs
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-penlight-render-inputs.py
 
       - name: Verify native costume shader bindings and premultiplied color formula
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-costume-shader.py && node scripts/verify-chibi-foot-lighting.mjs
 
       - name: Verify native object light quaternion projection and signed sprite scales
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-object-transforms.py && node scripts/verify-chibi-object-light-runtime.mjs
 
       - name: Verify native Spotlight sprite bindings and async disposal
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python scripts/verify-chibi-spotlight-prefab.py && node scripts/verify-chibi-spotlight-sprites.mjs && node scripts/verify-chibi-spotlight-targets.mjs && python scripts/verify-chibi-spotlight-background.py && node scripts/verify-chibi-spotlight-background.mjs && python scripts/verify-chibi-pinspotlight-prefab.py && node scripts/verify-chibi-pinspotlight-sprites.mjs
 
       - name: Verify bounded chibi ImageObject source timelines
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:chibi-image-objects
 
       - name: Verify song lyrics and media clock
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:song-lyrics && npm run verify:media-element-clock
 
       - name: Verify playback feature ownership
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:playback-controller
 
       - name: Verify player and story interaction recovery contracts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:player-qa
 
       - name: Verify translation contracts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-translations
 
       - name: Verify text evidence
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-text
 
       - name: Verify audio lifecycle
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-audio
 
       - name: Verify live-chibi audio inspection
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:live-chibi-audio
 
       - name: Verify Runtime foundation
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: node scripts/verify-story-runtime-foundation.mjs
 
       - name: Verify shared scenario normalization boundary
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:shared-scenario-normalizer
 
       # Story asset dependency discovery. These run on committed fixtures only:
       # the compiled corpus is gitignored, so the `:source` variants that walk it
       # stay a local check.
       - name: Verify story asset dependency plan
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-asset-plan
 
       - name: Verify effect texture parity with the runtime managers
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:effect-texture-parity
 
       - name: Verify communication UI asset parity
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:communication-assets && npm run verify:communication-presentation
 
       - name: Verify title transition lifecycle
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:title-transition
 
       - name: Verify background loading lifecycle
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-background-loading
 
       - name: Verify story loading safety contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-loading-safety
 
       - name: Verify player entry, warmup and voice repair contracts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:player-repair
 
       - name: Verify Home experience contracts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:home
 
       - name: Verify camera playback clock
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-camera-clock
 
       - name: Verify screen transition playback clock
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-screen-clock
 
       - name: Verify pure story state projector and manager shadow comparison
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-projector
 
       - name: Verify playback state across story steps
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-step-playback-state
 
       - name: Verify performance registry handoff
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-registry-handoff
 
       - name: Verify partial performance settlement
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-partial-settlement
 
       - name: Verify Story timing semantics matrix
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-timing-semantics -- --source-only
 
       - name: Verify Spine cue lifecycle and compiler parity
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-spine-cues
 
       - name: Verify story stage loading ownership
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-stage-loading
 
       - name: Verify named story catalog and full consumer parity
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-catalog
 
       - name: Verify archive contracts and repository lifecycle
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-data
 
       - name: Verify navigation state and route projection
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-navigation-state
 
       - name: Verify mobile portal return and deep-link contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:portal-navigation
 
       - name: Verify asynchronous navigation ownership
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-async-navigation
 
       - name: Verify card voice preview adapter
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:card-voice-preview
 
       - name: Verify card filtering boundary
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:card-filters
 
       - name: Verify gasha catalog boundary
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:gasha-catalog
 
       - name: Verify idol page projections
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:idol-page
 
       - name: Verify unit page projections
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:unit-page
 
       - name: Verify archive presentation and technical evidence boundaries
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-presentation
 
       - name: Verify archive startup route freshness
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-startup-route
 
       - name: Verify episode queue ownership and range restoration
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:episode-queue
 
       - name: Verify scenario compiler package compatibility
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:scenario-package
 
       - name: Verify isolated scenario resource providers
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:scenario-resources
 
       - name: Verify candidate resource source configuration
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:scenario-source-config
 
       - name: Verify RAW evidence boundaries
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:raw-evidence-boundaries
 
       - name: Verify masterdata wire boundary
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-wire
 
       - name: Verify masterdata identity domain
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-identities
 
       - name: Verify masterdata media domains
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-media
 
       - name: Verify masterdata interaction domains
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-interactions
 
       - name: Verify work story input boundary
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-work
 
       - name: Verify story masterdata domains
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-story-domains
 
       - name: Verify card gameplay domain
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-card-gameplay
 
       - name: Verify card index split
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-cards
 
       - name: Verify event and gasha evidence
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-events-gasha
 
       - name: Verify masterdata resource inputs
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-resource-inputs
 
       - name: Verify masterdata output transport
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-output-io
 
       - name: Verify masterdata package entrypoint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-entrypoint
 
       - name: Verify independent masterdata jobs
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:masterdata-generation-jobs
 
       - name: Verify release soak recorder
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:release-soak
 
       - name: Verify silhouette fallback contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:silhouette
 
       - name: Verify archive source configuration
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-sources
 
       - name: Verify shared archive asset HTTP contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-assets
 
       - name: Verify current archive baseline report
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:archive-baseline:source-only
 
       - name: Verify card semantic dictionaries
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:card-semantic-dictionaries
 
       - name: Verify MovieAnnounce masterdata index
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:movie-announce-index -- --source-only
 
       - name: Verify card skill-movie masterdata index
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:card-skill-movie-index -- --source-only
 
       - name: Verify SongData movie masterdata index
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:song-movie-index -- --source-only
 
       - name: Verify gasha movie client contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:gasha-movie-client-contract
 
       - name: Verify RAW USM relation catalog
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:usm-relation-catalog -- --source-only
 
       - name: Verify RAW image bundle relation catalog
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:image-bundle-relation-catalog -- --source-only
 
       - name: Verify authoritative Story publications
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:authoritative-story-publications -- --source-only
 
       - name: Verify external Story resources
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:external-story-resources && npm run verify:external-story-resource-ui
 
       - name: Verify tracked binary inventory
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:tracked-binary-inventory
 
       - name: Verify publication ledger
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: >-
           npm run verify:publication-ledger --
           --base-sha "${{ github.event.pull_request.base.sha || github.event.before }}"
 
       - name: Verify RAW character-image candidate contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:raw-character-candidate
 
       - name: Verify RAW character-image promotion contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:raw-character-promotion
 
       - name: Verify strict collection publisher
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-authoritative-publish
 
       - name: Verify RAW single-story publisher
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:story-raw-promotion
 
       - name: Verify compiled migration
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:compiled-migration
 
       - name: Verify the source-only verifier batch and coverage ledger
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:source-batch
 
       - name: Compile source and generate startup/cutover audits
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build:check
 
       - name: Verify current-build audits (progress, not release approval)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run verify:build-audit
