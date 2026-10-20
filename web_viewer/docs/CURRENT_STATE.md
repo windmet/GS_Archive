@@ -38,7 +38,9 @@
 
 [RED HOT BEAT!! 左右烟雾](NATIVE_REHOBE_SMOKE_20261020.md)已按原编舞接入现有 Noise 预览链路：20 秒烟雾可见，停止/倒回/切歌已验，仍保留 `noise_preview`。emitter 为 82 组 / 724 系统 / 95 纹理，consumer 分片为 201 片，三目录闭包 438 片；无 consumer 粒子 32→30，partial 资源 11→13。本批未部署。
 
-[Sprite 透明度公共诊断](NATIVE_OBJECT_SPRITE_FADE_AUDIT_20261020.md)已锁定 46 组 / 423 个 renderer 的 RAW 初值与原生 DOFade 链，确认首次从零淡入和初始 alpha 永久相乘两类消费者差异；544 次相邻命令重叠需保留旧 tween 语义。10-21 已补 [7 组受控原生 ARM64 回放](NATIVE_OBJECT_SPRITE_TWEEN_REPLAY_20261021.md)，确认首次 getter 捕获、旧 tween 续写、活动数组压缩和原生退场完成回调。下一步实现每个 renderer 的颜色/active/存活 tween 状态并作 Browser 验收；原始 Conductor/设备帧历史仍未测，当前渲染尚未修改。
+[Sprite 透明度公共诊断](NATIVE_OBJECT_SPRITE_FADE_AUDIT_20261020.md)已锁定 46 组 / 423 个 renderer 的 RAW 初值与原生 DOFade 链，确认首次从零淡入和初始 alpha 永久相乘两类消费者差异；544 次相邻命令重叠需保留旧 tween 语义。10-21 已补 [7 组受控原生 ARM64 回放](NATIVE_OBJECT_SPRITE_TWEEN_REPLAY_20261021.md)，确认首次 getter 捕获、旧 tween 续写、活动数组压缩和原生退场完成回调。消费者实现与验证见下方续批；原始 Conductor/设备帧历史仍未测。
+
+10-21 [Sprite 消费者续批](NATIVE_OBJECT_SPRITE_CONSUMER_20261021.md)已落实每个 renderer 的透明度、active 与存活 tween，覆盖上述 46 组；原生样本扩到 9 组（含零时长）并追加 3 条 RAW 参考轨道，首次 show / 初始 alpha 限制的隔离反例均归零。161/161 源码门禁、build:check、实际 SFC 接线回归及桌面/手机尺寸 Browser 通过。播放与 seek 共用明确的 Web 60 Hz 参考帧，保留 preview 边界；原设备帧历史、mixed/CanvasGroup、APK built-in 分支和原片对照仍开放。未部署。
 
 ## 未合入但保留的分支
 

@@ -2,7 +2,7 @@
 
 输入 HEAD `666caf3846d07084a4cbc86182f1eb29f22cdd5d`，分支 `stage/20261020-native-followup`。这是来源和消费者差异诊断，没有修改渲染器，也没有关闭 Sprite 淡入待办。RED HOT BEAT 烟雾接入保留。
 
-10-21 续批已取得 [7 组原生 ARM64 执行样本](NATIVE_OBJECT_SPRITE_TWEEN_REPLAY_20261021.md)，确认首次 getter、旧 tween 续写、活动数组压缩和完成回调行为；消费者修复与原始设备帧历史仍未完成。下文保留本次诊断时的边界。
+10-21 续批已取得 [7 组原生 ARM64 执行样本](NATIVE_OBJECT_SPRITE_TWEEN_REPLAY_20261021.md)，确认首次 getter、旧 tween 续写、活动数组压缩和完成回调行为；后续 [消费者修复](NATIVE_OBJECT_SPRITE_CONSUMER_20261021.md)已完成本轮纯 Sprite 接线与 Browser 验收；原始设备帧历史仍未测。下文保留本次诊断时的边界。
 
 ## 已确认的问题
 

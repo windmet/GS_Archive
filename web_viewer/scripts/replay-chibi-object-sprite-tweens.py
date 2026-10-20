@@ -1,6 +1,6 @@
 """Execute native ARM64 Sprite tween code with controlled managed/Unity boundaries.
 
-This is a positive-duration, single-loop, alpha-only code oracle. It does not
+This is a nonnegative-duration, single-loop, alpha-only code oracle. It does not
 run Unity Player, reproduce an original device's frames, or accept the renderer.
 Use --write to update the small native trace fixture; otherwise replay it.
 """
@@ -134,8 +134,8 @@ class Replay:
         self.u.emu_start(a,self.stop,count=1000000)
         assert self.u.reg_read(UC_ARM64_REG_PC)==self.stop,hex(self.u.reg_read(UC_ARM64_REG_PC))
     def add(self,name,target,duration):
-        if target not in (0, 1) or duration <= 0 or self.i(self.manager+0x10) >= 255:
-            raise ValueError('Replay profile requires positive-duration alpha-only tweens, capacity <256')
+        if target not in (0, 1) or duration < 0 or self.i(self.manager+0x10) >= 255:
+            raise ValueError('Replay profile requires nonnegative-duration alpha-only tweens, capacity <256')
         p=self.alloc(0x200);self.tweens[p]=name;self.wq(p,self.cls)
         self.wf(p+0x28,1);self.wf(p+0x90,duration);self.wi(p+0x94,1);self.wi(p+0xa4,6)
         self.w8(p+0x8c,1);self.w8(p+0xf8,1);self.w8(p+0x100,1);self.w8(p+0x13c,1)
@@ -194,8 +194,35 @@ def main():
         ('old-erase-after-show',1,[['add','hide',0,1],['step',.25],['add','show',1,2],['step',.75],['step',.1]]),
         ('active-array-compaction',.2,[['add','A',1,2],['add','B',1,.1],['add','C',1,3],['step',.1],
             ['step',.1],['add','D',1,4],['step',.1]]),
+        ('zero-hide',1,[['add','show',1,1],['step',.25],['add','hide',0,0],['step',1/60],['step',.25]]),
+        ('zero-show',.2,[['add','show',1,0],['step',0]]),
     ]
     cases = [run_case(elf, *plan) for plan in plans]
+    tracks = []
+    for song, asset, sprite in [('cfprde_live_effect','fx_in_cfprde_overlight_1',0),
+            ('cfprde_live_effect','fx_in_cfprde_overlight_2',None),('grwsml_live_effect','fx_in_grwsml_overlight',0)]:
+        events = [e for e in source['commandSamples'][song]['objectLayerEvents'] if e['asset']==asset]
+        sprites = source['assets'][asset]['sprites']
+        initial = (sprites[sprite] if sprite is not None else next(s for s in sprites if s['color']['a']<1))['color']['a']
+        replay = Replay(elf, initial)
+        probes = {0,420,444,445,462,480,498,510,522,523,540,552,570,582,588,600,660,720}
+        samples = []
+        index = 0
+        for frame in range(721):
+            while index<len(events) and events[index]['time']<=frame*1000/60+1e-7:
+                if index==0:
+                    replay.active=True
+                event=events[index]
+                replay.add(str(index),0 if event['hide'] else 1,event['duration']/1000)
+                index+=1
+            replay.time=(frame-1)/60
+            replay.step(1/60)
+            if frame in probes:
+                samples.append(dict(milliseconds=frame*1000/60,alpha=replay.colors[3],active=replay.active))
+        tracks.append(dict(song=song,asset=asset,initialAlpha=initial,events=events,
+            clock='Web reference frames at n*1000/60, commands before update, dt=1/60; not device history',samples=samples))
+        del replay
+        gc.collect()
     executed = {name:sum(case['executed'].get(name,0) for case in cases) for name,_ in METHODS.values()}
     if not all(executed.values()):
         raise ValueError('A claimed native function was not executed: ' + str(executed))
@@ -205,20 +232,20 @@ def main():
     assert cases[3]['observations'][-2]['color'][3] == 1 and cases[3]['observations'][-1]['color'][3] < 1
     assert cases[6]['observations'][-1]['activeSlots'] == ['A','C','D']
     result = dict(schemaVersion=1, elfSha256=digest, emulator='unicorn-2.1.4-arm64',
-        scope='controlled positive-duration single-loop alpha-only tweens; not Unity Player/device parity',
+        scope='controlled nonnegative-duration single-loop alpha-only tweens; not Unity Player/device parity',
         nativeMethods={name:dict(start=hex(start),end=hex(end),
             sha256=hashlib.sha256(elf[start:end]).hexdigest()) for start,(name,end) in METHODS.items()},
         boundaries=['IL2CPP metadata/class init and managed array cast', 'Managed List.Add/Clear and pool allocation/despawn',
             'Color getter/setter delegates, callback delegate dispatch, Component.gameObject and GameObject.SetActive',
-            'Concrete Color generic method context/vtable supplied; positive duration, one loop, alpha-only, default OutQuad',
+            'Concrete Color generic method context/vtable supplied; nonnegative duration, one loop, alpha-only, default OutQuad',
             'Show activation and external test alpha supplied by host; native erase completion callback executes',
             'Explicit synthetic frame deltas and command dispatch; original Conductor/device frame history unmeasured'],
-        executed=executed,cases=cases)
+        executed=executed,cases=cases,referenceTracks=tracks)
     if args.write:
         FIXTURE.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
     elif result != json.loads(FIXTURE.read_text(encoding='utf8')):
         raise ValueError('Native Sprite tween replay drifted')
-    print(json.dumps(dict(cases=len(cases), nativeFunctions=len(executed), status='native-code-replay-passed; renderer-correction-pending')))
+    print(json.dumps(dict(cases=len(cases), nativeFunctions=len(executed), status='native-code-replay-passed; renderer-acceptance-separate')))
 
 
 if __name__ == '__main__':

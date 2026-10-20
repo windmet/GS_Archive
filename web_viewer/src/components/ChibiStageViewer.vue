@@ -24,6 +24,8 @@
     :data-searchlight-count="searchlightCount"
     :data-object-native-particles="nativeObjectParticleCount"
     :data-object-native-deferred="nativeObjectDeferred"
+    :data-object-sprite-tween-status="objectSpriteTweenStatus"
+    :data-object-sprite-tween-state="objectSpriteTweenState"
     :data-searchlight-deferred="searchlightDeferred"
     :data-whole-screen-types="wholeScreenTypes"
     :data-whole-screen-deferred="wholeScreenDeferred"
@@ -621,6 +623,7 @@ import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
 import { objectParticlePresentation } from '../core/chibiObjectParticleLifecycle.js'
 import { applyObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
+import { createObjectSpriteTimeline, supportsObjectSpriteTweens, objectSpriteTweenStatus } from '../core/chibiObjectSpriteTweens.js'
 import { loadChibiBloom, updateChibiBloom } from '../core/chibiBloomParticles.js'
 import { loadChibiFloor, updateChibiFloor } from '../core/chibiFloorParticles.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
@@ -660,6 +663,7 @@ const wholeScreenRenderer=createWholeScreenRenderer(PIXI,()=>app?.renderer)
 const searchlightRenderer=createSearchlightRenderer(PIXI,()=>cameraContainer,()=>{if(app && !playing.value) {applyStageLighting();app.render()}},()=>app?.renderer)
 const searchlightCount=ref(0),searchlightDeferred=ref('')
 const nativeObjectParticleCount=ref(0)
+const objectSpriteTweenState=ref('')
 const nativeObjectDeferred=computed(()=>[...new Set((selectedSong.value?.objectLayerEvents||[]).map(e=>e.asset))].flatMap(asset=>((objectLayerIndex.value?.assets?.[asset]?.nativeParticleAnimation||objectLayerIndex.value?.assets?.[asset]?.nativeParticleDeferred)?.deferred||[]).map(d=>`${asset}:${d.source.pathId}:${d.reasons.join('+')}`)).join(','))
 const wholeScreenCount=ref(0),wholeScreenTypes=ref('')
 const wholeScreenDeferred=computed(()=>[...new Set((selectedSong.value?.wholeScreenEvents||[]).flatMap(e=>{const m=choreography.value?.wholeScreen?.models[e.type];return m?.kind==='unsupported'?[m.reason]:m?.deferred||[e.unresolvedReason].filter(Boolean)}))].join(','))
@@ -796,6 +800,7 @@ const imageLayerLoads = new Map()
 let objectLayerSongId = ''
 let objectLayerSequence = 0
 const objectLayerRuntimes = new Map()
+const objectSpriteTimelines = new Map()
 const objectLayerLoads = new Map()
 const spotlightSprites = createSpotlightSpriteStore({
   loadTexture: file => loadImageLayerTexture(file),
@@ -2996,6 +3001,19 @@ function destroyObjectLayerRuntime(runtime) {
   for (const texture of (runtime?.textures || [])) texture.destroy(true)
 }
 
+function objectSpritePresentationAt(asset, milliseconds) {
+  const entry=objectLayerIndex.value?.assets?.[asset]
+  if (!supportsObjectSpriteTweens(entry)) return null
+  let cached=objectSpriteTimelines.get(asset)
+  const events=selectedSong.value?.objectLayerEvents
+  if (!cached || cached.events!==events || cached.instances!==entry.instances) {
+    cached={events,instances:entry.instances,timeline:createObjectSpriteTimeline(
+      (events || []).filter(event=>event.asset===asset),entry.instances.map(s=>Number.isFinite(s.alpha)?s.alpha:1))}
+    objectSpriteTimelines.set(asset,cached)
+  }
+  return cached.timeline.sample(milliseconds)
+}
+
 function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
   if (!app) return
   const width = app.renderer.width / app.renderer.resolution
@@ -3018,8 +3036,10 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     )
     runtime.container.zIndex = Number(state.depth) || 0
     const particle=runtime.entry.kind==='particle'?objectParticlePresentation(state,stageTime.value):null
-    runtime.container.alpha = particle?particle.alpha:Math.max(0, Math.min(1, Number(state.alpha) || 0))
-    runtime.container.visible = objectLayersEnabled.value && (particle?particle.visible:runtime.container.alpha > 0.001)
+    const sprite=objectSpritePresentationAt(asset,stageTime.value)
+    runtime.container.alpha = sprite?1:particle?particle.alpha:Math.max(0, Math.min(1, Number(state.alpha) || 0))
+    runtime.container.visible = objectLayersEnabled.value && (sprite?sprite.active:particle?particle.visible:runtime.container.alpha > 0.001)
+    if (sprite) for (const [i,child] of runtime.objectSprites.entries()) child.alpha=sprite.alphas[i]
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
     // 720 reference pixels / 100 pixels per particle unit, undoing parent zoom
     // and object scale for the native screen-relative particle-size boundary.
@@ -3030,6 +3050,9 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     syncObjectRendererPlanes(runtime)
   }
   nativeObjectParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((n,r)=>n+(r.nativeParticleCount||0),0)
+  if (!playing.value || inspectorOpen.value) objectSpriteTweenState.value=[...objectLayerRuntimes.keys()]
+    .map(asset=>{const s=objectSpritePresentationAt(asset,stageTime.value);return s?`${asset}:${s.active?'on':'off'}:${s.alphas.map(a=>a.toFixed(6)).join('/')}`:''})
+    .filter(Boolean).sort().join(',')
   bloomParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((sum,r)=>sum+(r.bloomParticleCount || 0),0)
   if (!playing.value || inspectorOpen.value) floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
     .map(r => r.floorSignature).join(',')
@@ -3046,6 +3069,8 @@ function releaseObjectLayers() {
   objectLayerLoads.clear()
   for (const runtime of objectLayerRuntimes.values()) destroyObjectLayerRuntime(runtime)
   objectLayerRuntimes.clear()
+  objectSpriteTimelines.clear()
+  objectSpriteTweenState.value=''
   objectLayerSongId = ''
   visibleObjectLayerCount.value = 0
   visibleObjectLayerAssets.value = []
@@ -3065,7 +3090,10 @@ async function syncObjectLayers() {
   const sequence = objectLayerSequence
   const states = objectLayerStatesAt(stageTime.value)
   const activeStates = objectLayersEnabled.value
-    ? [...states.values()].filter(state => objectLayerIndex.value.assets?.[state.asset]?.kind==='particle'?objectParticlePresentation(state,stageTime.value).visible:state.alpha > 0.001)
+    ? [...states.values()].filter(state => {
+      const sprite=objectSpritePresentationAt(state.asset,stageTime.value)
+      return sprite?sprite.active:objectLayerIndex.value.assets?.[state.asset]?.kind==='particle'?objectParticlePresentation(state,stageTime.value).visible:state.alpha > 0.001
+    })
     : []
   const supportedStates = []
   const unsupportedStates = []
@@ -3081,7 +3109,8 @@ async function syncObjectLayers() {
   for (const [asset, runtime] of objectLayerRuntimes) {
     applyObjectSpriteGeometry(runtime,objectLayerIndex.value?.assets?.[asset])
     const state = states.get(asset)
-    runtime.container.visible = objectLayersEnabled.value && Boolean(state && state.alpha > 0.001)
+    const sprite=state && objectSpritePresentationAt(asset,stageTime.value)
+    runtime.container.visible = objectLayersEnabled.value && Boolean(state && (sprite?sprite.active:state.alpha > 0.001))
     syncObjectRendererPlanes(runtime)
   }
 

@@ -2,6 +2,8 @@
 
 输入 HEAD `3c423c67e0ac33750b0585874bec5dcb104e8e0c`，沿用 `stage/20261020-native-followup`。承接 [透明度诊断](NATIVE_OBJECT_SPRITE_FADE_AUDIT_20261020.md)，本轮把静态反编译结论推进为可复跑的 ARM64 代码样本。渲染器尚未修改，Sprite 透明度待办仍开放。
 
+后续 [消费者修复](NATIVE_OBJECT_SPRITE_CONSUMER_20261021.md)已扩至 9 组样本（含零时长）和 3 条 RAW 参考轨道，并完成本轮纯 Sprite 接线与 Browser 验收；下文保留初始 7 组回放批次的输入和边界。
+
 ## 执行范围
 
 `scripts/replay-chibi-object-sprite-tweens.py` 用 Unicorn 2.1.4 把固定的解密 ELF 的 PT_LOAD 段装入 ARM64 地址空间。ELF SHA 必须与已有 RAW 来源收据一致：`9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e`。不使用另写的缓动公式生成预期结果。
