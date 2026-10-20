@@ -1,4 +1,5 @@
 import { getAutoAdvanceTiming } from '../utils/StoryStepFlow.js'
+import { nativeWaitSeconds } from './story-runtime/NativeCutWait.js'
 
 import { getStepSceneState } from './story-runtime/StepSceneState.js'
 import {
@@ -26,6 +27,7 @@ export function useStepSceneEffects({
   isAutoBlocked = () => false,
   beforeAutoAdvance = () => {},
   beforeStepChange = () => {},
+  getSteps = () => null,
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
@@ -151,7 +153,9 @@ export function useStepSceneEffects({
           }
         }
       }
-      _fadeAutoTimer = setTimeout(attemptAutoAdvance, autoAdvance.delayMs)
+      // A wait-only cut after this step extends its hold (NativeCutWait.js).
+      const hold = nativeWaitSeconds(getSteps(), autoStepIndex, autoStepIndex + 1)
+      _fadeAutoTimer = setTimeout(attemptAutoAdvance, autoAdvance.delayMs + hold * 1000)
     }
 
     if (!restore) {

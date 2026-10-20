@@ -111,7 +111,7 @@ function projectStep(step) {
     },
     evidence,
   }
-  for (const key of ['episode_index', 'episode_part', 'chara_id', 'auto_advance', 'duration', 'hide_dialogue', 'lipSync']) {
+  for (const key of ['episode_index', 'episode_part', 'chara_id', 'auto_advance', 'duration', 'hide_dialogue', 'lipSync', 'pre_wait', 'post_wait']) {
     if (key in step) output[key] = clone(step[key])
   }
   if (step.dialogue && (step.dialogue.source_text || step.dialogue.text_ref || step.dialogue.speaker_text_ref)) {
@@ -208,7 +208,7 @@ export function compareAuthoritativeRuntimeProjection(input, authoritative) {
       cues: (after.cues || []).map(({ evidence: _evidence, ...cue }) => cue),
       flow: after.flow,
     }
-    for (const key of ['episode_index', 'episode_part', 'chara_id', 'auto_advance', 'duration', 'hide_dialogue', 'lipSync']) {
+    for (const key of ['episode_index', 'episode_part', 'chara_id', 'auto_advance', 'duration', 'hide_dialogue', 'lipSync', 'pre_wait', 'post_wait']) {
       if (key in before) comparableBefore[key] = before[key]
       if (key in after) comparableAfter[key] = after[key]
     }

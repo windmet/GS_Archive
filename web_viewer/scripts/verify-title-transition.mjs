@@ -3,6 +3,8 @@ import { runInNewContext } from 'node:vm'
 import { readFile } from 'node:fs/promises'
 import { useStoryRuntimeCues } from '../src/core/story-runtime/useStoryRuntimeCues.js'
 import { isTransitionStep, getAutoAdvanceTiming } from '../src/utils/StoryStepFlow.js'
+import { createNativeCutWait, nativeWaitSeconds } from '../src/core/story-runtime/NativeCutWait.js'
+import { finiteBranchNextIndex } from '../shared/story/FiniteBranchFlow.js'
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 const [viewer, title] = await Promise.all([read('src/core/StoryViewer.vue'), read('src/components/TitleUI.vue')])
@@ -36,7 +38,7 @@ const frames = new Map()
 globalThis.requestAnimationFrame = fn => { frames.set(++frame, fn); return frame }
 globalThis.cancelAnimationFrame = id => frames.delete(id)
 globalThis.window = {}
-const functions = ['setTitleAnimationPending','onTitleAnimationStart','retryTitleAdvance','onTitleAnimationSettled','goNext'].map(name=>{
+const functions = ['setTitleAnimationPending','onTitleAnimationStart','retryTitleAdvance','onTitleAnimationSettled','goNext','holdNativeCut','leaveStep'].map(name=>{
   const match = viewer.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))
   assert.ok(match, name)
   return match[0]
@@ -57,6 +59,7 @@ async function setup({withCue=false}={}) {
   playbackController:{notifyStateChanged(){}},episodeFinished:{value:false},backlogOpen:{value:false},menuOpen:{value:false},
   storyRuntimeCues:runtime,isLastStep:{value:false},markStepRead(){},recordHistoryStep(){},leaveRestoredScene(){},finishEpisode(){},
   restoredSceneState:{value:null},handleStepChange(){},advances:0,
+  compiledData:{value:source},nativeCutWait:createNativeCutWait(),nativeWaitSeconds,finiteBranchNextIndex,runtimePauseReasons:new Set(),
   advanceStep(){ctx.advances++; ctx.oldStep=step.value; index.value=1; step.value=second; ctx.newStep=second; runInNewContext(navigation,ctx); runtime.handleStepChange()},
  }
  runInNewContext('var titleAdvancePending = null;\n'+functions,ctx)
