@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { Container } from 'pixi.js'
 import { CameraController } from '../src/core/CameraController.js'
-import { advHorizontalSqueeze, advStageUnit, advToScreen } from '../shared/story/AdvStageLayout.js'
+import { advHorizontalSqueeze, advStageUnit, advToScreen, advViewOriginY } from '../shared/story/AdvStageLayout.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 import { createCameraCueHandle } from '../src/core/story-runtime/CameraCueRuntime.js'
 
@@ -90,9 +90,11 @@ try {
   controller.destroy()
   spine.destroy()
   bg.destroy()
-  // A canvas point at the camera target stays at screen centre; the background zooms in with the camera
-  // but keeps its size when the camera widens (AdventureBackgroundPanel.UpdateBackGroundScale).
+  // A canvas point at the camera target stays at the view centre (screen centre, lowered on portrait by
+  // advViewOriginY); the background zooms in with the camera but keeps its size when the camera widens
+  // (AdventureBackgroundPanel.UpdateBackGroundScale).
   for (const [width, height] of [[1280, 720], [1968, 1060], [390, 844]]) {
+    const originY = advViewOriginY(width, height)
     const actors = new Container(), background = new Container()
     const camera = new CameraController({ bgContainer: background, spineContainer: actors,
       getWidth: () => width, getHeight: () => height })
@@ -105,10 +107,10 @@ try {
       close(background.scale.x, Math.max(1, zoom))
       const target = advToScreen(width, height, offset_x, offset_y)
       close(target.x * zoom + actors.x, width / 2)
-      close(target.y * zoom + actors.y, height / 2)
+      close(target.y * zoom + actors.y, originY)
       // The background panel centre (canvas origin) moves with the camera like any canvas point.
       close(width / 2 * background.scale.x + background.x, width / 2 - offset_x * unit * squeeze * zoom)
-      close(height / 2 * background.scale.x + background.y, height / 2 + offset_y * unit * zoom)
+      close(originY * background.scale.x + background.y, originY + offset_y * unit * zoom)
     }
     camera.destroy(); actors.destroy(); background.destroy()
   }

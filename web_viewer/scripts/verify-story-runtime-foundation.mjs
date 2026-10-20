@@ -15,6 +15,7 @@ import { applyScreenEntrySnapshot, createScreenCueHandle } from '../src/core/sto
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from '../src/core/story-runtime/BackgroundCueRuntime.js'
 import { applyCameraEntrySnapshot, createCameraCueHandle } from '../src/core/story-runtime/CameraCueRuntime.js'
 import { CameraController } from '../src/core/CameraController.js'
+import { advViewOriginY } from '../shared/story/AdvStageLayout.js'
 import { createSeCueHandle } from '../src/core/story-runtime/SeCueRuntime.js'
 import { useStoryRuntimeCues } from '../src/core/story-runtime/useStoryRuntimeCues.js'
 import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
@@ -398,7 +399,10 @@ function verifyCameraResize() {
   height = 844
   controller.handleResize()
   assert.equal(spineContainer.x, -97.5)
-  assert.equal(spineContainer.y, -211)
+  // Portrait zooms about the ADV view origin, not the screen centre: the view top stays fixed and the figures grow
+  // down past the screen bottom (AdvStageLayout.advViewOriginY).
+  assert.ok(advViewOriginY(width, height) > height / 2)
+  assert.equal(spineContainer.y, advViewOriginY(width, height) * (1 - 1.5))
 }
 
 function verifySceneSnapshotStore() {
