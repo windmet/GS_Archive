@@ -63,6 +63,9 @@ def _stable_camera(camera: Any) -> Any:
     return result
 
 
+PART_START_SCREEN_OVERLAY = {"kind": "fade", "visible": True, "color": "#000000", "alpha": 1}
+
+
 def _stable_screen_overlay(state: dict[str, Any]) -> tuple[bool, Any]:
     slide = state.get("screen_slide")
     if slide:
@@ -435,7 +438,19 @@ def compile_authoritative_scenario(
     source = _required(compatibility.get("source"), "scenario.source")
     steps = []
     previous = None
+    part = object()
+    revealed_parts = {
+        (step.get("episode_index"), step.get("episode_part"))
+        for step in compatibility.get("steps") or []
+        if _stable_screen_overlay(step.get("state") or {}) == (True, None)
+    }
     for step in compatibility.get("steps") or []:
+        # StoryView.Initialize resets the screen mask to opaque black (StoryScreenMaskController.Reset),
+        # so a part is covered until its first reveal. Parts whose data records no reveal are left uncovered.
+        if (step.get("episode_index"), step.get("episode_part")) != part:
+            part = (step.get("episode_index"), step.get("episode_part"))
+            if part in revealed_parts:
+                previous = {**(previous or {}), "screen_overlay": dict(PART_START_SCREEN_OVERLAY)}
         projected, previous = _project_step(step, previous)
         steps.append(projected)
     output: dict[str, Any] = {
