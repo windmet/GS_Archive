@@ -753,7 +753,9 @@ class ScenarioCompiler(ScenarioFileIO):
     def _append_screen_effect(self, effect_type: str, vals: list):
         delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
         duration = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
-        color = vals[2] if len(vals) > 2 and vals[2] else "#FFFFFF"
+        # EffectCommandData.SetCommandData parses effect_fadein/out like screen_fadein/out:
+        # an empty [2] is Color.black, not white.
+        color = vals[2] if len(vals) > 2 and vals[2] else "#000000"
         alpha = self._safe_float(vals[4], 1.0) if len(vals) > 4 and vals[4] != "" else 1.0
         self.state.screen_effects.append({
             "type": effect_type,

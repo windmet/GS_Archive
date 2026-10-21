@@ -83,3 +83,18 @@ assert zoom('_idol_zoom', ['036rui', '', '', '30', '', ''], {'idol_zoom_y_offset
     'idol_zoom': 1.0, 'idol_zoom_x': 30.0, 'idol_zoom_y': 0.0}, 'size defaults to 1; the old y offset guess is dropped'
 assert zoom('_idol_zoom_reset', ['036rui'], {'idol_zoom': 0.8, 'idol_zoom_x': 1, 'idol_zoom_y': 2, 'idol_zoom_transition': {}}) == {}
 print('idol_zoom: client [chara, startTime, playTime, posX, posY, size] with linear transition and reset passed')
+
+# effect_fadein/out share EffectCommandData's screen-fade parse: [startTime, playTime, startColor(default black)].
+def effect_fade(handler, values):
+    compiler = object.__new__(ScenarioCompiler)
+    compiler.state = ScenarioState()
+    compiler._extend_pending_text_disable_duration = lambda seconds: None
+    compiler._mark_stage_change = lambda: None
+    compiler._safe_float = ScenarioCompiler._safe_float
+    getattr(compiler, handler)(values)
+    return compiler.state.screen_effects[-1]
+
+assert effect_fade('_effect_fadein', ['0', '6'])['color'] == '#000000', 'an empty color is Color.black, as in 1_1_006_03_a'
+assert effect_fade('_effect_fadeout', ['0.8', '2', ''])['color'] == '#000000'
+assert effect_fade('_effect_fadein', ['5', '2.5', '#FFFFFF'])['color'] == '#FFFFFF'
+print('effect_fadein/out: client default color black passed')
