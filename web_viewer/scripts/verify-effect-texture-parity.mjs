@@ -4,6 +4,7 @@ import { ScreenEffectManager } from '../src/core/ScreenEffectManager.js'
 import { BackgroundEffectManager } from '../src/core/BackgroundEffectManager.js'
 import { effectTextures, effectTextureUrl, knownEffectTextureIds } from '../shared/story/EffectTextures.js'
 import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
+import { advParticlePrefab, advParticleSystems } from '../src/core/advParticleEffects.js'
 
 const source = { file: 'episodes/test.json', sha256: `sha256:${'a'.repeat(64)}` }
 const savedRaf = globalThis.requestAnimationFrame
@@ -28,7 +29,9 @@ async function advance(milliseconds) {
   await drain()
 }
 
-async function managerProbe(domain, effect) {
+// cameraflare draws only on a lit background (lightPosition 1 left / 2 right).
+const LIT_BACKGROUND = { lightPosition: 1 }
+async function managerProbe(domain, effect, bgProfile = LIT_BACKGROUND) {
   const urls = [], textures = [], tickers = new Set()
   const stage = new PIXI.Container()
   const bgContainer = new PIXI.Container()
@@ -49,14 +52,19 @@ async function managerProbe(domain, effect) {
       overlay: { destroyed: false, alpha: 1, visible: false, width: 1024, height: 506, tint: 0xffffff },
       spineContainer: null })
   try {
-    if (domain === 'background') manager.applyBgEffects([effect], null, () => now)
+    if (domain === 'background') manager.applyBgEffects([effect], bgProfile, () => now)
     else manager.playScreenEffects([effect], { nowMilliseconds: () => now })
     await advance(0)
     // Evidence 1: capture the requests independently from the plan mapping.
     const requested = urls.map(url => url.replace('/data/fx_extracted/unity_', '').replace('.png', ''))
     // Evidence 2: verify real PIXI object initialization and a lifecycle tick.
     // Counts come from each concrete handler, not from effectTextures().
-    const backgroundCounts = { fx_adv_rain: 2, fx_adv_rain_heavy2: 3, fx_adv_sakura: 32, fx_adv_momiji: 28 }
+    // Native systems allocate one sprite per maxParticles slot.
+    const nativeCount = id => advParticleSystems(advParticlePrefab(id, bgProfile)).reduce((sum, system) => sum + system.capacity, 0)
+    const backgroundCounts = { cameraflare: nativeCount('cameraflare'), fx_adv_rain: nativeCount('fx_adv_rain'),
+      fx_adv_rain_heavy: nativeCount('fx_adv_rain_heavy'), fx_adv_rain_heavy2: nativeCount('fx_adv_rain_heavy2'),
+      fx_adv_sakura: 32, fx_adv_momiji: 28 }
+    assert.ok(domain !== 'background' || !(effect.id in backgroundCounts) || bgProfile?.lightPosition === 0 || backgroundCounts[effect.id] > 0, `${effect.id}: handler draws`)
     const screenCounts = { fx_adv_punch: 1, fx_adv_sakura: 30, fx_adv_momiji: 30, fx_adv_kamifubuki: 48 }
     const collectSprites = node => (node instanceof PIXI.Sprite ? 1 : 0)
       + (node.children || []).reduce((sum, child) => sum + collectSprites(child), 0)
@@ -75,7 +83,7 @@ async function managerProbe(domain, effect) {
     for (const texture of textures) texture.destroy(true)
   }
 }
-const backgroundRequests = id => managerProbe('background', { id })
+const backgroundRequests = (id, bgProfile) => managerProbe('background', { id }, bgProfile)
 const screenRequests = effect => managerProbe('screen', effect)
 
 try {
@@ -87,7 +95,7 @@ const DOMAIN_PROBES = [
   { domain: 'bg_effects', probe: effect => backgroundRequests(effect.id) },
   { domain: 'screen_effects', probe: effect => screenRequests({ type: 'single', ...effect }) },
 ]
-const PROBED_IDS = ['cameraflare', 'fx_adv_punch', 'fx_adv_rain', 'fx_adv_rain_heavy2',
+const PROBED_IDS = ['cameraflare', 'fx_adv_punch', 'fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_rain_heavy2',
   'fx_adv_sakura', 'fx_adv_momiji', 'fx_adv_snowflower', 'fx_adv_kamifubuki', 'fx_adv_star']
 
 for (const { domain, probe } of DOMAIN_PROBES) {
@@ -111,10 +119,12 @@ assert.deepEqual(effectTextures({ id: 'fx_adv_kamifubuki' }, 'screen_effects').t
   ['fx_adv_sakura', 'fx_adv_star'], 'kamifubuki mixes sakura and star')
 assert.deepEqual(effectTextures({ id: 'fx_adv_rain_heavy2' }, 'bg_effects').textures, ['fx_adv_rain'],
   'heavy rain reuses the single rain texture')
-assert.equal(effectTextures({ id: 'cameraflare' }, 'bg_effects').runtimeDisabled,
-  'cameraflare-re-authored-as-particles')
-assert.deepEqual(await backgroundRequests('cameraflare'), [],
-  'the runtime-disabled cameraflare must not request its texture at runtime')
+assert.deepEqual(effectTextures({ id: 'fx_adv_rain_heavy' }, 'bg_effects').textures, ['fx_adv_rain'])
+assert.deepEqual(effectTextures({ id: 'cameraflare' }, 'bg_effects'), { textures: ['fx_adv_flare_01'], runtimeDisabled: null })
+assert.deepEqual(await backgroundRequests('cameraflare', { lightPosition: 2 }), ['fx_adv_flare_01'], 'right-side flare')
+// An unlit background instantiates no flare prefab; the plan still prefetches the texture.
+assert.deepEqual(await backgroundRequests('cameraflare', { lightPosition: 0 }), [],
+  'an unlit background draws no cameraflare')
 
 // 3. Effects the codebase does not implement are reported, never assumed ready.
 assert.equal(effectTextures({ id: 'fx_adv_snowflower' }, 'bg_effects').reason, 'unmapped-effect-texture',
@@ -150,8 +160,8 @@ assert.deepEqual(plan.assets.filter(a => a.kind === 'effect-texture').map(a => a
   ['fx_adv_rain', 'fx_adv_flare_01', 'fx_adv_punch'],
   'every corpus effect resolves to its texture')
 assert.deepEqual(plan.assets.filter(a => a.kind === 'effect-texture' && a.required).map(a => a.id),
-  ['fx_adv_rain', 'fx_adv_punch'],
-  'the probe set must not report a disabled texture as a download')
+  ['fx_adv_rain', 'fx_adv_flare_01', 'fx_adv_punch'],
+  'cameraflare is a real download again')
 assert.equal(plan.dependenciesComplete, true, 'corpus effects are complete logical requirements')
 
 const wrongDomain = structuredClone(plan.source) && createStoryAssetPlan({

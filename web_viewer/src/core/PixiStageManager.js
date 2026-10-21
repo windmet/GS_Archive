@@ -109,17 +109,22 @@ export class PixiStageManager {
     this._visibilityHandler()
     this.container.appendChild(this.app.view)
 
-    // Layer structure: bgContainer (bottom) -> spineContainer -> fadeOverlay (top)
+    // Layer structure: bgContainer (bottom) -> bgEffectContainer -> spineContainer -> nearEffectContainer
+    // -> fadeOverlay (top). The effect layers are StoryIdolCanvas BackEffect particles below and above
+    // CharacterParent's sorting order, and move with the camera like the idols.
     this.bgContainer = new PIXI.Container()
     this.bgEffectContainer = new PIXI.Container()
     this.spineContainer = new PIXI.Container()
+    this.nearEffectContainer = new PIXI.Container()
     this.app.stage.addChild(this.bgContainer)
     this.app.stage.addChild(this.bgEffectContainer)
     this.app.stage.addChild(this.spineContainer)
+    this.app.stage.addChild(this.nearEffectContainer)
     this.backgroundManager = new BackgroundManager({
       app: this.app,
       bgContainer: this.bgContainer,
       bgEffectContainer: this.bgEffectContainer,
+      nearEffectContainer: this.nearEffectContainer,
       getWidth: () => this.width,
       getHeight: () => this.height,
       getBgUrl,
@@ -128,6 +133,7 @@ export class PixiStageManager {
     this.cameraController = new CameraController({
       bgContainer: this.bgContainer,
       spineContainer: this.spineContainer,
+      effectContainers: [this.bgEffectContainer, this.nearEffectContainer],
       getWidth: () => this.width,
       getHeight: () => this.height,
       onCameraMove: zoom => this.backgroundManager?.setCameraBlur(zoom),
