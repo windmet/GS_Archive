@@ -171,6 +171,9 @@ export class PixiStageManager {
       app: this.app, overlay: this._effectOverlay, spineContainer: this.spineContainer,
       getWidth: () => this.width, getHeight: () => this.height,
       loadTextureFromUrl: (url, options) => this._loadTextureFromUrl(url, { ...options, allowFallback: false }),
+      // effect_single prefabs share BackEffect with the background particles (StoryEffectController).
+      playParticleEffect: (id, effect, nowMilliseconds) =>
+        this.backgroundManager?.effects?.playSingleParticleEffect(id, effect, nowMilliseconds) || null,
     })
     this._debugMarkerUpdater = () => {
       if (!this._debugMode) return

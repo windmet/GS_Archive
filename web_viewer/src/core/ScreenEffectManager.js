@@ -1,12 +1,14 @@
 import * as PIXI from 'pixi.js'
 import { loadEffectTexture } from './effectTextureCache.js'
 import { runRafTween } from './rafTween.js'
-import { tweenOverlayFade, tweenOverlayPunch } from './transitionTweens.js'
+import { tweenOverlayFade } from './transitionTweens.js'
 
 /** Owns transient screen particles, authored delays and overlay/shake tweens. */
 export class ScreenEffectManager {
-  constructor({ app, overlay, spineContainer, getWidth, getHeight, loadTextureFromUrl }) {
-    Object.assign(this, { app, spineContainer, getWidth, getHeight })
+  // playParticleEffect(id, effect, nowMilliseconds) draws an effect_single prefab natively and returns a
+  // cancel function, or null when the id has no native prefab.
+  constructor({ app, overlay, spineContainer, getWidth, getHeight, loadTextureFromUrl, playParticleEffect = null }) {
+    Object.assign(this, { app, spineContainer, getWidth, getHeight, playParticleEffect })
     this._effectOverlay = overlay
     this._loadTextureFromUrl = loadTextureFromUrl
     this._screenEffectToken = 0
@@ -82,34 +84,16 @@ export class ScreenEffectManager {
 
   _playSingleScreenEffect(effect, nowMilliseconds) {
     const id = effect?.id || ''
-    if (id === 'fx_adv_punch') {
-      this._playPunchEffect(effect, nowMilliseconds)
+    const cancel = this.playParticleEffect?.(id, effect, nowMilliseconds)
+    if (cancel) {
+      // The prefab removes itself after its last particle; a clear or destroy cancels it early.
+      const cleanup = () => { this._screenEffectCleanups.delete(cleanup); cancel() }
+      this._screenEffectCleanups.add(cleanup)
     } else if (id === 'fx_adv_kamifubuki') {
       this._playKamifubukiEffect(effect, nowMilliseconds)
     } else if (id === 'fx_adv_sakura' || id === 'fx_adv_momiji') {
       this._playFallingScreenTexture(id, effect, {}, nowMilliseconds)
     }
-  }
-
-  _playPunchEffect(effect, nowMilliseconds) {
-    const overlay = this._effectOverlay
-    if (!overlay || overlay.destroyed) return
-    this._playPunchTexture(effect, nowMilliseconds)
-    overlay.tint = 0xffffff
-    overlay.width = this.width
-    overlay.height = this.height
-    overlay.alpha = 0.3
-    overlay.visible = true
-    const dir = Math.sign(Number(effect?.x || 0))
-    const durationMs = Math.max(120, Number(effect?.duration || 0.35) * 1000)
-    this._ownScreenTween(finish => tweenOverlayPunch({
-      overlay,
-      spineContainer: this.spineContainer,
-      durationMs,
-      dir: dir || 1,
-      nowMilliseconds,
-      onFinish: finish,
-    }))
   }
 
   _loadEffectTexture(name) {
@@ -137,49 +121,6 @@ export class ScreenEffectManager {
     const cleanup = () => { tween?.cancel?.(); finish() }
     tween = start(finish)
     if (tween) this._screenEffectCleanups.add(cleanup)
-  }
-
-  async _playPunchTexture(effect, nowMilliseconds = () => performance.now()) {
-    const token = this._screenEffectToken
-    try {
-      const texture = await this._loadEffectTexture('fx_adv_punch')
-      if (token !== this._screenEffectToken || !this.app?.stage) return
-      const frameWidth = Math.floor(texture.width / 3)
-      const frameHeight = Math.floor(texture.height / 2)
-      const base = texture.baseTexture
-      const sprite = new PIXI.Sprite(new PIXI.Texture(base, new PIXI.Rectangle(0, 0, frameWidth, frameHeight)))
-      sprite.anchor.set(0.5)
-      sprite.blendMode = PIXI.BLEND_MODES.ADD
-      sprite.x = this.width / 2
-      sprite.y = this.height / 2
-      const scale = Math.max(this.width / frameWidth, this.height / frameHeight) * 0.82
-      sprite.scale.set(scale)
-      sprite.alpha = 0.9
-      sprite.eventMode = 'none'
-      this.app.stage.addChild(sprite)
-
-      const durationMs = Math.max(180, Number(effect?.duration || 0.35) * 1000)
-      const start = nowMilliseconds()
-      const tick = () => {
-        if (token !== this._screenEffectToken || sprite.destroyed) {
-          cleanup()
-          return
-        }
-        const t = Math.min((nowMilliseconds() - start) / durationMs, 1)
-        const frame = Math.min(5, Math.floor(t * 6))
-        const fx = frame % 3
-        const fy = Math.floor(frame / 3)
-        sprite.texture = new PIXI.Texture(base, new PIXI.Rectangle(fx * frameWidth, fy * frameHeight, frameWidth, frameHeight))
-        sprite.alpha = 1 - Math.max(0, t - 0.25) / 0.75
-        sprite.scale.set(scale * (0.92 + t * 0.18))
-        if (t >= 1) {
-          cleanup()
-        }
-      }
-      const cleanup = this._ownScreenEffect(sprite, tick)
-    } catch (err) {
-      console.warn('[PixiStageManager] Failed to load punch texture:', err?.message || err)
-    }
   }
 
   _playKamifubukiEffect(effect, nowMilliseconds) {

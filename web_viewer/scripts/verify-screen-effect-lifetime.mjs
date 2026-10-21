@@ -73,7 +73,7 @@ try {
   // invalidation, rather than relying only on app = null to suppress late work.
   const oldApp = { stage: { addChild: () => { stageWrites++ } }, destroy: () => {} }
   disposed.app = oldApp
-  const loading = disposed._playPunchTexture({})
+  const loading = disposed._playFallingScreenTexture('fx_adv_sakura', {}, {})
   disposed.destroy()
   assert.equal(timers.size, 0)
   disposed.app = oldApp
@@ -85,7 +85,7 @@ try {
   disposed.app = null
   disposed.destroy()
   assert.equal(timers.size, 0)
-  for (const kind of ['punch', 'sakura', 'momiji', 'stars']) {
+  for (const kind of ['sakura', 'momiji', 'stars']) {
     const active = create().stage
     const ticks = new Set()
     const root = new Container()
@@ -94,14 +94,13 @@ try {
     active.getWidth = () => 1280; active.getHeight = () => 720
     active.app = { stage: root, ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) }, destroy: () => {} }
     active._loadEffectTexture = async () => texture
-    if (kind === 'punch') await active._playPunchTexture({ duration: 2 })
-    else await active._playFallingScreenTexture(kind === 'momiji' ? 'fx_adv_momiji' : 'fx_adv_sakura', {}, { useStar: kind === 'stars' })
+    await active._playFallingScreenTexture(kind === 'momiji' ? 'fx_adv_momiji' : 'fx_adv_sakura', {}, { useStar: kind === 'stars' })
     assert.equal(ticks.size, 1)
     assert.equal(active._screenEffectCleanups.size, 1)
     const display = root.children[0]
     assert.ok(display)
     const queuedTick = [...ticks][0]
-    if (kind === 'punch' || kind === 'stars') active.destroy()
+    if (kind === 'stars') active.destroy()
     else active.clearScreenEffects()
     assert.equal(ticks.size, 0, `${kind} must release its ticker without waiting for a frame`)
     assert.equal(display.destroyed, true)
@@ -111,18 +110,15 @@ try {
     assert.equal(base.destroyed, false, 'shared cached texture must survive effect cleanup')
     root.destroy(); texture.destroy(true)
   }
-  for (const kind of ['punch', 'fade']) {
+  for (const kind of ['fade']) {
     for (const end of ['clear', 'destroy', 'natural']) {
       const active = create().stage
       active.spineContainer = { x: 123, y: 456 }
-      active._playPunchTexture = () => {}
       active.getWidth = () => 1280; active.getHeight = () => 720
-      if (kind === 'punch') active._playPunchEffect({ duration: 2 })
-      else ScreenEffectManager.prototype._playFadeScreenEffect.call(active, { duration: 2, type: 'fadeout' })
+      ScreenEffectManager.prototype._playFadeScreenEffect.call(active, { duration: 2, type: 'fadeout' })
       wall += 200; frame()
       assert.equal(frames.size, 1)
       assert.equal(active._screenEffectCleanups.size, 1)
-      if (kind === 'punch') assert.notEqual(active.spineContainer.x, 123)
       const queued = [...frames.values()][0]
       if (end === 'natural') { wall += 2000; frame() }
       else if (end === 'clear') active.clearScreenEffects()
@@ -142,7 +138,29 @@ try {
       }
     }
   }
-  for (const id of ['fx_adv_punch', 'fx_adv_sakura', 'fx_adv_momiji', 'fx_adv_kamifubuki']) {
+  // effect_single punch is the native prefab (BackgroundEffectManager.playSingleParticleEffect): the
+  // manager hands over the command and owns the returned cancel; no flash, shake or local sprite.
+  for (const end of ['clear', 'destroy']) {
+    const played = [], cancelled = []
+    const active = new ScreenEffectManager({ app: { ticker: { add() {}, remove() {} } }, overlay: { alpha: 0, visible: false },
+      spineContainer: { x: 123, y: 456 }, getWidth: () => 1280, getHeight: () => 720, loadTextureFromUrl: () => {},
+      playParticleEffect: (id, effect) => { played.push([id, effect.x, effect.y, effect.scale]); return () => cancelled.push(id) } })
+    active._playSingleScreenEffect({ type: 'single', id: 'fx_adv_punch', x: -300, y: 20, scale: 1.5, duration: 0.35 })
+    assert.deepEqual(played, [['fx_adv_punch', -300, 20, 1.5]])
+    assert.equal(active._screenEffectCleanups.size, 1)
+    assert.equal(active._effectOverlay.visible, false, 'native punch has no white flash')
+    assert.deepEqual(active.spineContainer, { x: 123, y: 456 }, 'native punch does not shake the camera')
+    if (end === 'clear') active.clearScreenEffects(); else active.destroy()
+    assert.deepEqual(cancelled, ['fx_adv_punch'])
+    assert.equal(active._screenEffectCleanups.size, 0)
+  }
+  {
+    const active = new ScreenEffectManager({ app: {}, overlay: { alpha: 0, visible: false }, spineContainer: { x: 0, y: 0 },
+      getWidth: () => 1280, getHeight: () => 720, loadTextureFromUrl: () => {}, playParticleEffect: () => null })
+    active._playSingleScreenEffect({ type: 'single', id: 'fx_adv_punch' })
+    assert.equal(active._screenEffectCleanups.size, 0, 'an unavailable prefab draws nothing instead of an approximation')
+  }
+  for (const id of ['fx_adv_sakura', 'fx_adv_momiji', 'fx_adv_kamifubuki']) {
     const active = create().stage
     delete active._playSingleScreenEffect; delete active._playFadeScreenEffect
     const ticks = new Set(), root = new Container()

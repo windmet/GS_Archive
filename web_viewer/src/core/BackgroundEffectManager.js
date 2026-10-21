@@ -1,9 +1,11 @@
 import * as PIXI from 'pixi.js'
 import { loadEffectTexture } from './effectTextureCache.js'
 import { runRafTween } from './rafTween.js'
-import { advParticleEffectAlpha, advParticlePrefab, advParticleSystems, sampleAdvParticles } from './advParticleEffects.js'
+import { advParticleEffectAlpha, advParticleLifetime, advParticlePrefab, advParticleSystems, sampleAdvParticles } from './advParticleEffects.js'
 
 const ADV_PARTICLE_EFFECT_IDS = Object.freeze({ cameraflare: true, fx_adv_rain: true, fx_adv_rain_heavy: true, fx_adv_rain_heavy2: true })
+// effect_single prefabs (StoryEffectController.CreateSingleEffect), instantiated under the same BackEffect.
+const ADV_SINGLE_PARTICLE_EFFECT_IDS = Object.freeze({ fx_adv_punch: true })
 
 /** Owns persistent background particles, alpha transitions and their resources. */
 export class BackgroundEffectManager {
@@ -11,7 +13,24 @@ export class BackgroundEffectManager {
   constructor({ app, bgEffectContainer, nearEffectContainer = null, getWidth, getHeight, loadTextureFromUrl }) {
     Object.assign(this, { app, bgEffectContainer, nearEffectContainer, getWidth, getHeight, loadTextureFromUrl })
     this._bgEffectEntries = {}
+    this._singleEffectEntries = new Set()
     this._effectTextureCache = {}
+  }
+
+  /** effect_single: one non-looping prefab at a canvas offset and scale, alpha 1, removed once its last
+   *  particle dies. Returns a cancel function, or null when the effect has no native prefab. */
+  playSingleParticleEffect(id, { x = 0, y = 0, scale = 1 } = {}, nowMilliseconds = () => performance.now()) {
+    if (!(id in ADV_SINGLE_PARTICLE_EFFECT_IDS) || this._shouldDisableBgEffect()) return null
+    const entry = { id, prefab: advParticlePrefab(id), container: new PIXI.Container(), frontContainer: new PIXI.Container(),
+      sprites: [], loadToken: 0, nowMilliseconds, placement: { x: Number(x) || 0, y: Number(y) || 0, scale: Number(scale) || 1 } }
+    entry.activatedAt = nowMilliseconds()
+    entry.endsAt = entry.activatedAt + advParticleLifetime(entry.prefab)
+    for (const container of [entry.container, entry.frontContainer]) container.eventMode = 'none'
+    this.bgEffectContainer.addChild(entry.container)
+    ;(this.nearEffectContainer || this.bgEffectContainer).addChild(entry.frontContainer)
+    this._singleEffectEntries.add(entry)
+    this._createNativeParticleEffect(entry)
+    return () => this._disposeEffectEntry(entry)
   }
 
   applyBgEffects(effects = [], bgProfile = null, nowMilliseconds = () => performance.now()) {
@@ -135,9 +154,10 @@ export class BackgroundEffectManager {
   _tickNativeParticleEffect(entry) {
     if (!entry.emitters || !entry.container || entry.container.destroyed) return
     const time = entry.nowMilliseconds(), width = this.getWidth(), height = this.getHeight()
+    if (time >= entry.endsAt) return this._disposeEffectEntry(entry)
     const alpha = advParticleEffectAlpha(entry.id, entry.effectAlpha, entry.bgProfile)
     for (const { system, frames, sprites, width: frameWidth, height: frameHeight } of entry.emitters) {
-      const quads = sampleAdvParticles(system, time, entry.activatedAt, alpha, width, height)
+      const quads = sampleAdvParticles(system, time, entry.activatedAt, alpha, width, height, entry.placement)
       for (let i = 0; i < sprites.length; i++) {
         const sprite = sprites[i], quad = quads[i]
         sprite.visible = Boolean(quad && quad.alpha > 0)
@@ -234,6 +254,12 @@ export class BackgroundEffectManager {
   _removeBgEffect(id) {
     const entry = this._bgEffectEntries[id]
     if (!entry) return
+    this._disposeEffectEntry(entry)
+    delete this._bgEffectEntries[id]
+  }
+
+  _disposeEffectEntry(entry) {
+    this._singleEffectEntries.delete(entry)
     entry.alphaTween?.cancel?.()
     entry.alphaTween = null
     entry.token = (entry.token || 0) + 1
@@ -241,15 +267,17 @@ export class BackgroundEffectManager {
     entry.pendingEndUntil = null
     if (entry.ticker) this.app.ticker.remove(entry.ticker)
     for (const container of [entry.container, entry.frontContainer]) {
-      if (container?.parent) container.parent.removeChild(container)
-      container?.destroy({ children: true })
+      if (!container || container.destroyed) continue
+      if (container.parent) container.parent.removeChild(container)
+      container.destroy({ children: true })
     }
     for (const texture of entry.frameTextures || []) texture.destroy(false)
     entry.frameTextures = null
-    delete this._bgEffectEntries[id]
+    entry.emitters = null
   }
 
   destroy() {
+    for (const entry of [...this._singleEffectEntries]) this._disposeEffectEntry(entry)
     for (const id of Object.keys(this._bgEffectEntries)) this._removeBgEffect(id)
     this._bgEffectEntries = {}
   }

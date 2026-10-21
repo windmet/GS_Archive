@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { ADV_CANVAS_PER_WORLD, ADV_ORTHOGRAPHIC_SIZE, advStageUnit, advToScreen } from '../shared/story/AdvStageLayout.js'
 import { effectTextures } from '../shared/story/EffectTextures.js'
 import {
-  ADV_PARTICLE_MODEL as model, advParticleEffectAlpha, advParticlePrefab, advParticleQuad, advParticleSystems, sampleAdvParticles,
+  ADV_PARTICLE_MODEL as model, advParticleEffectAlpha, advParticleLifetime, advParticlePrefab, advParticleQuad, advParticleSystems, sampleAdvParticles,
 } from '../src/core/advParticleEffects.js'
 
 const root = new URL('../', import.meta.url)
@@ -37,7 +37,7 @@ const close = (actual, expected, message, epsilon = 1e-6) => assert.ok(Math.abs(
 assert.equal(model.schemaVersion, 1); assert.equal(model.contract, 'native-adv-particle-v1')
 assert.equal(model.placement.canvasPerWorld, ADV_CANVAS_PER_WORLD)
 assert.equal(model.placement.characterSortingOrder, 10); assert.equal(model.placement.prewarm, false)
-assert.deepEqual(Object.keys(model.prefabs).sort(), ['fx_adv_cameraflare_left', 'fx_adv_cameraflare_right', 'fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_rain_heavy2'])
+assert.deepEqual(Object.keys(model.prefabs).sort(), ['fx_adv_cameraflare_left', 'fx_adv_cameraflare_right', 'fx_adv_punch', 'fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_rain_heavy2'])
 assert.equal(fixture.unityDataSha256, model.unityDataSha256)
 for (const id of ['fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_rain_heavy2']) assert.equal(advParticlePrefab(id, { lightPosition: 1 }), id)
 assert.deepEqual([0, 1, 2, 3, undefined].map(lightPosition => advParticlePrefab('cameraflare', { lightPosition })),
@@ -46,7 +46,9 @@ assert.equal(advParticlePrefab('fx_adv_sakura'), null, 'sakura stays on its own 
 for (const id of Object.keys(model.effects)) {
   const textures = new Set(Object.values(typeof model.effects[id] === 'string' ? { one: model.effects[id] } : model.effects[id])
     .flatMap(prefab => advParticleSystems(prefab).map(system => system.texture)))
-  assert.deepEqual(effectTextures({ id }, 'bg_effects').textures, [...textures], `${id}: plan requests exactly the native textures`)
+  // punch is an effect_single (screen_effects command) that instantiates its prefab on the bg effect parent.
+  const domain = id === 'fx_adv_punch' ? 'screen_effects' : 'bg_effects'
+  assert.deepEqual(effectTextures({ id }, domain).textures, [...textures], `${id}: plan requests exactly the native textures`)
 }
 for (const [key, texture] of Object.entries(model.textures)) {
   const bytes = readFileSync(new URL(`public${texture.file}`, root))
@@ -61,6 +63,7 @@ const expected = {
   fx_adv_rain_heavy2: { Rain_far: [130, 200, 5], Rain_near: [20, 100, 15] },
   fx_adv_cameraflare_left: { cameraflare: [1, 10, 15] },
   fx_adv_cameraflare_right: { cameraflare: [1, 10, 15] },
+  fx_adv_punch: { punch: [0, 10, 15], punch_add: [0, 10, 16] },
 }
 for (const [prefab, systems] of Object.entries(model.prefabs)) {
   assert.deepEqual(systems.systems.map(system => system.name).sort(), Object.keys(expected[prefab]).sort(), prefab)
@@ -80,7 +83,8 @@ for (const [prefab, systems] of Object.entries(model.prefabs)) {
     // Stored negated: Unity rotates particles clockwise on screen, the shared sampler counter-clockwise.
     assert.equal(system.rotation.scalar, -initial.startRotation.scalar); assert.equal(system.rotation.minScalar, -initial.startRotation.minScalar)
     if (raw.modules.RotationModule) assert.equal(system.angularVelocity.scalar, -raw.modules.RotationModule.curve.scalar)
-    assert.deepEqual(system.shape.m_Rotation, shape.m_Rotation)
+    // A disabled ShapeModule (punch) emits from the emitter point.
+    if (shape) assert.deepEqual(system.shape.m_Rotation, shape.m_Rotation); else assert.equal(system.shape, null)
     assert.equal(system.commandAlphaPower, 'ColorModule' in raw.modules ? 2 : 1)
     if (raw.modules.ForceModule) for (const axis of 'xyz') assert.equal(raw.modules.ForceModule[axis].scalar, 0, 'only an inert force is dropped')
     const flags = raw.rendererFlags
@@ -184,6 +188,26 @@ for (const prefab of ['fx_adv_cameraflare_left', 'fx_adv_cameraflare_right']) {
 assert.equal(sampleAdvParticles(rain, 999, 1000, 1, width, height).length, 0)
 assert.equal(sampleAdvParticles(flare, 1999, 1000, 1, width, height).length, 0)
 assert.equal(sampleAdvParticles(flare, 2001, 1000, 1, width, height).length, 1)
+
+// effect_single punch: one burst per system, placed at the command's canvas (x, y) and scaled about
+// the prefab root (StoryParticleEffect.SetEffectScale multiplies each system's localScale).
+for (const system of advParticleSystems('fx_adv_punch')) {
+  const raw = fixture.prefabs.fx_adv_punch.find(record => record.pathId === system.source.pathId)
+  assert.equal(raw.modules.EmissionModule.m_Bursts.length, 1); assert.equal(Number(raw.main.looping), 0)
+  assert.deepEqual(system.bursts, [{ time: 0, count: 1 }])
+  const plain = sampleAdvParticles(system, 1100, 1000, 1, width, height)
+  const placed = sampleAdvParticles(system, 1100, 1000, 1, width, height, { x: -300, y: 20, scale: 1.5 })
+  assert.equal(plain.length, 1, `${system.name}: one particle`); assert.equal(placed.length, 1)
+  const a = toWorld(plain[0], width, height), b = toWorld(placed[0], width, height)
+  close(a.x, 0, `${system.name}: unplaced at the view centre`, 1e-6); close(a.y, 0, `${system.name}: unplaced y`, 1e-6)
+  close(b.x, -300 / ADV_CANVAS_PER_WORLD, `${system.name}: canvas x`, 1e-6)
+  close(b.y, 20 / ADV_CANVAS_PER_WORLD, `${system.name}: canvas y (Unity up)`, 1e-6)
+  close(b.size, a.size * 1.5, `${system.name}: command scale`, 1e-6)
+  // lifetime 0.23 s: gone well before the 1 s duration ends.
+  assert.equal(sampleAdvParticles(system, 1000 + raw.modules.InitialModule.startLifetime.scalar * 1000 + 1, 1000, 1, width, height).length, 0)
+}
+close(advParticleLifetime('fx_adv_punch'), (1 + advParticleSystems('fx_adv_punch')[0].lifetime.scalar) * 1000, 'non-looping prefab ends after duration + lifetime', 1e-3)
+assert.equal(advParticleLifetime('fx_adv_rain'), Infinity, 'looping prefab never ends by itself')
 
 // 6. Local only: re-extract from the APK and compare with the committed model and fixture.
 const script = fileURLToPath(new URL('scripts/prepare-adv-particle-effects.py', root))
