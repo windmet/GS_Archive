@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "compiler_version": "local-raw-text-audit-v1",
+  "compiler_version": "scenario-compiler-python-v2-corpus-20261020",
   "runtime_contract": "story-runtime-v2",
   "scenario_id": "008rei_402_2_4_008_02_09_b",
   "text_catalog_id": "008rei_402_2_4_008_02_09_b",
@@ -42,9 +42,7 @@
         "bgm_volume": 100,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_room"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
@@ -60,14 +58,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "settled_snapshot": {
         "bg": "bg001_315pro_in_01",
@@ -98,9 +106,7 @@
         "bgm_volume": 100,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_room"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
@@ -111,7 +117,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -199,7 +210,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -210,8 +222,13 @@
         "screen_effects": [],
         "bgm_stop_fade": null,
         "environmental_volume": null,
-        "environmental_duck_target": 0.0,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": 0.0,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -250,7 +267,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -262,7 +280,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -288,7 +311,8 @@
       },
       "auto_advance": true,
       "duration": 0.5,
-      "hide_dialogue": true
+      "hide_dialogue": true,
+      "pre_wait": 0.5
     },
     {
       "step_id": 3,
@@ -323,7 +347,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -335,7 +360,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -374,7 +404,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -386,7 +417,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -411,6 +447,7 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -472,7 +509,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -484,7 +522,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -523,7 +566,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -535,7 +579,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -614,7 +663,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -626,7 +676,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -665,7 +720,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -677,7 +733,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -702,6 +763,8 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "pre_wait": 0.5,
+      "post_wait": 1.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -763,7 +826,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -775,7 +839,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -814,7 +883,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -826,7 +896,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -851,6 +926,7 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -912,7 +988,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -924,7 +1001,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -963,7 +1045,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -975,7 +1058,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1000,6 +1088,7 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1061,7 +1150,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1073,7 +1163,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1112,7 +1207,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1124,7 +1220,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1149,6 +1250,7 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1210,7 +1312,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1222,7 +1325,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1261,7 +1369,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1273,7 +1382,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1298,6 +1412,7 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1359,7 +1474,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1371,7 +1487,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1410,7 +1531,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1422,7 +1544,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1519,7 +1646,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1531,7 +1659,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1570,7 +1703,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1582,7 +1716,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1607,6 +1746,7 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1668,7 +1808,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1680,7 +1821,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1719,7 +1865,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_camp_river_day_t"
+          "cue": "ambi_camp_river_day_t",
+          "cue_name": "ambi_camp_river_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1731,7 +1878,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1756,6 +1908,7 @@
         "confidence": "exact"
       },
       "chara_id": "008rei",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1827,7 +1980,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": 0.5,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1876,7 +2034,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1925,7 +2088,7 @@
   ],
   "reading_control_flow": {
     "version": 1,
-    "base_compiled_sha256": "sha256:9fa9adb3a47a14d6604e4a1cb39ae73e9c25dfea60ffe759f21d56aae66658cb",
+    "base_compiled_sha256": "sha256:91180d5c1902b895bb1580a1f3ae410e46a350b8da19afe2c61bdbe2a4a547c9",
     "forks": [
       {
         "choice_index": 9,
@@ -1934,8 +2097,8 @@
         "join_step_id": 11,
         "join_step_type": "call",
         "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_b.json",
-        "raw_sha256": "sha256:b141963d44af38bf3d5ed271d933cf30f7edfa31dd9209e619219d40f3779514",
-        "raw_hash_format": "sha256-raw-file-v1",
+        "raw_sha256": "sha256:d713bfc5482917f9a66787839c08e5608f93e7075cdc5369621befb1ef38a723",
+        "raw_hash_format": "sha256-decoded-command-json-v1",
         "choice_commands": [
           23,
           24

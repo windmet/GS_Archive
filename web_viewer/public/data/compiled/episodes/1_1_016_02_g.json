@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_016_02_g",
+  "text_catalog_id": "1_1_016cfi_02_1_1_016_02",
+  "text_contract_version": 1,
   "total_steps": 19,
   "steps": [
     {
@@ -14,10 +16,10 @@
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -35,7 +37,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [],
         "talk_mode": false,
@@ -44,7 +47,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -52,7 +55,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -60,6 +68,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 8,
+        "command_end": 8,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -72,18 +89,18 @@
         "bg_transition": {
           "type": "dissolve",
           "color": "#FFFFFF",
-          "delay": 0,
-          "duration": 4
+          "delay": 0.0,
+          "duration": 4.0
         },
         "bg_effects": [],
         "bg_profile": {
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -109,7 +126,8 @@
           }
         ],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [],
         "talk_mode": false,
@@ -121,7 +139,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -129,7 +152,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 5,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 5.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -147,10 +178,10 @@
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -168,7 +199,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -178,14 +210,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -199,13 +231,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 14,
+        "command_end": 14,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -225,10 +270,10 @@
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -246,7 +291,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -256,8 +302,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -273,13 +319,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -310,11 +369,12 @@
         "text": "ん……ふわ……。",
         "text_jp": "ん……ふわ……。",
         "text_cn": "",
-        "voice": "g1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1000.json",
-          "frames": 290
+        "source_text": "ん……ふわ……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000019:dialogue:000",
@@ -327,8 +387,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:694496d5bb5072763f1125a2fa752060f3670b4925911d982f9291c22e23fb71"
+        },
+        "voice": "g1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1000.json",
+          "frames": 290
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -344,10 +411,10 @@
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -365,7 +432,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -375,8 +443,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -391,7 +459,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -399,13 +472,22 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -421,10 +503,10 @@
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -442,7 +524,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -452,8 +535,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -468,13 +551,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 26,
+        "command_end": 26,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "048mom",
       "lipSync": false,
@@ -483,7 +579,13 @@
         "text": "（最近、前よりもっと朝が苦手になっちゃった）",
         "text_jp": "（最近、前よりもっと朝が苦手になっちゃった）",
         "text_cn": "",
-        "voice": "g1001.m4a",
+        "source_text": "（最近、前よりもっと朝が苦手になっちゃった）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000026:dialogue:000",
           "source": {
@@ -495,8 +597,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:14023f3c971739226b3543b005186f5ceeb40cd02efeee562ed90d1950c41ffd"
-        }
+        },
+        "voice": "g1001.m4a"
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -512,10 +616,10 @@
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -533,7 +637,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -543,8 +648,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -559,13 +664,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 30,
+        "command_end": 30,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -585,7 +703,13 @@
         "text": "（どうせ起きたところで、何もないし……。\n憂鬱なことばかり考えちゃうから）",
         "text_jp": "（どうせ起きたところで、何もないし……。\n憂鬱なことばかり考えちゃうから）",
         "text_cn": "",
-        "voice": "g1002.m4a",
+        "source_text": "（どうせ起きたところで、何もないし……。\n憂鬱なことばかり考えちゃうから）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000030:dialogue:000",
           "source": {
@@ -597,8 +721,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3295662b6c83cc2df214892101e6ece62979c4eaabedcfb4ee50819363da10dd"
-        }
+        },
+        "voice": "g1002.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -614,10 +740,10 @@
           "imageId": "bg002_sky_out_06",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -634,16 +760,17 @@
         "bgm_volume": 0,
         "se": {
           "cue": "step_walk_away_lino_sneaker",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_walk_away_lino_sneaker",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -653,8 +780,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -666,7 +793,7 @@
         "screen_fade": null,
         "screen_slide": {
           "type": "in",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -675,13 +802,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "screen_slidein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "g"
@@ -698,28 +838,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": "school",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -729,15 +870,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -750,21 +891,34 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
-          "duration": 0
+          "delay": 0.0,
+          "duration": 0.0
         },
         "bg_dof_transition": {
-          "delay": 0,
-          "duration": 0
+          "delay": 0.0,
+          "duration": 0.0
         },
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -782,36 +936,37 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": {
           "cue": "door_ent_hikido_school",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "door_ent_hikido_school",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [],
         "talk_mode": false,
@@ -820,7 +975,7 @@
         "screen_fade": null,
         "screen_slide": {
           "type": "out",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -829,13 +984,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "screen_slideout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "g"
@@ -852,28 +1020,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -883,8 +1052,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -904,13 +1073,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -930,28 +1112,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -961,8 +1144,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -977,7 +1160,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -985,17 +1173,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "048mom",
       "dialogue": {
         "speaker": "花園 百々人",
         "text": "おはようございまーす。",
         "text_jp": "おはようございまーす。",
         "text_cn": "",
-        "voice": "g1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1004.json",
-          "frames": 115
+        "source_text": "おはようございまーす。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000046:dialogue:000",
@@ -1008,8 +1205,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d049ef375e5aa5f4dbdb3af39ddd04ac86af601d36a567badd89f6e2bbf2c9bc"
+        },
+        "voice": "g1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1004.json",
+          "frames": 115
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1025,28 +1229,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -1056,8 +1261,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1072,7 +1277,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1080,12 +1290,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "教師",
         "text": "花園～～……。\nまたお前は、堂々と遅刻して来るもんだなぁ？",
         "text_jp": "花園～～……。\nまたお前は、堂々と遅刻して来るもんだなぁ？",
         "text_cn": "",
+        "source_text": "花園～～……。\nまたお前は、堂々と遅刻して来るもんだなぁ？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "教師"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000048:dialogue:000",
           "source": {
@@ -1099,6 +1324,7 @@
           "source_hash": "sha256:b2a1f43cf3adb0df0d555d699d6a4265246c5911ec6142a8473eb442305985e7"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1114,28 +1340,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -1145,8 +1372,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1161,13 +1388,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 51,
+        "command_end": 51,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -1185,28 +1425,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -1216,8 +1457,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -1233,13 +1474,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1259,28 +1513,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -1290,8 +1545,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1306,13 +1561,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1331,11 +1599,12 @@
         "text": "ごめんね、先生。朝は弱いんだ。\nでも、次のテストもちゃんと全教科で一番とるから。",
         "text_jp": "ごめんね、先生。朝は弱いんだ。\nでも、次のテストもちゃんと全教科で一番とるから。",
         "text_cn": "",
-        "voice": "g1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1006.json",
-          "frames": 502
+        "source_text": "ごめんね、先生。朝は弱いんだ。\nでも、次のテストもちゃんと全教科で一番とるから。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000056:dialogue:000",
@@ -1348,8 +1617,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:0ad3346c55cbf8021ef38166eeda69dd6972439b86d75f283600425f6b787c50"
+        },
+        "voice": "g1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1006.json",
+          "frames": 502
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1365,28 +1641,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -1396,8 +1673,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1412,13 +1689,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 61,
+        "command_end": 61,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1446,6 +1736,13 @@
         "text": "はぁ、それを言われちゃなぁ……。\nそうだ！　お前に渡すものがあるんだった。",
         "text_jp": "はぁ、それを言われちゃなぁ……。\nそうだ！　お前に渡すものがあるんだった。",
         "text_cn": "",
+        "source_text": "はぁ、それを言われちゃなぁ……。\nそうだ！　お前に渡すものがあるんだった。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "教師"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000061:dialogue:000",
           "source": {
@@ -1459,6 +1756,7 @@
           "source_hash": "sha256:44a586d8ac4abb9b31259f02c6c87e70b779bdf98c4169f9f98ca496ba0ac20c"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1474,36 +1772,37 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_ss01",
-          "delay": 4
+          "delay": 4.0
         },
         "se_events": [
           {
             "cue": "cloth_move_ss01",
-            "delay": 4
+            "delay": 4.0
           }
         ],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -1513,8 +1812,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1529,7 +1828,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1537,9 +1841,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 67,
+        "command_end": 67,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "048mom",
           "value": "face_surprise",
@@ -1563,6 +1875,13 @@
         "text": "ほら、この前入賞した絵画コンクールのトロフィー！\nもう何本目かわからんが、大切にしろよ。",
         "text_jp": "ほら、この前入賞した絵画コンクールのトロフィー！\nもう何本目かわからんが、大切にしろよ。",
         "text_cn": "",
+        "source_text": "ほら、この前入賞した絵画コンクールのトロフィー！\nもう何本目かわからんが、大切にしろよ。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "教師"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000067:dialogue:000",
           "source": {
@@ -1576,6 +1895,7 @@
           "source_hash": "sha256:49b312dcd65c4f230ac03d685b790944df59a2f13faa484f1d557ba7598d1410"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1591,28 +1911,29 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "school",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_school_classroom_corridor",
+          "cue_name": "ambi_school_classroom_corridor"
         },
         "spines": [
           {
@@ -1622,8 +1943,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -1639,7 +1960,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1647,9 +1973,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_g.json",
+        "source_part_id": "1_1_016_02_g",
+        "command_start": 73,
+        "command_end": 73,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_neck_stop",
           "chara_id": "048mom",
           "value": ""
@@ -1670,11 +2004,12 @@
         "text": "……わぁ、やっと届いたんだ。\n嬉しいな、また部屋に飾らないと。",
         "text_jp": "……わぁ、やっと届いたんだ。\n嬉しいな、また部屋に飾らないと。",
         "text_cn": "",
-        "voice": "g1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1009.json",
-          "frames": 449
+        "source_text": "……わぁ、やっと届いたんだ。\n嬉しいな、また部屋に飾らないと。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_g:cmd-000073:dialogue:000",
@@ -1687,8 +2022,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:96d1f44147b354c168dba5f523bbe1995a4b927f02e40bdb5d7149a61c371bfd"
+        },
+        "voice": "g1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_g/1_1_016_02_g1009.json",
+          "frames": 449
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     }
@@ -1707,6 +2049,10 @@
       "step_count": 19
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_016_02.unity3d",
+    "raw_hash": "sha256:de35133b50209a66dc6035784ad18121b4d70e120ebc21881c2849e4e1cf958b"
+  },
   "aggregate_source": {
     "file": "1_1_016cfi_02_1_1_016_02.json",
     "scenario_id": "1_1_016cfi_02_1_1_016_02",

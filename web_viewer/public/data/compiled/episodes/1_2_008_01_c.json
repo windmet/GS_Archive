@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_2_008_01_c",
+  "text_catalog_id": "1_2_008rei_01_1_2_008_01",
+  "text_contract_version": 1,
   "total_steps": 14,
   "steps": [
     {
@@ -14,13 +16,14 @@
             "id": "cameraflare",
             "visible": true,
             "action": "start",
-            "delay": 0,
-            "duration": 0.6
+            "delay": 0.0,
+            "duration": 0.0,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -31,7 +34,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -39,7 +42,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -47,6 +55,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -60,12 +77,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -77,14 +95,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -98,7 +116,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -106,7 +129,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -122,12 +153,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -139,8 +171,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -155,7 +187,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -163,17 +200,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 13,
+        "command_end": 13,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "008rei",
       "dialogue": {
         "speaker": "神楽 麗",
         "text": "わたしは……3番のムゲンダイドリーム、\nそれから15番のストリングデュオが勝つと思う。",
         "text_jp": "わたしは……3番のムゲンダイドリーム、\nそれから15番のストリングデュオが勝つと思う。",
         "text_cn": "",
-        "voice": "c1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1000.json",
-          "frames": 488
+        "source_text": "わたしは……3番のムゲンダイドリーム、\nそれから15番のストリングデュオが勝つと思う。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000013:dialogue:000",
@@ -186,8 +232,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a98bcc697403edd9cc2a82bbac56da89a53adc545bd8673b7c95e085e0b31bdc"
+        },
+        "voice": "c1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1000.json",
+          "frames": 488
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -201,12 +254,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -218,8 +272,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -234,7 +288,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -242,9 +301,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "008rei",
           "value": "face_joy",
@@ -258,6 +325,13 @@
         "text": "なるほど。どちらも毛並みがいいですね。\nそれに集中しているようにも見えます。",
         "text_jp": "なるほど。どちらも毛並みがいいですね。\nそれに集中しているようにも見えます。",
         "text_cn": "",
+        "source_text": "なるほど。どちらも毛並みがいいですね。\nそれに集中しているようにも見えます。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000016:dialogue:000",
           "source": {
@@ -271,6 +345,7 @@
           "source_hash": "sha256:ae40b715b82cbbc719d55a134a5a055326967622c891cb60d7228b2dc351e850"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -284,12 +359,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -301,8 +377,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -317,7 +393,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -325,9 +406,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "008rei",
           "value": "face_default",
@@ -342,11 +431,12 @@
         "text": "貴殿の言う通りだ。それに……",
         "text_jp": "貴殿の言う通りだ。それに……",
         "text_cn": "",
-        "voice": "c1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1002.json",
-          "frames": 193
+        "source_text": "貴殿の言う通りだ。それに……",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000019:dialogue:000",
@@ -359,8 +449,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2fcac614787a132629a9dcfba53f8348394a60c789d614f14110cfdec7765dd2"
+        },
+        "voice": "c1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1002.json",
+          "frames": 193
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -374,12 +471,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -391,8 +489,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -407,7 +505,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -415,17 +518,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "008rei",
       "dialogue": {
         "speaker": "神楽 麗",
         "text": "2頭とも、堅実に成績を上げてきている。",
         "text_jp": "2頭とも、堅実に成績を上げてきている。",
         "text_cn": "",
-        "voice": "c1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1003.json",
-          "frames": 217
+        "source_text": "2頭とも、堅実に成績を上げてきている。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000022:dialogue:000",
@@ -438,8 +550,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fbb30f2e4ab6db6cad6dcf831ffd4dfdedcb66c1e8e4220e26411707a86e16bd"
+        },
+        "voice": "c1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1003.json",
+          "frames": 217
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -453,12 +572,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -470,8 +590,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -486,7 +606,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -494,17 +619,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "008rei",
       "dialogue": {
         "speaker": "神楽 麗",
         "text": "得意な距離であるし、馬場状態も良だ。\nどちらかが一着となる可能性が最も高い。",
         "text_jp": "得意な距離であるし、馬場状態も良だ。\nどちらかが一着となる可能性が最も高い。",
         "text_cn": "",
-        "voice": "c1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1004.json",
-          "frames": 479
+        "source_text": "得意な距離であるし、馬場状態も良だ。\nどちらかが一着となる可能性が最も高い。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000024:dialogue:000",
@@ -517,8 +651,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:13b74d5eea6cb2ab2ceb34123f20737d5acb7f8d6f03ae1ebe9b1313f81ca968"
+        },
+        "voice": "c1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1004.json",
+          "frames": 479
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -532,12 +673,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -549,8 +691,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -565,7 +707,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -573,9 +720,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 27,
+        "command_end": 27,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "008rei",
           "value": "face_surprise",
@@ -589,6 +744,13 @@
         "text": "なるほど……3番と15番……。あ、\n315プロダクションと同じ番号ですね。",
         "text_jp": "なるほど……3番と15番……。あ、\n315プロダクションと同じ番号ですね。",
         "text_cn": "",
+        "source_text": "なるほど……3番と15番……。あ、\n315プロダクションと同じ番号ですね。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000027:dialogue:000",
           "source": {
@@ -602,6 +764,7 @@
           "source_hash": "sha256:37d96e240b92c5539fdb72f44096db5b42f8bf225f4a81dbb3e5f74b929e3963"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -615,12 +778,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -632,8 +796,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -648,13 +812,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 31,
+        "command_end": 31,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -673,11 +850,12 @@
         "text": "なるほど……。言われてみれば、確かにそうだな。\n気づかなかった。",
         "text_jp": "なるほど……。言われてみれば、確かにそうだな。\n気づかなかった。",
         "text_cn": "",
-        "voice": "c1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1006.json",
-          "frames": 411
+        "source_text": "なるほど……。言われてみれば、確かにそうだな。\n気づかなかった。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000031:dialogue:000",
@@ -690,8 +868,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a1bc90084c571101e1f8869ef685f86f9420f672b411880d0a2b255e16d5f181"
+        },
+        "voice": "c1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1006.json",
+          "frames": 411
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -705,12 +890,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -722,8 +908,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -738,13 +924,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 34,
+        "command_end": 34,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -760,11 +959,12 @@
         "text": "語呂合わせではないが、\nこうなると是非とも2頭には勝ってほしいものだ。",
         "text_jp": "語呂合わせではないが、\nこうなると是非とも2頭には勝ってほしいものだ。",
         "text_cn": "",
-        "voice": "c1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1007.json",
-          "frames": 365
+        "source_text": "語呂合わせではないが、\nこうなると是非とも2頭には勝ってほしいものだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000034:dialogue:000",
@@ -777,8 +977,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:97c06d09394264c34d7f192674dcbaade50e468876d554a4b80be39a5d075620"
+        },
+        "voice": "c1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1007.json",
+          "frames": 365
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -792,12 +999,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -809,8 +1017,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -825,7 +1033,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -833,9 +1046,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 39,
+        "command_end": 39,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "008rei",
           "value": "face_default",
@@ -850,11 +1071,12 @@
         "text": "もちろん、全馬安全に走りきることが第一だが。",
         "text_jp": "もちろん、全馬安全に走りきることが第一だが。",
         "text_cn": "",
-        "voice": "c1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1008.json",
-          "frames": 255
+        "source_text": "もちろん、全馬安全に走りきることが第一だが。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000039:dialogue:000",
@@ -867,8 +1089,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d05fde66dfa2d5949701abe8c18c2d74c6138c81e95bb1c27b358352ea497c69"
+        },
+        "voice": "c1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1008.json",
+          "frames": 255
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -882,12 +1111,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -899,8 +1129,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -915,13 +1145,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -939,6 +1182,13 @@
         "text": "そうですね。全馬が怪我することなく、\n終わってほしいです。",
         "text_jp": "そうですね。全馬が怪我することなく、\n終わってほしいです。",
         "text_cn": "",
+        "source_text": "そうですね。全馬が怪我することなく、\n終わってほしいです。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000042:dialogue:000",
           "source": {
@@ -952,6 +1202,7 @@
           "source_hash": "sha256:6d93aaf02d32b4fa5cf512953828a6d257c24693e3b0a6f2fa515f9b33b80814"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -965,12 +1216,13 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": null,
@@ -982,8 +1234,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -998,7 +1250,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1006,17 +1263,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "008rei",
       "dialogue": {
         "speaker": "神楽 麗",
         "text": "さあ、2頭の雄姿を見るためにもスタンドへ戻ろう。\n今ならいい位置が確保できるはずだ。",
         "text_jp": "さあ、2頭の雄姿を見るためにもスタンドへ戻ろう。\n今ならいい位置が確保できるはずだ。",
         "text_cn": "",
-        "voice": "c1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1010.json",
-          "frames": 483
+        "source_text": "さあ、2頭の雄姿を見るためにもスタンドへ戻ろう。\n今ならいい位置が確保できるはずだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "008rei",
+          "source_name": "神楽 麗"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_008rei_01_1_2_008_01:1_2_008_01_c:cmd-000045:dialogue:000",
@@ -1029,8 +1295,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:1a5ce1f68098aba76fffb6b8b6b291dc49901e7c25e5d856a11b4f6ae106f05f"
+        },
+        "voice": "c1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/008rei/1_2_008_01/1_2_008_01_c/1_2_008_01_c1010.json",
+          "frames": 483
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -1044,20 +1317,21 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": {
           "cue": "group_step_walk_conc_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "group_step_walk_conc_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": null,
@@ -1069,14 +1343,14 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1090,7 +1364,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1098,7 +1377,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+        "source_part_id": "1_2_008_01_c",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "episode_index": 0,
       "episode_part": "c"
     }
@@ -1117,6 +1404,10 @@
       "step_count": 14
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_2_008_01.unity3d",
+    "raw_hash": "sha256:603dc51ea5fcabdc918a767be060babb0d55fdb3cd63e6654224f9829c9292a3"
+  },
   "aggregate_source": {
     "file": "1_2_008rei_01_1_2_008_01.json",
     "scenario_id": "1_2_008rei_01_1_2_008_01",

@@ -3,25 +3,25 @@
   "document_id": "1_1_012_03_g",
   "logical_id": "story-collection:1_1_012sem_03_1_1_012_03",
   "scenario_id": "1_1_012_03_g",
-  "text_catalog_id": "1_1_012_03_g",
+  "text_catalog_id": "1_1_012sem_03_1_1_012_03",
   "playback": {
     "file": "episodes/1_1_012_03_g.json",
     "start_step_index": 0,
-    "end_step_index": 18
+    "end_step_index": 17
   },
   "source": {
     "file": "episodes/1_1_012_03_g.json",
-    "sha256": "sha256:3000ae3f423d3521df5236d80f1244e8c007214e876c2974b7c0137dee0fa758",
+    "sha256": "sha256:351a37aa2007e0aff94a0a5a696f312780caff7e1806f33baab9a74dac60574c",
     "schema_version": 1,
     "runtime_contract": null,
-    "raw_hash": null,
+    "raw_hash": "sha256:6eeeaebee62f8757b3db0812e9f3c6a460de34f377fd47f9f521b3e187c0a4fb",
     "aggregate_source": {
       "file": "1_1_012sem_03_1_1_012_03.json",
       "scenario_id": "1_1_012sem_03_1_1_012_03",
-      "start_step_index": 169,
+      "start_step_index": 170,
       "end_step_index": 187
     },
-    "step_count": 19,
+    "step_count": 18,
     "publication": {
       "kind": "catalog-compatibility",
       "aggregate_file": "1_1_012sem_03_1_1_012_03.json"
@@ -61,19 +61,19 @@
         "reason": "non-idol-dialogue",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 6
+        "stepId": 5
       },
       "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-6:caption",
-        "step_id": 6,
-        "step_index": 5,
+        "row_id": "1_1_012_03_g:step-5:caption",
+        "step_id": 5,
+        "step_index": 4,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
@@ -95,7 +95,7 @@
       "speaker": {
         "kind": "named",
         "entityType": null,
-        "entityId": null,
+        "entityId": "mob",
         "sourceName": "道夫の父"
       },
       "performance": {
@@ -109,7 +109,7 @@
         "reason": "unresolved-performance-actor",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 8
+        "stepId": 7
       },
       "diagnostics": [
         "unresolved-performance-actor"
@@ -117,13 +117,13 @@
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-8:text",
-        "step_id": 8,
-        "step_index": 7,
+        "row_id": "1_1_012_03_g:step-7:text",
+        "step_id": 7,
+        "step_index": 6,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     },
@@ -143,9 +143,59 @@
         "source_hash": "sha256:46a3e6604825702a8bc776a6fe8f8a530152ff068778f82472a99a652c164202"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 8
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "1_1_012_03_g:step-8:text",
+        "step_id": 8,
+        "step_index": 7,
+        "source_part_id": "1_1_012_03_g",
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 29,
+        "command_end": 29
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "折り入って、ご報告があります。……父さんに。",
+      "text_ref": {
+        "unit_id": "story-text:v1:1_1_012sem_03_1_1_012_03:1_1_012_03_g:cmd-000034:dialogue:000",
+        "source": {
+          "scenario_id": "1_1_012sem_03_1_1_012_03",
+          "part_id": "1_1_012_03_g",
+          "file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+          "command_index": 34,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1cd1c00d3441a901a45f154b7e3908e175f305c3484c9777c17d80e15be376b3"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -171,59 +221,9 @@
         "step_id": 9,
         "step_index": 8,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
-      },
-      "option": null
-    },
-    {
-      "kind": "dialogue",
-      "source_text": "折り入って、ご報告があります。……父さんに。",
-      "text_ref": {
-        "unit_id": "story-text:v1:1_1_012sem_03_1_1_012_03:1_1_012_03_g:cmd-000034:dialogue:000",
-        "source": {
-          "scenario_id": "1_1_012sem_03_1_1_012_03",
-          "part_id": "1_1_012_03_g",
-          "file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
-          "command_index": 34,
-          "field_kind": "dialogue",
-          "field_ordinal": 0
-        },
-        "source_hash": "sha256:1cd1c00d3441a901a45f154b7e3908e175f305c3484c9777c17d80e15be376b3"
-      },
-      "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
-        "sourceName": "硲 道夫"
-      },
-      "performance": {
-        "entityType": "idol",
-        "entityId": "035mco"
-      },
-      "visual": {
-        "entityType": "idol",
-        "entityId": "035mco",
-        "presence": "visible",
-        "reason": "matching-visible-stage-actor",
-        "source": "stage-snapshot",
-        "snapshot": "entry",
-        "stepId": 10
-      },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
-      "inline_translation": null,
-      "has_voice": true,
-      "anchor": {
-        "row_id": "1_1_012_03_g:step-10:text",
-        "step_id": 10,
-        "step_index": 9,
-        "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null
     },
@@ -245,7 +245,7 @@
       "speaker": {
         "kind": "named",
         "entityType": null,
-        "entityId": null,
+        "entityId": "mob",
         "sourceName": "道夫の父"
       },
       "performance": {
@@ -259,7 +259,7 @@
         "reason": "unresolved-performance-actor",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 11
+        "stepId": 10
       },
       "diagnostics": [
         "unresolved-performance-actor"
@@ -267,13 +267,13 @@
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-11:text",
-        "step_id": 11,
-        "step_index": 10,
+        "row_id": "1_1_012_03_g:step-10:text",
+        "step_id": 10,
+        "step_index": 9,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
@@ -293,9 +293,9 @@
         "source_hash": "sha256:2644bca61b04197760df3bde8c0bba846625caadd27841f21be64d547b390293"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -309,7 +309,7 @@
         "reason": "matching-visible-stage-actor",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 12
+        "stepId": 11
       },
       "diagnostics": [
         "compatibility-stage-evidence",
@@ -318,13 +318,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-12:text",
-        "step_id": 12,
-        "step_index": 11,
+        "row_id": "1_1_012_03_g:step-11:text",
+        "step_id": 11,
+        "step_index": 10,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
@@ -344,9 +344,9 @@
         "source_hash": "sha256:f7936b86fbbba815ed120bb3b69f305db54ede7db411321d17ce961dd535ed10"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -360,7 +360,7 @@
         "reason": "matching-visible-stage-actor",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 13
+        "stepId": 12
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -368,13 +368,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-13:text",
-        "step_id": 13,
-        "step_index": 12,
+        "row_id": "1_1_012_03_g:step-12:text",
+        "step_id": 12,
+        "step_index": 11,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
@@ -394,9 +394,60 @@
         "source_hash": "sha256:f2d259d243ad68709913631080b7afb97e3f7b58ba0cf6aa80e3f257d8bc49cf"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 13
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "1_1_012_03_g:step-13:text",
+        "step_id": 13,
+        "step_index": 12,
+        "source_part_id": "1_1_012_03_g",
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 50,
+        "command_end": 50
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "ですが今、私の中に……。\n教育者としての理想が生まれています。",
+      "text_ref": {
+        "unit_id": "story-text:v1:1_1_012sem_03_1_1_012_03:1_1_012_03_g:cmd-000055:dialogue:000",
+        "source": {
+          "scenario_id": "1_1_012sem_03_1_1_012_03",
+          "part_id": "1_1_012_03_g",
+          "file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+          "command_index": 55,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c01078c394d4da4ab704207dc88103a97c1e7843d7a8b5431674c399e69a8c9b"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -423,31 +474,31 @@
         "step_id": 14,
         "step_index": 13,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 55,
+        "command_end": 55
       },
       "option": null
     },
     {
       "kind": "dialogue",
-      "source_text": "ですが今、私の中に……。\n教育者としての理想が生まれています。",
+      "source_text": "私は、この理想を、夢を追いかけたいんです。",
       "text_ref": {
-        "unit_id": "story-text:v1:1_1_012sem_03_1_1_012_03:1_1_012_03_g:cmd-000055:dialogue:000",
+        "unit_id": "story-text:v1:1_1_012sem_03_1_1_012_03:1_1_012_03_g:cmd-000060:dialogue:000",
         "source": {
           "scenario_id": "1_1_012sem_03_1_1_012_03",
           "part_id": "1_1_012_03_g",
           "file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
-          "command_index": 55,
+          "command_index": 60,
           "field_kind": "dialogue",
           "field_ordinal": 0
         },
-        "source_hash": "sha256:c01078c394d4da4ab704207dc88103a97c1e7843d7a8b5431674c399e69a8c9b"
+        "source_hash": "sha256:4d1662e8d104e0e6765adccf752819257dbd3207ee2daea16673ddc03a2a9855"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -474,60 +525,9 @@
         "step_id": 15,
         "step_index": 14,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
-      },
-      "option": null
-    },
-    {
-      "kind": "dialogue",
-      "source_text": "私は、この理想を、夢を追いかけたいんです。",
-      "text_ref": {
-        "unit_id": "story-text:v1:1_1_012sem_03_1_1_012_03:1_1_012_03_g:cmd-000060:dialogue:000",
-        "source": {
-          "scenario_id": "1_1_012sem_03_1_1_012_03",
-          "part_id": "1_1_012_03_g",
-          "file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
-          "command_index": 60,
-          "field_kind": "dialogue",
-          "field_ordinal": 0
-        },
-        "source_hash": "sha256:4d1662e8d104e0e6765adccf752819257dbd3207ee2daea16673ddc03a2a9855"
-      },
-      "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
-        "sourceName": "硲 道夫"
-      },
-      "performance": {
-        "entityType": "idol",
-        "entityId": "035mco"
-      },
-      "visual": {
-        "entityType": "idol",
-        "entityId": "035mco",
-        "presence": "visible",
-        "reason": "matching-visible-stage-actor",
-        "source": "stage-snapshot",
-        "snapshot": "entry",
-        "stepId": 16
-      },
-      "diagnostics": [
-        "compatibility-stage-evidence",
-        "entry-settled-actor-difference"
-      ],
-      "inline_translation": null,
-      "has_voice": true,
-      "anchor": {
-        "row_id": "1_1_012_03_g:step-16:text",
-        "step_id": 16,
-        "step_index": 15,
-        "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 60,
+        "command_end": 60
       },
       "option": null
     },
@@ -549,7 +549,7 @@
       "speaker": {
         "kind": "named",
         "entityType": null,
-        "entityId": null,
+        "entityId": "mob",
         "sourceName": "道夫の父"
       },
       "performance": {
@@ -563,7 +563,7 @@
         "reason": "unresolved-performance-actor",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 17
+        "stepId": 16
       },
       "diagnostics": [
         "unresolved-performance-actor"
@@ -571,13 +571,13 @@
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-17:text",
-        "step_id": 17,
-        "step_index": 16,
+        "row_id": "1_1_012_03_g:step-16:text",
+        "step_id": 16,
+        "step_index": 15,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 62,
+        "command_end": 62
       },
       "option": null
     },
@@ -597,9 +597,9 @@
         "source_hash": "sha256:e1601668e689a6ec525ef32d465b76565fc599c19f2f78d8a0e5eff773f6c0bc"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -613,7 +613,7 @@
         "reason": "matching-visible-stage-actor",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 18
+        "stepId": 17
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -621,13 +621,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-18:text",
-        "step_id": 18,
-        "step_index": 17,
+        "row_id": "1_1_012_03_g:step-17:text",
+        "step_id": 17,
+        "step_index": 16,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 66,
+        "command_end": 66
       },
       "option": null
     },
@@ -647,9 +647,9 @@
         "source_hash": "sha256:3c216b0d18d2e794a22d974da1e6b46457a7b8cd08aef51fa0cb260a5eff4307"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -663,7 +663,7 @@
         "reason": "matching-visible-stage-actor",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 19
+        "stepId": 18
       },
       "diagnostics": [
         "compatibility-stage-evidence",
@@ -672,13 +672,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_1_012_03_g:step-19:text",
-        "step_id": 19,
-        "step_index": 18,
+        "row_id": "1_1_012_03_g:step-18:text",
+        "step_id": 18,
+        "step_index": 17,
         "source_part_id": "1_1_012_03_g",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_1_012sem_03/scenario_1_1_012_03_g.json",
+        "command_start": 70,
+        "command_end": 70
       },
       "option": null
     }

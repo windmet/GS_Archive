@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_002_01_c",
+  "text_catalog_id": "1_1_002dra_01_1_1_002_01",
+  "text_contract_version": 1,
   "total_steps": 17,
   "steps": [
     {
@@ -14,12 +16,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -30,8 +32,8 @@
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -43,8 +45,8 @@
         "camera_zoom": null,
         "screen_fade": {
           "type": "in",
-          "duration": 1,
-          "delay": 0,
+          "duration": 1.0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -52,7 +54,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -64,6 +71,15 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 8,
+        "command_end": 8,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -79,12 +95,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -95,8 +111,8 @@
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -112,7 +128,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -124,6 +145,14 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "lipSync": false,
       "dialogue": {
@@ -131,7 +160,13 @@
         "text": "子供のころから、みんなの笑顔が好きだった。\n困っている人がいれば、放っておけなかった。",
         "text_jp": "子供のころから、みんなの笑顔が好きだった。\n困っている人がいれば、放っておけなかった。",
         "text_cn": "",
-        "voice": "c1000.m4a",
+        "source_text": "子供のころから、みんなの笑顔が好きだった。\n困っている人がいれば、放っておけなかった。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000010:dialogue:000",
           "source": {
@@ -143,8 +178,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:aa727ac5abf7fb2d8bd7ec6c6a28ae73aeaac7bd687432e97e9c0b41005cb83e"
-        }
+        },
+        "voice": "c1000.m4a"
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -160,12 +197,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -176,8 +213,8 @@
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -193,7 +230,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -205,6 +247,14 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "lipSync": false,
       "dialogue": {
@@ -212,7 +262,13 @@
         "text": "どんな人だろうと、\n助けがいるなら手を差し伸べる。",
         "text_jp": "どんな人だろうと、\n助けがいるなら手を差し伸べる。",
         "text_cn": "",
-        "voice": "c1001.m4a",
+        "source_text": "どんな人だろうと、\n助けがいるなら手を差し伸べる。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000012:dialogue:000",
           "source": {
@@ -224,8 +280,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:6d6a670d117648ee22cf5129dd56cf045dee0dc29478dd850506036e517b6786"
-        }
+        },
+        "voice": "c1001.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -241,12 +299,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -257,8 +315,8 @@
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -274,7 +332,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -286,6 +349,14 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 14,
+        "command_end": 14,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "lipSync": false,
       "dialogue": {
@@ -293,7 +364,13 @@
         "text": "それが理由で、怒られたこともあったけど……",
         "text_jp": "それが理由で、怒られたこともあったけど……",
         "text_cn": "",
-        "voice": "c1002.m4a",
+        "source_text": "それが理由で、怒られたこともあったけど……",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000014:dialogue:000",
           "source": {
@@ -305,8 +382,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:316c934be4946638d13449bcfdea8864a7adcae6f2502fa063fcab7fb3daf8c0"
-        }
+        },
+        "voice": "c1002.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -322,12 +401,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -338,8 +417,8 @@
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -355,7 +434,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -367,6 +451,14 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "lipSync": false,
       "dialogue": {
@@ -374,7 +466,13 @@
         "text": "俺の性分なんだから、仕方ないよな。",
         "text_jp": "俺の性分なんだから、仕方ないよな。",
         "text_cn": "",
-        "voice": "c1003.m4a",
+        "source_text": "俺の性分なんだから、仕方ないよな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000016:dialogue:000",
           "source": {
@@ -386,8 +484,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f2e4922fdb090282050d998e10108fbe3cdde7f74a361b11357b03f844013de5"
-        }
+        },
+        "voice": "c1003.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -403,12 +503,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -419,8 +519,8 @@
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -436,7 +536,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -448,6 +553,14 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 18,
+        "command_end": 18,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "lipSync": false,
       "dialogue": {
@@ -455,7 +568,13 @@
         "text": "ちょっと鬱陶しいかもしれないが……ほら、\nそういう熱さも含めて、ヒーローに向いてるだろ？",
         "text_jp": "ちょっと鬱陶しいかもしれないが……ほら、\nそういう熱さも含めて、ヒーローに向いてるだろ？",
         "text_cn": "",
-        "voice": "c1004.m4a",
+        "source_text": "ちょっと鬱陶しいかもしれないが……ほら、\nそういう熱さも含めて、ヒーローに向いてるだろ？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000018:dialogue:000",
           "source": {
@@ -467,8 +586,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:77474d2c27ae7b9331746913a881bb5f00319b368a596a93bfa677c50935b913"
-        }
+        },
+        "voice": "c1004.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -484,12 +605,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -500,8 +621,8 @@
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -514,7 +635,7 @@
         "screen_fade": {
           "type": "out",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -522,7 +643,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -533,6 +659,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 20,
+        "command_end": 20,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "c"
@@ -549,28 +683,28 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": "school",
-        "bgm_volume": 0,
+        "bgm": "park_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_dote_evening"
         },
         "spines": [],
         "talk_mode": false,
@@ -582,7 +716,15 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "sepia",
+        "camera_filter_transition": {
+          "delay": 0.0,
+          "duration": 0.0
+        },
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -593,6 +735,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 23,
+        "command_end": 23,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -612,24 +762,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -642,7 +792,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -650,7 +800,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "sepia",
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -661,6 +816,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 26,
+        "command_end": 26,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "c"
@@ -677,24 +840,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -710,7 +873,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "sepia",
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -722,7 +890,15 @@
           "layer": ""
         }
       },
-      "duration": 3,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 29,
+        "command_end": 29,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 3.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -740,24 +916,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -771,8 +947,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -792,7 +968,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "sepia",
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -804,6 +985,14 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 34,
+        "command_end": 34,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
           "time": 0.6,
@@ -812,7 +1001,7 @@
           "value": "weight"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_default",
@@ -836,6 +1025,13 @@
         "text": "なあ、天道！\n数学の課題って、今日提出だっけ？",
         "text_jp": "なあ、天道！\n数学の課題って、今日提出だっけ？",
         "text_cn": "",
+        "source_text": "なあ、天道！\n数学の課題って、今日提出だっけ？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "輝の友人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000034:dialogue:000",
           "source": {
@@ -849,6 +1045,7 @@
           "source_hash": "sha256:7b5be79c0108db7dec07cfad6bcdc541f508ac1870875d53793890709ffb8f07"
         }
       },
+      "post_wait": 0.2,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -864,24 +1061,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -895,8 +1092,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -911,7 +1108,15 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": {
+          "delay": 0.0,
+          "duration": 1.5
+        },
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -922,6 +1127,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 37,
+        "command_end": 37,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -941,24 +1154,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -972,8 +1185,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -988,7 +1201,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -999,6 +1217,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 40,
+        "command_end": 40,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1017,11 +1243,12 @@
         "text": "ん？　ああ、そうだぜ。\n……もしかして、おまえ、やってきてないのか？",
         "text_jp": "ん？　ああ、そうだぜ。\n……もしかして、おまえ、やってきてないのか？",
         "text_cn": "",
-        "voice": "c1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_01/1_1_002_01_c/1_1_002_01_c1006.json",
-          "frames": 342
+        "source_text": "ん？　ああ、そうだぜ。\n……もしかして、おまえ、やってきてないのか？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000040:dialogue:000",
@@ -1034,8 +1261,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3f4b34185ff7b3414d483bdfc86a469a416f8da95573593217a861d3a0380b87"
+        },
+        "voice": "c1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_01/1_1_002_01_c/1_1_002_01_c1006.json",
+          "frames": 342
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -1051,24 +1285,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1082,8 +1316,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1098,7 +1332,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1110,6 +1349,14 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 44,
+        "command_end": 44,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
           "time": 2.9,
@@ -1118,7 +1365,7 @@
           "value": "wait_loop"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_swet",
@@ -1133,6 +1380,13 @@
         "text": "そうなんだよ！　すっかり忘れててさ……。\n頼む天道、見せてくれ！",
         "text_jp": "そうなんだよ！　すっかり忘れててさ……。\n頼む天道、見せてくれ！",
         "text_cn": "",
+        "source_text": "そうなんだよ！　すっかり忘れててさ……。\n頼む天道、見せてくれ！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "輝の友人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000044:dialogue:000",
           "source": {
@@ -1161,24 +1415,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1192,8 +1446,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1208,7 +1462,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1220,17 +1479,26 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "dialogue": {
         "speaker": "天道 輝",
         "text": "んー、別に構わないけど、\n丸写しじゃおまえのためにならないし……。",
         "text_jp": "んー、別に構わないけど、\n丸写しじゃおまえのためにならないし……。",
         "text_cn": "",
-        "voice": "c1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_01/1_1_002_01_c/1_1_002_01_c1008.json",
-          "frames": 376
+        "source_text": "んー、別に構わないけど、\n丸写しじゃおまえのためにならないし……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000046:dialogue:000",
@@ -1243,8 +1511,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:cd05b96a230eb6dcb3abac2f4c8ff724adf5d5dcfbdfc84493d411d8e7101eb0"
+        },
+        "voice": "c1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_01/1_1_002_01_c/1_1_002_01_c1008.json",
+          "frames": 376
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -1260,24 +1535,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1291,8 +1566,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1307,7 +1582,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1318,6 +1598,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 49,
+        "command_end": 49,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1337,24 +1625,24 @@
           "imageId": "bg036_classroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1368,8 +1656,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1384,7 +1672,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1395,6 +1688,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_01/scenario_1_1_002_01_c.json",
+        "source_part_id": "1_1_002_01_c",
+        "command_start": 52,
+        "command_end": 52,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1410,11 +1711,12 @@
         "text": "そうだ、いいこと考えた！",
         "text_jp": "そうだ、いいこと考えた！",
         "text_cn": "",
-        "voice": "c1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_01/1_1_002_01_c/1_1_002_01_c1009.json",
-          "frames": 148
+        "source_text": "そうだ、いいこと考えた！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_01_1_1_002_01:1_1_002_01_c:cmd-000052:dialogue:000",
@@ -1427,8 +1729,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c4338f39a5f0e7717c23bab3039927df0df754f16feac97290835aaaba2bad70"
+        },
+        "voice": "c1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_01/1_1_002_01_c/1_1_002_01_c1009.json",
+          "frames": 148
         }
       },
+      "post_wait": 0.3,
       "episode_index": 0,
       "episode_part": "c"
     }
@@ -1447,6 +1756,10 @@
       "step_count": 17
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_002_01.unity3d",
+    "raw_hash": "sha256:a686a6230dbc40c2197afe5bb6149008db4826e0636f986d21d5bd0b03eb8f28"
+  },
   "aggregate_source": {
     "file": "1_1_002dra_01_1_1_002_01.json",
     "scenario_id": "1_1_002dra_01_1_1_002_01",

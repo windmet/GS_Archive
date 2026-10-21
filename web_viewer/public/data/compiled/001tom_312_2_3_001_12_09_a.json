@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "compiler_version": "local-raw-text-audit-v1",
+  "compiler_version": "scenario-compiler-python-v2-corpus-20261020",
   "runtime_contract": "story-runtime-v2",
   "scenario_id": "001tom_312_2_3_001_12_09_a",
   "text_catalog_id": "001tom_312_2_3_001_12_09_a",
@@ -42,9 +42,7 @@
         "bgm_volume": 100,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_room"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
@@ -60,14 +58,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "settled_snapshot": {
         "bg": "bg001_315pro_in_01",
@@ -98,9 +106,7 @@
         "bgm_volume": 100,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_room"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
@@ -111,7 +117,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -199,7 +210,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -211,7 +224,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -250,7 +268,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -262,7 +282,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -288,7 +313,8 @@
       },
       "auto_advance": true,
       "duration": 0.5,
-      "hide_dialogue": true
+      "hide_dialogue": true,
+      "pre_wait": 0.5
     },
     {
       "step_id": 3,
@@ -323,7 +349,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -335,7 +363,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -374,7 +407,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -386,7 +421,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -411,6 +451,7 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -472,7 +513,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -484,7 +527,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -523,7 +571,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -535,7 +585,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -560,6 +615,7 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -621,7 +677,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -633,7 +691,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -672,7 +735,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -684,7 +749,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -709,6 +779,7 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -770,7 +841,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -782,7 +855,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -821,7 +899,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -833,7 +913,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -912,7 +997,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -924,7 +1011,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -963,7 +1055,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -975,7 +1069,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1000,6 +1099,8 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "pre_wait": 0.5,
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1061,7 +1162,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1073,7 +1176,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1112,7 +1220,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1124,7 +1234,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1149,6 +1264,7 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1210,7 +1326,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1222,7 +1340,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1261,7 +1384,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1273,7 +1398,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1298,6 +1428,7 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1359,7 +1490,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1371,7 +1504,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1410,7 +1548,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1422,7 +1562,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1519,7 +1664,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1531,7 +1678,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1570,7 +1722,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1582,7 +1736,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1607,6 +1766,8 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "pre_wait": 0.5,
+      "post_wait": 1.2,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1668,7 +1829,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1680,7 +1843,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1719,7 +1887,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1731,7 +1901,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1756,6 +1931,7 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1817,7 +1993,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1829,7 +2007,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1868,7 +2051,9 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_tvshow_setting_t"
+          "cue": "ambi_tvshow_setting_t",
+          "cue_name": "ambi_tvshow_setting",
+          "ducking_completed": true
         },
         "spines": [],
         "talk_mode": false,
@@ -1880,7 +2065,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1905,6 +2095,7 @@
         "confidence": "exact"
       },
       "chara_id": "001tom",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1976,7 +2167,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": 0.5,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2025,7 +2221,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2070,7 +2271,7 @@
   ],
   "reading_control_flow": {
     "version": 1,
-    "base_compiled_sha256": "sha256:4a1b5b5a7719d7f3d74ba2452d8dcc528003fe4f0f7197201a5b98e3d55c33d9",
+    "base_compiled_sha256": "sha256:2573236d12ab1657f2090aa873aa266aba49c20b6ec35e9725d3c265d49ef039",
     "forks": [
       {
         "choice_index": 9,
@@ -2079,8 +2280,8 @@
         "join_step_id": 11,
         "join_step_type": "call",
         "source_file": "assets/resources/scenariodata/001tom_312/scenario_2_3_001_12_09_a.json",
-        "raw_sha256": "sha256:096ef9c4f910ba541dd83f1fc568ff33036ca41e0e1f7f6903f2c43e3dca2597",
-        "raw_hash_format": "sha256-raw-file-v1",
+        "raw_sha256": "sha256:b7e0129d6dd729b63e5bdf096c974eadf4128a52853298248bbe9b60e776b61c",
+        "raw_hash_format": "sha256-decoded-command-json-v1",
         "choice_commands": [
           22,
           23

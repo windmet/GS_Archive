@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "compiler_version": "local-raw-text-audit-v1",
+  "compiler_version": "scenario-compiler-python-v2-corpus-20261020",
   "runtime_contract": "story-runtime-v2",
   "scenario_id": "1_5_018shm_1_5_018_02",
   "text_catalog_id": "1_5_018shm_1_5_018_02",
@@ -34,14 +34,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "settled_snapshot": {
         "bg": null,
@@ -64,14 +74,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "snapshot_format": "story-snapshot-v2",
       "cues": [],
@@ -156,7 +176,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -173,14 +194,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "settled_snapshot": {
         "bg": "bg099_sandbeach_out_02",
@@ -212,7 +243,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -224,7 +256,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -277,7 +314,8 @@
         "command_end": 8,
         "raw_type": "screen_fadeout",
         "confidence": "exact"
-      }
+      },
+      "post_wait": 0.2
     },
     {
       "step_id": 3,
@@ -312,7 +350,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -324,7 +363,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -363,7 +407,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -375,7 +420,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -399,6 +449,7 @@
         "raw_type": "text_title",
         "confidence": "exact"
       },
+      "post_wait": 0.2,
       "dialogue": {
         "speaker_identity": {
           "kind": "none",
@@ -467,7 +518,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -498,7 +550,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -537,7 +594,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -563,7 +621,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -624,7 +687,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -651,7 +715,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -690,7 +759,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -716,7 +786,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -799,6 +874,7 @@
         "confidence": "exact"
       },
       "chara_id": "018shm",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -860,7 +936,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -886,7 +963,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -925,7 +1007,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -951,7 +1034,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -975,6 +1063,7 @@
         "raw_type": "text",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "producer",
@@ -1030,7 +1119,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1057,7 +1147,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1096,7 +1191,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1122,7 +1218,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1208,6 +1309,7 @@
         "confidence": "exact"
       },
       "chara_id": "018shm",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1269,7 +1371,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1295,7 +1398,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1334,7 +1442,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1360,7 +1469,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1416,6 +1530,7 @@
         "confidence": "exact"
       },
       "chara_id": "018shm",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1477,7 +1592,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1503,7 +1619,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1542,7 +1663,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1568,7 +1690,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1651,6 +1778,7 @@
         "confidence": "exact"
       },
       "chara_id": "018shm",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1712,7 +1840,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1738,7 +1867,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1777,7 +1911,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1803,7 +1938,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1827,6 +1967,7 @@
         "raw_type": "text",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "producer",
@@ -1882,7 +2023,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1908,7 +2050,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1947,7 +2094,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1973,7 +2121,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1998,6 +2151,7 @@
         "confidence": "exact"
       },
       "chara_id": "018shm",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -2059,7 +2213,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2085,7 +2240,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2124,7 +2284,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2150,7 +2311,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2174,6 +2340,7 @@
         "raw_type": "text",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "producer",
@@ -2229,7 +2396,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2255,7 +2423,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2294,7 +2467,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2320,7 +2494,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2403,6 +2582,7 @@
         "confidence": "exact"
       },
       "chara_id": "018shm",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -2464,7 +2644,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2495,7 +2676,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2534,7 +2720,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2560,7 +2747,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2654,7 +2846,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2680,7 +2873,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2724,7 +2922,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2750,7 +2949,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2813,7 +3017,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2844,7 +3049,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2888,7 +3098,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -2914,7 +3125,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3009,7 +3225,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -3026,7 +3243,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#000000",
         "bg_dof": null,
         "bg_color_transition": {
@@ -3073,7 +3295,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -3085,7 +3308,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#000000",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3173,7 +3401,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -3185,7 +3414,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#000000",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3224,7 +3458,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -3236,7 +3471,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#000000",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3260,6 +3500,7 @@
         "raw_type": "text",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "producer",

@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_005_01_h",
+  "text_catalog_id": "1_1_005w00_01_1_1_005_01",
+  "text_contract_version": 1,
   "total_steps": 13,
   "steps": [
     {
@@ -14,28 +16,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [],
         "talk_mode": false,
@@ -44,7 +46,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -52,7 +54,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -63,6 +70,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 8,
+        "command_end": 8,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "h"
@@ -79,28 +94,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -113,11 +128,11 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -131,7 +146,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -143,12 +163,27 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "監督",
         "text": "それじゃあ悠介、しばらくお前の出場を\n見送る方向で調整する。無理をするなよ。",
         "text_jp": "それじゃあ悠介、しばらくお前の出場を\n見送る方向で調整する。無理をするなよ。",
         "text_cn": "",
+        "source_text": "それじゃあ悠介、しばらくお前の出場を\n見送る方向で調整する。無理をするなよ。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "監督"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000010:dialogue:000",
           "source": {
@@ -162,6 +197,7 @@
           "source_hash": "sha256:95a716fdf7a1f15f5ac6280e4b91a2efa1e1d8726b84dd5f0308827f0346a59b"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -177,28 +213,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -211,8 +247,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -224,7 +260,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -236,9 +277,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "012yus",
           "value": "face_trouble",
@@ -247,7 +296,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "012yus",
           "value": "weight",
@@ -262,11 +311,12 @@
         "text": "はい、あの……今回はケガをして、\n迷惑をかけてすみませんでした。",
         "text_jp": "はい、あの……今回はケガをして、\n迷惑をかけてすみませんでした。",
         "text_cn": "",
-        "voice": "h1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1001.json",
-          "frames": 466
+        "source_text": "はい、あの……今回はケガをして、\n迷惑をかけてすみませんでした。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000015:dialogue:000",
@@ -279,8 +329,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3559aa5e3d4b1373b2014b719a8b3d6b52961b89f89f755e90b9ee708f2627e7"
+        },
+        "voice": "h1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1001.json",
+          "frames": 466
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -296,28 +353,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -330,8 +387,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -343,7 +400,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -355,12 +417,27 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 18,
+        "command_end": 18,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "監督",
         "text": "今は余計なことは考えなくていい。\nケガの治療と、リハビリに専念するんだ。",
         "text_jp": "今は余計なことは考えなくていい。\nケガの治療と、リハビリに専念するんだ。",
         "text_cn": "",
+        "source_text": "今は余計なことは考えなくていい。\nケガの治療と、リハビリに専念するんだ。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "監督"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000018:dialogue:000",
           "source": {
@@ -374,6 +451,7 @@
           "source_hash": "sha256:562407742d1b592c27fd4cd717ebda8e8477a3fc9d0257fa486e5a583a00018e"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -389,28 +467,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -423,8 +501,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -436,7 +514,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -448,17 +531,26 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "012yus",
       "dialogue": {
         "speaker": "蒼井 悠介",
         "text": "わかりました。早く治します。",
         "text_jp": "わかりました。早く治します。",
         "text_cn": "",
-        "voice": "h1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1003.json",
-          "frames": 178
+        "source_text": "わかりました。早く治します。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000022:dialogue:000",
@@ -471,8 +563,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:357316eaba08e833637da71bc7e353589ba056664b2f3b72e5519372cc5694dc"
+        },
+        "voice": "h1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1003.json",
+          "frames": 178
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -488,40 +587,40 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "door_close_hikido_hospital",
-          "delay": 2
+          "delay": 2.0
         },
         "se_events": [
           {
             "cue": "step_walk_away_lino_boot",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "door_close_hikido_hospital",
-            "delay": 2
+            "delay": 2.0
           }
         ],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -534,8 +633,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -544,10 +643,15 @@
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -559,7 +663,15 @@
           "layer": ""
         }
       },
-      "duration": 5,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 5.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -575,28 +687,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_calm",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -609,8 +721,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "neck_anim": "neck_no"
           }
         ],
@@ -623,7 +735,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -635,17 +752,26 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 32,
+        "command_end": 32,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "012yus",
       "dialogue": {
         "speaker": "蒼井 悠介",
         "text": "……。",
         "text_jp": "……。",
         "text_cn": "",
-        "voice": "h1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1004.json",
-          "frames": 74
+        "source_text": "……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000032:dialogue:000",
@@ -658,8 +784,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:7c61a4cf8d8ec174c1df7839240d1a74a42c1527d0e4fdd3c5b57e25234d0d85"
+        },
+        "voice": "h1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1004.json",
+          "frames": 74
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -675,28 +808,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_calm",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -709,8 +842,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -722,7 +855,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -734,17 +872,26 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 36,
+        "command_end": 36,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "012yus",
       "dialogue": {
         "speaker": "蒼井 悠介",
         "text": "休場の発表かー。",
         "text_jp": "休場の発表かー。",
         "text_cn": "",
-        "voice": "h1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1005.json",
-          "frames": 137
+        "source_text": "休場の発表かー。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000036:dialogue:000",
@@ -757,8 +904,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a3638852f5d0f10c6f14b31ec16ceff978f95e136e0eec104cf6873dc8ade977"
+        },
+        "voice": "h1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1005.json",
+          "frames": 137
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -774,28 +928,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_calm",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -808,8 +962,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -821,7 +975,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -833,9 +992,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "012yus",
           "value": "face_think",
@@ -844,7 +1011,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_neck_anim",
           "chara_id": "012yus",
           "value": "neck_question"
@@ -856,11 +1023,12 @@
         "text": "わかってたけど、\nいざ面と向かって言われると落ち込むなぁ。",
         "text_jp": "わかってたけど、\nいざ面と向かって言われると落ち込むなぁ。",
         "text_cn": "",
-        "voice": "h1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1006.json",
-          "frames": 298
+        "source_text": "わかってたけど、\nいざ面と向かって言われると落ち込むなぁ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000041:dialogue:000",
@@ -873,8 +1041,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:39ad9a5f171ce60b762e8d4d20a489d59bdb70dd435626fbdd21aca7770fef01"
+        },
+        "voice": "h1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1006.json",
+          "frames": 298
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -890,28 +1065,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_calm",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -924,8 +1099,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -937,7 +1112,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -949,9 +1129,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "012yus",
           "value": "face_sad",
@@ -966,11 +1154,12 @@
         "text": "しばらくは、享介と一緒に必殺技、出せないのか。",
         "text_jp": "しばらくは、享介と一緒に必殺技、出せないのか。",
         "text_cn": "",
-        "voice": "h1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1007.json",
-          "frames": 281
+        "source_text": "しばらくは、享介と一緒に必殺技、出せないのか。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000046:dialogue:000",
@@ -983,8 +1172,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:7076ba813c175c1c0366ecf9d94fabae80d218632d0446017c2d9451d784587d"
+        },
+        "voice": "h1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1007.json",
+          "frames": 281
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1000,28 +1196,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_calm",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -1034,8 +1230,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -1047,7 +1243,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1059,9 +1260,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "012yus",
           "value": "face_sad",
@@ -1076,11 +1285,12 @@
         "text": "それは……やっぱ、ちょっと寂しいな。",
         "text_jp": "それは……やっぱ、ちょっと寂しいな。",
         "text_cn": "",
-        "voice": "h1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1008.json",
-          "frames": 313
+        "source_text": "それは……やっぱ、ちょっと寂しいな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000050:dialogue:000",
@@ -1093,8 +1303,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:98aa814fdfe1311c02429456dc5c8eada3ac859a86a5e5c84ee262dd64ee80f1"
+        },
+        "voice": "h1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_01/1_1_005_01_h/1_1_005_01_h1008.json",
+          "frames": 313
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1110,28 +1327,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_calm",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -1144,8 +1361,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -1157,7 +1374,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -1165,7 +1387,7 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
@@ -1175,7 +1397,15 @@
           "layer": ""
         }
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 55,
+        "command_end": 55,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1191,28 +1421,28 @@
           "imageId": "bg051_sickroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_calm",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_room"
         },
         "spines": [
           {
@@ -1225,8 +1455,8 @@
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "pos_x": 0,
-            "pos_y": 0
+            "pos_x": 0.0,
+            "pos_y": 0.0
           }
         ],
         "talk_mode": false,
@@ -1238,7 +1468,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1250,15 +1485,23 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_01/scenario_1_1_005_01_h.json",
+        "source_part_id": "1_1_005_01_h",
+        "command_start": 60,
+        "command_end": 60,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_anim",
           "chara_id": "012yus",
           "value": "face_sad"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_anim",
           "chara_id": "012yus",
           "value": "weight"
@@ -1271,7 +1514,13 @@
         "text": "（それに享介のやつ、\nあれからずっとヘコみっぱなしだ）",
         "text_jp": "（それに享介のやつ、\nあれからずっとヘコみっぱなしだ）",
         "text_cn": "",
-        "voice": "h1009.m4a",
+        "source_text": "（それに享介のやつ、\nあれからずっとヘコみっぱなしだ）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_h:cmd-000060:dialogue:000",
           "source": {
@@ -1283,8 +1532,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:e4c31f9627ba4adac48c0ed36182798997d524446cbb0d53063f6b9b5e0f29c2"
-        }
+        },
+        "voice": "h1009.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     }
@@ -1303,6 +1554,10 @@
       "step_count": 13
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_005_01.unity3d",
+    "raw_hash": "sha256:e77e78ad0eda18408ca5286f31d91a808cbab74285b29c574425f1d48ceedac5"
+  },
   "aggregate_source": {
     "file": "1_1_005w00_01_1_1_005_01.json",
     "scenario_id": "1_1_005w00_01_1_1_005_01",

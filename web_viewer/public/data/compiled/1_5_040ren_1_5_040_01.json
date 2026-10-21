@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "compiler_version": "local-raw-text-audit-v1",
+  "compiler_version": "scenario-compiler-python-v2-corpus-20261020",
   "runtime_contract": "story-runtime-v2",
   "scenario_id": "1_5_040ren_1_5_040_01",
   "text_catalog_id": "1_5_040ren_1_5_040_01",
@@ -34,14 +34,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "settled_snapshot": {
         "bg": null,
@@ -64,14 +74,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "snapshot_format": "story-snapshot-v2",
       "cues": [],
@@ -156,7 +176,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -173,14 +194,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "settled_snapshot": {
         "bg": "bg004_townst_out_01",
@@ -212,7 +243,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -224,7 +256,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -277,7 +314,8 @@
         "command_end": 8,
         "raw_type": "screen_fadeout",
         "confidence": "exact"
-      }
+      },
+      "post_wait": 0.2
     },
     {
       "step_id": 3,
@@ -312,7 +350,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -324,7 +363,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -363,7 +407,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -375,7 +420,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -399,6 +449,7 @@
         "raw_type": "text_title",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "none",
@@ -467,7 +518,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -479,7 +531,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -518,7 +575,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -530,7 +588,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -609,7 +672,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -627,7 +691,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -666,7 +735,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_day"
+          "cue": "ambi_park_day",
+          "cue_name": "ambi_park_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -678,7 +748,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -764,7 +839,8 @@
         "command_end": 14,
         "raw_type": "screen_slidein",
         "confidence": "exact"
-      }
+      },
+      "post_wait": 0.5
     },
     {
       "step_id": 6,
@@ -799,7 +875,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -836,7 +913,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -880,7 +962,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -906,7 +989,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -994,7 +1082,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1020,7 +1109,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1059,7 +1153,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1085,7 +1180,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1198,6 +1298,7 @@
         "confidence": "exact"
       },
       "chara_id": "040ren",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1259,7 +1360,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1285,7 +1387,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1324,7 +1431,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1350,7 +1458,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1406,6 +1519,7 @@
         "confidence": "exact"
       },
       "chara_id": "040ren",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1467,7 +1581,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1493,7 +1608,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1532,7 +1652,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1558,7 +1679,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1646,7 +1772,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1672,7 +1799,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1711,7 +1843,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1737,7 +1870,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1820,6 +1958,7 @@
         "confidence": "exact"
       },
       "chara_id": "040ren",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1881,7 +2020,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1907,7 +2047,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1946,7 +2091,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -1972,7 +2118,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2090,7 +2241,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2116,7 +2268,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2155,7 +2312,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2181,7 +2339,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2271,7 +2434,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2297,7 +2461,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2336,7 +2505,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2362,7 +2532,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2444,6 +2619,7 @@
         "raw_type": "text",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "producer",
@@ -2499,7 +2675,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2525,7 +2702,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2564,7 +2746,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2590,7 +2773,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2646,6 +2834,7 @@
         "confidence": "exact"
       },
       "chara_id": "040ren",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -2707,7 +2896,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2733,7 +2923,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2772,7 +2967,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2798,7 +2994,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2822,6 +3023,7 @@
         "raw_type": "text",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "producer",
@@ -2877,7 +3079,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2903,7 +3106,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2942,7 +3150,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -2968,7 +3177,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3024,6 +3238,7 @@
         "confidence": "exact"
       },
       "chara_id": "040ren",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -3085,7 +3300,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -3111,7 +3327,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3150,7 +3371,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -3176,7 +3398,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3258,6 +3485,7 @@
         "raw_type": "text",
         "confidence": "exact"
       },
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "producer",
@@ -3313,7 +3541,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -3339,7 +3568,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3378,7 +3612,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_children_day"
+          "cue": "ambi_park_children_day",
+          "cue_name": "ambi_park_children_day"
         },
         "spines": [
           {
@@ -3404,7 +3639,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3457,6 +3697,7 @@
         "confidence": "exact"
       },
       "chara_id": "040ren",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",

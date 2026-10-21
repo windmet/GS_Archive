@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_3_10010_01_h",
+  "text_catalog_id": "1_3_10010_01",
+  "text_contract_version": 1,
   "total_steps": 24,
   "steps": [
     {
@@ -16,7 +18,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [],
         "talk_mode": true,
@@ -25,7 +28,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -33,7 +36,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -46,6 +54,15 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 14,
+        "command_end": 14,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -62,16 +79,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_run",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_run",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [],
         "talk_mode": true,
@@ -83,7 +103,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -95,6 +120,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 3.7,
       "auto_advance": true,
@@ -116,7 +149,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -127,14 +161,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -146,14 +182,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -167,7 +205,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -179,6 +222,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 20,
+        "command_end": 20,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -200,7 +251,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -211,8 +263,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -225,8 +279,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -241,7 +297,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -254,17 +315,26 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "025suz",
       "dialogue": {
         "speaker": "スザク",
         "text": "「オラオラオラオラァッ！！\nついてくるのがやっとのようだな？」",
         "text_jp": "「オラオラオラオラァッ！！\nついてくるのがやっとのようだな？」",
         "text_cn": "",
-        "voice": "h1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1001.json",
-          "frames": 285
+        "source_text": "「オラオラオラオラァッ！！\nついてくるのがやっとのようだな？」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "025suz",
+          "source_name": "スザク"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000022:dialogue:000",
@@ -277,8 +347,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a7505f03d36868570d32c3e6ac2900db4a0526e44863ad93eba5eef253d24f3e"
+        },
+        "voice": "h1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1001.json",
+          "frames": 285
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -296,7 +373,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -307,8 +385,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -321,8 +401,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -337,7 +419,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -350,12 +437,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 25,
+        "command_end": 25,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "主人公",
         "text": "「余裕ぶっこいてんじゃねぇぞ。\nここから一気にぶち抜いてやるぜぇ！」",
         "text_jp": "「余裕ぶっこいてんじゃねぇぞ。\nここから一気にぶち抜いてやるぜぇ！」",
         "text_cn": "",
+        "source_text": "「余裕ぶっこいてんじゃねぇぞ。\nここから一気にぶち抜いてやるぜぇ！」",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "主人公"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000025:dialogue:000",
           "source": {
@@ -385,16 +487,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_run_2",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_run_2",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -405,8 +510,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -419,8 +526,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -435,7 +544,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -447,6 +561,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 30,
+        "command_end": 30,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 2.8,
       "timeline": [
@@ -477,7 +599,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -488,8 +611,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -502,8 +627,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -518,7 +645,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -530,6 +662,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -554,11 +694,12 @@
         "text": "「なっ、加速した……だとぉ！？」",
         "text_jp": "「なっ、加速した……だとぉ！？」",
         "text_cn": "",
-        "voice": "h1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1003.json",
-          "frames": 191
+        "source_text": "「なっ、加速した……だとぉ！？」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "025suz",
+          "source_name": "スザク"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000033:dialogue:000",
@@ -571,8 +712,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:8166de3b3931c07da966ad0a1d87d0c9739ba9728aa6662ac385639464961fa4"
+        },
+        "voice": "h1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1003.json",
+          "frames": 191
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -590,7 +738,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -601,8 +750,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -615,8 +766,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -631,7 +784,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -643,6 +801,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -670,7 +836,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "026gen",
           "value": "face_serious",
@@ -679,7 +845,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_anim",
           "chara_id": "026gen",
           "value": "angry"
@@ -700,11 +866,12 @@
         "text": "「なかなかやるじゃねぇか。だが……行くぜ兄弟、\nお前の爆速さを見せてやれ！」",
         "text_jp": "「なかなかやるじゃねぇか。だが……行くぜ兄弟、\nお前の爆速さを見せてやれ！」",
         "text_cn": "",
-        "voice": "h1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1004.json",
-          "frames": 482
+        "source_text": "「なかなかやるじゃねぇか。だが……行くぜ兄弟、\nお前の爆速さを見せてやれ！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "026gen",
+          "source_name": "ゲンブ"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000045:dialogue:000",
@@ -717,8 +884,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:924d955743888c65f30877126d113f8e7f191f6bdb7fee33a8abc14b809c3e39"
+        },
+        "voice": "h1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1004.json",
+          "frames": 482
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -736,7 +910,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -747,14 +922,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -766,14 +943,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -787,7 +966,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -799,6 +983,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -818,7 +1010,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -829,14 +1022,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -850,7 +1045,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -862,6 +1062,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -895,7 +1103,8 @@
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -906,8 +1115,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -917,8 +1128,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 20,
+          "offset_x": 0.0,
+          "offset_y": 20.0,
           "duration": 0.1,
           "delay": 1.2
         },
@@ -928,7 +1139,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -941,9 +1157,17 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "025suz",
           "value": "face_angry",
@@ -952,7 +1176,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "025suz",
           "value": "angry"
@@ -964,11 +1188,12 @@
         "text": "「応ッ！！　燃え上がれ爆炎号ッ！」",
         "text_jp": "「応ッ！！　燃え上がれ爆炎号ッ！」",
         "text_cn": "",
-        "voice": "h1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1005.json",
-          "frames": 294
+        "source_text": "「応ッ！！　燃え上がれ爆炎号ッ！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "025suz",
+          "source_name": "スザク"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000065:dialogue:000",
@@ -981,6 +1206,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:0f2e507c91a64d9841891016ce2ce59ead57ca4ebd5a1dc06ba30e0e2e88c4f5"
+        },
+        "voice": "h1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1005.json",
+          "frames": 294
         }
       },
       "episode_index": 0,
@@ -999,16 +1230,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_kick_loop",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_kick_loop",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1019,8 +1253,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1030,8 +1266,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 20,
+          "offset_x": 0.0,
+          "offset_y": 20.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1040,7 +1276,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1052,6 +1293,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 67,
+        "command_end": 67,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 2.5,
       "auto_advance": true,
@@ -1073,7 +1322,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1084,8 +1334,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1094,11 +1346,11 @@
         "talk_mode": true,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.1,
-          "delay": 0
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1106,7 +1358,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1119,17 +1376,26 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 71,
+        "command_end": 71,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "025suz",
       "dialogue": {
         "speaker": "スザク",
         "text": "「オマエも見せてやれ、兄弟！」",
         "text_jp": "「オマエも見せてやれ、兄弟！」",
         "text_cn": "",
-        "voice": "h1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1007.json",
-          "frames": 167
+        "source_text": "「オマエも見せてやれ、兄弟！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "025suz",
+          "source_name": "スザク"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000071:dialogue:000",
@@ -1142,8 +1408,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:51a36e2ca267c9a8eb75b09966b3d8df53223cea34d22fe456051235aafe3978"
+        },
+        "voice": "h1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1007.json",
+          "frames": 167
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1161,7 +1434,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1172,8 +1446,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1182,9 +1458,9 @@
         "talk_mode": true,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1193,7 +1469,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1206,17 +1487,26 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 73,
+        "command_end": 73,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "241sub",
       "dialogue": {
         "speaker": "ニャンキイ",
         "text": "「にゃにゃ～！」",
         "text_jp": "「にゃにゃ～！」",
         "text_cn": "",
-        "voice": "h1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1008.json",
-          "frames": 105
+        "source_text": "「にゃにゃ～！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "241sub",
+          "source_name": "ニャンキイ"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000073:dialogue:000",
@@ -1229,8 +1519,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:000b9f4fd229ae2a1e2cc4f56e84366f58d4ef775e17456944db8404b312ed8e"
+        },
+        "voice": "h1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1008.json",
+          "frames": 105
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1248,7 +1545,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1259,14 +1557,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1274,9 +1574,9 @@
         "talk_mode": true,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1285,7 +1585,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1297,6 +1602,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 77,
+        "command_end": 77,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -1316,7 +1629,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1327,14 +1641,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1342,9 +1658,9 @@
         "talk_mode": true,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1353,7 +1669,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1365,6 +1686,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 82,
+        "command_end": 82,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1398,7 +1727,8 @@
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1409,8 +1739,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1420,8 +1752,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 75,
+          "offset_x": 0.0,
+          "offset_y": 75.0,
           "duration": 0.1,
           "delay": 1.2
         },
@@ -1431,7 +1763,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1444,6 +1781,14 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 88,
+        "command_end": 88,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
           "time": 0.8,
@@ -1452,7 +1797,7 @@
           "value": "angry"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "026gen",
           "value": "face_angry",
@@ -1467,11 +1812,12 @@
         "text": "「応。貫け、氷点号ッ！」",
         "text_jp": "「応。貫け、氷点号ッ！」",
         "text_cn": "",
-        "voice": "h1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1009.json",
-          "frames": 224
+        "source_text": "「応。貫け、氷点号ッ！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "026gen",
+          "source_name": "ゲンブ"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000088:dialogue:000",
@@ -1484,8 +1830,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fd59255fa7add69c94d4e0532438950542ae78b40eb25bd154224353befd8d77"
+        },
+        "voice": "h1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10010_01/1_3_10010_01_h/1_3_10010_01_h1009.json",
+          "frames": 224
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1502,16 +1855,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_kick_2",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_kick_2",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1522,8 +1878,10 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1533,8 +1891,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 75,
+          "offset_x": 0.0,
+          "offset_y": 75.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1543,7 +1901,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1555,6 +1918,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 91,
+        "command_end": 91,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 2.5,
       "auto_advance": true,
@@ -1576,7 +1947,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1587,14 +1959,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 0,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1603,8 +1977,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 75,
+          "offset_x": 0.0,
+          "offset_y": 75.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1613,7 +1987,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1625,6 +2004,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 95,
+        "command_end": 95,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -1643,16 +2030,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_run_2",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_run_2",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1663,14 +2053,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -1682,14 +2074,16 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.1,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -20.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1698,8 +2092,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 75,
+          "offset_x": 0.0,
+          "offset_y": 75.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1708,7 +2102,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1720,6 +2119,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 104,
+        "command_end": 104,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1741,7 +2148,8 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1752,11 +2160,17 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.3,
-            "pos_x": 200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -90.0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
+            "idol_zoom_transition": {
+              "delay": 0.0,
+              "duration": 0.5
+            },
             "fade": {
               "type": "out",
               "delay": 0.5,
@@ -1771,11 +2185,17 @@
             "position": 0,
             "visible": true,
             "idol_zoom": 1.3,
-            "pos_x": -200,
-            "pos_y": 0,
+            "idol_zoom_x": 0.0,
+            "idol_zoom_y": -90.0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
+            "idol_zoom_transition": {
+              "delay": 0.0,
+              "duration": 0.5
+            },
             "fade": {
               "type": "out",
               "delay": 0.5,
@@ -1787,8 +2207,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 75,
+          "offset_x": 0.0,
+          "offset_y": 75.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1797,7 +2217,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1809,6 +2234,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 109,
+        "command_end": 109,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1825,7 +2258,7 @@
         "bg_transition": {
           "type": "dissolve",
           "color": "",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 1.5
         },
         "bg_effects": [
@@ -1834,7 +2267,8 @@
             "visible": true,
             "action": "start",
             "delay": 1.1,
-            "duration": 1.5
+            "duration": 0.0,
+            "alpha": 1.5
           }
         ],
         "bg_profile": null,
@@ -1843,15 +2277,16 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 75,
+          "offset_x": 0.0,
+          "offset_y": 75.0,
           "duration": 0.1
         },
         "screen_fade": null,
@@ -1860,7 +2295,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1872,6 +2312,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 112,
+        "command_end": 112,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 2.3,
       "auto_advance": true,
@@ -1889,7 +2337,8 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 1.5
           }
         ],
         "bg_profile": null,
@@ -1898,17 +2347,18 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 95,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
           "duration": 2.3,
-          "delay": 0
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1916,7 +2366,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1929,12 +2384,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 116,
+        "command_end": 116,
+        "raw_type": "text_se_off",
+        "confidence": "exact"
+      },
       "lipSync": false,
       "dialogue": {
         "speaker": "",
         "text": "「オレたち兄弟についてこれるかァ！？」",
         "text_jp": "「オレたち兄弟についてこれるかァ！？」",
         "text_cn": "",
+        "source_text": "「オレたち兄弟についてこれるかァ！？」",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10010_01:1_3_10010_01_h:cmd-000116:dialogue:000",
           "source": {
@@ -1948,6 +2418,7 @@
           "source_hash": "sha256:2c00cda4054752319d8663a457dbf51f61f9596ec0769fde64161750b12876ff"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1961,7 +2432,8 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 1.5
           }
         ],
         "bg_profile": null,
@@ -1969,24 +2441,27 @@
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_run",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_run",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shinjuku_traffic"
+          "cue": "ambi_shinjuku_traffic",
+          "cue_name": "ambi_shinjuku_traffic"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 95,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
           "duration": 2.3
         },
         "screen_fade": null,
@@ -1995,7 +2470,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2008,7 +2488,15 @@
         },
         "bg_view_type": "1"
       },
-      "duration": 4,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10010_01/scenario_1_3_10010_01_h.json",
+        "source_part_id": "1_3_10010_01_h",
+        "command_start": 121,
+        "command_end": 121,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 4.0,
       "episode_index": 0,
       "episode_part": "h"
     }
@@ -2027,10 +2515,14 @@
       "step_count": 24
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_3_10010_01.unity3d",
+    "raw_hash": "sha256:89d1924816bb84e9e4ae224d590fd9d018b828e7dfc09bf90692e92fc91e983c"
+  },
   "aggregate_source": {
     "file": "1_3_10010_01.json",
     "scenario_id": "1_3_10010_01",
-    "start_step_index": 152,
-    "end_step_index": 175
+    "start_step_index": 151,
+    "end_step_index": 174
   }
 }
