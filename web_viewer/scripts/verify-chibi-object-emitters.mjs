@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
+import {execFileSync} from 'node:child_process'
 import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
 import {createNoiseClock} from '../src/core/chibiParticleNoiseClock.js'
@@ -17,6 +18,20 @@ for(const c of velocityProof.cases)for(const [i,phase] of c.phases.entries())for
   assert.ok(Math.abs(sampleObjectCurve(curve,phase,0)-c.expected[i][axis])<2e-7,'RAW-bound native Velocity worker sample')
 }
 const stretchProof=JSON.parse(read('scripts/fixtures/chibi-stretch-kernel-native.json'))
+const coneProof=JSON.parse(read('scripts/fixtures/chibi-cone-stretch-native.json'))
+assert.equal(coneProof.binarySha256,stretchProof.binarySha256)
+assert.equal(coneProof.objectIndexSha256,data.objectIndexSha256)
+assert.deepEqual(coneProof.cameraBinding,stretchProof.cameraBinding)
+for(const window of coneProof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+const coneAudit=JSON.parse(execFileSync(process.execPath,['scripts/audit-chibi-cone-stretch.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'}))
+assert.equal(coneAudit.sourceSystems,8)
+assert.equal(coneAudit.totalCases,2304)
+assert.equal(coneAudit.spatialMatches,2304,'Full source XYZ, flipped parents and native camera context must agree with spatial reference')
+assert.equal(coneAudit.planarMatches,0,'Planar runtime cannot silently admit the complete source cone contexts')
+assert.ok(coneAudit.maxPlanarError>.6,'Identity-position evidence must not hide the source-depth corner/UV mismatch')
+assert.deepEqual(Object.keys(coneAudit.byAsset).sort(),Object.keys(coneProof.models).sort())
+for(const value of Object.values(coneAudit.byAsset))assert.equal(value.cases,288,'Every source has both writers, all rays, ages and camera conditions')
+for(const row of coneProof.cases)assert.deepEqual(row.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]])
 assert.equal(stretchProof.binarySha256,noiseProof.binarySha256)
 assert.equal(stretchProof.cameraBinding.cameraPathId,'45565')
 assert.equal(stretchProof.cameraBinding.scriptPathId,'111805')
