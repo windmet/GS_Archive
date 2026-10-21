@@ -5,7 +5,7 @@ import { ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS, buildArchiveUrl
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 
 // Every view is covered; player is covered per audited return view.
-for (const view of VALID_VIEWS) assert.ok(ownedRouteParams(view, view === 'player' ? 'files' : ''), `schema covers ${view}`)
+for (const view of VALID_VIEWS) assert.ok(ownedRouteParams(view, ''), `schema covers ${view}`)
 for (const key of Object.keys(ROUTE_SCHEMA)) {
   const view = key.startsWith('player:') ? 'player' : key
   assert.ok(VALID_VIEWS.has(view), `schema entry ${key} names a real view`)
@@ -19,9 +19,9 @@ for (const [key, params] of Object.entries(ROUTE_SCHEMA)) {
 }
 // Required route fields are owned by their view.
 const QUERY_OF = { pickTarget: 'pick', storyType: 'story_type', storySection: 'story_section', story: 'story', category: 'category',
-  group: 'group', unit: 'unit', card: 'card', event: 'event', gasha: 'gasha', song: 'song' }
+  unit: 'unit', card: 'card', event: 'event', gasha: 'gasha', song: 'song' }
 for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
-  const owned = ownedRouteParams(view, view === 'player' ? 'files' : '')
+  const owned = ownedRouteParams(view, '')
   for (const field of contract.required) {
     assert.ok(QUERY_OF[field], `${view}: required field ${field} has a query mapping`)
     assert.ok(owned.includes(QUERY_OF[field]), `${view}: required ${field} is owned by its schema entry`)
@@ -34,7 +34,6 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
   // Satisfy every view's required fields so no route falls back to another view.
   for (const [key, value] of Object.entries({ currentPickTarget: 'profile', currentCategoryId: 'idol', currentEventId: '10001', currentCardId: 'card1', currentGashaId: 'g1',
     currentSongId: 'song1', currentStoryFile: 'a.json', currentStoryDomain: 'main', currentStorySection: '101', currentArchiveUnitCode: '01jup' })) state[key].value = value
-  state.currentGroup.value = { id: 'g' }
   for (const view of VALID_VIEWS) {
     if (view === 'player') continue
     state.view.value = view

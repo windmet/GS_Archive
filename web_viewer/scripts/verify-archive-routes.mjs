@@ -64,7 +64,7 @@ assert.equal(invalidFilters.eventScope, 'all')
 assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
-    view: 'idol_detail', pickTarget: '', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
+    view: 'idol_detail', pickTarget: '', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', unit: '', unitFilter: '',
     storyType: '', storyMode: 'portal', storySection: '', story: '', workMode: 'stories', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '', song: '', songScope: 'all',
     event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
@@ -85,7 +85,6 @@ assert.equal(normalizeArchiveRoute({ view: 'seasonal_campaign' }).view, 'seasona
 assert.equal(normalizeArchiveRoute({ view: 'work_archive' }).pickTarget, 'work')
 assert.equal(normalizeArchiveRoute({ view: 'idol_story_archive' }).pickTarget, 'story')
 assert.equal(normalizeArchiveRoute({ view: 'mobile_archive' }).pickTarget, 'mobile')
-assert.equal(normalizeArchiveRoute({ view: 'episodes' }).view, 'episode_zero_units')
 assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
 // Yamamura's office lines preview without a card; other card-less voices still fall back.
@@ -93,7 +92,6 @@ assert.equal(normalizeArchiveRoute({ view: 'player', voice: '4_1_101_01_a1002', 
 assert.equal(normalizeArchiveRoute({ view: 'player', voice: '2_1_001_01_01_01' }).view, 'home')
 
 assert.equal(archiveSectionForRoute({ view: 'idol_detail', idol: '001tom' }), 'idols')
-assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', group: 'chat-1' }), 'interactions')
 assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' }), 'cards')
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
 assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'events')
@@ -367,11 +365,38 @@ assert.equal(idolEventContext.view, 'event_detail')
 assert.equal(idolEventContext.idol, '040ren')
 assert.equal(idolEventContext.parentView, 'idol_detail')
 
-const groupChatContext = readArchiveRoute('http://localhost/?view=files&category=idol_chat&idol=001jup&group=8_2_x_001jup_8_2_1_001')
-assert.equal(groupChatContext.view, 'files')
-assert.equal(groupChatContext.category, 'idol_chat')
-assert.equal(groupChatContext.idol, '001jup')
-assert.equal(groupChatContext.group, '8_2_x_001jup_8_2_1_001')
+// The retired story file browser (groups › files, 第零话 › episodes › files): old links open the page that now owns
+// what they showed. Story files become a story link (App opens the story's owner page); card stories and chats,
+// which were never stories, open the idol's page or chats; a list opens its stories landing.
+for (const [query, expected] of [
+  ['view=episode_zero_units', '?view=story_catalog&story_type=unit_story'],
+  ['view=episodes', '?view=story_catalog&story_type=unit_story'],
+  ['view=episodes&unit=010caf', '?view=story_collection&story_type=unit_story&story_section=10'],
+  ['view=files&category=episode_zero&unit=010caf&group=1_1_010caf_02_1_1_010_02', '?view=story_detail&story=1_1_010caf_02_1_1_010_02.json'],
+  ['view=files&category=main_story&group=1_4_001', '?view=story_detail&story=1_4_001_00.json'],
+  ['view=files&category=event&group=1_3_10001_01', '?view=story_detail&story=1_3_10001_01.json'],
+  ['view=files&category=idol&idol=001tom&group=1_2_001tom_01_1_2_001_01', '?view=story_detail&story=1_2_001tom_01_1_2_001_01.json'],
+  ['view=files&category=idol&idol=001tom&group=1_5_001tom_1_5_001_00_0', '?view=story_detail&story=1_5_001tom_1_5_001_00_0.json'],
+  ['view=files&category=idol_phone&idol=029ass&group=1_x_029ass_2_1_2_029_22_t01', '?view=story_detail&story=1_x_029ass_2_1_2_029_22_t01.json'],
+  ['view=files&category=idol&idol=001tom&group=001tom_301_x', '?view=idol_detail&category=idol&idol=001tom'],
+  ['view=files&category=idol_chat&idol=001jup&group=8_2_x_001jup_8_2_1_001', '?view=unit_detail&unit=01jup'],
+  ['view=files&category=idol_chat&group=8_2_x_016cfi_8_2_1_001', '?view=unit_detail&unit=16cfi'],
+  ['view=groups&category=idol_chat&idol=010caf', '?view=unit_detail&unit=10caf'],
+  ['view=files&category=idol_chat&idol=001tom&group=8_1_x_001tom_8_1_1_001', '?view=mobile_archive&idol=001tom'],
+  ['view=files&category=extra&group=5_00_000_22', '?view=story_catalog&story_type=extra'],
+  ['view=groups&category=idol&idol=001tom', '?view=idol_detail&category=idol&idol=001tom'],
+  ['view=groups&category=idol_chat&idol=001tom', '?view=mobile_archive&idol=001tom'],
+  ['view=groups&category=idol_phone&idol=001tom', '?view=mobile_archive&idol=001tom&mobile_mode=phone'],
+  ['view=groups&category=main_story', '?view=story_catalog&story_type=main'],
+  ['view=groups&category=event', '?view=story_catalog&story_type=event'],
+  ['view=groups&category=episode_zero', '?view=story_catalog&story_type=unit_story'],
+  ['view=groups', '?view=home'],
+]) {
+  const retired = readArchiveRoute(`http://localhost/?${query}`, { history: false })
+  assert.equal(buildArchiveUrl('http://localhost/', retired).search, expected, `old link ${query}`)
+}
+// A player opened from a retired page has no page to return to.
+assert.equal(readArchiveRoute('http://localhost/?view=player&scenario=a.json&return=files', { history: false }).returnView, '')
 
 const eventPlayerContext = readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&return=event_detail&parent=unit_detail&event=410001&unit=16cfi')
 assert.equal(eventPlayerContext.view, 'player')

@@ -57,7 +57,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     currentScenarioEndStep.value = null
     currentPreviewCue.value = ''
     if (state.playerEntryRoute) state.playerEntryRoute.value = null
-    returnViewAfterPlayer.value = 'files'
+    returnViewAfterPlayer.value = ''
     queue.clear()
     continuation.value = null
     continuationOverride.value = null
@@ -130,7 +130,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     if (options.syncRoute !== false) syncRoute()
     return true
   }
-  async function load(name, returnView = 'files', options = {}) {
+  async function load(name, returnView = '', options = {}) {
     return navigation.run(async intent => {
       const owner = begin(intent, name, returnView, options)
       try {
@@ -290,7 +290,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     syncRoute()
   }
   function close() {
-    const destination = pendingEntry.value?.returnView || failedEntry?.returnView || returnViewAfterPlayer.value || 'files'
+    const destination = pendingEntry.value?.returnView || failedEntry?.returnView || returnViewAfterPlayer.value
     const returnRoute = pendingEntry.value?.returnRoute || failedEntry?.options.returnRoute || active?.returnRoute || null
     navigation.invalidate()
     reset()

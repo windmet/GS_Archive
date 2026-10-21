@@ -1,5 +1,5 @@
 <template>
-  <button class="story-row event-story-row" :data-archive-focus-id="`event:${entry.id}`" :disabled="!entry.exists" :aria-label="`阅读 ${title}`" @click="emit('read',entry)">
+  <button class="story-row event-story-row" :data-archive-focus-id="`event:${entry.id}`" :aria-label="`查看 ${title}`" @click="emit('open',entry)">
     <span class="story-row-thumb">
       <img v-if="resource?.thumbnail" :src="resource.thumbnail.url" alt="" :width="resource.thumbnail.width" :height="resource.thumbnail.height" loading="lazy" decoding="async" />
       <BookOpen v-else :size="20" aria-hidden="true" />
@@ -20,13 +20,14 @@ import {BookOpen,ChevronRight} from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import {storyEventResources,storyEventTitle,storyEventCast} from '../../data/eventResourceGraph.js'
 const props=defineProps({entry:Object,idolName:{type:Function,default:()=>''}})
-const emit=defineEmits(['read'])
+const emit=defineEmits(['open'])
 const resource=computed(()=>storyEventResources(props.entry))
 const title=computed(()=>storyEventTitle(props.entry))
 const cast=computed(()=>storyEventCast(resource.value))
 </script>
 <style scoped>
-/* A compact event row beside the lead: the 2:1 event strip, title, series and cast. */
+/* A compact event row (beside the lead, and on the event landing): the 2:1 event strip, title, series and cast.
+   It opens the event page, which holds the story; only the lead card reads directly. */
 .story-row.event-story-row { --thumb: 128px; padding-block: var(--gs-space-3); }
 .event-story-row .story-row-thumb { aspect-ratio: 2 / 1; }
 .event-story-row .story-row-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

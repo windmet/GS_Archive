@@ -6,8 +6,7 @@
 // live in the history NavigationContext. Player entries are keyed by `player:<returnView>`.
 export const ROUTE_SCHEMA = Object.freeze({
   welcome: [], idol_picker: ['pick'], portal: ['portal_scope', 'q'], home: ['home_idol', 'home_cue', 'home_costume'],
-  idols: ['category', 'idol', 'unit_filter', 'q'], groups: ['category', 'idol'], files: ['category', 'idol', 'group'],
-  episode_zero_units: [], episodes: ['unit'], idol_detail: ['category', 'idol'],
+  idols: ['category', 'idol', 'unit_filter', 'q'], idol_detail: ['category', 'idol'],
   cards: ['idol', 'q', 'rarity', 'card_attribute', 'asset_state', 'relation_state'], card_detail: ['card'],
   event_catalog: ['event_kind', 'event_sort', 'event_page'], event_detail: ['event', 'parent', 'category', 'unit', 'card', 'idol'],
   collection_catalog: ['entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
@@ -22,14 +21,13 @@ export const ROUTE_SCHEMA = Object.freeze({
   reader: ['reading', 'reading_row', 'reading_mode', 'reading_scope', 'reading_rev'],
   'player:reader': ['reading', 'reading_row', 'reading_mode', 'reading_scope', 'reading_rev', 'scenario', 'start_step', 'end_step', 'at_step', 'play_mode', 'return'],
   'player:event_detail': ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return', 'event', 'parent', 'category', 'unit'],
-  'player:files': ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return', 'category', 'idol', 'group'],
 })
 
-// Player entries other than the three audited return views fall back to the plain player scenario fields.
+// Player entries other than the audited return views (and a player with none) fall back to the plain player scenario fields.
 const PLAYER_FALLBACK = ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return']
 
 export function routeSchemaKey(view, returnView = '') {
-  return view === 'player' ? `player:${returnView || 'files'}` : view
+  return view === 'player' ? (returnView ? `player:${returnView}` : 'player') : view
 }
 
 export function ownedRouteParams(view, returnView = '') {
@@ -40,7 +38,7 @@ export function ownedRouteParams(view, returnView = '') {
 // unchanged: older URLs with extra parameters still parse, and the next write drops them. Grow this set one
 // confirmed group at a time.
 export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
-  'about', 'unused_archive', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog', 'episode_zero_units',
+  'about', 'unused_archive', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog',
   // Detail pages whose address is only their identity; list filters ride the history source, not the URL.
   'idol_detail', 'unit_detail', 'card_detail', 'song_detail',
   // Their address is only the event or gasha; the owned opened-from fields move to history state on write (archiveRoute.js).

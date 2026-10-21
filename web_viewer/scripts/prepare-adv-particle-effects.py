@@ -32,7 +32,7 @@ def require(ok,message):
 
 # effect id -> prefab names. cameraflare picks its side from the background's lightPosition (1 left, 2 right).
 EFFECTS={'cameraflare':{'1':'fx_adv_cameraflare_left','2':'fx_adv_cameraflare_right'},
-    'fx_adv_rain':'fx_adv_rain','fx_adv_rain_heavy':'fx_adv_rain_heavy','fx_adv_rain_heavy2':'fx_adv_rain_heavy2'}
+    'fx_adv_rain':'fx_adv_rain','fx_adv_rain_heavy':'fx_adv_rain_heavy','fx_adv_rain_heavy2':'fx_adv_rain_heavy2','fx_adv_punch':'fx_adv_punch'}
 PREFABS=sorted({v for e in EFFECTS.values() for v in (e.values() if isinstance(e,dict) else [e])})
 # StoryIdolCanvas: CharacterParent draws at sorting order 10, so lower orders sit behind the idols.
 CHARACTER_SORTING_ORDER=10
@@ -40,7 +40,24 @@ CANVAS_PER_WORLD=72
 # StoryCamera orthographicSize (AdvStageLayout.ADV_ORTHOGRAPHIC_SIZE): the view is twice this in particle units.
 VIEW_HEIGHT_WORLD=2*4.347826
 # Existing published copies of the native textures (fx_extracted), checked pixel for pixel.
-TEXTURE_FILES={'fx_adv_rain':'/data/fx_extracted/unity_fx_adv_rain.png','fx_adv_flare_01':'/data/fx_extracted/unity_fx_adv_flare_01.png'}
+TEXTURE_FILES={'fx_adv_rain':'/data/fx_extracted/unity_fx_adv_rain.png','fx_adv_flare_01':'/data/fx_extracted/unity_fx_adv_flare_01.png','fx_adv_punch':'/data/fx_extracted/unity_fx_adv_punch.png'}
+
+# effect_single scales the prefab (StoryParticleEffect.SetEffectScale); the corpus uses at most 1.5.
+MAX_COMMAND_SCALE=2
+
+def curve_bound(curve):
+    """Largest |value| of a size-over-lifetime multiplier: 1 when absent, else the constant or the
+    densely sampled Hermite curve (keys alone can miss an overshoot between them)."""
+    if curve is None:return 1
+    require(curve['mode'] in (0,1),'Size curve mode '+str(curve['mode']))
+    if curve['mode']==0:return abs(curve['scalar'])
+    keys=curve['keys'];peak=max(abs(k['value']) for k in keys)
+    for a,b in zip(keys,keys[1:]):
+        span=b['time']-a['time']
+        for i in range(1,64):
+            t=i/64;h=(2*t**3-3*t**2+1)*a['value']+(t**3-2*t**2+t)*span*a['outSlope']+(-2*t**3+3*t**2)*b['value']+(t**3-t**2)*span*b['inSlope']
+            peak=max(peak,abs(h))
+    return peak*abs(curve['scalar'])
 
 def quat_mul(a,b):
     return dict(w=a['w']*b['w']-a['x']*b['x']-a['y']*b['y']-a['z']*b['z'],x=a['w']*b['x']+a['x']*b['w']+a['y']*b['z']-a['z']*b['y'],
@@ -123,7 +140,8 @@ def adapt(p,stage,renderer):
     if flip['x'] or flip['y']:system['flip']=dict(x=int(flip['x']),y=int(flip['y']));adaptations.append('renderer-flip-applied-by-adv-runtime')
     # Billboards are clamped to m_MaxParticleSize view heights; prove the clamp never engages.
     largest=max(abs(c[k]) for c in (system['size'],system['sizeY'] or system['size']) for k in ('scalar','minScalar'))
-    require(system['size']['mode'] in (0,3) and system['sizeOverLife'] is None and largest<=renderer['m_MaxParticleSize']*VIEW_HEIGHT_WORLD and renderer['m_MinParticleSize']==0,'Particle size clamp engages')
+    require(system['size']['mode'] in (0,3) and system['sizeOverLifeY'] is None and
+        largest*curve_bound(system['sizeOverLife'])*MAX_COMMAND_SCALE<=renderer['m_MaxParticleSize']*VIEW_HEIGHT_WORLD and renderer['m_MinParticleSize']==0,'Particle size clamp engages')
     for field in ('rotation','angularVelocity'):
         curve=system[field]
         if curve is None:continue

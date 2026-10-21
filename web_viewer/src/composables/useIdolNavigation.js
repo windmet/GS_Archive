@@ -2,7 +2,7 @@ import { computed } from 'vue'
 
 export function useIdolNavigation({
   idolReadModelCatalog, idolReadModelDetail, idolReadModelStatus, currentCharacterId,
-  currentEventId, eventParentView, currentCategoryId, currentGroup,
+  currentEventId, eventParentView, currentCategoryId,
   currentArchiveUnitCode, currentCardId, filterQuery, view,
   loading, currentIdolUnitFilter, navigation, archiveBootstrap,
   readModelClient, openIdolPicker, captureDetailSource, commitArchiveSelection,
@@ -51,10 +51,7 @@ export function useIdolNavigation({
     idolReadModelStatus.value = ''
     if (captureSource) captureDetailSource()
     if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
-    if (resetContext) {
-      currentCategoryId.value = 'idol'
-      currentGroup.value = null
-    }
+    if (resetContext) currentCategoryId.value = 'idol'
     if (clearUnit) currentArchiveUnitCode.value = ''
     currentCharacterId.value = idolCode
     currentCardId.value = ''
@@ -68,7 +65,6 @@ export function useIdolNavigation({
     currentCategoryId.value = 'idol'
     currentCharacterId.value = ''
     currentIdolUnitFilter.value = ''
-    currentGroup.value = null
     currentCardId.value = ''
     commitView('idols')
   }

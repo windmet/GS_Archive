@@ -20,7 +20,6 @@ const readViewerFile = relativePath =>
 const [
   registry,
   eventComponent,
-  storyComponent,
   collectionComponent,
   idolStoryComponent,
   navigationComponent,
@@ -30,7 +29,6 @@ const [
 ] = await Promise.all([
   readViewerFile('public/data/external_story_resources.json').then(JSON.parse),
   readViewerFile('src/components/archive/ArchiveEventDetail.vue'),
-  readViewerFile('src/components/archive/ArchiveStoryDetail.vue'),
   readViewerFile('src/components/archive/ArchiveStoryCollection.vue'),
   readViewerFile('src/components/archive/ArchiveIdolStory.vue'),
   readViewerFile('src/components/archive/ArchiveExternalStoryResources.vue'),
@@ -231,7 +229,6 @@ assert.equal(
 
 for (const [name, source] of [
   ['ArchiveEventDetail', eventComponent],
-  ['ArchiveStoryDetail', storyComponent],
   ['ArchiveStoryCollection', collectionComponent],
   ['ArchiveIdolStory', idolStoryComponent],
   ['ArchiveExternalStoryResources', navigationComponent],

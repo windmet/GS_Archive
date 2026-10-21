@@ -12,7 +12,6 @@ import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
@@ -52,7 +51,7 @@ function restoration() {
   const t = fixture(), c = t.c, applied = []
   bindIdolNavigation(app, c); bindHomeNavigation(app, c).stop()
   bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
-  bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
+  bindEventNavigation(app, c).stop()
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   Object.assign(c, { loadingPurpose: { value: '' }, playbackError: { value: '' }, isDirectScenarioEntry,
     primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},

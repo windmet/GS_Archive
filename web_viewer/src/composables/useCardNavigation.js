@@ -6,7 +6,7 @@ export function useCardNavigation({
   cardReadModelCatalog, cardReadModelDetail, cardReadModelStatus, currentCharacterId,
   currentCardId, currentCardRarity, currentCardAttribute, currentCardAssetState,
   currentCardRelationState, filterQuery, currentArchiveUnit, unitReadModelStatus,
-  currentCategoryId, currentArchiveUnitCode, currentIdolUnitFilter, currentGroup,
+  currentCategoryId, currentArchiveUnitCode, currentIdolUnitFilter,
   detailSourceRoute, currentEventId, eventParentView, view,
   loading, navigation, archiveBootstrap, readModelClient,
   prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
@@ -142,7 +142,6 @@ export function useCardNavigation({
       filterQuery.value = ''
       currentCategoryId.value = 'cards'
       currentCharacterId.value = archiveBootstrap.idols.some(idol => idol.id === idolCode) ? idolCode : ''
-      currentGroup.value = null
       currentCardId.value = ''
       currentCardRarity.value = ['SSR','SR','R','N'].includes(rarity) ? rarity : 'all'
       currentCardAttribute.value = ['Physical','Intelligence','Mental'].includes(attribute) ? attribute : 'all'

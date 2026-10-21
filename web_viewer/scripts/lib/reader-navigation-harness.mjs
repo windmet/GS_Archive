@@ -26,8 +26,8 @@ export function bindReaderNavigation(app, context = {}) {
     // App's route data preparation; a fixture overrides it to observe or supersede a Reader return.
     prepareRouteData: async route => route,
   }
-  for (const name of ['collectionReadModelDetail', 'storyReadModelDetail', 'eventReadModelDetail', 'workReadModelDetail',
-    'idolStoryReadModelDetail', 'currentStoryCollection', 'currentStory', 'currentEventProjection', 'currentWorkIdol', 'currentIdolStoryPage']) defaults[name] = ref(null)
+  for (const name of ['collectionReadModelDetail', 'eventReadModelDetail', 'workReadModelDetail',
+    'idolStoryReadModelDetail', 'currentStoryCollection', 'currentEventProjection', 'currentWorkIdol', 'currentIdolStoryPage']) defaults[name] = ref(null)
   for (const name of ['applyArchiveRoute', 'syncArchiveRoute', 'restoreDetailSource', 'openStoryCatalog', 'loadCollectionDetail', 'loadPlayerQueue']) defaults[name] = unexpected(name)
   Object.assign(context, { ...defaults, ...context, useReaderNavigation })
   for (const property of binding.init.arguments[0].properties) {

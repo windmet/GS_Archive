@@ -22,7 +22,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
   const readingRevisionPinned = ref(false)
   const readingScope = ref(''), playMode = ref('')
   const currentScenarioInitialStep = ref(null)
-  const returnViewAfterPlayer = ref('files')
+  const returnViewAfterPlayer = ref('')
   const storyCollectionParentView = ref('')
   const songParentView = ref('')
   const eventParentView = ref('')
@@ -32,9 +32,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
   const homeSelectedCostume = ref('')
   const currentCategoryId = ref('')
   const currentCharacterId = ref('')
-  const currentGroup = ref(null)
   const currentArchiveUnitCode = ref('')
-  const currentUnit = ref(null)
   const currentIdolUnitFilter = ref('')
   const currentStoryDomain = ref('')
   const currentStoryMode = ref('portal')
@@ -68,7 +66,6 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
   const currentScenarioStartStep = ref(null)
   const currentScenarioEndStep = ref(null)
   const currentPreviewCue = ref('')
-  const storyDetailParentView = ref('')
 
   function currentArchiveRoute() {
     if (view.value === 'player' && playerEntryRoute.value) return {
@@ -103,10 +100,8 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
       ...(detailSourceRoute.value.startsWith('?') ? { sourceRoute: detailSourceRoute.value } : {}),
     }
     const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
-    const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
     const returnsToStoryCollection = view.value === 'player' && returnViewAfterPlayer.value === 'story_collection'
     const preservesEventContext = view.value === 'event_detail' || returnsToEvent
-    const preservesStoryDetailContext = view.value === 'story_detail' || returnsToStory
     const preservesStoryCollectionContext = view.value === 'story_collection' || returnsToStoryCollection
     const preservesSongContext = ['song_detail', 'chart_lab'].includes(view.value) ||
       (view.value === 'chibi_stage' && Boolean(currentSongId.value)) ||
@@ -132,15 +127,12 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
       ...(view.value === 'home' && homeFrom.value ? { homeFrom: homeFrom.value } : {}),
       category: currentCategoryId.value,
       idol: currentCharacterId.value,
-      group: currentGroup.value?.id || '',
-      unit: (preservesArchiveUnit && currentArchiveUnitCode.value)
-        ? currentArchiveUnitCode.value
-        : (currentUnit.value?.unit_code || currentUnit.value?.id || ''),
+      unit: preservesArchiveUnit ? currentArchiveUnitCode.value : '',
       unitFilter: currentIdolUnitFilter.value,
       storyType: currentStoryDomain.value,
       storyMode: currentStoryMode.value,
       storySection: currentStorySection.value,
-      story: (view.value === 'story_detail' || returnsToStory || preservesStoryCollectionContext || view.value === 'work_archive'
+      story: (preservesStoryCollectionContext || view.value === 'work_archive'
         || (view.value === 'player' && returnViewAfterPlayer.value === 'work_archive'))
         ? currentStoryFile.value
         : '',
@@ -171,13 +163,11 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
       returnView: view.value === 'player' ? returnViewAfterPlayer.value : '', // a stale player return never reaches another page's URL
       parentView: preservesEventContext
         ? eventParentView.value
-        : (preservesStoryDetailContext
-            ? storyDetailParentView.value
-            : (preservesStoryCollectionContext
-                ? storyCollectionParentView.value
-                : (view.value === 'song_detail' ? songParentView.value
-                    : (view.value === 'gasha_detail' && gashaParentView.value === 'story_collection'
-                        ? gashaParentView.value : '')))),
+        : (preservesStoryCollectionContext
+            ? storyCollectionParentView.value
+            : (view.value === 'song_detail' ? songParentView.value
+                : (view.value === 'gasha_detail' && gashaParentView.value === 'story_collection'
+                    ? gashaParentView.value : ''))),
     }
   }
 
@@ -207,9 +197,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
     homeSelectedCostume,
     currentCategoryId,
     currentCharacterId,
-    currentGroup,
     currentArchiveUnitCode,
-    currentUnit,
     currentIdolUnitFilter,
     currentStoryDomain,
     currentStoryMode,
@@ -239,7 +227,6 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
     currentScenarioStartStep,
     currentScenarioEndStep,
     currentPreviewCue,
-    storyDetailParentView,
     currentArchiveRoute,
   }
 }

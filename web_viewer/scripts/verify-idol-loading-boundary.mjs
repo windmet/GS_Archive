@@ -13,7 +13,6 @@ import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
@@ -37,7 +36,7 @@ function setup(source = app) {
   const transport = createIdolFixtureTransport(), commits = [], errors = [], captures = [], picks = []
   const context = {
     archiveBootstrap: transport.bootstrap, readModelClient: transport.client,
-    currentGroup: { value: 'old' }, currentCardId: { value: 'old' }, filterQuery: { value: 'query' },
+    currentCardId: { value: 'old' }, filterQuery: { value: 'query' },
     view: { value: 'idols' },
     captureDetailSource: () => captures.push(context.view.value),
     openIdolPicker: target => picks.push(target),
@@ -54,7 +53,7 @@ function setup(source = app) {
 function restoreFixture() {
   const t = setup(), c = t.context, applied = []
   bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindGashaNavigation(app, c); bindResourceNavigation(app, c); bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
-  bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
+  bindEventNavigation(app, c).stop()
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   Object.assign(c, { loadingPurpose: { value: '' }, playbackError: { value: '' }, isDirectScenarioEntry,
     primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},
@@ -142,7 +141,7 @@ for (const invalidate of [context => context.navigation.invalidate(), context =>
   await c.openIdolReadModel('001tom', { captureSource: true, resetContext: true, clearUnit: true, clearEventContext: true })
   assert.deepEqual(t.captures, ['idols'])
   for (const name of ['currentEventId', 'eventParentView', 'currentArchiveUnitCode', 'currentCardId', 'filterQuery']) assert.equal(c[name].value, '', name)
-  assert.equal(c.currentCategoryId.value, 'idol'); assert.equal(c.currentGroup.value, null)
+  assert.equal(c.currentCategoryId.value, 'idol');
   await c.selectPrimaryIdol('002sht'); assert.deepEqual(t.commits, ['idol_detail', 'selection'])
   assert.equal(c.currentIdolProfile.value.idol_code, '002sht'); assert.equal(c.currentIdolDisplayName.value, '002sht')
   assert.equal(c.currentIdolStats.value.chats, 2)
@@ -166,9 +165,9 @@ for (const invalidate of [context => context.navigation.invalidate(), context =>
   assert.deepEqual(t.commits, ['idol_detail'], 'selection outside detail performs a view transition')
   assert.equal(c.currentEventId.value, 'event'); assert.equal(c.eventParentView.value, 'event_catalog')
   assert.equal(c.currentArchiveUnitCode.value, 'unit'); assert.equal(c.currentCategoryId.value, 'cards')
-  assert.equal(c.currentGroup.value, 'old'); assert.equal(t.captures.length, 0)
+  assert.equal(t.captures.length, 0)
   await c.openPrimaryIdol('002sht')
-  assert.equal(c.currentCategoryId.value, 'idol'); assert.equal(c.currentGroup.value, null)
+  assert.equal(c.currentCategoryId.value, 'idol');
   assert.equal(c.currentCharacterId.value, '002sht')
 }
 // Real watcher registration and loaders share App's counter with explicit entry.

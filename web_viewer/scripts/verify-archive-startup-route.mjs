@@ -5,7 +5,6 @@ import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import assert from 'node:assert/strict'
@@ -45,7 +44,7 @@ bootstrapContext.EXTERNAL_STORY_RESOURCES_ENABLED = true
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'external_story_resources' }), false,
   'an enabled external-resource page still needs its publication data')
 bootstrapContext.EXTERNAL_STORY_RESOURCES_ENABLED = false
-for (const returnView of ['story_catalog', 'story_collection', 'story_detail',
+for (const returnView of ['story_catalog', 'story_collection',
   'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'unit_detail', 'card_detail']) {
   assert.equal(bootstrapContext.isBootstrapRoute({ view: 'player', returnView }), true,
     `${returnView} player refresh must not wait for the legacy archive batch`)
@@ -106,7 +105,6 @@ for (const disposed of [false, true]) {
   bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
-  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
@@ -154,7 +152,6 @@ for (const disposed of [false, true]) {
   bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
-  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -203,7 +200,6 @@ for (const asynchronous of [false, true]) {
   bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
-  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source + '\n' + syncSource, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -230,10 +226,9 @@ for (const asynchronous of [false, true]) {
   assert.equal(written[0].view, 'cards')
 }
 // A missing bounded story leaf falls back to the migrated catalog without
-// starting the retired global archive batch.
+// starting the retired global archive batch. (A story link resolves its owner in applyArchiveRoute.)
 for (const route of [
   { view: 'story_collection', storyType: 'main', storySection: 'missing' },
-  { view: 'story_detail', story: 'missing.json' },
 ]) {
   let mount
   const applied = []
@@ -261,7 +256,6 @@ for (const route of [
   bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
-  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   await mount()
   assert.doesNotMatch(source, /ensureLegacyArchiveData|loadArchiveData|runWhenLegacyReady/,

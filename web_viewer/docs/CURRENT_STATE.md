@@ -74,6 +74,8 @@
 
 10-21 [remasq冲击波](NATIVE_REMASQ_SHOCKWAVE_20261021.md)接入3份单次Noise预览，补70ms延迟与0.2–0.25秒短寿命验证；两首歌3条真实窗口、冷定位/回拖及454文件闭包通过，缺口18种/328事件/8编排。pfofos八组火焰仍有非平面拉伸省略，未晋升。本批期间master推进至#74/`5006f6a4`，待普通merge同步；未部署。
 
+10-21 舞台随后[同步master #71–#74](STAGE_MASTER74_SYNC_20261021.md)至`5006f6a4`，保留punch/新转场和已验证的RAW顺时针角度；167项源码门禁、build:check、416张图片清单及独立ADV/冲击波舞台Browser通过。修正mainha/remasq纹理批次归属，未增加容量例外；未部署。
+
 - 主 checkout `E:/Web_build/SideM_Archived`，保存完整语料（public/assets）和 `.deploy` 历史批次。
 - 领域 worktree 在 `E:/Web_build/GS_Archive_Domain_Work/<名字>`，只需联接 `node_modules`，语料不拷不联接：dev 服务把 worktree `public/` 里没有的 `/assets`、`/data` 文件从主 checkout 的 `public/` 读（`scripts/lib/public-corpus-plugin.mjs`，两边都没有就是 404），源配置读主 checkout 的 `config/archive_sources.local.json`（JS 与 `data_pipeline/archive_paths.py` 同一规则）。旧 worktree 若 `web_viewer/public` 是联接，删 worktree 前先解联接。资产清单要加 `--follow-junctions`；`build:check` 在这里重写的 `config/resource-audit.json` 不要提交。
 - 本地验收服务：5177。不设 `SIDEM_READMODEL_CANDIDATE` 时，dev 服务在本地配置的 `readmodel_candidates_root`（本机为 `E:/Web_build/GS_Archive_Domain_Work`）里挑 release 与 `readmodels/bootstrap.inline.json` 相同的候选；找不到会在启动日志里警告，`/_catalog` 请求返回 404。要看别的候选仍可显式设置。

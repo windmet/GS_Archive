@@ -3,7 +3,6 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.mjs';
 import { buildMobileRecords } from './mobile_projection.mjs';
-import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
 import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_locator_projection.mjs';
 import { buildReadingParents } from './reading_parent_projection.mjs';
 import { applyDomainExpansion } from './domain_expansion.mjs';
@@ -190,7 +189,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     unitName: data.archiveManifest.unit_membership_by_idol?.[id]?.unit_name || profile.unit_name || '',
   }));
   const mobileRecords = buildMobileRecords(data, modules.mobile);
-  const legacyAliases = buildLegacyAliasRecords(data.compiledIndex, data.storyCatalog);
   // Explicitly scoped leaves: these are source-owned domain records, not root-level index dumps.
   // The UI integration guide specifies which remaining joins must move into offline route producers.
   const extraDomains = {
@@ -245,10 +243,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     })()})) },
     'mobile-idols': { records:mobileRecords.idolRecords },
     'mobile-units': { records:mobileRecords.unitRecords },
-    'legacy-groups': { records:legacyAliases.groupRecords },
-    'legacy-files': { records:legacyAliases.fileRecords },
-    'legacy-episodes': { records:legacyAliases.episodeRecords },
-    'legacy-zero': { records:legacyAliases.zeroRecords },
     'reading-docs': null, // built below, once the owner records it inverts have been expanded
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,

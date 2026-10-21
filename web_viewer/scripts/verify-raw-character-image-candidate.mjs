@@ -78,12 +78,8 @@ assert.equal(
 )
 
 const appSource = await readFile(new URL('../src/App.vue', import.meta.url), 'utf8')
-assert.match(appSource, /story\.domain === 'birthday'/)
-assert.match(
-  appSource,
-  /birthdayStoryIdolCode\(story\)/,
-)
-assert.match(appSource, /storyReadModelDetail\.value\?\.view\?\.promotedVisualUrl/)
+// The birthday visual is promoted offline (below); no page in App.vue picks it per story any more.
+assert.doesNotMatch(appSource, /birthdayStoryIdolCode/)
 assert.doesNotMatch(appSource, /getPromotedCharacterImageUrl/)
 const adapterSource = await readFile(new URL('../readmodels/lib/checkout_adapter.mjs', import.meta.url), 'utf8')
 assert.match(adapterSource, /getPromotedCharacterImageUrl\('birthday_visual',birthdayIdol,data\.rawCharacterImagePromotions\)/)

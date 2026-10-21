@@ -368,12 +368,31 @@ function normalizeLegacyStep(step, previousSettledSnapshot) {
   }
 }
 
+const PART_START_SCREEN_OVERLAY = Object.freeze({ kind: 'fade', visible: true, color: '#000000', alpha: 1 })
+
 export function normalizeLegacyScenario(scenario) {
   if (!scenario || !Array.isArray(scenario.steps)) {
     throw new TypeError('legacy scenario must contain a steps array')
   }
   let previousSettledSnapshot = null
+  let part = null
+  const partOf = step => `${step.episode_index ?? null}|${step.episode_part ?? null}`
+  const revealedParts = new Set(scenario.steps
+    .filter(step => stableScreenOverlayFromCue(
+      step.state?.screen_slide,
+      step.state?.screen_fade,
+      step.state?.screen_effects,
+    ) === null)
+    .map(partOf))
   const steps = scenario.steps.map(step => {
+    // StoryView.Initialize resets the screen mask to opaque black (StoryScreenMaskController.Reset),
+    // so a part is covered until its first reveal. Parts whose data records no reveal are left uncovered.
+    if (partOf(step) !== part) {
+      part = partOf(step)
+      if (revealedParts.has(part)) {
+        previousSettledSnapshot = { ...(previousSettledSnapshot || {}), screen_overlay: { ...PART_START_SCREEN_OVERLAY } }
+      }
+    }
     const normalized = normalizeLegacyStep(step, previousSettledSnapshot)
     previousSettledSnapshot = normalized.settled_snapshot
     return normalized

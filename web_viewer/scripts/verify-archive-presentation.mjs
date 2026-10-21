@@ -114,7 +114,7 @@ assert.equal(leaks('<p>{{ resource.uploader.name }}</p>').length, 0)
 assert.equal(leaks("<p>{{ item.resource_id ? '已收录' : '未收录' }}</p>").length, 0)
 assert.equal(leaks('<button :key="item.id" @click="open(item.id)">{{ item.title }}</button>').length, 0)
 assert.equal(leaks('<ArchiveTechnicalDetails><code>{{ item.resource_id }}</code></ArchiveTechnicalDetails>').length, 0)
-const migrated = ['ArchiveSongDetail', 'ArchiveSongCatalog', 'ArchiveSongSinglePlayer', 'ArchiveSongExperimentalPlayer', 'ArchiveSongLineupPlayer', 'ArchiveRelationList', 'ArchiveUnitDetail', 'ArchiveIdolDetail', 'ArchiveEventDetail', 'ArchiveGashaDetail', 'ArchiveGashaCatalog', 'ArchiveCardDetail', 'ArchiveMobileArchive', 'ArchiveSeasonalCampaign', 'ArchiveWorkStory', 'ArchiveStoryDetail', 'ArchiveStoryCatalog', 'ArchiveStoryCollection', 'ArchiveCardList', 'ArchiveIdolStory']
+const migrated = ['ArchiveSongDetail', 'ArchiveSongCatalog', 'ArchiveSongSinglePlayer', 'ArchiveSongExperimentalPlayer', 'ArchiveSongLineupPlayer', 'ArchiveRelationList', 'ArchiveUnitDetail', 'ArchiveIdolDetail', 'ArchiveEventDetail', 'ArchiveGashaDetail', 'ArchiveGashaCatalog', 'ArchiveCardDetail', 'ArchiveMobileArchive', 'ArchiveSeasonalCampaign', 'ArchiveWorkStory', 'ArchiveStoryCatalog', 'ArchiveStoryCollection', 'ArchiveCardList', 'ArchiveIdolStory']
 for (const name of migrated) {
   const source = read(`src/components/archive/${name}.vue`)
   assert.deepEqual(leaks(parse(source).descriptor.template.content), [], name)
@@ -212,7 +212,6 @@ try {
     const { visible } = await checkPage('ArchiveMobileArchive', { idolData, unitData, mode, selectedIdol: '001tom', selectedUnit: '01jup', idols: identity.idols, units: identity.units })
     assert.ok(visible.trim().length > 40, `ArchiveMobileArchive ${mode} renders content`)
   }
-  await checkPage('ArchiveStoryDetail', { story: { id: 'sample', title: '测试剧情', resourceId: '1_1_resource', file: 'sample.json', exists: false }, idolName }, ['暂未收录'])
   const { buildStoryCatalog } = await import('../src/data/archiveSelectors.js')
   const { buildStoryCollections } = await import('../src/data/storyCollections.js')
   const { buildMainStoryDomainIdentity, buildExtraStoryDomainIdentity, buildBirthdayStoryDomainIdentity } = await import('../src/data/storyDomainIdentityIndex.js')

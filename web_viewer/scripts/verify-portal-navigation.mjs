@@ -135,7 +135,7 @@ for (const name of ['loadHomeIdol','loadIdolDetail','loadUnitCatalog','loadUnitD
 }
 for (const name of ['idolReadModelDetail','unitReadModelDetail','gashaReadModelDetail','cardReadModelDetail',
   'eventReadModelDetail','seasonalReadModelDetail','workReadModelDetail','idolStoryReadModelDetail',
-  'collectionReadModelDetail','storyReadModelDetail','songReadModelDetail']) context[name] = {value:null}
+  'collectionReadModelDetail','songReadModelDetail']) context[name] = {value:null}
 Object.assign(context, bindPortalNavigation(context))
 context.openArchivePortal()
 assert.equal(nav.view.value, 'portal')
@@ -176,7 +176,6 @@ for (const [route, loader, detail, args] of [
   [{view:'work_archive',idol:'001tom'},'loadWorkDetail','workReadModelDetail',['001tom']],
   [{view:'idol_story_archive',idol:'001tom'},'loadIdolStoryDetail','idolStoryReadModelDetail',['001tom']],
   [{view:'story_collection',storyType:'main',storySection:'102'},'loadCollectionDetail','collectionReadModelDetail',['main','102']],
-  [{view:'story_detail',story:'1_4_002_07.json'},'loadStoryReadModelDetail','storyReadModelDetail',['1_4_002_07.json']],
   [{view:'song_catalog',query:'BRAND'},'ensureSongCatalog',null,[]],
   [{view:'song_detail',song:'brnfld'},'loadSongDetail','songReadModelDetail',['brnfld']],
 ]) {

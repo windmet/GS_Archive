@@ -11,7 +11,6 @@ import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
@@ -62,7 +61,7 @@ function restoration() {
   const t = setup(), c = t.context, applied = []
   bindGashaNavigation(app, c); bindResourceNavigation(app, c); bindIdolNavigation(app, c); bindUnitNavigation(app, c); bindHomeNavigation(app, c).stop()
   bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
-  bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
+  bindEventNavigation(app, c).stop()
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   Object.assign(c, { loadingPurpose: { value: '' }, playbackError: { value: '' }, isDirectScenarioEntry,
     primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},
@@ -153,7 +152,7 @@ for (const mode of ['valid', 'wrong-release', 'wrong-hash', 'wrong-attribute', '
   equal(t.commits, ['cards']); equal(t.prepared, ['cards']); equal(t.captures, ['unit_detail'])
   assert.equal(c.currentCategoryId.value, 'cards'); assert.equal(c.currentCharacterId.value, '002sht')
   assert.equal(c.currentCardRarity.value, 'SR'); assert.equal(c.currentCardAttribute.value, 'Physical')
-  assert.equal(c.filterQuery.value, ''); assert.equal(c.currentCardId.value, ''); assert.equal(c.currentGroup.value, null)
+  assert.equal(c.filterQuery.value, ''); assert.equal(c.currentCardId.value, '');
   assert.equal(c.currentCardAssetState.value, 'all'); assert.equal(c.currentCardRelationState.value, 'all')
   await c.openPrimaryCards('unknown', { rarity: 'unknown', attribute: 'unknown' })
   assert.equal(c.currentCharacterId.value, ''); assert.equal(c.currentCardRarity.value, 'all'); assert.equal(c.currentCardAttribute.value, 'all')

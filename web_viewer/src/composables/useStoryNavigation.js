@@ -1,18 +1,21 @@
 import { watch } from 'vue'
 import { storyEventResources } from '../data/eventResourceGraph.js'
 import { withStoryText } from '../localization/story/StoryTextReadiness.js'
+import { landingCollectionSections, storyOwner, storyOwnerNeedsLanding } from '../core/StoryOwner.js'
 // Story domains with their own landing page in the catalog; their collections and stories return there.
-const DOMAIN_LANDINGS = Object.freeze(['main', 'extra', 'birthday', 'unit_story'])
+const DOMAIN_LANDINGS = Object.freeze(['main', 'extra', 'birthday', 'unit_story', 'event'])
+// Landings read from their own projections instead of the whole story directory.
+const PROJECTED_LANDINGS = Object.freeze(['main', 'extra', 'birthday'])
 
 export function useStoryNavigation({ view, loading, detailSourceRoute, filterQuery,
   currentStoryDomain, currentCharacterId, currentStoryMode, currentStorySection, currentStoryFile,
-  storyDetailParentView, storyCollectionParentView, currentEventScope, currentStoryAvailability, currentStorySort,
-  currentMobileMode, currentMobileScenarioId, storyVisibleLimit, currentCategoryId, currentSongId, currentStory,
+  storyCollectionParentView, currentEventScope, currentStoryAvailability, currentStorySort,
+  currentMobileMode, currentMobileScenarioId, storyVisibleLimit, currentCategoryId, currentSongId,
   collectionReadModelCatalog, collectionReadModelDetail, collectionReadModelStatus,
-  storyReadModelCatalog, storyReadModelDetail, storyReadModelStatus, storyCatalogIndex, storyCatalogLanding,
+  storyReadModelCatalog, storyReadModelStatus, storyCatalogIndex, storyCatalogLanding,
   navigation, archiveBootstrap, readModelClient, prepareArchivePage, captureDetailSource, commitView, commitArchiveSelection,
   goHome, openEventDetail, openIdolStoryArchive, openStoryPhone, openStoryReader, loadScenario, startEpisodeQueue,
-  idolStoryChapterOwner, openIdolStoryChapter }) {
+  openIdolStoryChapter, openWorkArchive }) {
   let pendingCollectionNavigation = 0
   let pendingStoryDetailNavigation = 0
   async function loadCollectionCatalog(options = navigation.getLoadOptions?.() || {}) {
@@ -112,7 +115,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       currentStoryMode.value = options.mode || 'portal'
       currentStorySection.value = ''
       currentStoryFile.value = ''
-      storyDetailParentView.value = ''
       storyCollectionParentView.value = ''
       currentEventScope.value = 'all'
       currentStoryAvailability.value = options.idolCode ? 'playable' : 'all'
@@ -149,7 +151,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     if (section && ['main', 'unit_story', 'extra', 'birthday'].includes(domain)) {
       return openProjectedCollection({ domain, section })
     }
-    const opensFormalDomain = (mode === 'portal' && ['main', 'unit_story'].includes(domain)) ||
+    const opensFormalDomain = (mode === 'portal' && ['main', 'unit_story', 'event'].includes(domain)) ||
       ['extra', 'birthday'].includes(domain)
     if (opensFormalDomain) {
       currentStoryDomain.value = domain
@@ -176,7 +178,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     currentStoryDomain.value = ''
     currentStorySection.value = ''
     currentStoryFile.value = ''
-    storyDetailParentView.value = ''
     storyCollectionParentView.value = ''
     commitView('external_story_resources')
   }
@@ -187,10 +188,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       openEventDetail(target.event, 'external_story_resources')
       return
     }
-    if (target?.kind === 'story') {
-      openStoryDetail(target.story, 'external_story_resources')
-      return
-    }
+    if (target?.kind === 'story') return openStoryDetail(target.story, 'external_story_resources')
     if (target?.kind === 'idol-story') {
       openIdolStoryArchive(target.idolCode)
       return
@@ -225,44 +223,67 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     })
   }
 
+  // A catalog or search row opens the page that owns its story (core/StoryOwner.js).
   function openCatalogStory(entry) {
-    if (entry?.domain === 'card_scenarios') return openStoryPhone(entry)
-    if (entry?.eventRelation) {
-      const resource=storyEventResources(entry)
-      if(resource?.firstReadingId&&resource.storyFile===entry.file)return openStoryReader(resource.firstReadingId,{event:resource.id,parentView:'story_catalog',storyType:'event',story:entry.file})
-      return openStoryDetail(entry)
-    }
-    else openStoryDetail(entry)
+    return openStoryDetail(entry)
   }
 
+  // The newest event's "开始阅读" goes straight to its text; every other event entry opens the event page.
+  function readEventStory(entry) {
+    const resource = storyEventResources(entry)
+    if (resource?.firstReadingId && resource.storyFile === entry.file)
+      return openStoryReader(resource.firstReadingId, { event: resource.id, parentView: 'story_catalog', storyType: 'event', story: entry.file })
+    return openStoryDetail(entry, 'story_catalog')
+  }
+
+  let ownerSections = { landing: null, sections: new Map() }
+  function ownerFacts() {
+    if (ownerSections.landing !== storyCatalogLanding.value)
+      ownerSections = { landing: storyCatalogLanding.value, sections: landingCollectionSections(storyCatalogLanding.value) }
+    return { idolIds: new Set(archiveBootstrap.idols.map(idol => idol.id)), sections: ownerSections.sections }
+  }
+
+  /** The owner of a loaded story; loads the landings when only they know the story's collection. */
+  async function resolveStoryOwner(story, options = navigation.getLoadOptions?.() || {}) {
+    const owner = storyOwner(story, ownerFacts())
+    if (owner || !storyOwnerNeedsLanding(story)) return owner
+    await loadStoryReadModelLanding(options)
+    return storyOwner(story, ownerFacts())
+  }
+
+  function openStoryOwner(owner, story, parentView = '') {
+    if (owner.view === 'mobile_archive') return openStoryPhone(story)
+    if (owner.view === 'idol_story_archive') return openIdolStoryChapter(story)
+    if (owner.view === 'work_archive') return openWorkArchive(owner.idol, owner.file)
+    if (owner.view === 'event_detail') return openEventDetail({ event_id: owner.event }, parentView || 'story_catalog')
+    return openProjectedCollection({ domain: owner.domain, section: owner.section, storyFile: owner.file, parent: parentView })
+  }
+
+  // Opens a story on the page that owns it. A story no page owns (none in the current read model) leaves the
+  // visitor where they are, with a notice.
   function openStoryDetail(entry, parentView = '') {
     if (!entry?.file) return
-    if (entry.domain === 'card_scenarios') return openStoryPhone(entry)
-    if (idolStoryChapterOwner(entry)) return openIdolStoryChapter(entry)
-    // A unit prequel chapter has one page: its unit's collection, opened on that chapter.
-    if (entry.domain === 'unit_story' && entry.sectionId)
-      return openProjectedCollection({ domain: 'unit_story', section: entry.sectionId, storyFile: entry.file, parent: parentView })
-    const file = entry.file
+    const known = storyOwner(entry, ownerFacts())
+    if (known) return openStoryOwner(known, entry, parentView)
     const request = ++pendingStoryDetailNavigation
     navigation.invalidate()
     const revision = navigation.getRevision()
-    storyReadModelStatus.value = '正在读取故事详情…'
+    const stale = () => request !== pendingStoryDetailNavigation || revision !== navigation.getRevision() || navigation.isDisposed()
+    storyReadModelStatus.value = '正在读取故事…'
     loading.value = true
-    return prepareArchivePage('story_detail', loadStoryReadModelDetail(file)).then(detail => {
-      if (request !== pendingStoryDetailNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-      storyReadModelDetail.value = detail
+    return loadStoryReadModelDetail(entry.file).then(async detail => {
+      if (stale()) return
+      const owner = await resolveStoryOwner(detail.story)
+      if (stale()) return
       storyReadModelStatus.value = ''
-      captureDetailSource()
-      currentStoryFile.value = file
-      currentStoryDomain.value = detail.story.domain
-      currentStorySection.value = detail.story.sectionId || ''
-      storyDetailParentView.value = parentView
-      commitView('story_detail')
+      if (owner) return openStoryOwner(owner, detail.story, parentView)
+      loading.value = false
+      storyReadModelStatus.value = '这篇故事没有所属页面。'
     }).catch(error => {
       if (request !== pendingStoryDetailNavigation || revision !== navigation.getRevision()) return
       loading.value = false
-      console.error('[StoryReadModel] Failed to open detail:', error)
-      storyReadModelStatus.value = '故事详情暂时无法读取，请重试。'
+      console.error('[StoryReadModel] Failed to open story:', error)
+      storyReadModelStatus.value = '故事暂时无法读取，请重试。'
     })
   }
 
@@ -279,10 +300,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     currentCategoryId.value = 'idol'
     currentCharacterId.value = idolCode
     commitView('idol_detail')
-  }
-
-  function playStoryDetail(entry = currentStory.value) {
-    if (entry?.file && entry.exists) loadScenario(entry.file, 'story_detail')
   }
 
   function playStoryCollectionChapter(chapter) {
@@ -310,17 +327,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       return
     }
     goHome()
-  }
-
-  function goBackFromStoryDetail() {
-    const parent = storyDetailParentView.value
-    currentStoryFile.value = ''
-    storyDetailParentView.value = ''
-    if (parent === 'external_story_resources') {
-      commitView('external_story_resources')
-      return
-    }
-    return openStoryCatalog()
   }
 
   function goBackFromStoryCollection() {
@@ -360,8 +366,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   }
 
   function normalizeStoryRoute(route) {
-    if (route.view === 'story_collection' && (!route.storyType || !route.storySection) ||
-      route.view === 'story_detail' && !route.story) return { view: 'story_catalog' }
+    if (route.view === 'story_collection' && (!route.storyType || !route.storySection)) return { view: 'story_catalog' }
     return route
   }
 
@@ -379,28 +384,14 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
         route = { view: 'story_catalog' }
       }
     }
-    if ((route.view === 'story_detail' || (route.view === 'player' && route.returnView === 'story_detail')) && route.story) {
-      try {
-        const detail = await loadStoryReadModelDetail(route.story)
-        if (!isCurrent()) return null
-        storyReadModelDetail.value = detail
-        storyReadModelStatus.value = ''
-        route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
-      } catch (error) {
-        if (!isCurrent()) return null
-        console.error('[StoryReadModel] Failed to restore detail:', error)
-        storyReadModelStatus.value = '故事详情暂时无法读取，请稍后重试。'
-        route = { view: 'story_catalog' }
-      }
-    }
     return isCurrent() ? route : null
   }
 
-  // Domain landings use their own projections; other story views load the directory. The unit landing
-  // groups the directory, as the portal's unit strip does.
+  // Domain landings use their own projections; other story views load the directory. The unit and event
+  // landings group the directory, as the portal's unit strip and event section do.
   watch([view, currentStoryMode, currentStoryDomain, currentCharacterId], () => {
-    const landingOnly = currentStoryMode.value === 'portal' && !currentCharacterId.value && currentStoryDomain.value &&
-      currentStoryDomain.value !== 'unit_story'
+    const landingOnly = currentStoryMode.value === 'portal' && !currentCharacterId.value &&
+      PROJECTED_LANDINGS.includes(currentStoryDomain.value)
     if (view.value !== 'story_catalog' || landingOnly) return
     const options = navigation.getLoadOptions()
     void loadStoryReadModelCatalog(options).catch(error => {
@@ -413,10 +404,10 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   })
   return {
     openStoryCatalog, setStoryDomain, setStoryMode, browseStoryCollection, openExternalStoryResources, openExternalStoryInternal,
-    openProjectedCollection, openCatalogStory, openStoryDetail, selectStoryCollectionChapter, openStoryIdol,
-    playStoryDetail, playStoryCollectionChapter, playStoryCollectionEpisode,
+    openProjectedCollection, openCatalogStory, readEventStory, openStoryDetail, resolveStoryOwner, openStoryOwner, selectStoryCollectionChapter, openStoryIdol,
+    playStoryCollectionChapter, playStoryCollectionEpisode,
     loadCollectionCatalog, loadCollectionDetail, loadStoryReadModelCatalog, loadStoryReadModelLanding, loadStoryReadModelDetail,
-    goBackFromStoryCatalog, goBackFromStoryDetail, goBackFromStoryCollection,
+    goBackFromStoryCatalog, goBackFromStoryCollection,
     invalidateStoryNavigation, normalizeStoryRoute, prepareStoryRoute,
   }
 }

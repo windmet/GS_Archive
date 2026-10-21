@@ -83,3 +83,48 @@ assert zoom('_idol_zoom', ['036rui', '', '', '30', '', ''], {'idol_zoom_y_offset
     'idol_zoom': 1.0, 'idol_zoom_x': 30.0, 'idol_zoom_y': 0.0}, 'size defaults to 1; the old y offset guess is dropped'
 assert zoom('_idol_zoom_reset', ['036rui'], {'idol_zoom': 0.8, 'idol_zoom_x': 1, 'idol_zoom_y': 2, 'idol_zoom_transition': {}}) == {}
 print('idol_zoom: client [chara, startTime, playTime, posX, posY, size] with linear transition and reset passed')
+
+# effect_fadein/out share EffectCommandData's screen-fade parse: [startTime, playTime, startColor(default black)].
+def effect_fade(handler, values):
+    compiler = object.__new__(ScenarioCompiler)
+    compiler.state = ScenarioState()
+    compiler._extend_pending_text_disable_duration = lambda seconds: None
+    compiler._mark_stage_change = lambda: None
+    compiler._safe_float = ScenarioCompiler._safe_float
+    getattr(compiler, handler)(values)
+    return compiler.state.screen_effects[-1]
+
+assert effect_fade('_effect_fadein', ['0', '6'])['color'] == '#000000', 'an empty color is Color.black, as in 1_1_006_03_a'
+assert effect_fade('_effect_fadeout', ['0.8', '2', ''])['color'] == '#000000'
+assert effect_fade('_effect_fadein', ['5', '2.5', '#FFFFFF'])['color'] == '#FFFFFF'
+print('effect_fadein/out: client default color black passed')
+
+# StoryView.Initialize resets the screen mask to opaque black: each part stays covered until its
+# first screen_fadeout, so a filter set before it (1_4_001_00_a) fades in from black, not over a lit scene.
+def part(bg):
+    return {'Command': [
+        {'Type': 'text_synopsis', 'Values': ['t', 's']},
+        {'Type': 'image_bg', 'Values': [bg]},
+        {'Type': 'camera_color', 'Values': ['gray', '0', '0']},
+        {'Type': 'wait', 'Values': ['3']},
+        {'Type': 'camera_defaultcolor', 'Values': ['0', '3']},
+        {'Type': 'screen_fadeout', 'Values': ['0', '3']},
+        {'Type': 'wait', 'Values': ['3']},
+        {'Type': 'text', 'Values': ['A', 'line', 'mob']},
+    ]}
+group = ScenarioCompiler.compile_group([part('bg_a'), part('bg_b')], 'fixture', ['fixture_a', 'fixture_b'],
+                                       output_contract='authoritative', source={'raw_path': 'fixture', 'raw_hash': 'fixture'})
+cover = {'kind': 'fade', 'visible': True, 'color': '#000000', 'alpha': 1}
+for episode in group['episodes']:
+    steps = [s for s in group['steps'] if episode['start_step_id'] <= s['step_id'] <= episode['end_step_id']]
+    reveal = next(i for i, s in enumerate(steps) if s['type'] == 'fadeout')
+    assert reveal >= 1 and steps[reveal - 1]['type'] == 'stage', 'fixture needs a covered stage step before the reveal'
+    for step in steps[:reveal + 1]:
+        assert step['entry_snapshot']['screen_overlay'] == cover, (episode, step['step_id'])
+    assert steps[reveal]['settled_snapshot']['screen_overlay'] is None
+    assert all(s['entry_snapshot']['screen_overlay'] is None for s in steps[reveal + 1:])
+# A part whose data records no reveal (talk pieces such as 2_3_001_01_09_a) must not be blacked out.
+bare = ScenarioCompiler.compile_group([{'Command': [{'Type': 'image_bg', 'Values': ['bg_c']}, {'Type': 'text', 'Values': ['A', 'line', 'mob']}]}],
+                                      'fixture', ['fixture_c'], output_contract='authoritative', source={'raw_path': 'fixture', 'raw_hash': 'fixture'})
+assert all(s['entry_snapshot']['screen_overlay'] is None for s in bare['steps']), 'parts without a reveal stay uncovered'
+print('part start: screen covered black until the first screen_fadeout; parts without a reveal uncovered passed')
