@@ -109,7 +109,7 @@ applyStepSceneState({
   manager: {
     setCameraFilter: (...args) => calls.push(['camera', ...args]),
     setIdolBackgroundColorFilter: (...args) => calls.push(['idol', ...args]),
-    setBgBlur: () => {}, setBgColorOverlay: () => {},
+    setBgBlur: () => {}, setBgColor: () => {},
   },
   step: { step_id: 'filter' },
   state: { camera_filter: 'sepia', camera_filter_transition: { delay: 0.2, duration: 1.5 }, bg_profile: profile },

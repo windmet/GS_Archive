@@ -7,11 +7,13 @@ export class CameraController {
     spineContainer,
     getWidth,
     getHeight,
+    onCameraMove = null,
   }) {
     this.bgContainer = bgContainer
     this.spineContainer = spineContainer
     this.getWidth = getWidth
     this.getHeight = getHeight
+    this.onCameraMove = onCameraMove
 
     this._cameraZoom = null
     this._cameraTween = null
@@ -21,7 +23,10 @@ export class CameraController {
   // StoryCamera.MoveCamera: the camera moves to (offset_x, offset_y) canvas units and orthographicSize becomes
   // default / zoom, both linearly over the play time. Actors follow the camera fully. ResizeCamera rescales the
   // background panel only when the view widens (zoom < 1), so it zooms in with the camera but never shrinks.
-  _applyCameraTransform(zoom, cameraX, cameraY) {
+  // Every MoveCamera frame also calls StoryCamera.BlurBackGround. Re-applying an unchanged entry snapshot
+  // or resizing is not a camera move and leaves the background blur alone.
+  _applyCameraTransform(zoom, cameraX, cameraY, { moving = false } = {}) {
+    const previous = this._camera
     const view = cameraScreenTransform(this.getWidth(), this.getHeight(), { zoom, x: cameraX, y: cameraY })
     this.bgContainer.scale.set(view.bgScale)
     this.bgContainer.x = view.bgX
@@ -30,6 +35,7 @@ export class CameraController {
     this.spineContainer.x = view.x
     this.spineContainer.y = view.y
     this._camera = { zoom, x: cameraX, y: cameraY }
+    if (moving || previous.zoom !== zoom || previous.x !== cameraX || previous.y !== cameraY) this.onCameraMove?.(zoom)
   }
 
   setCameraZoom(zoomData) {
@@ -60,6 +66,7 @@ export class CameraController {
             start.zoom + (target.zoom - start.zoom) * t,
             start.x + (target.x - start.x) * t,
             start.y + (target.y - start.y) * t,
+            { moving: true },
           )
         },
       })
@@ -68,7 +75,7 @@ export class CameraController {
         durationMs: 0,
         delayMs,
         nowMilliseconds: zoomData.nowMilliseconds,
-        onUpdate: () => this._applyCameraTransform(target.zoom, target.x, target.y),
+        onUpdate: () => this._applyCameraTransform(target.zoom, target.x, target.y, { moving: true }),
       })
     } else {
       this._applyCameraTransform(target.zoom, target.x, target.y)
@@ -78,7 +85,9 @@ export class CameraController {
   resetCameraZoom() {
     this._cameraTween?.cancel?.()
     this._cameraZoom = null
+    const moved = this._camera.zoom !== 1 || this._camera.x !== 0 || this._camera.y !== 0
     this._camera = { zoom: 1, x: 0, y: 0 }
+    if (moved) this.onCameraMove?.(1)
     this.bgContainer.scale.set(1)
     this.bgContainer.x = 0
     this.bgContainer.y = 0

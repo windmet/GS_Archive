@@ -1,4 +1,5 @@
 import { backgroundPanelRect, cameraScreenTransform } from './AdvStageLayout.js'
+import { backgroundBlurTarget, backgroundColorValue, lerpBackgroundColor } from './BackgroundBlur.js'
 
 const clone = value => value == null ? null : JSON.parse(JSON.stringify(value))
 const clamp = value => Math.min(1, Math.max(0, value))
@@ -45,48 +46,34 @@ function initialScreen(overlay) {
   }
 }
 
+// AdventureBackgroundPanel SetOffsetBlur / BackGroundColor, both linear after the delay. blur is the
+// offset-blur value (the CanvasGroup alpha is its clamp unless a camera move overwrote it).
 function backgroundFilters(entry, time, origins = {}) {
-  const color = tintValue(entry.bg_color), dof = Number(entry.bg_dof || 0)
-  if (color === null || !Number.isFinite(dof)) return { status: 'not-projected', reason: 'invalid-filter-state' }
-  const requestedBlur = entry.bg_color && entry.bg_color !== '#FFFFFF' ? Math.max(0, dof * 6) : 0
-  if (!Number.isFinite(requestedBlur)) return { status: 'not-projected', reason: 'invalid-filter-state' }
-  const visible = !!entry.bg_color && entry.bg_color.toUpperCase() !== '#FFFFFF'
-  let blur = requestedBlur > .01 ? requestedBlur : 0
-  let overlay = visible ? { visible: true, tint: color, alpha: .85, blendMode: 'multiply' } : { visible: false }
-  for (const [channel, field] of [['blur', 'bg_dof_transition'], ['overlay', 'bg_color_transition']]) {
+  const color = backgroundColorValue(entry.bg_color), blur = backgroundBlurTarget(entry.bg_dof)
+  if (color === null || (entry.bg_dof != null && !Number.isFinite(Number(entry.bg_dof)))) return { status: 'not-projected', reason: 'invalid-filter-state' }
+  const projected = { blur, color }
+  for (const [channel, field] of [['blur', 'bg_dof_transition'], ['color', 'bg_color_transition']]) {
     const transition = entry[field] || {}
     const delay = Math.max(0, Number(transition.delay || 0)), duration = Math.max(0, Number(transition.duration || 0))
     if (!Number.isFinite(delay) || !Number.isFinite(duration)) return { status: 'not-projected', reason: 'invalid-filter-transition' }
     if (!delay && !duration) continue
-    // Clearing a white overlay with zero duration ignores delay in the renderer.
-    if (channel === 'overlay' && !visible && !duration) continue
     const origin = origins[channel]
     if (!origin || !Number.isFinite(origin.startedAt)) return { status: 'not-projected', reason: 'unresolved-filter-transition' }
     const from = origin.from
-    if (channel === 'blur' ? !Number.isFinite(from) || from < 0
-      : !from || typeof from.visible !== 'boolean' || (from.visible &&
-        (!Number.isInteger(from.tint) || from.tint < 0 || from.tint > 0xFFFFFF || !Number.isFinite(from.alpha) || from.alpha < 0))) {
+    if (channel === 'blur' ? !Number.isFinite(from) : !Number.isInteger(from) || from < 0 || from > 0xFFFFFF) {
       return { status: 'not-projected', reason: 'invalid-filter-origin' }
     }
-    const elapsed = time - origin.startedAt, beforeDelay = elapsed < delay
-    const t = duration ? ease(clamp((elapsed - delay) / duration)) : 1
-    if (channel === 'blur') {
-      const value = beforeDelay ? from : mix(from, requestedBlur, t)
-      blur = beforeDelay ? value : value > .01 ? value : 0
-    } else {
-      const initial = from.visible ? { visible: true, tint: from.tint, alpha: from.alpha, blendMode: 'multiply' } : { visible: false }
-      if (elapsed < 0) overlay = initial
-      else if (!visible) overlay = !from.visible || (!beforeDelay && t >= 1) ? { visible: false }
-        : { ...initial, alpha: beforeDelay ? from.alpha : from.alpha * (1 - t) }
-      else {
-        const startColor = from.visible ? from.tint : 0xFFFFFF
-        const tint = beforeDelay ? startColor : tintAt({ from: startColor, to: color,
-          cue: { start: origin.startedAt + delay, duration } }, time)
-        overlay = { visible: true, tint, alpha: .85, blendMode: 'multiply' }
-      }
+    const elapsed = time - origin.startedAt
+    if (elapsed < delay) {
+      // Nothing is written until the lerp starts; the previous target is still shown.
+      projected[channel] = from
+      continue
     }
+    const t = duration ? clamp((elapsed - delay) / duration) : 1
+    if (channel === 'blur') projected.blur = mix(from, blur, t)
+    else projected.color = lerpBackgroundColor(from, color, t)
   }
-  return { status: 'projected', blur, overlay }
+  return { status: 'projected', ...projected }
 }
 
 /** Pure, stateless semantic query. No renderer/runtime imports or external clock. */

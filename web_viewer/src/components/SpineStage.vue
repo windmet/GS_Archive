@@ -514,7 +514,7 @@ watch(() => props.step, (step, oldStep) => {
     manager.setCameraFilter(null)
     manager.setIdolBackgroundColorFilter?.(null)
     manager.clearBgBlur()
-    manager.clearBgColorOverlay()
+    manager.clearBgColor()
     manager.applyBgEffects?.([])
     manager.clearScreenSlide?.()
     if (Object.keys(manager.spineInstances).length > 0) {
