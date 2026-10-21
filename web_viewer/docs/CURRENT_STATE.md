@@ -54,6 +54,8 @@
 
 10-21 [粒子方向修复](NATIVE_PARTICLE_ROTATION_FIX_20261021.md)按原生顶点证据修正普通2D/3D、Floor/Whole_screen/Bloom角度，并取消已合入master的ADV数据负值补偿。原生角点1/9→9/9、168项源码门禁、build:check和舞台/独立ADV消费者Browser通过；保留3D复杂父链、原片/设备及参考时钟边界。未部署。
 
+10-21 [父链渲染基](NATIVE_BILLBOARD_PARENT_BASIS_20261021.md)补齐3D局部父矩阵，统一2D/3D的Local全矩阵及View带符号尺度；原生层级/context/顶点重放扩至61例，包含全部16个准入3D系统的真实父链。168项门禁、build:check及泡泡舞台桌面/手机Browser通过；任意非平面父链、透视及动态/原生时钟仍开放。未部署。
+
 10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)之后已完成[固定曲消费者接入](NATIVE_ORIGINAL_LINEUP_CONSUMER_20261021.md)：13首显式序优先，41首组合默认序来自表2字段37，纠正24首编号回退并修复`yknkmh`隐藏槽。随后已核实[所选Unit的独立原生选组排序](NATIVE_SELECTED_UNIT_LINEUP_20261021.md)，48个编排按16组合字段37排序，纠正30个编排。舞台专用索引v2直接消费，冻结read-model未改；164项源码检查、build:check及2/3/5人实际Browser通过。原片/设备对照、原生库存卡及完整编队交互仍不在验收范围。未部署。
 
 10-21 舞台同步 master #60–#65 的后验收见 [同步记录](STAGE_MASTER_SYNC_20261021.md)：合并 `4dccabbd`，163/163 源码回归及 build:check 通过，5213 实际舞台与手机尺寸目标检查完成；未部署。

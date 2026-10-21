@@ -1,15 +1,25 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import {createHash} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
-import {sampleObjectEmitter} from '../src/core/chibiObjectEmitters.js'
+import {sampleObjectEmitter,emitterRenderBasis} from '../src/core/chibiObjectEmitters.js'
 import {sampleFloorSystem} from '../src/core/chibiFloorParticles.js'
 import {sampleWholeScreen} from '../src/core/chibiWholeScreen.js'
 import {sampleBloomSystem} from '../src/core/chibiBloomParticles.js'
 const read=p=>JSON.parse(fs.readFileSync(new URL('../'+p,import.meta.url),'utf8'))
 const data=read('public/data/stage-object-emitters.json')
 const native=JSON.parse(execFileSync(process.execPath,['scripts/audit-chibi-billboard-rotation.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'}))
-assert.equal(native.totalCases,9)
+assert.equal(native.totalCases,61)
 assert.equal(native.matchingCases,native.totalCases,'Actual billboard vertices/UVs must match every 2D/3D native case')
+const rotationProof=read('scripts/fixtures/chibi-billboard-rotation-native.json'),parentProof=rotationProof.parentCases
+assert.equal(rotationProof.binarySha256,read('scripts/fixtures/chibi-noise-kernel-native.json').binarySha256)
+for(const window of rotationProof.sourceWindows)assert.equal(createHash('sha256').update(Buffer.from(window.bytes,'hex')).digest('hex'),window.sha256)
+assert.equal(parentProof.filter(c=>c.asset).length,16,'All admitted 3D source parents are bound')
+assert.equal(Object.values(data.assets).flatMap(a=>a.systems).filter(s=>s.rotationX).length,parentProof.filter(c=>c.asset).length,'A newly admitted 3D parent needs native replay coverage')
+for(const c of parentProof){
+  const basis=emitterRenderBasis(c.chain,c.alignment)
+  for(const [axis,i] of [['scaleX',0],['scaleY',1]])assert.ok(Math.abs(basis[axis]-c.expectedParticleScale[i])<2e-5,'Signed native hierarchy scale, including reflected ancestors')
+}
 const constant=scalar=>({mode:0,scalar,minScalar:scalar})
 const identity={position:{x:0,y:0},rotation:{x:0,y:0,z:0,w:1},scale:{x:1,y:1}}
 const object={...data.assets.fx_in_rote77_meter.systems[0],chain:[identity],shape:null,alignment:0,
@@ -45,4 +55,4 @@ assert.ok(Math.abs(sampleWholeScreen(whole,1500,[{start:0,stop:Infinity}])[0].ro
 const bloom={...read('public/data/stage-bloom-particles.json').assets.fx_in_flslgt_bloom_1.systems[1],
   rotation:constant(.5),lifetime:constant(4),delay:0,rate:0,bursts:[{time:0,count:1}]}
 assert.equal(sampleBloomSystem(bloom,0,0)[0].rotation,.5,'Bloom clockwise birth angle')
-console.log('Particle rotation: 9 native vertex/UV cases, initial/spin, rewind, local/reflected parent and Floor/Whole_screen/Bloom directions passed')
+console.log('Particle rotation: 61 native vertex/UV cases including 16 source parents, signed scale, initial/spin, rewind, local/reflected parent and Floor/Whole_screen/Bloom directions passed')

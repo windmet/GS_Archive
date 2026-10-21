@@ -55,6 +55,24 @@ export function emitterMatrix(chain) {
   }
   return m
 }
+// View-aligned billboards use signed native lossy scale, not column lengths.
+// A reflected ancestor conjugates descendant rotations. Local alignment keeps
+// the complete hierarchy matrix, including shear, for both orientation and position.
+export function emitterRenderBasis(chain,alignment,matrix=emitterMatrix(chain)) {
+  let q={x:0,y:0,z:0,w:1},signX=1,signY=1,signZ=1
+  for(let i=chain.length-1;i>=0;i--) {
+    const {rotation:r,scale}=chain[i],rx=r.x*signY*signZ,ry=r.y*signX*signZ,rz=r.z*signX*signY
+    const {x,y,z,w}=q
+    q={x:w*rx+x*r.w+y*rz-z*ry,y:w*ry-x*rz+y*r.w+z*rx,
+      z:w*rz+x*ry-y*rx+z*r.w,w:w*r.w-x*rx-y*ry-z*rz}
+    signX*=Math.sign(scale.x)||1;signY*=Math.sign(scale.y)||1;signZ*=Math.sign(scale.z)||1
+  }
+  const {x,y,z,w}=q
+  const a=1-2*(y*y+z*z),b=2*(x*y+w*z),c=2*(x*y-w*z),d=1-2*(x*x+z*z)
+  const scaleX=a*matrix.a+b*matrix.b,scaleY=c*matrix.c+d*matrix.d
+  return alignment===2?{a:matrix.a,b:matrix.b,c:matrix.c,d:matrix.d,scaleX,scaleY}:
+    {a:scaleX,b:0,c:0,d:scaleY,scaleX,scaleY}
+}
 function euler(p,r) {
   let {x,y,z}=p
   for(const axis of ['z','x','y']) {
@@ -174,7 +192,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
   const maxLife=Math.max(.00001,curveUpperBound(system.lifetime)),period=system.duration
   const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
   const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
-  const matrix=emitterMatrix(system.chain),out=[]
+  const matrix=emitterMatrix(system.chain),renderBasis=emitterRenderBasis(system.chain,system.alignment,matrix),out=[]
   const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
   if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
   const timeline=system.noise?noiseTimeline(system,births,last,cutoff,wait,maxLife,seed):null
@@ -213,10 +231,10 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
         // Native UV(0,1) is the PNG/Pixi top-left corner: include both texture
         // and screen Y conversions, as in the ordinary 2D branch below.
         A=cy*cz+sy*sx*sz;B=-(cx*sz);C=cy*sz-sy*sx*cz;D=cx*cz
+        ;[A,B,C,D]=[renderBasis.a*A-renderBasis.c*B,-renderBasis.b*A+renderBasis.d*B,renderBasis.a*C-renderBasis.c*D,-renderBasis.b*C+renderBasis.d*D]
       } else {
         const c=Math.cos(rz),s=Math.sin(rz)
-        const base=system.alignment===2?matrix:{a:Math.hypot(matrix.a,matrix.b),b:0,c:0,d:Math.hypot(matrix.c,matrix.d)}
-        A=base.a*c+base.c*s;B=-(base.b*c+base.d*s);C=base.a*s-base.c*c;D=-(base.b*s-base.d*c)
+        A=renderBasis.a*c+renderBasis.c*s;B=-(renderBasis.b*c+renderBasis.d*s);C=renderBasis.a*s-renderBasis.c*c;D=-(renderBasis.b*s-renderBasis.d*c)
       }
       const mix=system.colorMode===2&&system.colorMin?rnd(12):null
       const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):mix===null?system.color:Object.fromEntries(['r','g','b','a'].map(k=>[k,system.colorMin[k]+(system.color[k]-system.colorMin[k])*mix])),over=system.colorOverLife
