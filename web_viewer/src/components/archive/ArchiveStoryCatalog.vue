@@ -152,6 +152,7 @@
         <ul class="story-footprint" aria-label="组合前传收录">
           <li><b>{{ count(unitGateways.length) }}</b>组</li>
           <li><b>{{ count(domainCount('unit_story')) }}</b>篇</li>
+          <li>又称「{{ STORY_KINDS.unit_story.alias }}」</li>
         </ul>
       </header>
       <section class="story-section" aria-label="组合">
@@ -161,6 +162,32 @@
             <span><strong>{{ unit.label }}</strong><small>{{ unit.entries.length }} 篇</small></span>
           </button>
         </div>
+      </section>
+    </div>
+
+    <div v-else-if="mode === 'portal' && domain === 'event'" class="event-domain-landing">
+      <header class="story-head">
+        <h2 class="shell-named">活动剧情</h2>
+        <ul class="story-footprint" aria-label="活动剧情收录">
+          <li><b>{{ count(props.allEntries.length ? eventEntries.length : null) }}</b>部活动</li>
+          <li><b>{{ count(eventEpisodeCount) }}</b>话</li>
+        </ul>
+      </header>
+      <section class="story-section" aria-label="活动剧情">
+        <div class="story-chips" role="group" aria-label="活动类型">
+          <button type="button" :aria-pressed="eventScope === 'all'" @click="emit('update:event-scope', 'all')">全部 <small>{{ eventEntries.length }}</small></button>
+          <button v-for="option in eventScopeOptions" :key="option.id" type="button" :aria-pressed="eventScope === option.id"
+            @click="emit('update:event-scope', option.id)">{{ option.label }} <small>{{ option.count }}</small></button>
+        </div>
+        <section v-for="year in eventYears" :key="year.id" class="event-year" :aria-labelledby="`event-year-${year.id}`">
+          <div class="story-section-head">
+            <h3 :id="`event-year-${year.id}`">{{ year.label }}</h3>
+            <small>{{ year.entries.length }} 部</small>
+          </div>
+          <div class="story-rows">
+            <EventStoryRow v-for="entry in year.entries" :key="entry.id" :entry="entry" :idol-name="idolName" @open="emit('select', $event)" />
+          </div>
+        </section>
       </section>
     </div>
 
@@ -206,12 +233,12 @@
       <section class="story-section event-section" aria-labelledby="event-story-title">
         <div class="story-section-head">
           <h2 id="event-story-title">活动剧情 <small>{{ eventCount }} 部</small></h2>
-          <button class="story-more" @click="browse('event')">查看全部 {{ eventCount }} 部 <ArrowRight :size="15" /></button>
+          <button class="story-more" @click="openDomain('event')">查看全部 {{ eventCount }} 部 <ArrowRight :size="15" /></button>
         </div>
         <div v-if="featuredEvents.length" class="event-feature">
-          <EventStoryCard :entry="featuredEvents[0]" :idol-name="idolName" @read="emit('select',$event)" @event="emit('open-event',$event)" />
+          <EventStoryCard :entry="featuredEvents[0]" :idol-name="idolName" @read="emit('read-event',$event)" @event="emit('open-event',$event)" />
           <div class="event-feature-rows">
-            <EventStoryRow v-for="entry in featuredEvents.slice(1)" :key="entry.id" :entry="entry" :idol-name="idolName" @read="emit('select',$event)" />
+            <EventStoryRow v-for="entry in featuredEvents.slice(1)" :key="entry.id" :entry="entry" :idol-name="idolName" @open="emit('select',$event)" />
           </div>
         </div>
       </section>
@@ -289,6 +316,8 @@ import { ArrowRight, BookOpen, Cake, ChevronRight, LayoutGrid, Search, X } from 
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import EventStoryCard from './EventStoryCard.vue'
 import EventStoryRow from './EventStoryRow.vue'
+import { storyEventResources } from '../../data/eventResourceGraph.js'
+import { STORY_KINDS } from '../../core/archiveSections.js'
 import StoryDiscovery from './StoryDiscovery.vue'
 import '../../styles/archive-story.css'
 
@@ -317,7 +346,7 @@ const props = defineProps({
   birthdayDomain: { type: Object, default: null },
 })
 const emit = defineEmits([
-  'clear-idol','select', 'open-event', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort','update:search-query'])
+  'clear-idol','select', 'read-event', 'open-event', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort','update:search-query'])
 
 const groupEntries = domain => {
   const groups = new Map()
@@ -335,6 +364,20 @@ const unitGateways = computed(() => groupEntries('unit_story'))
 const eventEntries = computed(() => props.allEntries.filter(entry => entry.domain === 'event'))
 const eventCount = computed(() => eventEntries.value.length)
 const featuredEvents = computed(() => [...eventEntries.value].sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 5))
+const eventEpisodeCount = computed(() => props.allEntries.length
+  ? eventEntries.value.reduce((sum, entry) => sum + (storyEventResources(entry)?.episodeCount || 0), 0) : null)
+// The event landing: newest year first, each year's events newest first, under the chosen event type.
+const eventYears = computed(() => {
+  const years = new Map()
+  const entries = eventEntries.value.filter(entry => props.eventScope === 'all' || entry.eventScope === props.eventScope)
+  for (const entry of [...entries].sort((a, b) => b.releaseAt - a.releaseAt)) {
+    const year = entry.releaseAt ? new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Asia/Tokyo' }).format(new Date(entry.releaseAt * 1000)) : ''
+    const group = years.get(year) || { id: year || 'undated', label: year ? `${year} 年` : '开放日期未记录', entries: [] }
+    group.entries.push(entry)
+    years.set(year, group)
+  }
+  return [...years.values()]
+})
 const extraCards = computed(() => [...(props.extraDomain?.collections || [])]
   .sort((left, right) => left.releaseAt - right.releaseAt || left.masterId.localeCompare(right.masterId)))
 const officialExtraCards = computed(() => extraCards.value.filter(card => card.official))

@@ -23,9 +23,8 @@ export function bindStoryNavigation(app, context = {}) {
     readModelClient: { load: unexpected('readModelClient.load') },
   }
   for (const name of ['prepareArchivePage', 'captureDetailSource', 'commitView', 'commitArchiveSelection', 'goHome', 'openEventDetail',
-    'openIdolStoryArchive', 'openStoryPhone', 'openStoryReader', 'loadScenario', 'startEpisodeQueue', 'openIdolStoryChapter']) defaults[name] = unexpected(name)
-  // Fixture stories have no resolvable personal-story owner unless a test supplies one.
-  defaults.idolStoryChapterOwner = () => ''
+    'openIdolStoryArchive', 'openStoryPhone', 'openStoryReader', 'loadScenario', 'startEpisodeQueue', 'openIdolStoryChapter', 'openWorkArchive'])
+    defaults[name] = unexpected(name)
   Object.assign(context, { ...defaults, ...context, useStoryNavigation })
   for (const property of binding.init.arguments[0].properties) {
     const name = property.value.name, value = context[name]

@@ -175,10 +175,9 @@ async function fixture({ badContinuationEvidence = false } = {}) {
     storyViewerLoader: async () => { media.push('component') }, preloadScenario: async () => { media.push('preload-boundary'); return {} }, queueEpisodeLabel: episode => episode.label || episode.id,
     restoreDetailSource: async () => { destinations.push(readArchiveSourceRoute(state.detailSourceRoute.value)); state.view.value = destinations.at(-1).view },
   }
-  for (const name of ['goHome', 'openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'loadEventDetail', 'loadIdolStoryDetail', 'restoreRoute', 'loadLegacyAliasRoute', 'openIdolStoryChapter']) {
+  for (const name of ['goHome', 'openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'loadEventDetail', 'loadIdolStoryDetail', 'restoreRoute', 'loadLegacyAliasRoute', 'openIdolStoryChapter', 'openWorkArchive']) {
     context[name] = () => { assert.fail('Unexpected feature boundary: ' + name) }
   }
-  context.idolStoryChapterOwner = () => ''
   vm.runInNewContext(['applyArchiveRoute', 'loadPlayerQueue', 'restorePlaybackDestination'].map(functionSource).join('\n'), context)
   const appApply = context.applyArchiveRoute
   context.applyArchiveRoute = (route, options) => {
@@ -368,7 +367,7 @@ try {
     }
     t.stop()
   }
-  // A real catalog event entry calls the Reader callback registered before the
+  // The lead event card's "开始阅读" (readEventStory) calls the Reader callback registered before the
   // Reader factory exists; no placeholder implementation is installed.
   {
     const t = await fixture()
@@ -377,7 +376,7 @@ try {
     assert.ok(event, 'a real event has a Reader resource relation')
     await t.addReading(allEntries.find(entry => entry.document_id === event.firstReadingId))
     t.state.view.value = 'story_catalog'
-    await t.context.openCatalogStory({ file: event.storyFile, sectionId: event.eventCode, eventRelation: { event_code: event.eventCode, event_id: event.id } })
+    await t.context.readEventStory({ file: event.storyFile, sectionId: event.eventCode, eventRelation: { event_code: event.eventCode, event_id: event.id } })
     assert.equal(t.state.view.value, 'reader', 'actual generic story factory late callback reaches Reader')
     assert.equal(t.readingState.value.document?.document_id, event.firstReadingId)
     assert.equal(t.state.currentEventId.value, event.id); t.stop()

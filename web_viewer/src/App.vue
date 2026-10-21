@@ -357,7 +357,7 @@
         :main-domain="mainStoryDomain"
         :extra-domain="extraStoryDomain"
         :birthday-domain="birthdayStoryDomain"
-        @select="openCatalogStory"
+        @select="openCatalogStory" @read-event="readEventStory"
         @open-event="openEventDetail($event,'story_catalog')"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
@@ -706,7 +706,7 @@ import { usePortalNavigation } from './composables/usePortalNavigation.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { storyCollectionTitle } from './presentation/StoryPageTitle.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
-import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
+import { storyOwner } from './core/StoryOwner.js'
 import {
   setStoryLanguagePreferences,
   storyTranslationLocale,
@@ -1354,7 +1354,7 @@ const currentStoryVisualUrl = computed(() => {
 
 const {
   openStoryCatalog, setStoryDomain, setStoryMode, browseStoryCollection, openExternalStoryResources, openExternalStoryInternal,
-  openProjectedCollection, openCatalogStory, openStoryDetail, selectStoryCollectionChapter, openStoryIdol,
+  openProjectedCollection, openCatalogStory, readEventStory, openStoryDetail, resolveStoryOwner, openStoryOwner, selectStoryCollectionChapter, openStoryIdol,
   playStoryDetail, playStoryCollectionChapter, playStoryCollectionEpisode,
   loadCollectionCatalog, loadCollectionDetail, loadStoryReadModelCatalog, loadStoryReadModelLanding, loadStoryReadModelDetail,
   goBackFromStoryCatalog, goBackFromStoryDetail, goBackFromStoryCollection,
@@ -1368,7 +1368,7 @@ const {
   navigation, archiveBootstrap, readModelClient, prepareArchivePage, captureDetailSource, commitView, commitArchiveSelection,
   goHome, openEventDetail: (...args) => openEventDetail(...args), openIdolStoryArchive, openStoryPhone, loadScenario, startEpisodeQueue,
   openStoryReader: (...args) => openStoryReader(...args),
-  idolStoryChapterOwner, openIdolStoryChapter,
+  openIdolStoryChapter, openWorkArchive,
 })
 
 const {
@@ -1525,6 +1525,7 @@ const archiveTitle = computed(() => {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'birthday') return '生日剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'unit_story') return '组合前传'
+    if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'event') return '活动剧情'
     return sectionLabel('stories')
   }
   if (view.value === 'external_story_resources') return STORY_KINDS.external.label
@@ -1894,11 +1895,13 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     if ((route.view === 'story_detail' || (route.view === 'player' && route.returnView === 'story_detail')) && route.story) {
       const detail = await loadStoryReadModelDetail(route.story)
       if (!intent.isCurrent()) return
-      // Old links to a phone call as a "card story" land on the call in the communication archive.
-      if (route.view === 'story_detail' && detail.story.domain === 'card_scenarios') return openStoryPhone(detail.story)
-      if (route.view === 'story_detail' && idolStoryChapterOwner(detail.story)) return openIdolStoryChapter(detail.story)
-      if (route.view === 'story_detail' && detail.story.domain === 'unit_story' && detail.story.sectionId)
-        return openProjectedCollection({ domain: 'unit_story', section: detail.story.sectionId, storyFile: detail.story.file })
+      // A story_detail link opens the page that owns the story (core/StoryOwner.js), e.g. an old link to a
+      // phone call as a "card story" lands on the call in the communication archive.
+      if (route.view === 'story_detail') {
+        const owner = await resolveStoryOwner(detail.story)
+        if (!intent.isCurrent()) return
+        if (owner) return openStoryOwner(owner, detail.story, route.parentView || '')
+      }
       storyReadModelDetail.value = detail
       route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
     }
@@ -2474,7 +2477,7 @@ async function openPortalResult(result) {
     } else if (target.domain === 'idols' && target.view === 'idol_detail' && archiveBootstrap.idols.some(row => row.id === target.idolCode)) {
       return openIdolReadModel(target.idolCode, { captureSource: true, resetContext: true, clearEventContext: true })
     } else if (target.domain === 'stories' && target.view === 'story_detail') {
-      if (stillHere()) return openStoryDetail({ file: target.file, domain: target.storyDomain }, 'portal')
+      if (stillHere()) return openStoryDetail({ file: target.file, domain: target.storyDomain, sectionId: target.sectionId }, 'portal')
     } else if (target.domain === 'events' && target.view === 'event_detail') {
       const rows = await loadEventCatalog()
       if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, 'portal')
@@ -2498,14 +2501,10 @@ async function openPortalStage(target) {
 }
 
 // A personal-story chapter belongs to its owner's story page (episodes, small talks, follow-up
-// call), so catalog, search and portal links land on that chapter instead of a generic detail.
-// The owner comes from the file name: a birthday chapter's cast can list another idol first.
-function idolStoryChapterOwner(story) {
-  const idolCode = story?.domain === 'idol_story' ? communicationOwnerId(story.file) : ''
-  return archiveBootstrap.idols.some(idol => idol.id === idolCode) ? idolCode : ''
-}
+// call); core/StoryOwner.js names the owner from the file name.
 function openIdolStoryChapter(story) {
-  return openBirthdayIdolStory({ idolCode: idolStoryChapterOwner(story), compiledFile: story.file })
+  const owner = storyOwner(story, { idolIds: new Set(archiveBootstrap.idols.map(idol => idol.id)) })
+  return owner?.view === 'idol_story_archive' ? openBirthdayIdolStory({ idolCode: owner.idol, compiledFile: story.file }) : undefined
 }
 
 async function previewCardVoice(cue) {

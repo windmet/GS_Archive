@@ -43,11 +43,18 @@ export const ARCHIVE_SECTION_GROUPS = Object.freeze([
 // Story kinds whose names appear outside their own page (gateways, idol relations, portal shortcuts).
 // card_scenarios are the same 342 calls as 通信 › 电话通信, so they carry that name.
 export const STORY_KINDS = Object.freeze({
+  // The unit prequels are the game's 第零话 (Episode Zero); the alias is shown on their landing and found by search.
+  unit_story: Object.freeze({ label: '组合前传', alias: '第零话' }),
   idol_story: Object.freeze({ label: '个人剧情' }),
   work: Object.freeze({ label: '工作剧情', shortLabel: '工作' }),
   external: Object.freeze({ label: '社区剧情' }),
   card_scenarios: Object.freeze({ label: '电话通信' }),
 })
+
+/** The other names a search should find a story kind by (组合前传 is also 第零话). */
+export function storyKindAliases(domain) {
+  return STORY_KINDS[domain]?.alias ? [STORY_KINDS[domain].alias] : []
+}
 
 export function sectionLabel(id) {
   return ARCHIVE_SECTIONS[id]?.label || ''
