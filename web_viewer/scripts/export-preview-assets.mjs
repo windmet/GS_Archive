@@ -101,7 +101,8 @@ let plans = 0
 async function scanPlans(dir) {
   for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
     const file = path.join(dir, entry.name)
-    if (entry.isDirectory()) { await scanPlans(file); continue }
+    // A linked story folder is read through like walk() above; its plans keep their logical path.
+    if (entry.isDirectory() || (followJunctions && entry.isSymbolicLink() && (await fs.stat(file)).isDirectory())) { await scanPlans(file); continue }
     if (!entry.isFile() || !entry.name.endsWith('.json')) continue
     const scenario = JSON.parse(await fs.readFile(file, 'utf8'))
     if (!Array.isArray(scenario.steps)) continue // indexes and catalogs are not scenarios
