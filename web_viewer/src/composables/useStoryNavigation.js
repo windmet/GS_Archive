@@ -9,10 +9,10 @@ const PROJECTED_LANDINGS = Object.freeze(['main', 'extra', 'birthday'])
 
 export function useStoryNavigation({ view, loading, detailSourceRoute, filterQuery,
   currentStoryDomain, currentCharacterId, currentStoryMode, currentStorySection, currentStoryFile,
-  storyDetailParentView, storyCollectionParentView, currentEventScope, currentStoryAvailability, currentStorySort,
-  currentMobileMode, currentMobileScenarioId, storyVisibleLimit, currentCategoryId, currentSongId, currentStory,
+  storyCollectionParentView, currentEventScope, currentStoryAvailability, currentStorySort,
+  currentMobileMode, currentMobileScenarioId, storyVisibleLimit, currentCategoryId, currentSongId,
   collectionReadModelCatalog, collectionReadModelDetail, collectionReadModelStatus,
-  storyReadModelCatalog, storyReadModelDetail, storyReadModelStatus, storyCatalogIndex, storyCatalogLanding,
+  storyReadModelCatalog, storyReadModelStatus, storyCatalogIndex, storyCatalogLanding,
   navigation, archiveBootstrap, readModelClient, prepareArchivePage, captureDetailSource, commitView, commitArchiveSelection,
   goHome, openEventDetail, openIdolStoryArchive, openStoryPhone, openStoryReader, loadScenario, startEpisodeQueue,
   openIdolStoryChapter, openWorkArchive }) {
@@ -115,7 +115,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       currentStoryMode.value = options.mode || 'portal'
       currentStorySection.value = ''
       currentStoryFile.value = ''
-      storyDetailParentView.value = ''
       storyCollectionParentView.value = ''
       currentEventScope.value = 'all'
       currentStoryAvailability.value = options.idolCode ? 'playable' : 'all'
@@ -179,7 +178,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     currentStoryDomain.value = ''
     currentStorySection.value = ''
     currentStoryFile.value = ''
-    storyDetailParentView.value = ''
     storyCollectionParentView.value = ''
     commitView('external_story_resources')
   }
@@ -261,39 +259,31 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     return openProjectedCollection({ domain: owner.domain, section: owner.section, storyFile: owner.file, parent: parentView })
   }
 
-  // Opens a story on its owner's page. Only a story no page owns falls through to the generic detail page.
+  // Opens a story on the page that owns it. A story no page owns (none in the current read model) leaves the
+  // visitor where they are, with a notice.
   function openStoryDetail(entry, parentView = '') {
     if (!entry?.file) return
     const known = storyOwner(entry, ownerFacts())
     if (known) return openStoryOwner(known, entry, parentView)
-    const file = entry.file
     const request = ++pendingStoryDetailNavigation
     navigation.invalidate()
     const revision = navigation.getRevision()
     const stale = () => request !== pendingStoryDetailNavigation || revision !== navigation.getRevision() || navigation.isDisposed()
-    storyReadModelStatus.value = '正在读取故事详情…'
+    storyReadModelStatus.value = '正在读取故事…'
     loading.value = true
-    return prepareArchivePage('story_detail', loadStoryReadModelDetail(file)).then(async detail => {
+    return loadStoryReadModelDetail(entry.file).then(async detail => {
       if (stale()) return
       const owner = await resolveStoryOwner(detail.story)
       if (stale()) return
-      if (owner) {
-        storyReadModelStatus.value = ''
-        return openStoryOwner(owner, detail.story, parentView)
-      }
-      storyReadModelDetail.value = detail
       storyReadModelStatus.value = ''
-      captureDetailSource()
-      currentStoryFile.value = file
-      currentStoryDomain.value = detail.story.domain
-      currentStorySection.value = detail.story.sectionId || ''
-      storyDetailParentView.value = parentView
-      commitView('story_detail')
+      if (owner) return openStoryOwner(owner, detail.story, parentView)
+      loading.value = false
+      storyReadModelStatus.value = '这篇故事没有所属页面。'
     }).catch(error => {
       if (request !== pendingStoryDetailNavigation || revision !== navigation.getRevision()) return
       loading.value = false
-      console.error('[StoryReadModel] Failed to open detail:', error)
-      storyReadModelStatus.value = '故事详情暂时无法读取，请重试。'
+      console.error('[StoryReadModel] Failed to open story:', error)
+      storyReadModelStatus.value = '故事暂时无法读取，请重试。'
     })
   }
 
@@ -310,10 +300,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     currentCategoryId.value = 'idol'
     currentCharacterId.value = idolCode
     commitView('idol_detail')
-  }
-
-  function playStoryDetail(entry = currentStory.value) {
-    if (entry?.file && entry.exists) loadScenario(entry.file, 'story_detail')
   }
 
   function playStoryCollectionChapter(chapter) {
@@ -341,17 +327,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       return
     }
     goHome()
-  }
-
-  function goBackFromStoryDetail() {
-    const parent = storyDetailParentView.value
-    currentStoryFile.value = ''
-    storyDetailParentView.value = ''
-    if (parent === 'external_story_resources') {
-      commitView('external_story_resources')
-      return
-    }
-    return openStoryCatalog()
   }
 
   function goBackFromStoryCollection() {
@@ -391,8 +366,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   }
 
   function normalizeStoryRoute(route) {
-    if (route.view === 'story_collection' && (!route.storyType || !route.storySection) ||
-      route.view === 'story_detail' && !route.story) return { view: 'story_catalog' }
+    if (route.view === 'story_collection' && (!route.storyType || !route.storySection)) return { view: 'story_catalog' }
     return route
   }
 
@@ -407,20 +381,6 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
         if (!isCurrent()) return null
         console.error('[CollectionReadModel] Failed to restore collection:', error)
         collectionReadModelStatus.value = '故事章节暂时无法读取，请稍后重试。'
-        route = { view: 'story_catalog' }
-      }
-    }
-    if ((route.view === 'story_detail' || (route.view === 'player' && route.returnView === 'story_detail')) && route.story) {
-      try {
-        const detail = await loadStoryReadModelDetail(route.story)
-        if (!isCurrent()) return null
-        storyReadModelDetail.value = detail
-        storyReadModelStatus.value = ''
-        route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
-      } catch (error) {
-        if (!isCurrent()) return null
-        console.error('[StoryReadModel] Failed to restore detail:', error)
-        storyReadModelStatus.value = '故事详情暂时无法读取，请稍后重试。'
         route = { view: 'story_catalog' }
       }
     }
@@ -445,9 +405,9 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   return {
     openStoryCatalog, setStoryDomain, setStoryMode, browseStoryCollection, openExternalStoryResources, openExternalStoryInternal,
     openProjectedCollection, openCatalogStory, readEventStory, openStoryDetail, resolveStoryOwner, openStoryOwner, selectStoryCollectionChapter, openStoryIdol,
-    playStoryDetail, playStoryCollectionChapter, playStoryCollectionEpisode,
+    playStoryCollectionChapter, playStoryCollectionEpisode,
     loadCollectionCatalog, loadCollectionDetail, loadStoryReadModelCatalog, loadStoryReadModelLanding, loadStoryReadModelDetail,
-    goBackFromStoryCatalog, goBackFromStoryDetail, goBackFromStoryCollection,
+    goBackFromStoryCatalog, goBackFromStoryCollection,
     invalidateStoryNavigation, normalizeStoryRoute, prepareStoryRoute,
   }
 }

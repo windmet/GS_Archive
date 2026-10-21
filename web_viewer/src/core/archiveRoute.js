@@ -2,6 +2,7 @@ import { normalizeCollectionRoute, collectionKindLabel } from './CollectionRoute
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 import { pruneToRouteSchema } from './routeSchema.js'
 import { STORY_KINDS, sectionLabel } from './archiveSections.js'
+import { UNIT_CODE_TO_NAME, normalizeUnitCode } from '../utils/UnitNameMap.js'
 const ROUTE_QUERY_KEYS = [
   'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
   'event_kind','event_sort','event_page',
@@ -67,10 +68,6 @@ const VALID_VIEWS = new Set([
   'home',
   'idols',
   'idol_detail',
-  'groups',
-  'episode_zero_units',
-  'episodes',
-  'files',
   'cards',
   'card_detail',
   'event_detail',
@@ -107,7 +104,7 @@ const VALID_VIEWS = new Set([
 const VALID_CARD_RELATION_STATES = new Set(['all', 'card_story', 'event_card', 'gasha_card', 'release_series', 'unrelated'])
 const VALID_CARD_ASSET_STATES = new Set(['all', 'visible_icon', 'complete_icons', 'has_large', 'single_state', 'missing_normal'])
 const VALID_CARD_RARITIES = new Set(['all', 'N', 'R', 'SR', 'SSR'])
-const VALID_CATEGORIES = new Set(['main_story', 'event', 'idol', 'idol_chat', 'idol_phone', 'cards', 'episode_zero', 'extra'])
+const VALID_CATEGORIES = new Set(['idol', 'idol_chat', 'idol_phone', 'cards'])
 const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event', 'mixed_unit_event'])
 const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series', 'ticket_named'])
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
@@ -117,7 +114,8 @@ const VALID_WORK_MODES = new Set(['stories', 'lines'])
 const VALID_PICK_TARGETS = new Set(['home', 'profile', 'work', 'story', 'mobile'])
 const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
-const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
+// A story link (story_detail) is not a page: it opens the story's owner page, so nothing returns to it.
+const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage', 'story_detail'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   welcome: { section: 'home', required: [] },
@@ -138,10 +136,6 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
   idols: { section: 'category', required: [] },
   idol_detail: { section: 'idols', required: [], fallback: 'home' },
-  groups: { section: 'category', required: ['category'], fallback: 'home' },
-  episode_zero_units: { section: 'stories', required: [] },
-  episodes: { section: 'stories', required: ['unit'], fallback: 'episode_zero_units' },
-  files: { section: 'category', required: ['group'], fallback: 'home' },
   cards: { section: 'cards', required: [], fallback: 'home' },
   card_detail: { section: 'cards', required: ['card'], fallback: 'cards' },
   event_detail: { section: 'events', required: ['event'], fallback: 'event_catalog' },
@@ -177,7 +171,8 @@ const MAX_SOURCE_DEPTH = 16
 const MAX_SOURCE_LENGTH = 8192
 
 export function ownsArchiveSource(view, returnView = '') {
-  if (view === 'player') return returnView !== 'player' && ownsArchiveSource(returnView || 'files')
+  // A player without a return page (a shared scenario link) still carries where it was opened from.
+  if (view === 'player') return returnView !== 'player' && (!returnView || ownsArchiveSource(returnView))
   return VALID_VIEWS.has(view) && !['home', 'portal'].includes(view)
 }
 
@@ -282,7 +277,45 @@ function positiveInteger(value) {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : 0
 }
 
+// The retired story file browser (groups › files, and 第零话 › episodes › files) predates the story pages.
+// Its links open today's pages: a directory opens its landing, a story file its owner page through the
+// story link (story_detail, resolved by core/StoryOwner.js). Its ids are frozen, so the file names are
+// derived here: a main-story group is the chapter prefix, every other story group is the file itself.
+const RETIRED_DIRECTORY_VIEWS = new Set(['groups', 'files', 'episodes', 'episode_zero_units'])
+const RETIRED_STORY_GROUP_CATEGORIES = new Set(['event', 'episode_zero', 'idol_phone'])
+
+function retiredDirectoryRoute(input) {
+  const view = clean(input.view), category = clean(input.category), idol = clean(input.idol)
+  const group = clean(input.group), unit = clean(input.unit)
+  const landing = storyType => ({ view: 'story_catalog', storyType })
+  if (view === 'episode_zero_units') return landing('unit_story')
+  if (view === 'episodes') {
+    return /^[0-9]{3}[a-z0-9]{3}$/.test(unit)
+      ? { view: 'story_collection', storyType: 'unit_story', storySection: String(Number(unit.slice(0, 3))) }
+      : landing('unit_story')
+  }
+  if (view === 'files' && group) {
+    // Idol groups also held card stories and chats, which are not stories; those open the idol's own page.
+    if (category === 'main_story') return { view: 'story_detail', story: `${group}_00.json` }
+    if (RETIRED_STORY_GROUP_CATEGORIES.has(category) || category === 'idol' && /^1_[25]_/.test(group))
+      return { view: 'story_detail', story: `${group}.json` }
+  }
+  if (category === 'main_story') return landing('main')
+  if (category === 'event') return landing('event')
+  if (category === 'extra') return landing('extra')
+  if (category === 'episode_zero') return landing('unit_story')
+  if (category === 'idol') return { view: 'idol_detail', idol }
+  // A unit's group chat was filed under the unit's 3-digit code (001jup); it opens the unit's page.
+  const chatUnit = category === 'idol_chat' && normalizeUnitCode(idol || group.match(/^8_2_x_(\w{6})_/)?.[1] || '')
+  if (chatUnit && UNIT_CODE_TO_NAME[chatUnit]) return { view: 'unit_detail', unit: chatUnit }
+  // The idol grid view already resolves these to the communication archive (or its idol picker).
+  if (['idol_chat', 'idol_phone', 'cards'].includes(category)) return { view: 'idols', category, idol }
+  return { view: 'home' }
+}
+
 export function normalizeArchiveRoute(input = {}) {
+  if (!input.scenario && RETIRED_DIRECTORY_VIEWS.has(clean(input.view)))
+    input = { ...input, category: '', idol: '', group: '', unit: '', ...retiredDirectoryRoute(input) }
   const scenario = normalizeScenarioFile(input.scenario || '')
   const voice = clean(input.voice)
   const card = clean(input.card)
@@ -319,7 +352,6 @@ export function normalizeArchiveRoute(input = {}) {
 
   if (['idol_detail'].includes(view)) category = 'idol'
   if (['cards', 'card_detail'].includes(view)) category = 'cards'
-  if (['episode_zero_units', 'episodes'].includes(view)) category = 'episode_zero'
 
   const route = {
     view,
@@ -329,7 +361,6 @@ export function normalizeArchiveRoute(input = {}) {
     homeCostume: clean(input.homeCostume),
     category,
     idol,
-    group: clean(input.group),
     unit: clean(input.unit),
     unitFilter: clean(input.unitFilter),
     storyType: clean(input.storyType),
@@ -542,7 +573,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     return [home, { label: sectionLabel('stories'), route: breadcrumbRoute(route, 'story_catalog') }, { label: STORY_KINDS.external.label }]
   }
 
-  if (['story_catalog', 'story_collection', 'story_detail'].includes(route.view)) {
+  if (['story_catalog', 'story_collection'].includes(route.view)) {
     const formalDomainLabels = {
       main: '主线剧情',
       extra: '额外剧情',
@@ -578,7 +609,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
         }),
       })
     }
-    items.push(current(route.view === 'story_collection' ? '故事章节' : '故事详情', route.story || route.storySection))
+    items.push(current('故事章节', route.story || route.storySection))
     return items.length <= 4 ? items : [items[0], ...items.slice(-3)]
   }
 
@@ -591,13 +622,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (route.view === 'idol_story_archive') return [home, storyRoot, current(STORY_KINDS.idol_story.label, route.idol)]
   if (route.view === 'mobile_archive') return [home, current(sectionLabel('interactions'), route.idol)]
 
-  const fallbackDomains = {
-    groups: '剧情',
-    episode_zero_units: '剧情',
-    episodes: '剧情',
-    files: '剧情',
-  }
-  return [home, current(fallbackDomains[route.view] || '资料')]
+  return [home, current('资料')]
 }
 
 // Public path locators: a detail page whose address is only its identity is published as a path
@@ -829,7 +854,6 @@ export function buildArchiveUrl(input, route) {
   if (normalized.view === 'home' && normalized.homeFrom) url.searchParams.set('home_from', normalized.homeFrom)
   if (normalized.category) url.searchParams.set('category', normalized.category)
   if (normalized.idol) url.searchParams.set('idol', normalized.idol)
-  if (normalized.group) url.searchParams.set('group', normalized.group)
   if (normalized.unit) url.searchParams.set('unit', normalized.unit)
   if (normalized.unitFilter) url.searchParams.set('unit_filter', normalized.unitFilter)
   if (normalized.storyType) url.searchParams.set('story_type', normalized.storyType)
@@ -859,7 +883,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.scenario && normalized.startStep) url.searchParams.set('start_step', String(normalized.startStep))
   if (normalized.scenario && normalized.endStep) url.searchParams.set('end_step', String(normalized.endStep))
   if (normalized.voice) url.searchParams.set('voice', normalized.voice)
-  if (normalized.returnView && normalized.returnView !== 'files') url.searchParams.set('return', normalized.returnView)
+  if (normalized.returnView) url.searchParams.set('return', normalized.returnView)
   if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
   if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
   return pruneToRouteSchema(url, normalized.view, normalized.returnView, ROUTE_QUERY_KEYS)

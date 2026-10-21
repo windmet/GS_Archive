@@ -1,5 +1,4 @@
 import { bindIdolNavigation } from './lib/idol-navigation-harness.mjs'
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -28,7 +27,7 @@ for (const preferred of [null, { id: '002sht' }]) {
     gashaReadModelStatus: { value: 'old status' },
     filterQuery: { value: 'old query' }, currentCategoryId: { value: 'cards' },
     currentCharacterId: { value: '002sht' }, currentIdolUnitFilter: { value: '01jup' },
-    currentGroup: { value: { id: 'old' } }, currentCardId: { value: 'old-card' },
+    currentCardId: { value: 'old-card' },
     preferredArchiveIdol: { value: preferred },
     buildArchiveSourceQuery: () => '', currentArchiveRoute: () => ({}),
     commitView: next => { views.push(next); state.view.value = next },
@@ -45,7 +44,6 @@ for (const preferred of [null, { id: '002sht' }]) {
   assert.equal(state.currentIdolUnitFilter.value, '')
   assert.equal(state.currentCardId.value, '')
   assert.equal(state.gashaReadModelStatus.value, '')
-  assert.equal(state.currentGroup.value, null)
 }
 // Execute the real shortcut dispatcher. Its collaborators record destinations;
 // no replacement dispatcher or duplicated decision logic is used in the test.
@@ -87,29 +85,5 @@ for (const preferred of [null, { id: '002sht' }]) {
   state.currentCategoryId.value = 'cards'
   vm.runInNewContext('result = idolList.value', state)
   assert.deepEqual(Array.from(state.result, row => [row.id, row.cardCount]), [['002sht', 2]])
-}
-{
-  const destinations = []
-  const state = {
-    currentCharacterId: { value: '001tom' }, currentCategoryId: { value: 'idol' },
-    currentPickTarget: { value: '' }, detailSourceRoute: { value: 'old-source' },
-    archiveBootstrap: { idols: [{ id: '001tom' }] }, currentGroup: { value: { id: 'group' } },
-    currentUnit: { value: null }, currentEpisodeId: { value: '' }, currentCardId: { value: '' },
-    openIdolReadModel: id => destinations.push(['detail', id]),
-    openIdolPicker: target => destinations.push(['picker', target]),
-    commitView: view => destinations.push(['view', view]), goHome: () => destinations.push(['home']),
-  }
-  bindLegacyAliasNavigation(app, state).stop()
-  state.goBackFromGroups()
-  assert.deepEqual(destinations.pop(), ['detail', '001tom'])
-  state.currentCategoryId.value = 'idol_chat'
-  state.goBackFromGroups()
-  assert.deepEqual(destinations.pop(), ['view', 'idol_picker'])
-  assert.equal(state.detailSourceRoute.value, '')
-  assert.equal(state.currentPickTarget.value, 'mobile')
-  state.currentCategoryId.value = 'idol_chat'
-  state.currentCharacterId.value = '001jup'
-  state.goBackToFiles()
-  assert.deepEqual(destinations.pop(), ['view', 'groups'])
 }
 console.log('Idol navigation UX: main destination is the same directory with or without preferred idol')

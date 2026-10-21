@@ -21,7 +21,7 @@ function setup() {
     archiveBootstrap: transport.bootstrap,
     pendingIdolNavigation: 0,
     idolReadModelStatus: { value: '' }, idolReadModelDetail: { value: null },
-    loading: { value: false }, currentCategoryId: { value: '' }, currentGroup: { value: 'old' },
+    loading: { value: false }, currentCategoryId: { value: '' },
     currentCharacterId: { value: '' }, currentCardId: { value: 'old' }, filterQuery: { value: 'query' },
     view: { value: 'idols' },
     navigation: { getRevision: () => revision, isDisposed: () => false },

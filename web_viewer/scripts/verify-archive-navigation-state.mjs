@@ -1,6 +1,6 @@
 import { bindGashaNavigation, createGashaFixtureTransport } from './lib/gasha-navigation-harness.mjs'
 import assert from 'node:assert/strict'
-import { isRef } from 'vue'
+import { isRef, ref } from 'vue'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
@@ -14,13 +14,14 @@ const fields = Object.keys(navigation).filter(key => key !== 'currentArchiveRout
 assert.ok(fields.every(key => isRef(navigation[key])))
 assert.equal(navigation.view.value, '__boot__')
 assert.equal(navigation.homeSelectedId.value, '')
-assert.equal(navigation.returnViewAfterPlayer.value, 'files')
+assert.equal(navigation.returnViewAfterPlayer.value, '')
 for (const key of fields) {
   assert.notEqual(navigation[key], independent[key], `${key} must be scoped to one App instance`)
   navigation[key].value = `${key}-fixture`
 }
-navigation.currentGroup.value = { id: 'group-1' }
-navigation.currentUnit.value = { unit_code: 'legacy-unit', id: 'unit-fallback' }
+// The oracle predates the retired story file browser (its group and unit) and the retired story detail page;
+// it runs without them, and story_detail is only a link that opens the story's owner page.
+const retired = { currentGroup: ref(null), currentUnit: ref(null), storyDetailParentView: ref('') }
 // New independent entry position is tested in verify-reading-playback; legacy projection stays unchanged.
 navigation.currentScenarioInitialStep.value = null
 navigation.playerEntryRoute.value = null // legacy oracle excludes explicit player entry descriptors
@@ -28,18 +29,19 @@ navigation.stageTargetId.value = ''
 navigation.homeFrom.value = '' // Independent portal visit is tested by the portal navigation contract.
 navigation.currentScenarioStartStep.value = 7
 navigation.currentScenarioEndStep.value = 12
-const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']
+const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_collection', 'song_detail', '']
 let cases = 0
 for (const view of VALID_VIEWS) {
-  if (['portal', 'reader', 'welcome', 'idol_picker','collection_catalog','photo_catalog','event_catalog','picture_studio','chart_lab','live','studio','experiments'].includes(view)) continue // New domain surfaces have their own identity contract.
+  if (['portal', 'reader', 'welcome', 'idol_picker','collection_catalog','photo_catalog','event_catalog','picture_studio','chart_lab','live','studio','experiments','story_detail'].includes(view)) continue // New domain surfaces have their own identity contract.
   for (const returnView of contexts) {
     for (const parent of contexts) {
       navigation.view.value = view
       navigation.currentSongId.value = view === 'chibi_stage' ? '' : 'currentSongId-fixture'
       navigation.returnViewAfterPlayer.value = returnView
-      for (const key of ['songParentView', 'eventParentView', 'storyDetailParentView', 'storyCollectionParentView']) navigation[key].value = parent
+      for (const key of ['songParentView', 'eventParentView', 'storyCollectionParentView']) navigation[key].value = parent
       const actual = navigation.currentArchiveRoute()
-      const expected = legacyProjection(navigation)
+      const { group, ...expected } = legacyProjection({ ...navigation, ...retired })
+      assert.equal(group, '')
       // The route-schema change intentionally stopped leaking a previous
       // Player's return destination into non-Player pages.
       if (view !== 'player') expected.returnView = ''

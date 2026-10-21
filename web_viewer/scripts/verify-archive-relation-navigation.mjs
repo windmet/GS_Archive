@@ -88,7 +88,7 @@ const fixtures = [
   ['gasha_detail', 'openGashaCard', { card_resource_id: card.resource_id }, 'card_detail'],
   ['event_detail', 'openEventCard', { card_resource_id: card.resource_id }, 'card_detail'],
   ['mobile_archive', 'openMobileCard', 42, 'card_detail'],
-  ['story_detail', 'openStoryIdol', '002sht', 'idol_detail'],
+  ['story_collection', 'openStoryIdol', '002sht', 'idol_detail'],
   ['card_detail', 'openRelatedCard', card, 'card_detail'],
   ['idol_detail', 'openEventDetail', { event_id: 430018 }, 'event_detail'],
   ['unit_detail', 'openUnitEvent', { event_id: 430018 }, 'event_detail'],
@@ -97,7 +97,6 @@ for (const [view, handler, arg, target] of fixtures) {
   for (const [key, ref] of Object.entries(useArchiveNavigationState())) {
     if (key !== 'currentArchiveRoute') state[key].value = ref.value
   }
-  Object.assign(state.currentGroup, { value: null })
   state.view.value = view
   state.currentCharacterId.value = '003hok'
   state.currentArchiveUnitCode.value = '01jup'
@@ -138,7 +137,7 @@ for (let i = expected.length - 2; i >= 0; i--) {
   route = roundTrip(source(route))
   assert.deepEqual(route, expected[i], `refresh and pop to ${journey[i].view}`)
 }
-for (const returnView of ['unit_detail', 'story_collection', 'mobile_archive', 'files', 'reader']) {
+for (const returnView of ['unit_detail', 'story_collection', 'mobile_archive', '', 'reader']) {
   const player = roundTrip({ view: 'player', scenario: 'example.json', returnView,
     reading: 'document', sourceRoute: buildArchiveSourceQuery(expected[3]) })
   assert.deepEqual(source(player), expected[3], `playback carrier ${returnView}`)

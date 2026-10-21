@@ -13,7 +13,6 @@ import { parse } from '@babel/parser'
 import { bindEventNavigation, eventFixtureDetail } from './lib/event-navigation-harness.mjs'
 import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
@@ -72,7 +71,7 @@ function fixture({ story = false } = {}) {
 function restoreFixture() {
   const t = fixture({ story: true }), c = t.c
   bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindGashaNavigation(app, c); bindResourceNavigation(app, c); bindIdolFixtureNavigation(app, c)
-  bindStoryArchiveNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
+  bindStoryArchiveNavigation(app, c).stop()
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   Object.assign(c, { loadingPurpose: ref(''), playbackError: ref(''), isDirectScenarioEntry,
     primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},

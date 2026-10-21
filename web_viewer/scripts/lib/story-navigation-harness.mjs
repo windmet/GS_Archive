@@ -16,9 +16,9 @@ export function bindStoryNavigation(app, context = {}) {
   const imported = body.find(node => node.type === 'ImportDeclaration' && node.specifiers.some(specifier => specifier.local.name === 'useStoryNavigation'))
   assert.equal(imported?.source.value, './composables/useStoryNavigation.js')
   const unexpected = name => () => { throw new Error(`Unexpected story fixture boundary: ${name}`) }
-  const defaults = { ...useArchiveNavigationState(), loading: ref(false), storyVisibleLimit: ref(80), currentStory: ref(null),
+  const defaults = { ...useArchiveNavigationState(), loading: ref(false), storyVisibleLimit: ref(80),
     collectionReadModelCatalog: ref(null), collectionReadModelDetail: ref(null), collectionReadModelStatus: ref(''),
-    storyReadModelCatalog: ref(null), storyReadModelDetail: ref(null), storyReadModelStatus: ref(''), storyCatalogIndex: ref(null), storyCatalogLanding: ref(null),
+    storyReadModelCatalog: ref(null), storyReadModelStatus: ref(''), storyCatalogIndex: ref(null), storyCatalogLanding: ref(null),
     archiveBootstrap: { idols: [], domains: {}, counts: { catalog_story_entries: 0 } }, navigation: createArchiveNavigationCoordinator(),
     readModelClient: { load: unexpected('readModelClient.load') },
   }
