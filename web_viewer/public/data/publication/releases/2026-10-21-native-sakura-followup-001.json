@@ -1,0 +1,320 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-21-native-sakura-followup-001",
+  "created_at": "2026-10-21T01:53:04.937779+00:00",
+  "prepared_from_commit": "32ad3a1692b308b146a3401632a99357329d112c",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:311c4f525f7c85111edfa035",
+      "stage-object-emitters:eaf6e6b1839545e535e4ecce",
+      "stage-object-emitters:3b5dc517006c69c8b7e9c383",
+      "stage-object-emitters:70070f4d8534abe4033b757b"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:311c4f525f7c85111edfa035",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_ksktfg_sakura.unity3d",
+        "sha256": "18ea39874b5c3ba3a1a380e706feb3555b573894accf98ef4933d5d378a66a9c",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_ksktfg_sakura",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-738a4a280ff63805fbd1f793d38042f1:-486480303910218946",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 6ab01186bab7e6c6a5771d377790f4a6a73acd54155a379105ea3876cd517f2c; 128x128 RGBA export. Four source-bound sakura resources remain explicitly noise_preview."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/311c4f525f7c85111edfa035.png",
+          "url": "/data/stage-object-emitters/311c4f525f7c85111edfa035.png",
+          "bytes": 4207,
+          "sha256": "3ae7251c8bdf1a2f715b58f0db257b9c0cf8706b7cb59dd7c30a3328d0abba71"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original RNG, trajectory or device parity claim.",
+          "All previous 86 emitter models and 97 texture descriptors are structurally unchanged. Revert the scoped source/data/texture increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=ksktfg&stage=ksktfg_live_effect",
+        "tested_at": "2026-10-21T01:53:04.937779+00:00",
+        "tested_commit": "32ad3a1692b308b146a3401632a99357329d112c",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted sakura changes; local dev full mode on 5213, rm-release-20261015 candidate.",
+          "At 92000ms sakura attached with 162 total native particles; at 94200ms sakura absent. Screenshot ksktfg-sakura-92s-desktop.png.",
+          "Unsupported/deferred lists empty at sampled active windows; console errors0. These are local samples, not production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:eaf6e6b1839545e535e4ecce",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_ksktfg_sakura.unity3d",
+        "sha256": "18ea39874b5c3ba3a1a380e706feb3555b573894accf98ef4933d5d378a66a9c",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "tap_shine",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-738a4a280ff63805fbd1f793d38042f1:343275573402032274",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 13a6bd92b5a4932bf304d046e0b9e26dee43a784074169b4eb4f98315352d956; 256x256 RGBA export. Four source-bound sakura resources remain explicitly noise_preview."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/eaf6e6b1839545e535e4ecce.png",
+          "url": "/data/stage-object-emitters/eaf6e6b1839545e535e4ecce.png",
+          "bytes": 8201,
+          "sha256": "e5cb32ff27e5a672ae5bb7aa4600886443d424ed913b4737c08c8994a59bb08d"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original RNG, trajectory or device parity claim.",
+          "All previous 86 emitter models and 97 texture descriptors are structurally unchanged. Revert the scoped source/data/texture increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=ksktfg&stage=ksktfg_live_effect",
+        "tested_at": "2026-10-21T01:53:04.937779+00:00",
+        "tested_commit": "32ad3a1692b308b146a3401632a99357329d112c",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted sakura changes; local dev full mode on 5213, rm-release-20261015 candidate.",
+          "At 92000ms sakura attached with 162 total native particles; at 94200ms sakura absent. Screenshot ksktfg-sakura-92s-desktop.png.",
+          "Unsupported/deferred lists empty at sampled active windows; console errors0. These are local samples, not production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:3b5dc517006c69c8b7e9c383",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_itowks.unity3d",
+        "sha256": "c8c633970321c50cc5dd9987cdb98c7f22c967e87d44f4e1cff5daeb2262e27e",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_ksktfg_sakura",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-b106d493f5e35e01bf671feaf3972d8d:-486480303910218946",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 dd67a8721d6ccf91e4ed33234633397bfe58a0c6ab1691e8e0342014f5f123b0; 128x128 RGBA export. Four source-bound sakura resources remain explicitly noise_preview."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/3b5dc517006c69c8b7e9c383.png",
+          "url": "/data/stage-object-emitters/3b5dc517006c69c8b7e9c383.png",
+          "bytes": 4207,
+          "sha256": "3ae7251c8bdf1a2f715b58f0db257b9c0cf8706b7cb59dd7c30a3328d0abba71"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original RNG, trajectory or device parity claim.",
+          "All previous 86 emitter models and 97 texture descriptors are structurally unchanged. Revert the scoped source/data/texture increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=itowks&stage=itowks_live_effect",
+        "tested_at": "2026-10-21T01:53:04.937779+00:00",
+        "tested_commit": "32ad3a1692b308b146a3401632a99357329d112c",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted sakura changes; local dev full mode on 5213, rm-release-20261015 candidate.",
+          "At 76000ms all three sakura assets attached; 563 native particles total. At 82400ms absent; 89000ms restarted, rewind and cold reload 76000ms restore 563. Actual playback reached 90500ms.",
+          "Desktop and 390x844 Browser accepted; document scrollWidth/clientWidth both390. Screenshots itowks-sakura-76s-desktop.png and itowks-sakura-76s-mobile.png.",
+          "Unsupported/deferred lists empty at sampled active windows; console errors0. These are local samples, not production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:70070f4d8534abe4033b757b",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_itowks.unity3d",
+        "sha256": "c8c633970321c50cc5dd9987cdb98c7f22c967e87d44f4e1cff5daeb2262e27e",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "tap_shine",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-b106d493f5e35e01bf671feaf3972d8d:343275573402032274",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 b4bb3c7aa1ad5cc5d49d4acb66c39e3da970502a17152ac35a4f9506bf747de2; 256x256 RGBA export. Four source-bound sakura resources remain explicitly noise_preview."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/70070f4d8534abe4033b757b.png",
+          "url": "/data/stage-object-emitters/70070f4d8534abe4033b757b.png",
+          "bytes": 8201,
+          "sha256": "e5cb32ff27e5a672ae5bb7aa4600886443d424ed913b4737c08c8994a59bb08d"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original RNG, trajectory or device parity claim.",
+          "All previous 86 emitter models and 97 texture descriptors are structurally unchanged. Revert the scoped source/data/texture increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=itowks&stage=itowks_live_effect",
+        "tested_at": "2026-10-21T01:53:04.937779+00:00",
+        "tested_commit": "32ad3a1692b308b146a3401632a99357329d112c",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted sakura changes; local dev full mode on 5213, rm-release-20261015 candidate.",
+          "At 76000ms all three sakura assets attached; 563 native particles total. At 82400ms absent; 89000ms restarted, rewind and cold reload 76000ms restore 563. Actual playback reached 90500ms.",
+          "Desktop and 390x844 Browser accepted; document scrollWidth/clientWidth both390. Screenshots itowks-sakura-76s-desktop.png and itowks-sakura-76s-mobile.png.",
+          "Unsupported/deferred lists empty at sampled active windows; console errors0. These are local samples, not production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

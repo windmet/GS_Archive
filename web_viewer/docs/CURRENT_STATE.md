@@ -2,7 +2,7 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-21（舞台成员槽序及烟雾续批，已同步 master #60–#65；站点/R2 仍为历史记录，未重新验收）
+更新：2026-10-21（舞台成员槽序、烟雾及樱花续批，已同步 master #60–#65；站点/R2 仍为历史记录，未重新验收）
 
 ## 基线
 
@@ -45,6 +45,8 @@
 ## 未合入但保留的分支
 
 10-21 [mtples / pfofos烟雾续批](NATIVE_SMOKE_FOLLOWUP_20261021.md)接入四组、八个Noise预览系统，旧82组模型与95份纹理描述不变；无consumer粒子30→26，缺口事件413→369。真实32个show/restart窗口、RAW像素、发布依赖闭包及两首歌Browser通过，保留noise_preview和火焰等缺口。未部署。
+
+10-21 [樱花续批](NATIVE_SAKURA_FOLLOWUP_20261021.md)接入ksktfg与itowks三路共四组、16个Noise预览系统；旧86组模型与97份纹理描述不变。无consumer粒子26→22，缺口事件369→336、编排16→11。来源绑定、55个真实预览窗口、RAW像素、450文件分片闭包及桌面/手机Browser通过；保留noise_preview，原片/设备与其余22种缺口继续开放。未部署。
 
 10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)之后已完成[固定曲消费者接入](NATIVE_ORIGINAL_LINEUP_CONSUMER_20261021.md)：13首显式序优先，41首组合默认序来自表2字段37，纠正24首编号回退并修复`yknkmh`隐藏槽。随后已核实[所选Unit的独立原生选组排序](NATIVE_SELECTED_UNIT_LINEUP_20261021.md)，48个编排按16组合字段37排序，纠正30个编排。舞台专用索引v2直接消费，冻结read-model未改；164项源码检查、build:check及2/3/5人实际Browser通过。原片/设备对照、原生库存卡及完整编队交互仍不在验收范围。未部署。
 
