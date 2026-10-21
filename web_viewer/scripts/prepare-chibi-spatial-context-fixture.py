@@ -60,4 +60,10 @@ proof=dict(schemaVersion=1,unityDataSha256=sha(blob),managedBinarySha256=identit
 target=root/'scripts/fixtures/chibi-spatial-context-native.json'
 if args.write:target.write_text(json.dumps(proof,ensure_ascii=False,separators=(',',':')),encoding='utf8')
 else:assert json.loads(target.read_text(encoding='utf8'))==proof,'Spatial source/context evidence changed'
+binding=dict(schemaVersion=1,sourceContextSha256=sha(target.read_bytes()),stageScaleXY=constants['wideStageScale']['value'],
+    pixelToStage=constants['pixelToStage']['value'],scriptDivisor=constants['scriptDivisor']['value'],basePos=origin,
+    containerZ=sum(t['position']['z'] for t in proof['container']['chain']),cameraParentZ=sum(t['position']['z'] for t in proof['camera']['chain'][1:]))
+binding_path=root/'src/data/chibiObjectSpatialBinding.json'
+if args.write:binding_path.write_text(json.dumps(binding,ensure_ascii=False,separators=(',',':')),encoding='utf8')
+else:assert json.loads(binding_path.read_text(encoding='utf8'))==binding,'Spatial runtime binding changed'
 print(json.dumps(dict(stage=stage.path_id,container=container.path_id,parent=base.path_id,camera=camera.path_id,cameraEvents=len(song['cameraEvents']),fireEvents=len(proof['arrangement']['fireEvents']))))

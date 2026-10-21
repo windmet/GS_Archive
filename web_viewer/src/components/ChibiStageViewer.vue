@@ -607,6 +607,7 @@ import { motionClockForSong, nativeMotionTempoAt, nativeMotionSpeed, nativeMotio
 import { createPenlightRuntime, applyPenlightRuntime, releasePenlightRuntime } from '../core/chibiPenlightRenderer.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
+import {objectSpatialContext,OBJECT_SPATIAL_PROFILE} from '../core/chibiObjectSpatialContext.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, resolveBackmonitorLogo, backmonitorLogoResources, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { spriteLaserModel, createSpriteLaserRuntime, applySpriteLaserRuntime } from '../core/chibiSpriteLaser.js'
@@ -3049,8 +3050,12 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
     // 720 reference pixels / 100 pixels per particle unit, undoing parent zoom
     // and object scale for the native screen-relative particle-size boundary.
-    if(runtime.nativeEmitters)updateObjectEmitters(PIXI,runtime,stageTime.value,state.activatedAt,particle?.stoppedAt,cameraContainer.rotation,
-      7.2/Math.max(1e-6,environmentScale.value*Number(state.scale)/1000*cameraContainer.scale.x))
+    if(runtime.nativeEmitters) {
+      const spatial=runtime.nativeEmitters.some(e=>e.system.stretch?.profile===OBJECT_SPATIAL_PROFILE)
+        ?objectSpatialContext(cameraEnabled.value?currentCameraState.value:{verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0},state,selectedSong.value?.id):null
+      updateObjectEmitters(PIXI,runtime,stageTime.value,state.activatedAt,particle?.stoppedAt,cameraContainer.rotation,
+        7.2/Math.max(1e-6,environmentScale.value*Number(state.scale)/1000*cameraContainer.scale.x),spatial)
+    }
     if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
     if (runtime.bloomEmitters) updateChibiBloom(runtime,stageTime.value,state.activatedAt,particle?.stoppedAt)
     syncObjectRendererPlanes(runtime)

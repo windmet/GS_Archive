@@ -18,7 +18,7 @@ data,raw,images=em.extract(only=names,partial=True)
 models={};cases=[]
 for name in sorted(names):
     asset=data['assets'][name]
-    selected=[s for s in asset['systems'] if s.get('partial')==['stretch_omitted']]
+    selected=[s for s in asset['systems'] if s.get('partial')==['stretch_omitted'] or s.get('stretch',{}).get('profile')=='native-source-spatial-v1']
     assert len(selected)==1 and not asset['deferred']
     s=selected[0];p=next(p for o in raw['objects'] if o['asset']==name for p in o['particles'] if p['pathId']==s['source']['pathId'])
     shape=s['shape'];sr=p['renderer']['stretch']

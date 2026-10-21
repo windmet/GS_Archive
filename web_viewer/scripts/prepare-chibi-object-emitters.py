@@ -3,6 +3,8 @@ import json,sys,argparse,importlib.util
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 PROMOTIONS=json.loads((ROOT/'scripts/fixtures/chibi-object-emitter-promotions.json').read_text(encoding='utf8'))
+SPATIAL_CONTEXT=json.loads((ROOT/'scripts/fixtures/chibi-spatial-context-native.json').read_text(encoding='utf8'))
+SPATIAL_CONES=json.loads((ROOT/'scripts/fixtures/chibi-cone-stretch-native.json').read_text(encoding='utf8'))
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
@@ -49,7 +51,7 @@ def stationary_distance_proof(record, environment, audit, choreography):
     w.require(bool(arrangements),'No choreography proof for distance emitter')
     return dict(profile='stationary-object-layer-v1',components=components,arrangements=arrangements)
 
-def model(p, partial=False, stationary=False):
+def model(p, partial=False, stationary=False, spatial_source=None):
     m=p.get('modules') or {};i=m.get('InitialModule');e=m.get('EmissionModule');r=p.get('renderer') or {};main=p.get('main') or {}
     w.require(bool(i) and bool(e) and bool(r) and bool(main),'Missing core particle modules')
     s=m.get('ShapeModule');u=m.get('UVModule');c=m.get('ClampVelocityModule');chain=p.get('transformChain') or []
@@ -144,6 +146,17 @@ def model(p, partial=False, stationary=False):
             if supported:
                 data['stretch']={**sr,'profile':'native-classic-planar-v1'}
                 marks.append('stretch_preview')
+            elif spatial_source:
+                bound=spatial_source['system']
+                w.require(data['source']==bound['source'] and chain==bound['chain'] and sr==spatial_source['renderer'],'Spatial stretch RAW identity changed')
+                w.require(s['type']==4 and s['angle']==1 and s['m_Rotation']==dict(x=-90,y=0,z=0) and not c and not velocity
+                    and 'NoiseModule' not in m and not i['size3D'] and not i.get('rotation3D') and data['sizeOverLife'] is None
+                    and i['startSize']['minMaxState']==i['startSpeed']['minMaxState']==i['gravityModifier']['minMaxState']==0
+                    and i['gravityModifier']['scalar']==0 and r['alignment']==0 and sr['velocityScale']==0 and sr['cameraVelocityScale']==0,
+                    'Spatial stretch exceeds the source-bound profile')
+                data['stretch']={**sr,'profile':'native-source-spatial-v1','binding':dict(arrangements=[SPATIAL_CONTEXT['arrangement']['id']],
+                    sourceContextSha256=w.sha((ROOT/'scripts/fixtures/chibi-spatial-context-native.json').read_bytes()))}
+                marks.append('stretch_preview')
             else:marks.append('stretch_omitted')
         if marks:data['partial']=marks
     return data
@@ -198,7 +211,8 @@ def extract(mode='current', only=None, partial=False):
                 source=a.source_ref(ob) if ob else {k:p.get(k) for k in ['serializedFile','pathId']}
                 if reasons and not asset_partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
-                    system=model(p,asset_partial,bool(distance_proof))
+                    spatial_source=SPATIAL_CONES['models'].get(name) if PROMOTIONS.get('previewAssets',{}).get(name,{}).get('spatialProfile') else None
+                    system=model(p,asset_partial,bool(distance_proof),spatial_source)
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')
@@ -227,10 +241,15 @@ def extract(mode='current', only=None, partial=False):
                     w.require(models[name]['bundleSha256']==expected['bundleSha256'] and [s['source'] for s in systems]==expected['sources'],'Promoted emitter source identity changed: '+name)
             if name in PROMOTIONS.get('previewAssets',{}):
                 expected=PROMOTIONS['previewAssets'][name]
+                if expected.get('spatialProfile'):
+                    w.require(w.sha(choreopath.read_bytes())==SPATIAL_CONTEXT['choreographySha256']
+                        and all(song['id']==SPATIAL_CONTEXT['arrangement']['id'] for song in choreography['songs'] if any(e['asset']==name for e in song.get('objectLayerEvents',[]))),
+                        'Spatial source needs its bound free-camera choreography')
                 w.require(not deferred and len(systems)==expected['systems'] and models[name]['bundleSha256']==expected['bundleSha256']
                     and [s['source'] for s in systems]==expected['sources']
                     and [s.get('partial',[]) for s in systems]==expected.get('systemPartials',[expected.get('partialMarkers',[])]*len(systems))
-                    and all(not s.get('partial') or (s['partial']==['noise_preview'] and s.get('noise',{}).get('profile')=='native-high-curl-v1') for s in systems),
+                    and all(not s.get('partial') or (s['partial']==['noise_preview'] and s.get('noise',{}).get('profile')=='native-high-curl-v1')
+                        or (expected.get('spatialProfile') and s.get('partial')==['stretch_preview'] and s.get('stretch',{}).get('profile')=='native-source-spatial-v1') for s in systems),
                     'Preview emitter source or supported capability changed: '+name)
             for system in systems:
                 if system['maskTexture']:w.require(any(m['texture']==system['maskTexture'] for m in bound_masks),'Unbound per-particle mask')

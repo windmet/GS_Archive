@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-21-native-pfofos-fire-001",
+  "created_at": "2026-10-21T13:18:06.923661+00:00",
+  "prepared_from_commit": "dfa496db25e5184db1f2adbbc6f9df86de4b1636",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:f161574dfb114a551856d7d7",
+      "stage-object-emitters:f28fab56c8b010ae67658e9e",
+      "stage-object-emitters:1c5ef5b6904c30a23586aa62"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:f161574dfb114a551856d7d7",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_pfofos.unity3d",
+        "sha256": "df476e543d448a3bd79faafa5431c0534d2d7f3e3019e815d5a1122052401a46",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_bnckgy_fire_2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-b35fe75805d7cc73f68dc2f6c9f56b98:-1738156022434189484",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 e63b8fae54ea4d638015172444e068a417da2d1bc98c326427cf9d8f54f36a9c; 512x512 RGBA. Eight bound fire assets retain Noise and spatial-stretch preview boundaries."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/f161574dfb114a551856d7d7.png",
+          "url": "/data/stage-object-emitters/f161574dfb114a551856d7d7.png",
+          "bytes": 80592,
+          "sha256": "99243ba060f993a16fbce85ed350c9f4984a5b7ce65e15516141fe6057250f67"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA pixels matched. Texture parity only; native RNG, frame history and original scene parity remain open.",
+          "Previous 94 models and 110 texture descriptors unchanged; eight new assets bind 56 systems and 104 actual Show windows."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=pfofos&stage=pfofos_live_effect",
+        "tested_at": "2026-10-21T13:22:40.990241+00:00",
+        "tested_commit": "dfa496db25e5184db1f2adbbc6f9df86de4b1636",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout 5213 PID70704, rm-release-20261015, full mode; inherited manual cast, not original-member acceptance.",
+          "60000ms eight fire assets visually present,457 total object particles;60100ms all fire assets removed,165 remaining particles;60900ms eight fire assets restarted with smoke,732 total particles. Rewind60000ms and page reload/cold seek restore457.",
+          "Desktop1280x720/mobile390x844; mobile document/scrollWidth390. Sampled unsupported/deferred empty, console errors0; warnings not asserted absent. Playback observed from60000ms through85400ms; pause succeeded and DOM reports paused.",
+          "Actual in-stage song selector switched Reversed Masquerade to pfofos and back;60000ms457 then remasq assets empty/particles0. Screenshots pfofos-fire-60s-desktop.png,pfofos-fire-60s-mobile.png,pfofos-fire-60900-desktop.png.",
+          "Native spatial geometry matches bound source contexts; Noise, Web reference clock, actual device/original scene and native RNG remain preview boundaries."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:f28fab56c8b010ae67658e9e",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_pfofos.unity3d",
+        "sha256": "df476e543d448a3bd79faafa5431c0534d2d7f3e3019e815d5a1122052401a46",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "shine",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-b35fe75805d7cc73f68dc2f6c9f56b98:8165143235291980510",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 796b96b94f232e585e313ca38ed1d71f453d557f0bbad61a296617a581c62155; 128x128 RGBA. Eight bound fire assets retain Noise and spatial-stretch preview boundaries."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/f28fab56c8b010ae67658e9e.png",
+          "url": "/data/stage-object-emitters/f28fab56c8b010ae67658e9e.png",
+          "bytes": 5113,
+          "sha256": "27958154e97d2bf69526f8c87d75806c72ce306b24118c373d0ff329cd7fd448"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA pixels matched. Texture parity only; native RNG, frame history and original scene parity remain open.",
+          "Previous 94 models and 110 texture descriptors unchanged; eight new assets bind 56 systems and 104 actual Show windows."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=pfofos&stage=pfofos_live_effect",
+        "tested_at": "2026-10-21T13:22:40.990257+00:00",
+        "tested_commit": "dfa496db25e5184db1f2adbbc6f9df86de4b1636",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout 5213 PID70704, rm-release-20261015, full mode; inherited manual cast, not original-member acceptance.",
+          "60000ms eight fire assets visually present,457 total object particles;60100ms all fire assets removed,165 remaining particles;60900ms eight fire assets restarted with smoke,732 total particles. Rewind60000ms and page reload/cold seek restore457.",
+          "Desktop1280x720/mobile390x844; mobile document/scrollWidth390. Sampled unsupported/deferred empty, console errors0; warnings not asserted absent. Playback observed from60000ms through85400ms; pause succeeded and DOM reports paused.",
+          "Actual in-stage song selector switched Reversed Masquerade to pfofos and back;60000ms457 then remasq assets empty/particles0. Screenshots pfofos-fire-60s-desktop.png,pfofos-fire-60s-mobile.png,pfofos-fire-60900-desktop.png.",
+          "Native spatial geometry matches bound source contexts; Noise, Web reference clock, actual device/original scene and native RNG remain preview boundaries."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:1c5ef5b6904c30a23586aa62",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_pfofos.unity3d",
+        "sha256": "df476e543d448a3bd79faafa5431c0534d2d7f3e3019e815d5a1122052401a46",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_bnckgy_fire_1",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-b35fe75805d7cc73f68dc2f6c9f56b98:-5018633803627157066",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 8492d0b62313c427e299c08665b3dd1514ace354b9ff474e4a30177ce837c812; 1024x1024 RGBA. Eight bound fire assets retain Noise and spatial-stretch preview boundaries."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/1c5ef5b6904c30a23586aa62.png",
+          "url": "/data/stage-object-emitters/1c5ef5b6904c30a23586aa62.png",
+          "bytes": 636175,
+          "sha256": "c56134d6a8895611d19e087df6e08a740344c29f79abda2d0e2b559288018712"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA pixels matched. Texture parity only; native RNG, frame history and original scene parity remain open.",
+          "Previous 94 models and 110 texture descriptors unchanged; eight new assets bind 56 systems and 104 actual Show windows."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=pfofos&stage=pfofos_live_effect",
+        "tested_at": "2026-10-21T13:22:40.990263+00:00",
+        "tested_commit": "dfa496db25e5184db1f2adbbc6f9df86de4b1636",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout 5213 PID70704, rm-release-20261015, full mode; inherited manual cast, not original-member acceptance.",
+          "60000ms eight fire assets visually present,457 total object particles;60100ms all fire assets removed,165 remaining particles;60900ms eight fire assets restarted with smoke,732 total particles. Rewind60000ms and page reload/cold seek restore457.",
+          "Desktop1280x720/mobile390x844; mobile document/scrollWidth390. Sampled unsupported/deferred empty, console errors0; warnings not asserted absent. Playback observed from60000ms through85400ms; pause succeeded and DOM reports paused.",
+          "Actual in-stage song selector switched Reversed Masquerade to pfofos and back;60000ms457 then remasq assets empty/particles0. Screenshots pfofos-fire-60s-desktop.png,pfofos-fire-60s-mobile.png,pfofos-fire-60900-desktop.png.",
+          "Native spatial geometry matches bound source contexts; Noise, Web reference clock, actual device/original scene and native RNG remain preview boundaries."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

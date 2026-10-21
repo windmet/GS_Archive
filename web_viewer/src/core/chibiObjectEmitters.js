@@ -1,6 +1,7 @@
 import { stepNoiseMotion } from './chibiParticleNoise.js'
 import { createNoiseClock } from './chibiParticleNoiseClock.js'
 import { samplePlanarStretch, transformStretchVelocity } from './chibiParticleStretch.js'
+import {spatialEmitterQuads,OBJECT_SPATIAL_PROFILE} from './chibiObjectSpatialContext.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 export function sampleObjectCurve(c,t,r) {
@@ -244,13 +245,17 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+(system.noise?0:0.5*g*age*age)
       let geometry={x:wx*100,y:-wy*100,a:A*size,b:B*size,c:C*sizeY,d:D*sizeY}
       if(system.stretch) {
-        if(system.stretch.profile!=='native-classic-planar-v1')throw Error('Unknown stretch profile')
         const fp=Math.fround,speed=fp(sample(system.speed,birthPhase,rnd(4)))
-        const vx=fp(v.x*speed),vy=fp(v.y*speed)
-        const velocity=transformStretchVelocity(matrix,{x:vx,y:vy},view.rotation??0)
-        const quad=samplePlanarStretch({position:{x:wx,y:wy},velocity,size:size/100,
+        const vx=fp(v.x*speed),vy=fp(v.y*speed),vz=fp(v.z*speed)
+        let quad
+        if(system.stretch.profile===OBJECT_SPATIAL_PROFILE) {
+          quad=spatialEmitterQuads(system,matrix,renderBasis,p,{x:vx,y:vy,z:vz},size/100,view.spatial)
+        } else if(system.stretch.profile==='native-classic-planar-v1') {
+          const velocity=transformStretchVelocity(matrix,{x:vx,y:vy},view.rotation??0)
+          quad=samplePlanarStretch({position:{x:wx,y:wy},velocity,size:size/100,
           scaleX:Math.hypot(matrix.a,matrix.b),scaleY:Math.hypot(matrix.c,matrix.d),...system.stretch,
           viewHeight:view.height??7.2,cameraRotation:view.rotation??0})
+        } else throw Error('Unknown stretch profile')
         // PNG extraction flips Unity texture Y. Native (0,1),(1,1),(1,0),(0,0)
         // maps to the four Pixi corners in that order; texture X follows the tail.
         geometry={x:(quad[0].x+quad[2].x)*50,y:-(quad[0].y+quad[2].y)*50,
