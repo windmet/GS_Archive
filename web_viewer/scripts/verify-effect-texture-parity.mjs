@@ -32,13 +32,13 @@ async function advance(milliseconds) {
 // cameraflare draws only on a lit background (lightPosition 1 left / 2 right).
 const LIT_BACKGROUND = { lightPosition: 1 }
 async function managerProbe(domain, effect, bgProfile = LIT_BACKGROUND) {
-  const urls = [], textures = [], tickers = new Set()
+  const urls = [], alphaModes = [], textures = [], tickers = new Set()
   const stage = new PIXI.Container()
   const bgContainer = new PIXI.Container()
   stage.addChild(bgContainer)
   const app = { stage, ticker: { add: fn => tickers.add(fn), remove: fn => tickers.delete(fn) } }
-  const loadTextureFromUrl = url => {
-    urls.push(url)
+  const loadTextureFromUrl = (url, options) => {
+    urls.push(url); alphaModes.push(options?.alphaMode)
     // Valid baseTexture/frame metadata is required by Sprite/TilingSprite.
     // Synthetic pixels prove object construction, never real image rendering.
     const texture = PIXI.Texture.fromBuffer(new Uint8Array(96 * 64 * 4), 96, 64)
@@ -57,6 +57,9 @@ async function managerProbe(domain, effect, bgProfile = LIT_BACKGROUND) {
     await advance(0)
     // Evidence 1: capture the requests independently from the plan mapping.
     const requested = urls.map(url => url.replace('/data/fx_extracted/unity_', '').replace('.png', ''))
+    // The fx_adv_* PNGs are straight alpha: read as premultiplied, transparent texels add white and every
+    // quad renders as a solid block. Each request must ask for premultiply-on-upload.
+    for (const mode of alphaModes) assert.equal(mode, PIXI.ALPHA_MODES.UNPACK, `${domain}/${effect.id}: straight-alpha upload`)
     // Evidence 2: verify real PIXI object initialization and a lifecycle tick.
     // Counts come from each concrete handler, not from effectTextures().
     // Native systems allocate one sprite per maxParticles slot.
@@ -125,6 +128,24 @@ assert.deepEqual(await backgroundRequests('cameraflare', { lightPosition: 2 }), 
 // An unlit background instantiates no flare prefab; the plan still prefetches the texture.
 assert.deepEqual(await backgroundRequests('cameraflare', { lightPosition: 0 }), [],
   'an unlit background draws no cameraflare')
+
+// The owners forward the upload mode down to loadImageTexture.
+{
+  const { BackgroundManager } = await import('../src/core/BackgroundManager.js')
+  const seen = []
+  const owner = new BackgroundManager({ app: { ticker: { add() {}, remove() {} } }, bgContainer: new PIXI.Container(),
+    bgEffectContainer: new PIXI.Container(), getWidth: () => 100, getHeight: () => 100,
+    loadTextureFromUrl: async (url, options) => { seen.push(options); return PIXI.Texture.fromBuffer(new Uint8Array(4), 1, 1) } })
+  await owner.effects._loadEffectTexture('fx_adv_rain')
+  assert.deepEqual(seen, [{ alphaMode: PIXI.ALPHA_MODES.UNPACK, allowFallback: false }], 'BackgroundManager forwards the upload mode')
+  owner.destroy()
+  const { readFileSync } = await import('node:fs')
+  const stage = readFileSync(new URL('../src/core/PixiStageManager.js', import.meta.url), 'utf8')
+  assert.match(stage, /_loadTextureFromUrl\(url, \{ allowFallback = true, signal, alphaMode \} = \{\}\)/, 'stage loader accepts alphaMode')
+  assert.match(stage, /loadImageTexture\(url, \{[^\n]*\n[^\n]*\.\.\.\(alphaMode === undefined \? \{\} : \{ alphaMode \}\)/s, 'stage loader passes alphaMode on')
+  assert.match(stage, /screenEffects = new ScreenEffectManager\(\{[^{}]*loadTextureFromUrl: \(url, options\) => this\._loadTextureFromUrl\(url, \{ \.\.\.options, allowFallback: false \}\)/,
+    'screen effects forward the upload mode')
+}
 
 // 3. Effects the codebase does not implement are reported, never assumed ready.
 assert.equal(effectTextures({ id: 'fx_adv_snowflower' }, 'bg_effects').reason, 'unmapped-effect-texture',

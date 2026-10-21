@@ -47,7 +47,7 @@ export class BackgroundManager {
     this._bgColorTarget = 0xFFFFFF
     this._bgColorTween = null
     this.effects = new BackgroundEffectManager({ app, bgEffectContainer, nearEffectContainer, getWidth, getHeight,
-      loadTextureFromUrl: url => loadTextureFromUrl(url, { allowFallback: false }),
+      loadTextureFromUrl: (url, options) => loadTextureFromUrl(url, { ...options, allowFallback: false }),
     })
   }
 

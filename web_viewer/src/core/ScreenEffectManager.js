@@ -113,7 +113,7 @@ export class ScreenEffectManager {
   }
 
   _loadEffectTexture(name) {
-    return loadEffectTexture(this._effectTextureCache, name, url => this._loadTextureFromUrl(url))
+    return loadEffectTexture(this._effectTextureCache, name, (url, options) => this._loadTextureFromUrl(url, options))
   }
 
   _ownScreenEffect(display, tick) {
