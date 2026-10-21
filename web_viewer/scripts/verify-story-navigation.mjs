@@ -17,8 +17,6 @@ assert.ok(binding, 'App binds the production story navigation module')
 const imported = body.find(node => node.type === 'ImportDeclaration' && node.specifiers.some(item => item.local.name === 'useStoryNavigation'))
 assert.equal(imported?.source.value, './composables/useStoryNavigation.js')
 const call = script.slice(binding.init.start, binding.init.end)
-const currentStory = declarations.find(node => node.id.name === 'currentStory')
-assert.ok(currentStory.start < binding.start, 'currentStory is ready before the factory reads it')
 const songBinding = declarations.find(node => node.init?.callee?.name === 'useSongNavigation')
 assert.ok(binding.start < songBinding.start, 'song navigation receives the initialized story entry')
 
@@ -46,7 +44,7 @@ console.error = (...args) => errors.push(args)
 function fixture({ cached = true, initialView = '__boot__' } = {}) {
   const state = { ...useArchiveNavigationState(), loading: ref(false), storyVisibleLimit: ref(80),
     collectionReadModelCatalog: ref(cached ? collectionRows : null), collectionReadModelDetail: ref(null), collectionReadModelStatus: ref(''),
-    storyReadModelCatalog: ref(cached ? storyRows : null), storyReadModelDetail: ref(null), storyReadModelStatus: ref(''),
+    storyReadModelCatalog: ref(cached ? storyRows : null), storyReadModelStatus: ref(''),
     storyCatalogIndex: ref(null), storyCatalogLanding: ref(null),
   }
   state.view.value = initialView
@@ -81,7 +79,6 @@ function fixture({ cached = true, initialView = '__boot__' } = {}) {
   for (const name of ['openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'openStoryReader', 'loadScenario', 'startEpisodeQueue', 'openIdolStoryChapter', 'openWorkArchive']) {
     context[name] = (...args) => calls.push([name, ...args])
   }
-  context.currentStory = vm.runInNewContext(script.slice(currentStory.init.start, currentStory.init.end), context)
   const scope = effectScope(); scopes.push(scope)
   const api = scope.run(() => vm.runInNewContext(call, context))
   const exposed = Object.fromEntries(binding.id.properties.map(property => {
@@ -94,7 +91,7 @@ function fixture({ cached = true, initialView = '__boot__' } = {}) {
 }
 
 try {
-  // Collection and detail requests share the real coordinator, with separate private cancellation counters.
+  // Collection and story-link requests share the real coordinator, with separate private cancellation counters.
   for (const kind of ['collection', 'detail']) {
     const t = fixture(), pending = deferred(), key = kind === 'collection' ? 'main:101' : 'alpha.json'
     t.requests.set(key, pending)
@@ -104,7 +101,6 @@ try {
     assert.equal(t.navigation.getRevision(), revision, 'domain cancellation does not own global revision')
     pending.resolve(t.data.get(key)); await task
     assert.equal(t.state.collectionReadModelDetail.value, null)
-    assert.equal(t.state.storyReadModelDetail.value, null)
     assert.deepEqual(t.calls, [], 'invalidated request cannot capture a source or publish a view')
     t.scope.stop()
   }
@@ -115,7 +111,6 @@ try {
     const second = t.openProjectedCollection({ domain: 'extra', section: '60101', storyFile: 'beta.json', parent: 'song_detail' }); await flush()
     if (rejectOld) old.reject(Error('obsolete failure')); else old.resolve(storyDetail('alpha.json'))
     await first
-    assert.equal(t.state.storyReadModelDetail.value, null)
     assert.equal(t.state.collectionReadModelStatus.value, '正在读取故事章节…')
     newest.resolve(collectionDetail('extra', '601')); await second
     assert.equal(t.state.currentStorySection.value, '60101', 'legacy section is kept as URL context')
@@ -127,36 +122,34 @@ try {
   // Preparation owns data only; normalization, fallback, and stale success/failure preserve route semantics.
   {
     const t = fixture()
-    for (const route of [{ view: 'story_collection' }, { view: 'story_collection', storyType: 'main' }, { view: 'story_detail' }]) {
+    for (const route of [{ view: 'story_collection' }, { view: 'story_collection', storyType: 'main' }]) {
       assert.deepEqual(t.normalizeStoryRoute(route), { view: 'story_catalog' })
     }
-    const direct = { view: 'player', returnView: 'story_detail', scenario: 'raw.json' }
+    const direct = { view: 'player', returnView: 'story_collection', scenario: 'raw.json' }
     assert.equal(t.normalizeStoryRoute(direct), direct)
-    const restored = await t.prepareStoryRoute({ view: 'story_detail', story: 'alpha.json', from: 'preserved' }, { isCurrent: () => true })
-    assert.equal(restored.storyType, 'main'); assert.equal(restored.storySection, '101'); assert.equal(restored.from, 'preserved')
-    assert.deepEqual(t.calls, []); assert.equal(t.state.view.value, '__boot__')
+    // A story link is resolved by App (applyArchiveRoute opens its owner page); preparation passes it through.
+    const link = { view: 'story_detail', story: 'alpha.json', from: 'preserved' }
+    assert.equal(await t.prepareStoryRoute(link, { isCurrent: () => true }), link)
+    assert.deepEqual(t.calls, []); assert.equal(t.state.view.value, '__boot__'); assert.deepEqual(t.loads, [])
     t.scope.stop()
   }
-  for (const kind of ['collection', 'detail']) for (const failure of [false, true]) {
+  for (const failure of [false, true]) {
     const t = fixture(), job = deferred(); let current = true
-    const key = kind === 'collection' ? 'main:101' : 'alpha.json'
-    const route = kind === 'collection' ? { view: 'story_collection', storyType: 'main', storySection: '101' } : { view: 'story_detail', story: 'alpha.json' }
+    const key = 'main:101', route = { view: 'story_collection', storyType: 'main', storySection: '101' }
     t.requests.set(key, job)
     const task = t.prepareStoryRoute(route, { isCurrent: () => current }); await flush(); current = false
     if (failure) job.reject(Error('stale')); else job.resolve(t.data.get(key))
     assert.equal(await task, null)
-    assert.equal(t.state.collectionReadModelDetail.value, null); assert.equal(t.state.storyReadModelDetail.value, null)
-    assert.equal(t.state.collectionReadModelStatus.value, ''); assert.equal(t.state.storyReadModelStatus.value, '')
+    assert.equal(t.state.collectionReadModelDetail.value, null); assert.equal(t.state.collectionReadModelStatus.value, '')
     t.scope.stop()
   }
-  for (const kind of ['collection', 'detail']) {
-    const t = fixture(), job = deferred(), key = kind === 'collection' ? 'main:101' : 'alpha.json'
-    t.requests.set(key, job)
-    const route = kind === 'collection' ? { view: 'player', returnView: 'story_collection', storyType: 'main', storySection: '101' }
-      : { view: 'player', returnView: 'story_detail', story: 'alpha.json' }
+  {
+    const t = fixture(), job = deferred()
+    t.requests.set('main:101', job)
+    const route = { view: 'player', returnView: 'story_collection', storyType: 'main', storySection: '101' }
     const task = t.prepareStoryRoute(route, { isCurrent: () => true }); job.reject(Error('current failure'))
     assert.deepEqual(await task, { view: 'story_catalog' })
-    assert.match(kind === 'collection' ? t.state.collectionReadModelStatus.value : t.state.storyReadModelStatus.value, /重试/)
+    assert.match(t.state.collectionReadModelStatus.value, /重试/)
     t.scope.stop()
   }
   // Catalog assembly rejects incorrect counts/identities before publishing and checks abort after transport.
@@ -250,7 +243,7 @@ try {
     assert.equal(t.state.view.value, 'story_collection')
     assert.equal(t.state.currentStorySection.value, '101'); assert.equal(t.state.currentStoryFile.value, 'alpha.json')
     assert.equal(t.state.storyCollectionParentView.value, 'external_story_resources')
-    assert.equal(t.state.storyReadModelDetail.value, null, 'an owned story never publishes the detail page')
+    assert.ok(!t.calls.some(call => call[1] === 'story_detail'), 'a story link never commits a story page of its own')
     t.openExternalStoryInternal({ target: { kind: 'collection', domain: 'extra', section: '60101', storyFile: 'beta.json' } }); await flush()
     assert.equal(t.state.storyCollectionParentView.value, 'external_story_resources')
     assert.equal(t.state.currentStoryFile.value, 'beta.json')
@@ -274,12 +267,13 @@ try {
     assert.equal(t.state.currentStoryFile.value, 'beta.json')
     t.scope.stop()
   }
-  // A story no page owns is the only one the generic detail page still shows.
+  // A story no page owns (none in the current read model) leaves the visitor in place with a notice.
   {
-    const t = fixture()
+    const t = fixture({ initialView: 'story_catalog' })
     t.data.set('alpha.json', storyDetail('alpha.json', 'event', ''))
     await t.openStoryDetail({ file: 'alpha.json' }); await flush()
-    assert.equal(t.state.view.value, 'story_detail'); assert.equal(t.state.storyReadModelDetail.value.id, 'alpha.json')
+    assert.equal(t.state.view.value, 'story_catalog'); assert.equal(t.state.loading.value, false)
+    assert.match(t.state.storyReadModelStatus.value, /没有所属页面/); assert.deepEqual(t.calls, [])
     t.scope.stop()
   }
   // Selection/history and chapter/segment queue intent remain owned by the existing player boundary.

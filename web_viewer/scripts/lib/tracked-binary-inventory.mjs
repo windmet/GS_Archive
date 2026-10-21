@@ -112,7 +112,7 @@ function classify(relativePath) {
     return {
       category: 'stable-promoted-asset',
       logical_id: `event-story-visual:${eventMatch[1]}`,
-      consumer: ['ArchiveEventDetail', 'ArchiveStoryDetail'],
+      consumer: ['ArchiveEventDetail', 'ArchiveIdolReference'],
       reason_tracked: 'grandfathered RAW-derived stable event story visual',
       force_add_allowed: true,
     }
@@ -167,7 +167,7 @@ function classify(relativePath) {
     return {
       category: 'stable-promoted-asset',
       logical_id: `birthday-visual:${birthdayMatch[1]}`,
-      consumer: ['ArchiveStoryDetail'],
+      consumer: ['ArchivePortalOverview'],
       reason_tracked: 'grandfathered RAW-derived stable birthday story visual',
       force_add_allowed: true,
     }
@@ -178,7 +178,7 @@ function classify(relativePath) {
     return {
       category: 'portal-asset',
       logical_id: `unit-logo:${unitMatch[1]}`,
-      consumer: ['ArchiveHome', 'ArchiveStoryDetail'],
+      consumer: ['ArchiveHome', 'ArchivePortalOverview', 'ArchiveMobileArchive'],
       reason_tracked: 'grandfathered local unit navigation asset',
       force_add_allowed: true,
     }

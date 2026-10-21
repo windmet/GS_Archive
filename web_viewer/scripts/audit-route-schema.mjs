@@ -18,7 +18,7 @@ const DIRTY = {
   currentStoryAvailability: 'playable', currentStorySort: 'title', currentEpisodeId: '5', currentCardId: 'card1', currentSongId: 'song1', stageTargetId: 'stage1',
   currentSongScope: 'movie', currentEventId: '10001', currentEntityKey: 'ent', currentPhotoIdol: '001tom', currentPhotoEntity: 'p1', currentGashaId: 'g1',
   currentGashaCategory: 'growing_fes', currentCardRarity: 'ssr', currentCardAttribute: 'dance', currentCardAssetState: 'ready', currentCardRelationState: 'linked',
-  filterQuery: 'q', currentScenarioFile: 'a.json', currentScenarioStartStep: 1, currentScenarioEndStep: 9, currentPreviewCue: 'cue1', storyDetailParentView: 'story_catalog',
+  filterQuery: 'q', currentScenarioFile: 'a.json', currentScenarioStartStep: 1, currentScenarioEndStep: 9, currentPreviewCue: 'cue1',
   portalFrom: '?view=idols&category=idol', portalScope: '001tom', portalQuery: 'x', homeFrom: '?view=portal', returnViewAfterPlayer: 'event_detail',
 }
 const QUERY_VALUES = { view: '', pick: 'profile', category: 'idol', story_mode: 'search', work_mode: 'lines', mobile_mode: 'phone', event_scope: 'fixed_unit_event',
@@ -48,7 +48,7 @@ function survives(viewName, returnView) {
 }
 
 const rows = views.flatMap(name => name === 'player'
-  ? ['reader', 'event_detail', 'files'].map(returnView => ({ view: `player(return=${returnView})`, emitted: emitted(name, returnView), survives: survives(name, returnView) }))
+  ? ['reader', 'event_detail', ''].map(returnView => ({ view: `player(return=${returnView})`, emitted: emitted(name, returnView), survives: survives(name, returnView) }))
   : [{ view: name, emitted: emitted(name), survives: survives(name) }])
 if (process.argv.includes('--json')) console.log(JSON.stringify(rows, null, 1))
 else {

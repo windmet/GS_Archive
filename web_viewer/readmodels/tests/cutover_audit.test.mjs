@@ -39,7 +39,7 @@ test('Static closure includes shared imports once, excludes dynamic route import
   assert.throws(() => initialChunkClosure(chunks.filter(chunk => chunk.fileName !== 'shared.js')), /Unresolved/);
 });
 test('A small entry still fails forbidden-module policy; route labels do not exempt static feature imports', () => {
-  const modules = ['src/main.js', 'src/data/ArchiveDataRepository.js', 'src/components/archive/ArchiveGroupList.vue'];
+  const modules = ['src/main.js', 'src/data/ArchiveDataRepository.js', 'src/components/archive/ArchiveUnitDetail.vue'];
   assert.deepEqual(forbiddenInitialModules(modules, policy, ledger), modules.slice(1).sort());
   assert.deepEqual(forbiddenInitialModules(['src/main.js', 'src/components/archive/ArchiveShell.vue'], policy, ledger), []);
 });

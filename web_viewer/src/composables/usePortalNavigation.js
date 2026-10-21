@@ -5,7 +5,7 @@ export function usePortalNavigation({ view, homeSelectedId, homeVisits, currentA
   loadHomeIdol, loadIdolDetail, idolReadModelDetail, loadUnitCatalog, loadUnitDetail, unitReadModelDetail,
   loadGashaCatalog, loadGashaDetail, gashaReadModelDetail, loadCardCatalog, loadCardDetail, cardReadModelDetail,
   loadEventDetail, eventReadModelDetail, loadSeasonalDetail, seasonalReadModelDetail, loadWorkDetail, workReadModelDetail,
-  loadIdolStoryDetail, idolStoryReadModelDetail, loadCollectionDetail, collectionReadModelDetail, loadStoryReadModelDetail, storyReadModelDetail,
+  loadIdolStoryDetail, idolStoryReadModelDetail, loadCollectionDetail, collectionReadModelDetail,
   ensureSongCatalog, loadSongDetail, songReadModelDetail }) {
   function openArchivePortal(idolCode = '') {
     if (view.value === 'home' && homeSelectedId.value) homeVisits.set(homeSelectedId.value, currentArchiveRoute())
@@ -40,7 +40,6 @@ export function usePortalNavigation({ view, homeSelectedId, homeVisits, currentA
     if (route.view === 'work_archive' && route.idol) workReadModelDetail.value = await loadWorkDetail(route.idol)
     if (route.view === 'idol_story_archive' && route.idol) idolStoryReadModelDetail.value = await loadIdolStoryDetail(route.idol)
     if (['story_collection', 'reader'].includes(route.view) && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
-    if (route.view === 'story_detail' && route.story) storyReadModelDetail.value = await loadStoryReadModelDetail(route.story)
     if (route.view === 'song_catalog') await ensureSongCatalog()
     if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
     if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return

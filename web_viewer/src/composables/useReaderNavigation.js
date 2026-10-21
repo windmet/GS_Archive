@@ -18,8 +18,8 @@ export function useReaderNavigation({
   view, readingDocumentId, readingRowId, readingMode, readingRevision, readingRevisionPinned = ref(false), readingScope,
   currentStoryDomain, currentStorySection, currentEpisodeId, currentStoryFile, currentWorkMode, currentCharacterId,
   currentEventId, eventParentView, currentCategoryId, currentArchiveUnitCode, detailSourceRoute, currentScenarioFile,
-  loading, loadingPurpose, collectionReadModelDetail, storyReadModelDetail, eventReadModelDetail,
-  workReadModelDetail, idolStoryReadModelDetail, currentStoryCollection, currentStory, currentEventProjection,
+  loading, loadingPurpose, collectionReadModelDetail, eventReadModelDetail,
+  workReadModelDetail, idolStoryReadModelDetail, currentStoryCollection, currentEventProjection,
   currentWorkIdol, currentIdolStoryPage, navigation, archiveBootstrap, readModelClient, playbackController, playbackError,
   applyArchiveRoute, syncArchiveRoute, currentArchiveRoute, restoreDetailSource, openStoryCatalog, loadCollectionDetail, loadPlayerQueue,
   prepareReturnRoute = async route => route, loadSeasonalLedger = null, seasonalParticipantName = undefined,
@@ -69,8 +69,6 @@ export function useReaderNavigation({
   const readingCatalogEntries = computed(() => {
     if (view.value === 'story_collection' && currentStoryCollection.value)
       return collectionReadModelDetail.value.view.readingEntries
-    if (view.value === 'story_detail' && currentStory.value)
-      return storyReadModelDetail.value.view.readingEntries
     if (view.value === 'event_detail' && currentEventProjection.value)
       return eventReadModelDetail.value.view.readingEntries
     if (view.value === 'work_archive' && currentWorkIdol.value)

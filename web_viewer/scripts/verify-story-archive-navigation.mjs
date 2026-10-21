@@ -5,7 +5,6 @@ import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -121,7 +120,6 @@ function fixture({ cached = true } = {}) {
   assert.equal(Object.hasOwn(context, 'openStoryCatalog'), false)
   assert.equal(Object.hasOwn(context, 'openProjectedCollection'), false)
   bindMobileNavigation(app, context).stop()
-  bindLegacyAliasNavigation(app, context).stop()
   const scope = effectScope(), api = scope.run(() => expose(binding, context))
   const story = bindStoryNavigation(app, context)
   bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
@@ -254,7 +252,7 @@ try {
     ['idol_story_archive', ['kept-domain', '', 'kept-section']],
   ]) {
     const t = fixture(), context = t.context
-    for (const name of ['goHome', 'goBackFromGroups', 'goBackToUnits', 'goBackToFiles', 'goBackFromCards',
+    for (const name of ['goHome', 'goBackFromCards',
       'goBackToCards', 'goBackFromGasha', 'goBackFromSong', 'goBackFromEvent', 'closeHomeVisit',
       'closeStoryReader', 'closeArchivePortal', 'cancelWelcomeOrPicker', 'restoreDetailSource']) {
       if (!(name in context)) context[name] = () => { assert.fail(`Unexpected shell Back boundary: ${name}`) }

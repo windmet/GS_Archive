@@ -32,13 +32,12 @@ cards / card_detail
 gashas / gasha_detail
 song_catalog / song_detail
 event_detail
-story_catalog / story_collection / story_detail
+story_catalog / story_collection（story_detail 只是故事链接：打开故事的所属页，见 core/StoryOwner.js）
 external_story_resources
 seasonal_campaign
 work_archive
 idol_story_archive
 mobile_archive
-groups / episode_zero_units / episodes / files
 archive_status
 player
 spine_lab / chibi_stage

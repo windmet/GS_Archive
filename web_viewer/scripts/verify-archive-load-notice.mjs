@@ -5,20 +5,20 @@ import { computed, ref } from 'vue'
 
 // Executes the production loadNotice computed from App.vue against real refs.
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-const start = app.indexOf("const LEGACY_DIRECTORY_VIEWS")
+const start = app.indexOf('const loadNotice = computed')
 const closing = /\r?\n\}\)\r?\n/g
 closing.lastIndex = app.indexOf('const loadNotice = computed', start)
 const closed = closing.exec(app)
 const end = closed ? closed.index + closed[0].length : -1
 assert.ok(start >= 0 && end > start, 'loadNotice source exists')
 
-const names = ['home', 'idol', 'song', 'legacy', 'mobile', 'unit', 'card', 'gasha', 'event', 'seasonal', 'work', 'idolStory', 'collection', 'story', 'resource']
+const names = ['home', 'idol', 'song', 'mobile', 'unit', 'card', 'gasha', 'event', 'seasonal', 'work', 'idolStory', 'collection', 'story', 'resource']
 function setup(view = 'story_catalog', loading = false) {
   const state = Object.fromEntries(names.map(name => [name, ref('')]))
   const context = vm.createContext({
     computed, view: ref(view), loading: ref(loading),
     homeEntryStatus: state.home, idolReadModelStatus: state.idol, songReadModelStatus: state.song,
-    legacyEntryStatus: ref(''), legacyAliasStatus: state.legacy, mobileReadModelStatus: state.mobile,
+    legacyEntryStatus: ref(''), mobileReadModelStatus: state.mobile,
     unitReadModelStatus: state.unit, cardReadModelStatus: state.card, gashaReadModelStatus: state.gasha,
     eventReadModelStatus: state.event, seasonalReadModelStatus: state.seasonal, workReadModelStatus: state.work,
     idolStoryReadModelStatus: state.idolStory, collectionReadModelStatus: state.collection,

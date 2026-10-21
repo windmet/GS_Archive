@@ -137,7 +137,7 @@ async function fixture({ badContinuationEvidence = false } = {}) {
   const storyIndex = register('stories.index', 'stories-index', { count: 0, pages: [], landing: landings })
   const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurpose: ref('archive-data'), preloadProgress: ref(0),
     collectionReadModelCatalog: ref(null), collectionReadModelDetail: ref(null), collectionReadModelStatus: ref(''),
-    storyReadModelCatalog: ref(null), storyReadModelDetail: ref(null), storyReadModelStatus: ref(''), storyCatalogIndex: ref(null), storyCatalogLanding: ref(null),
+    storyReadModelCatalog: ref(null), storyReadModelStatus: ref(''), storyCatalogIndex: ref(null), storyCatalogLanding: ref(null),
     eventReadModelDetail: ref(null), workReadModelDetail: ref(null), idolStoryReadModelDetail: ref(null), storyVisibleLimit: ref(80),
     currentStoryCollection: ref(null), currentStory: ref(null), currentEventProjection: ref(null), currentWorkIdol: ref(null), currentIdolStoryPage: ref(null),
   }
@@ -357,7 +357,7 @@ try {
   {
     const t = await fixture()
     for (const [view, projection, detail] of [
-      ['story_collection', 'currentStoryCollection', 'collectionReadModelDetail'], ['story_detail', 'currentStory', 'storyReadModelDetail'],
+      ['story_collection', 'currentStoryCollection', 'collectionReadModelDetail'],
       ['event_detail', 'currentEventProjection', 'eventReadModelDetail'], ['work_archive', 'currentWorkIdol', 'workReadModelDetail'],
       ['idol_story_archive', 'currentIdolStoryPage', 'idolStoryReadModelDetail'],
     ]) {

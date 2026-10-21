@@ -1,4 +1,3 @@
-import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
 import { OFFICE_VOICE_CUE, ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
@@ -116,7 +115,6 @@ function setup() {
     scenarioSource,
     '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
-  bindLegacyAliasNavigation(app, context).stop()
   bindStoryArchiveNavigation(app, context).stop()
   bindStoryNavigation(app, context).stop()
   production.openStoryCatalog = context.openStoryCatalog

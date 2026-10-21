@@ -93,8 +93,8 @@ assert.ok(sharedChapters.every(chapter => chapter.file && chapter.episodes[0].fi
 assert.match(repositorySource, /speakerDictionary: '\/data\/masterdata\/speaker_dictionary\.json'/)
 assert.match(repositorySource, /birthdayStorySemantic: '\/data\/masterdata\/birthday_story_semantic_index\.json'/)
 assert.match(appSource, /:birthday-domain="birthdayStoryDomain"/)
-assert.match(appSource, /<ArchiveStoryDetail[\s\S]*?:idol-name="idolDisplayName"/,
-  'story detail CAST names follow the interface language')
+assert.match(appSource, /<ArchiveStoryCollection[\s\S]*?:idol-name="idolDisplayName"/,
+  'story chapter CAST names follow the interface language')
 await verifyStoryLandingNavigation(appSource, 'birthday', birthday)
 assert.match(catalogSource, /mode === 'portal' && domain === 'birthday'/)
 assert.match(catalogSource, /card\.subject\.kind === 'shared' \? '公共篇'/)
