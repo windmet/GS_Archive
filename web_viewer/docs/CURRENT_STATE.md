@@ -44,7 +44,7 @@
 
 ## 未合入但保留的分支
 
-10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)之后已完成[固定曲消费者接入](NATIVE_ORIGINAL_LINEUP_CONSUMER_20261021.md)：13首显式序优先，41首组合默认序来自表2字段37，纠正24首编号回退并修复`yknkmh`隐藏槽。舞台专用索引直接消费，冻结read-model未改；164项源码检查、最终build:check及Café/SEM/FRAME实际Browser通过。48个Unit编排的独立原生选组路径、原片/设备对照仍开放。未部署。
+10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)之后已完成[固定曲消费者接入](NATIVE_ORIGINAL_LINEUP_CONSUMER_20261021.md)：13首显式序优先，41首组合默认序来自表2字段37，纠正24首编号回退并修复`yknkmh`隐藏槽。随后已核实[所选Unit的独立原生选组排序](NATIVE_SELECTED_UNIT_LINEUP_20261021.md)，48个编排按16组合字段37排序，纠正30个编排。舞台专用索引v2直接消费，冻结read-model未改；164项源码检查、build:check及2/3/5人实际Browser通过。原片/设备对照、原生库存卡及完整编队交互仍不在验收范围。未部署。
 
 10-21 舞台同步 master #60–#65 的后验收见 [同步记录](STAGE_MASTER_SYNC_20261021.md)：合并 `4dccabbd`，163/163 源码回归及 build:check 通过，5213 实际舞台与手机尺寸目标检查完成；未部署。
 

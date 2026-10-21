@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export native fixed-song original/default member order, without changing read-models."""
+"""Export native fixed-song and selected-Unit member order, without changing read-models."""
 from __future__ import annotations
 
 import argparse
@@ -22,6 +22,14 @@ def compile_lineups(pb: bytes, schema: bytes) -> dict:
     tables = extract_table_rows(list(iter_top_records(pb)), {2, 24, 46})
     idols = {row['1']: row for row in tables[2]}
     units = {row['1']: row for row in tables[24]}
+    unit_orders = {}
+    for unit_id, unit in sorted(units.items()):
+        members = [r for r in idols.values() if r.get('3') == unit_id]
+        if not members:
+            continue
+        if sorted(r.get('37', 0) for r in members) != list(range(1, len(members) + 1)):
+            raise ValueError(f'{unit_id}: incomplete/ambiguous IdolUnitSortOrder')
+        unit_orders[unit['3']] = [r['10'] for r in sorted(members, key=lambda r: r['37'])]
     grouped = defaultdict(list)
     for row in tables[46]:
         grouped[row['4']].append(row)
@@ -53,13 +61,13 @@ def compile_lineups(pb: bytes, schema: bytes) -> dict:
             raise ValueError(f'{code}: invalid original roster')
         songs[code] = {'songId': effective['1'], 'basis': basis, 'codes': codes,
                        'unitCode': units[unit_id]['3'] if category == 2 else None}
-    return {'schemaVersion': 1, 'contract': 'native-fixed-original-lineups-v1',
+    return {'schemaVersion': 2, 'contract': 'native-original-lineups-v2',
             'source': {'masterdataSha256': hashlib.sha256(pb).hexdigest(),
                        'schemaSha256': hashlib.sha256(schema).hexdigest(),
                        'nativeElfSha256': ELF_SHA256,
                        'unitOrderField': 'Growing.Models.Data.IdolData:37',
                        'explicitOrderFields': [30, 31, 32, 33, 34]},
-            'songs': songs}
+            'songs': songs, 'unitOrders': unit_orders}
 
 
 def main():
@@ -82,7 +90,7 @@ def main():
         OUTPUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     counts = {basis: sum(r['basis'] == basis for r in data['songs'].values())
               for basis in ['table46-explicit', 'table2-unit-default']}
-    print(f'Native original lineups {"verified" if args.check else "exported"}: {counts}')
+    print(f'Native original lineups {"verified" if args.check else "exported"}: {counts}; {len(data["unitOrders"])} selected-Unit orders')
 
 
 if __name__ == '__main__':

@@ -278,7 +278,7 @@
             </div>
 
             <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
-            <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+            <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSelection.basis === 'table2-selected-unit' ? '所选组合按原生槽序排列，可调整' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
             <!-- Who is heard: the official mix, or each formation idol's own part following SwitchSinger. -->
             <div v-if="stageVocalAvailable" class="lineup-vocal">
               <label class="camera-toggle"><input v-model="stageVocalEnabled" type="checkbox" :disabled="booting" @change="handleStageVocalToggle" /><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span></label>

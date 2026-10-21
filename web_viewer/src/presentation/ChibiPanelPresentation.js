@@ -3,10 +3,9 @@ const validCostumeId = value => typeof value === 'string' && /^\d{3}_\d{2}$/.tes
 const hasLabel = costume => typeof costume?.label === 'string' && Boolean(costume.label.trim())
 
 // Members map to performer slots before stage positions. Ordered inputs may be
-// per-song table 46 records or the native table 2 unit default. Vocal Unit
-// variants retain their separate legacy UI rule until that native edit path is verified.
-export function buildOriginalStageLineup(song, performerCodes, characters, idolDirectory, { slotOrdered = false, activeSubset = false } = {}) {
-  if (song?.vocalSetting?.mode === 'unit') return buildUnitStageLineup(song, characters, idolDirectory, slotOrdered ? performerCodes : null)
+// per-song table 46 records or native table 2 fixed/selected unit ordering.
+export function buildOriginalStageLineup(song, performerCodes, characters, idolDirectory, { slotOrdered = false, activeSubset = false, requireOrderedUnit = false } = {}) {
+  if (song?.vocalSetting?.mode === 'unit') return buildUnitStageLineup(song, characters, idolDirectory, slotOrdered ? performerCodes : null, requireOrderedUnit)
   if (!song || song.songCode === 'drv999' || !Array.isArray(performerCodes) || !performerCodes.length ||
       !Array.isArray(characters) || !Array.isArray(song.positions) || !Array.isArray(song.stagePositionMap)) return null
   const positions = song.positions
@@ -39,7 +38,7 @@ export function buildOriginalStageLineup(song, performerCodes, characters, idolD
   return result
 }
 
-function buildUnitStageLineup(song, characters, idolDirectory, slotOrder = null) {
+function buildUnitStageLineup(song, characters, idolDirectory, slotOrder = null, requireOrder = false) {
   const unitCode = song.vocalSetting.unitCode
   if (song.songCode === 'drv999' || typeof unitCode !== 'string' || !unitCode.trim() ||
       !Array.isArray(characters) || !Array.isArray(idolDirectory) ||
@@ -64,7 +63,8 @@ function buildUnitStageLineup(song, characters, idolDirectory, slotOrder = null)
     .sort((left, right) => left.performerSlot - right.performerSlot)
   if (activeMap.length !== positions.length || activeMap.some(entry => !positions.includes(entry.stagePosition))) return null
   const result = Array(5).fill('')
-  const recorded = Array.isArray(slotOrder) && slotOrder.length === members.length && slotOrder.every(code => members.includes(code))
+  const recorded = Array.isArray(slotOrder) && slotOrder.length === members.length && new Set(slotOrder).size === members.length && slotOrder.every(code => members.includes(code))
+  if (requireOrder && !recorded) return null
   const orderedMembers = recorded ? slotOrder : [...members].sort()
   activeMap.forEach((entry, index) => { result[entry.stagePosition - 1] = orderedMembers[index] })
   return result

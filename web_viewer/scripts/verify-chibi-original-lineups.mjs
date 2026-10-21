@@ -49,15 +49,35 @@ const shifted=clone(frame)
 shifted.onStagePerformerSlots=[2,3,4];shifted.positions=[1,2,4]
 assert.equal(buildOriginalStageLineup(shifted,select.codes,characters,directory,select),null,
   'Native unit auto-deck fills slots 1..N; it cannot shift those members into arbitrary active deck slots')
-for(const song of songs.filter(s=>s.vocalSetting || s.variant)) {
+for(const song of songs.filter(s=>(s.vocalSetting || s.variant) && s.vocalSetting?.mode!=='unit')) {
   const fallback=['001tom','002sht','003hok']
   const result=originalMemberSelection(song,native,fallback,false)
   assert.equal(result.codes,fallback,'Base-song source must not replace a selected vocal variant')
   assert.equal(result.activeSubset,false)
 }
+let unitChanged=0
+const unitSongs=songs.filter(s=>s.vocalSetting?.mode==='unit')
+assert.equal(unitSongs.length,48);assert.equal(Object.keys(native.unitOrders).length,16)
+for(const song of unitSongs) {
+  const selection=originalMemberSelection(song,native,['001tom','003hok'],true)
+  assert.equal(selection.basis,'table2-selected-unit')
+  const members=directory.filter(i=>i.unitCode===song.vocalSetting.unitCode).map(i=>i.id)
+  assert.deepEqual([...selection.codes].sort(),members.sort())
+  const actual=buildOriginalStageLineup(song,selection.codes,characters,directory,selection)
+  assert(actual)
+  const old=buildOriginalStageLineup(song,[],characters,directory)
+  if(JSON.stringify(actual)!==JSON.stringify(old))unitChanged++
+  const missing=originalMemberSelection(song,{...native,unitOrders:{}},[],false)
+  assert.equal(buildOriginalStageLineup(song,missing.codes,characters,directory,missing),null)
+}
+assert.equal(unitChanged,30)
+assert.deepEqual(native.unitOrders['03alt'],['008rei','007kei'])
+assert.deepEqual(native.unitOrders['12sem'],['036rui','037jir','035mco'])
+assert.deepEqual(native.unitOrders['10caf'],native.songs.cfprde.codes)
 for(const code of ['drvalv','byndtd','grwsml','reason','tkstp1','tkstp2','drv999'])assert(!native.songs[code])
 for(const mutate of [d=>d.source.masterdataSha256='',d=>d.source.unitOrderField='32',d=>d.songs.cfprde.codes=['unknown'],
-  d=>d.songs.cfprde.codes.push(d.songs.cfprde.codes[0]),d=>d.songs.cfprde.unitCode=null,d=>d.songs.cfprde.songId=-1]) {
+  d=>d.songs.cfprde.codes.push(d.songs.cfprde.codes[0]),d=>d.songs.cfprde.unitCode=null,d=>d.songs.cfprde.songId=-1,
+  d=>d.unitOrders['10caf'].reverse(),d=>d.unitOrders['03alt']=['007kei','007kei'],d=>d.unitOrders=null]) {
   const bad=clone(native);mutate(bad);assert.throws(()=>validateOriginalLineups(bad))
 }
 // Evaluate the actual SFC computed declarations so a stale prop path cannot
@@ -71,6 +91,9 @@ const env={shallowRef:ref,computed,selectedSong:ref(cafe),props:{originalPerform
 vm.createContext(env)
 vm.runInContext(declarations+';nativeOriginalLineups.value=native;result=originalStageLineup.value',env)
 assert.deepEqual(Array.from(env.result),['030mak','027yuk','029ass','028soi','031sak'])
+env.selectedSong.value=unitSongs.find(song=>song.id==='drvalv_live_effect_03alt')
+vm.runInContext('result=originalStageLineup.value',env)
+assert.deepEqual(Array.from(env.result),['','007kei','008rei','',''],'Actual SFC Unit selection uses selected-unit source, not base-song props')
 const loader=readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.url),'utf8').split(/\r?\n/).find(line=>line.startsWith('export const fetchLiveChibiOriginalLineups'))
 const options={signal:new AbortController().signal}
 let calls=0
@@ -78,4 +101,4 @@ const load=new Function('indexTransport','validateOriginalLineups',loader.replac
   calls++;assert.equal(url,'/data/stage-original-lineups.json');assert.equal(received,options);return {data:native}
 }},validateOriginalLineups)
 assert.equal(await load(options),native);assert.equal(calls,1)
-console.log('Native original lineups: 54 fixed songs / 13 explicit + 41 unit defaults, 24 corrected orders, hidden slots, variant exclusions, SFC and transport passed')
+console.log('Native original lineups: 54 fixed songs, 48 Unit variants / 16 native orders (30 corrections), hidden slots, variant exclusions, SFC and transport passed')
