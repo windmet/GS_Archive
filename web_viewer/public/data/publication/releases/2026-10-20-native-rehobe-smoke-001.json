@@ -1,0 +1,90 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-20-native-rehobe-smoke-001",
+  "created_at": "2026-10-20T12:32:16.771763+00:00",
+  "prepared_from_commit": "d6e246193440c05d5ee79b96a149f531b68dd486",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:eb3a3173cac5f7665d31638a"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:eb3a3173cac5f7665d31638a",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_rehobe.unity3d",
+        "sha256": "1399e48e3ee667b2af3dad469386e4b26f15bf357b5e7e06f8b76b51a9ef685f",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_yivygr_smoke",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-2d181f4ecdef97c2f4b3cbb23201f889:-456654634331026395",
+          "evidence": "Exact serialized file and PathID retained here as a string because numeric path_id cannot safely represent this 64-bit value. RAW object SHA-256 02cbec0e32c667508795cd526479e2220b5d84e75f7ff817b474c1ce3ac536a2; 512x512 RGBA export. Shared by both rehobe smoke resources; all four emitters remain noise_preview."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/eb3a3173cac5f7665d31638a.png",
+          "url": "/data/stage-object-emitters/eb3a3173cac5f7665d31638a.png",
+          "bytes": 222532,
+          "sha256": "4e19b2f015339b94aa363ae90486cd2bbdab29f0f785f0def95c45ae76e1fcd8"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Native UnityPy RGBA pixel comparison passed using prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no claim of original RNG, particle trajectories, or device parity.",
+          "Old 80 emitter models and 94 textures remain structurally unchanged against prepared_from_commit. Revert this scoped change and regenerate consumer shards to remove the new hookup; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=rehobe&stage=rehobe_live_effect&q=beat",
+        "tested_at": "2026-10-20T12:32:16.771763+00:00",
+        "tested_commit": "d6e246193440c05d5ee79b96a149f531b68dd486",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Prepared HEAD plus uncommitted scoped smoke changes; desktop 1280x720 full mode. At 20000ms both smoke assets are attached, unsupported list empty, 1134 particles total versus 952 before; smoke visible in screenshot rehobe-smoke-fixed-20s.png.",
+          "Seek to 28000ms retires object particles; rewind and actual playback through smoke segment work. Switching to BRAND NEW FIELD clears the old smoke asset list.",
+          "No relevant application error in inspected console; existing Pixi Spine deprecation warnings remain. Not original-video, mobile-device, production, or GPU parity acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

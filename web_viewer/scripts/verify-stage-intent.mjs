@@ -250,4 +250,17 @@ const blobs=parseBatchBlobs(protocol,['first','missing']);assert.deepEqual(blobs
 assert.throws(()=>parseBatchBlobs(protocol.subarray(0,6),['first']),/Truncated/)
 const cwd=new URL('../../',import.meta.url),path='web_viewer/package.json',snap=publicationGitSnapshot([path],cwd)(path)
 assert.deepEqual(snap.indexBytes,execFileSync('git',['show',`:${path}`],{cwd}));assert.deepEqual(snap.headBytes,execFileSync('git',['show',`HEAD:${path}`],{cwd}));cases++
+const missing='web_viewer/__publication_snapshot_missing__',paths=[path,'README.md',missing]
+const bounded=publicationGitSnapshot(paths,cwd,{maxBatchBytes:1})
+for(const current of [path,'README.md',missing,path]) {
+  const actual=bounded(current)
+  if(current===missing){assert.equal(actual.indexBytes,null);assert.equal(actual.headBytes,null)}
+  else {
+    assert.deepEqual(actual.indexBytes,execFileSync('git',['show',`:${current}`],{cwd}))
+    assert.deepEqual(actual.headBytes,execFileSync('git',['show',`HEAD:${current}`],{cwd}))
+  }
+}
+assert.throws(()=>publicationGitSnapshot(paths,cwd,{maxBatchBytes:0}),/Invalid/)
+assert.equal(publicationGitSnapshot([],cwd)(path).indexBytes,undefined)
+cases++
 console.log(`Stage and motion source: ${cases} controlled timing/protocol cases passed; no browser or heap claim`)

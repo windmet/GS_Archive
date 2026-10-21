@@ -184,7 +184,7 @@ function classify(relativePath) {
     }
   }
 
-  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos)\//)
+  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos|stage-new-suspension-sprites|stage-built-in-objects)\//)
   if (stageNativeTexture) {
     return {
       category: 'stable-promoted-asset',
@@ -192,8 +192,26 @@ function classify(relativePath) {
       consumer: ['ChibiStageViewer'],
       reason_tracked: 'RAW-derived native stage effect texture; identity is serialized file + PathID and the filename is its SHA-256 prefix',
       force_add_allowed: false,
-      owner_release: stageNativeTexture[1]==='stage-backmonitor-logos'
+      owner_release: stageNativeTexture[1]==='stage-built-in-objects'
+        ? '2026-10-20-apk-built-in-objects-001'
+        : stageNativeTexture[1]==='stage-new-suspension-sprites'
+        ? '2026-10-20-native-suspension-sprites-001'
+        : stageNativeTexture[1]==='stage-backmonitor-logos'
         ? '2026-10-19-native-backmonitor-logos-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ["f161574dfb114a551856d7d7","f28fab56c8b010ae67658e9e","1c5ef5b6904c30a23586aa62"].includes(logicalStem)
+        ? '2026-10-21-native-pfofos-fire-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && logicalStem==='b962010c7c2a646d278d5902'
+        ? '2026-10-21-native-remasq-shockwave-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ['4656ebbb76b55f096bd8b96b','117ecfff396a16a280c130e0','b8231c13079012d34ecab120','1781f14b84ef34379aca979b'].includes(logicalStem)
+        ? '2026-10-21-native-mainha-panels-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ['bdac441632e29445db51ea8b','d8109e6ab1dd216f5cc8c6f4','2a934e4258f11b3d00f43841','5bf134aa0c50a48b4e174f88'].includes(logicalStem)
+        ? '2026-10-21-native-ossshd-panel-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ['311c4f525f7c85111edfa035','3b5dc517006c69c8b7e9c383','70070f4d8534abe4033b757b','eaf6e6b1839545e535e4ecce'].includes(logicalStem)
+        ? '2026-10-21-native-sakura-followup-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ['732271f8d5859572f2fa1ef1','e0cf2224571e1c8f2b7a5389'].includes(logicalStem)
+        ? '2026-10-21-native-smoke-followup-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && logicalStem==='eb3a3173cac5f7665d31638a'
+        ? '2026-10-20-native-rehobe-smoke-001'
         : stageNativeTexture[1]==='stage-object-emitters' && ['866092bffcd833f1041a2e7d','e192ddf6239b66e93c672199','e6daf431ce6a295fa54a79b8'].includes(logicalStem)
           ? '2026-10-19-native-mtples-formula-001' : '2026-10-17-native-stage-textures-001',
       grandfathered: false,

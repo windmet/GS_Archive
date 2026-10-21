@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
 import {createHash} from 'node:crypto'
@@ -73,7 +74,7 @@ assert.equal(geometries+materials+meshes,0,'Partial allocation releases private 
 const hash=x=>createHash('sha256').update(x).digest('hex')
 const commands=JSON.parse(readFileSync(new URL('../public/data/stage-penlight-commands.json',import.meta.url)))
 const loaderSource=readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.url),'utf8').match(/export async function fetchLiveChibiPenlights\([^]*?\n\}/)[0]
-const makeLoader=new Function('indexTransport','LIVE_CHIBI_BASE','validatePenlightData','crypto',loaderSource.replace('export async function','async function')+';return fetchLiveChibiPenlights')
+const makeLoader=withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','validatePenlightData','crypto',loaderSource.replace('export async function','async function')+';return fetchLiveChibiPenlights'))
 const modelText=JSON.stringify(model),choreographyText='{}'
 const fixture={...commands,modelSha256:hash(modelText),choreographyIndexSha256:hash(choreographyText)}
 const loader=makeLoader({async load(url){return url.startsWith('/data/')?JSON.stringify(fixture):url.includes('/penlight/')?modelText:choreographyText}},'/assets/live-chibi',validatePenlightData,globalThis.crypto)

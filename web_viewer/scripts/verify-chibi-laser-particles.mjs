@@ -66,9 +66,15 @@ class Container {constructor(){this.children=[];this.position={set(...v){this.va
 class Matrix {constructor(a,b,c,d,tx,ty){Object.assign(this,{a,b,c,d,tx,ty})}}
 class Material {constructor(texture,options){this.texture=texture;this.program=options.program;this.uniforms={...options.uniforms,uColor:new Float32Array(4)}}}
 const pixi={SimpleMesh:Mesh,MeshMaterial:Material,Program:{from:(v,f)=>({vertexSrc:v,fragmentSrc:f})},Container,Matrix,BLEND_MODES:{ADD:1,ADD_NPM:16}}
-const runtime=createSpriteLaserRuntime(pixi,new Container(),spriteLaserModel.layers,Array(3).fill({width:512,height:512}))
+const nativeRestores=[],nativeRenderer={state:{blendModes:new Array(32)},gl:{SRC_ALPHA:770,ONE:1},runners:{contextChange:{add(c){nativeRestores.push(c)}}}}
+const runtime=createSpriteLaserRuntime(pixi,new Container(),spriteLaserModel.layers,Array(3).fill({width:512,height:512}),nativeRenderer)
 assert.equal(runtime.sprites.length,3)
-assert.ok(runtime.sprites.every(s=>s.shader.batchable===false&&s.blendMode===16))
+assert.ok(runtime.sprites.every(s=>s.shader.batchable===false&&s.blendMode===32))
+assert.deepEqual(nativeRenderer.state.blendModes[32],[770,1],'Use the same native factors for RGB and alpha')
+assert.equal(nativeRestores.length,1,'Share one registered mode per WebGL renderer')
+nativeRenderer.state.blendModes=[];nativeRestores[0].contextChange()
+assert.deepEqual(nativeRenderer.state.blendModes[32],[770,1])
+assert.throws(()=>createSpriteLaserRuntime(pixi,new Container(),spriteLaserModel.layers,Array(3).fill({width:512,height:512})),/active WebGL renderer/)
 assert.equal(applySpriteLaserRuntime(pixi,runtime,spriteState,28000,1280,720),3)
 assert.deepEqual(runtime.container.position.value,[1144,464],'Native effect X follows ScriptPosToStagePos')
 assert.ok(Math.abs(runtime.container.scale.value[0]-.2)<1e-7)

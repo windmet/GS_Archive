@@ -1,7 +1,7 @@
 import { createSpotlightSpriteStore } from './chibiSpotlightSprites.js'
 import { createNativeLightQuad } from './chibiLightQuad.js'
 
-export function createSearchlightRenderer(PIXI,parent,onReady) {
+export function createSearchlightRenderer(PIXI,parent,onReady,getRenderer) {
   const store=createSpotlightSpriteStore({layerCount:1,
     loadTexture:async file=> {
       const base=new PIXI.BaseTexture(file),texture=new PIXI.Texture(base)
@@ -11,7 +11,7 @@ export function createSearchlightRenderer(PIXI,parent,onReady) {
       return texture
     },
     createRuntime:(id,layers,textures)=> {
-      const m=layers[0],sprite=createNativeLightQuad(PIXI,textures[0],m.anchorX,m.anchorY,m.width,m.height)
+      const m=layers[0],sprite=createNativeLightQuad(PIXI,getRenderer(),textures[0],m.anchorX,m.anchorY,m.width,m.height)
       parent()?.addChild(sprite);return {sprite,id}
     },
     destroyRuntime:r=>{r.sprite.removeFromParent();r.sprite.destroy()},destroyTexture:t=>t.destroy(true),onReady,
@@ -20,7 +20,7 @@ export function createSearchlightRenderer(PIXI,parent,onReady) {
   const model=(data,asset)=>data?.assets[asset]?.file?{layers:[{...data.assets[asset],asset}]}:null
   const assets=data=>data?.assets||{}
   async function prepare(data,events) {
-    const used=new Set((events||[]).filter(e=>!e.hide && e.command.startsWith('Searchlight_show')).map(e=>e.values[1]))
+    const used=new Set((events||[]).filter(e=>!e.hide && e.command.startsWith('Searchlight_show') && e.values[1]).map(e=>e.values[1]))
     const results=await Promise.all([...used].map(asset=>store.prepare(model(data,asset),assets(data))))
     if(!results.every(Boolean))throw new Error('Searchlight 原始图片尚未就绪')
   }

@@ -84,7 +84,10 @@ export function registerNativeParticleMaskRenderer(PIXI) {
     destroy(){this.maskContext=null;super.destroy()}
     flush(){
       if(this._vertexCount){
-        this.renderer.texture.bind(this.maskContext.sprite.texture.baseTexture,1)
+        // An unmasked Mobile/Particles/Additive system uses the same straight
+        // RGBA pipeline with identity mask alpha. Keep native SrcAlpha/One
+        // for alpha too, rather than Pixi ADD_NPM's separate One/One factors.
+        this.renderer.texture.bind((this.maskContext.sprite?.texture || PIXI.Texture.WHITE).baseTexture,1)
         this._shader.uniforms.uMaterialTint=this.maskContext.materialTint||[1,1,1,1]
         this.renderer.shader.bind(this._shader)
       }
@@ -105,13 +108,13 @@ export function registerNativeParticleMaskRenderer(PIXI) {
       const packed=a/this.vertexSize,{float32View:f,uint32View:u}=buffer
       const vertices=element.vertexData,uv=element.uvs,tex=element._texture.baseTexture
       const color=PIXI.Color.shared.setValue(element._tintRGB).toPremultiplied(Math.min(element.worldAlpha,1),false)
-      const mask=element.nativeParticleMask.sprite,m=mask.worldTransform,det=m.a*m.d-m.b*m.c
-      const w=mask.texture.orig.width,h=mask.texture.orig.height
+      const mask=element.nativeParticleMask.sprite,m=mask?.worldTransform,det=m?m.a*m.d-m.b*m.c:1
+      const w=mask?.texture.orig.width,h=mask?.texture.orig.height
       for(let v=0;v<vertices.length;v+=2){
-        const x=vertices[v],y=vertices[v+1],dx=x-m.tx,dy=y-m.ty
+        const x=vertices[v],y=vertices[v+1],dx=m?x-m.tx:0,dy=m?y-m.ty:0
         f[a++]=x;f[a++]=y;f[a++]=uv[v];f[a++]=uv[v+1];u[a++]=color;f[a++]=tex._batchLocation
-        f[a++]=(m.d*dx-m.c*dy)/det/w+mask.anchor.x
-        f[a++]=(-m.b*dx+m.a*dy)/det/h+mask.anchor.y
+        f[a++]=mask?(m.d*dx-m.c*dy)/det/w+mask.anchor.x:.5
+        f[a++]=mask?(-m.b*dx+m.a*dy)/det/h+mask.anchor.y:.5
       }
       for(const index of element.indices)indices[i++]=packed+index
     }

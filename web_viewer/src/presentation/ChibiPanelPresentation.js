@@ -2,16 +2,27 @@ const validPosition = value => Number.isInteger(value) && value >= 1 && value <=
 const validCostumeId = value => typeof value === 'string' && /^\d{3}_\d{2}$/.test(value)
 const hasLabel = costume => typeof costume?.label === 'string' && Boolean(costume.label.trim())
 
-// Catalog member order identifies a roster, not an official stage placement.
-// This UI rule assigns that order to ascending script performer slots.
-// `slotOrdered`: performerCodes are in the original's performer-slot order (table 46 fields 30-34).
-// Without it a unit song falls back to idol-number order, which is not the original standing order.
-export function buildOriginalStageLineup(song, performerCodes, characters, idolDirectory, { slotOrdered = false } = {}) {
-  if (song?.vocalSetting?.mode === 'unit') return buildUnitStageLineup(song, characters, idolDirectory, slotOrdered ? performerCodes : null)
+// Members map to performer slots before stage positions. Ordered inputs may be
+// per-song table 46 records or native table 2 fixed/selected unit ordering.
+export function buildOriginalStageLineup(song, performerCodes, characters, idolDirectory, { slotOrdered = false, activeSubset = false, requireOrderedUnit = false } = {}) {
+  if (song?.vocalSetting?.mode === 'unit') return buildUnitStageLineup(song, characters, idolDirectory, slotOrdered ? performerCodes : null, requireOrderedUnit)
   if (!song || song.songCode === 'drv999' || !Array.isArray(performerCodes) || !performerCodes.length ||
       !Array.isArray(characters) || !Array.isArray(song.positions) || !Array.isArray(song.stagePositionMap)) return null
   const positions = song.positions
-  const map = song.stagePositionMap
+  const wholeMap = song.stagePositionMap
+  if (wholeMap.some(entry => !validPosition(entry?.performerSlot) || !validPosition(entry?.stagePosition)) ||
+      new Set(wholeMap.map(entry => entry.performerSlot)).size !== wholeMap.length ||
+      new Set(wholeMap.map(entry => entry.stagePosition)).size !== wholeMap.length) return null
+  let map = wholeMap
+  if (activeSubset) {
+    const slots = song.performerSlots, active = song.onStagePerformerSlots
+    if (!Array.isArray(slots) || !Array.isArray(active) || slots.length !== wholeMap.length ||
+        slots.some(slot => !validPosition(slot)) || new Set(slots).size !== slots.length ||
+        active.some(slot => !slots.includes(slot)) || new Set(active).size !== active.length ||
+        active.length !== performerCodes.length || active.some(slot => slot > performerCodes.length) ||
+        wholeMap.some(entry => !slots.includes(entry.performerSlot))) return null
+    map = wholeMap.filter(entry => active.includes(entry.performerSlot))
+  }
   if (performerCodes.length !== positions.length || map.length !== positions.length ||
       positions.some(position => !validPosition(position)) || new Set(positions).size !== positions.length ||
       performerCodes.some(code => typeof code !== 'string' || !code.trim() ||
@@ -27,7 +38,7 @@ export function buildOriginalStageLineup(song, performerCodes, characters, idolD
   return result
 }
 
-function buildUnitStageLineup(song, characters, idolDirectory, slotOrder = null) {
+function buildUnitStageLineup(song, characters, idolDirectory, slotOrder = null, requireOrder = false) {
   const unitCode = song.vocalSetting.unitCode
   if (song.songCode === 'drv999' || typeof unitCode !== 'string' || !unitCode.trim() ||
       !Array.isArray(characters) || !Array.isArray(idolDirectory) ||
@@ -52,7 +63,8 @@ function buildUnitStageLineup(song, characters, idolDirectory, slotOrder = null)
     .sort((left, right) => left.performerSlot - right.performerSlot)
   if (activeMap.length !== positions.length || activeMap.some(entry => !positions.includes(entry.stagePosition))) return null
   const result = Array(5).fill('')
-  const recorded = Array.isArray(slotOrder) && slotOrder.length === members.length && slotOrder.every(code => members.includes(code))
+  const recorded = Array.isArray(slotOrder) && slotOrder.length === members.length && new Set(slotOrder).size === members.length && slotOrder.every(code => members.includes(code))
+  if (requireOrder && !recorded) return null
   const orderedMembers = recorded ? slotOrder : [...members].sort()
   activeMap.forEach((entry, index) => { result[entry.stagePosition - 1] = orderedMembers[index] })
   return result

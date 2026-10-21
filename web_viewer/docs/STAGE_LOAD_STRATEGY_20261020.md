@@ -2,7 +2,13 @@
 
 舞台线下一轮以加载策略为主，MV 消费检查为辅，不再逐首修补。本页是起点；数据来自 2026-10-19 在 `stage/20261014-native-fidelity`（已并入 master，PR #55）上的冷缓存 CDP 实测。
 
+10-20 舞台线更新：新分支 `stage/20261020-native-followup` 已完成新悬灯 Sprite、Time Before Time 内置对象、公共 RGBA 接线，并同步 #53。下文 MV 旧待办以 [最新续批入口](STAGE_FOLLOWUP_20261020.md)及[合并验证](STAGE_MASTER_SYNC_20261020.md)校正；本页加载测量仍保留历史输入，没有宣称重测。
+
+10-20 加载续批：[共享解析文档与惰性来源哈希](STAGE_INDEX_DOCUMENT_REUSE_20261020.md)已接入。真实loader固定序列SHA-256从13次降至5次、对象索引调用从4次降至1次，返回值完全一致；读取/解析仍各22次，编舞因LRU挤占仍读两次。下文第2项已推进，分片和加载时间/字节预算仍开放。
+
 ## 实测基线（drvalv 默认曲，1280×800，冷缓存，dev 服务）
+
+10-20进一步落地 [编舞逐编排分片](STAGE_CHOREOGRAPHY_SHARDS_20261020.md)：342KB目录、118份按需片；实际舞台不再读取全局编舞及Spotlight/Whole_screen/Searchlight三份全局轨道。默认DRIVE的固定loader序列原始字节43.58MB→22.86MB、请求22→19、输出一致。它不是本节Browser冷加载测量的重跑；stage-effects、Stagelight、emitter全局数据和后续预算仍待推进。
 
 - 2504 个请求，0 个错误，堆 157 MB。除开发态代码外约 51 MiB。
 - 全局索引 34.4 MB 原始 / 1.95 MB gzip，其中约 26 MB 按歌曲键组织，可以分片：
@@ -21,6 +27,8 @@
 
 ## 建议顺序
 
+10-20续进 [舞台效果/Stagelight成对分片](STAGE_EFFECT_SHARDS_20261020.md)：实际舞台改为41KB清单、244KB公共文件和逐编排片，保留原生合同与signed zero。默认DRIVE固定索引序列22.86MB→6.26MB、HND22.94MB→7.40MB，所选消费者一致。stage-effects/Stagelight两份全局读取已移除；emitter/Penlight索引、加载并行、真实开播预算继续开放。
+
 1. **按歌曲分片全局索引。** 一个小清单记每首歌的分片文件和 sha256。现在若干 sidecar 用「整个 choreography 文件的哈希」绑定（`choreographyIndexSha256`、`objectIndexSha256` 等，见 `attachNativeSpotlights`、`attachObjectEmitters`、`attachNativeOldSuspension`），分片后改为绑定分片哈希。这是先要定的设计。生成器和 verifier 必须 import 运行时同一个解析函数，不写镜像。
 2. **每个索引只读一次、只哈希一次。** `fetchLiveChibiObjectLayerIndex` 现在同一个文件读 4 次、哈希 3 次。整个开场主线程上有 13 次 SHA-256 和约 34 MB 的 JSON.parse；分片后大部分会消失。
 3. **加载阶段并行。** 现在严格串行：索引 → 歌曲 → skel → 服装 → 粒子（`ChibiStageViewer.vue` 选歌初始化约 1268–1325 行）。歌曲一确定，音频、skel、服装就可以同时开始，灯光和粒子之后到。前提是写清「可开播」的定义：哪些必须到齐，哪些可以在播放中补上并有可见状态。
@@ -38,3 +46,15 @@
 ## 注意
 
 - CI 没有语料。读 `public/assets/**` 或其他 gitignore 语料的检查只能在 `--published-assets` 下运行；合并前在 LF worktree 里把门步骤拆成单条命令逐个跑，链式步骤会把后面的失败藏住。
+
+## Penlight与emitter加载续批
+
+舞台线已继续接入 [Penlight与emitter按需分片](STAGE_CONSUMER_SHARDS_20261020.md)：118份应援棒轨道、80份原生模型按歌曲引用读取，并修复缓存refinement早到与切歌代次归属。固定索引序列DRIVE降至1.79MB、HND降至2.96MB；请求18→19/21。158项源码门禁、build:check与桌面/手机尺寸Browser通过；后续发布另需199份派生文件，本轮未部署。真实开播预算与原片/设备对照仍开放。
+
+## 初次加载并行续批
+
+舞台初次加载已完成 [独立输入并行](STAGE_INITIAL_PARALLEL_20261020.md)：时钟/音乐、编舞/效果同时读取，Penlight与对象索引不再挡住音频初始化。保留人物构建与初始seek屏障，Browser播放/刷新/返回通过；尚未宣称冷加载时间收益，可晚到分层及真实预算继续开放。
+
+## 冷加载测量入口续批
+
+[舞台冷加载测量入口](STAGE_COLD_LOAD_MEASUREMENT_20261020.md)已支持4首代表曲、固定full/lite、场景就绪合同及就绪前CDP字节；失败与混构建样本不进中位数。源级回归与实际DOM正反例通过，尚未运行受控冷缓存新旧对比，没有新的耗时收益结论。

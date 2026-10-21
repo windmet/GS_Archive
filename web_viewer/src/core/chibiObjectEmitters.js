@@ -1,6 +1,7 @@
 import { stepNoiseMotion } from './chibiParticleNoise.js'
 import { createNoiseClock } from './chibiParticleNoiseClock.js'
 import { samplePlanarStretch, transformStretchVelocity } from './chibiParticleStretch.js'
+import {spatialEmitterQuads,OBJECT_SPATIAL_PROFILE} from './chibiObjectSpatialContext.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 export function sampleObjectCurve(c,t,r) {
@@ -9,6 +10,25 @@ export function sampleObjectCurve(c,t,r) {
   return sampleParticleCurve(c,t)
 }
 const sample=sampleObjectCurve
+// VelocityModule evaluates a lifetime rate, then the position integrator adds
+// velocity * dt. Match this viewer's replayable 60 Hz boundary. Curves and
+// source lifetimes are immutable; bound the per-curve lifetime cache for reuse.
+const velocityIntegrals=new WeakMap()
+export function sampleObjectVelocityDisplacement(curve,age,life,randomValue) {
+  if(age<=0)return 0
+  if(curve.mode!==1)return sample(curve,0,randomValue)*age
+  let lifetimes=velocityIntegrals.get(curve)
+  if(!lifetimes){lifetimes=new Map();velocityIntegrals.set(curve,lifetimes)}
+  let sums=lifetimes.get(life)
+  if(!sums){
+    if(lifetimes.size>=8)lifetimes.delete(lifetimes.keys().next().value)
+    sums=[0];lifetimes.set(life,sums)
+  }
+  const steps=Math.floor(age*60)
+  for(let i=sums.length-1;i<steps;i++)sums.push(sums[i]+sample(curve,Math.min(1,(i+.5)/(60*life)),randomValue)/60)
+  const remainder=age-steps/60
+  return sums[steps]+(remainder>0?sample(curve,Math.min(1,(steps/60+remainder/2)/life),randomValue)*remainder:0)
+}
 // A Hermite segment lies inside its Bezier control hull. Include tangent overshoot
 // when selecting old birth loops, or long-lived particles can disappear early.
 function curveUpperBound(c) {
@@ -35,6 +55,24 @@ export function emitterMatrix(chain) {
     m={a:a*m.a+k*m.b,b:b*m.a+d*m.b,c:a*m.c+k*m.d,d:b*m.c+d*m.d,tx:a*m.tx+k*m.ty+t.position.x,ty:b*m.tx+d*m.ty+t.position.y}
   }
   return m
+}
+// View-aligned billboards use signed native lossy scale, not column lengths.
+// A reflected ancestor conjugates descendant rotations. Local alignment keeps
+// the complete hierarchy matrix, including shear, for both orientation and position.
+export function emitterRenderBasis(chain,alignment,matrix=emitterMatrix(chain)) {
+  let q={x:0,y:0,z:0,w:1},signX=1,signY=1,signZ=1
+  for(let i=chain.length-1;i>=0;i--) {
+    const {rotation:r,scale}=chain[i],rx=r.x*signY*signZ,ry=r.y*signX*signZ,rz=r.z*signX*signY
+    const {x,y,z,w}=q
+    q={x:w*rx+x*r.w+y*rz-z*ry,y:w*ry-x*rz+y*r.w+z*rx,
+      z:w*rz+x*ry-y*rx+z*r.w,w:w*r.w-x*rx-y*ry-z*rz}
+    signX*=Math.sign(scale.x)||1;signY*=Math.sign(scale.y)||1;signZ*=Math.sign(scale.z)||1
+  }
+  const {x,y,z,w}=q
+  const a=1-2*(y*y+z*z),b=2*(x*y+w*z),c=2*(x*y-w*z),d=1-2*(x*x+z*z)
+  const scaleX=a*matrix.a+b*matrix.b,scaleY=c*matrix.c+d*matrix.d
+  return alignment===2?{a:matrix.a,b:matrix.b,c:matrix.c,d:matrix.d,scaleX,scaleY}:
+    {a:scaleX,b:0,c:0,d:scaleY,scaleX,scaleY}
 }
 function euler(p,r) {
   let {x,y,z}=p
@@ -155,7 +193,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
   const maxLife=Math.max(.00001,curveUpperBound(system.lifetime)),period=system.duration
   const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
   const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
-  const matrix=emitterMatrix(system.chain),out=[]
+  const matrix=emitterMatrix(system.chain),renderBasis=emitterRenderBasis(system.chain,system.alignment,matrix),out=[]
   const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
   if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
   const timeline=system.noise?noiseTimeline(system,births,last,cutoff,wait,maxLife,seed):null
@@ -179,21 +217,25 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
           velocity:system.velocity?{x:sample(system.velocity.x,t,rnd(14)),y:sample(system.velocity.y,t,rnd(15)),z:sample(system.velocity.z,t,rnd(16))}:{x:0,y:0,z:0},
           gravity:{x:-matrix.c*g/det,y:matrix.a*g/det,z:0},limit:system.limit})
       } else {
-        p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
+        p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.x,age,life,rnd(14)):0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.y,age,life,rnd(15)):0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.z,age,life,rnd(16)):0)}
       }
       const size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
-      const rz=sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13))
+      // Particle angles are clockwise in Unity's billboard builder. Convert
+      // them separately from emitter Transform rotations, which stay unchanged.
+      const rz=-(sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)))
       let A,B,C,D
       if(system.rotationX){
         // rotation3D: Unity Euler order Z, then X, then Y; project world axes onto the screen plane.
-        const rx=sample(system.rotationX,birthPhase,rnd(17))+rotationAt(system.angularX,age,life,rnd(21)),ry=sample(system.rotationY,birthPhase,rnd(18))+rotationAt(system.angularY,age,life,rnd(22))
+        const rx=-(sample(system.rotationX,birthPhase,rnd(17))+rotationAt(system.angularX,age,life,rnd(21))),ry=-(sample(system.rotationY,birthPhase,rnd(18))+rotationAt(system.angularY,age,life,rnd(22)))
         const cx=Math.cos(rx),sx=Math.sin(rx),cy=Math.cos(ry),sy=Math.sin(ry),cz=Math.cos(rz),sz=Math.sin(rz)
-        A=cy*cz+sy*sx*sz;B=-(cx*sz);C=-cy*sz+sy*sx*cz;D=-(cx*cz)
+        // Native UV(0,1) is the PNG/Pixi top-left corner: include both texture
+        // and screen Y conversions, as in the ordinary 2D branch below.
+        A=cy*cz+sy*sx*sz;B=-(cx*sz);C=cy*sz-sy*sx*cz;D=cx*cz
+        ;[A,B,C,D]=[renderBasis.a*A-renderBasis.c*B,-renderBasis.b*A+renderBasis.d*B,renderBasis.a*C-renderBasis.c*D,-renderBasis.b*C+renderBasis.d*D]
       } else {
         const c=Math.cos(rz),s=Math.sin(rz)
-        const base=system.alignment===2?matrix:{a:Math.hypot(matrix.a,matrix.b),b:0,c:0,d:Math.hypot(matrix.c,matrix.d)}
-        A=base.a*c+base.c*s;B=-(base.b*c+base.d*s);C=base.a*s-base.c*c;D=-(base.b*s-base.d*c)
+        A=renderBasis.a*c+renderBasis.c*s;B=-(renderBasis.b*c+renderBasis.d*s);C=renderBasis.a*s-renderBasis.c*c;D=-(renderBasis.b*s-renderBasis.d*c)
       }
       const mix=system.colorMode===2&&system.colorMin?rnd(12):null
       const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):mix===null?system.color:Object.fromEntries(['r','g','b','a'].map(k=>[k,system.colorMin[k]+(system.color[k]-system.colorMin[k])*mix])),over=system.colorOverLife
@@ -203,13 +245,17 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+(system.noise?0:0.5*g*age*age)
       let geometry={x:wx*100,y:-wy*100,a:A*size,b:B*size,c:C*sizeY,d:D*sizeY}
       if(system.stretch) {
-        if(system.stretch.profile!=='native-classic-planar-v1')throw Error('Unknown stretch profile')
         const fp=Math.fround,speed=fp(sample(system.speed,birthPhase,rnd(4)))
-        const vx=fp(v.x*speed),vy=fp(v.y*speed)
-        const velocity=transformStretchVelocity(matrix,{x:vx,y:vy},view.rotation??0)
-        const quad=samplePlanarStretch({position:{x:wx,y:wy},velocity,size:size/100,
+        const vx=fp(v.x*speed),vy=fp(v.y*speed),vz=fp(v.z*speed)
+        let quad
+        if(system.stretch.profile===OBJECT_SPATIAL_PROFILE) {
+          quad=spatialEmitterQuads(system,matrix,renderBasis,p,{x:vx,y:vy,z:vz},size/100,view.spatial)
+        } else if(system.stretch.profile==='native-classic-planar-v1') {
+          const velocity=transformStretchVelocity(matrix,{x:vx,y:vy},view.rotation??0)
+          quad=samplePlanarStretch({position:{x:wx,y:wy},velocity,size:size/100,
           scaleX:Math.hypot(matrix.a,matrix.b),scaleY:Math.hypot(matrix.c,matrix.d),...system.stretch,
           viewHeight:view.height??7.2,cameraRotation:view.rotation??0})
+        } else throw Error('Unknown stretch profile')
         // PNG extraction flips Unity texture Y. Native (0,1),(1,1),(1,0),(0,0)
         // maps to the four Pixi corners in that order; texture X follows the tail.
         geometry={x:(quad[0].x+quad[2].x)*50,y:-(quad[0].y+quad[2].y)*50,

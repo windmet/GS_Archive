@@ -13,11 +13,11 @@ sampleObjectEmitter. Only the ADV placement differs, and it is adapted here:
 - The stage model() rejects a moving Edge emitter. Unity's Edge emits along the
   shape's +Y, which is the sampler's case 12 direction, so the speed is
   restored after validation.
-- Unity draws a positive particle rotation clockwise on screen; the stage sampler
-  draws it counter-clockwise. The rain prefabs prove the native direction: their
+- Unity draws a positive particle rotation clockwise on screen. Both samplers
+  now use that convention directly. The rain prefabs prove the native direction: their
   constant start rotations are 90 degrees plus the shape tilt (93 = 90 + 3,
   100 = 90 + 10), which lines each streak up with its fall only when clockwise.
-  The ADV model therefore stores the rotation curves negated.
+  Keep the RAW rotation curves unchanged; no ADV-specific sign compensation.
 """
 import argparse,copy,hashlib,json,sys
 from pathlib import Path
@@ -145,9 +145,8 @@ def adapt(p,stage,renderer):
     for field in ('rotation','angularVelocity'):
         curve=system[field]
         if curve is None:continue
-        require(curve['mode'] in (0,3) and system.get('rotationX') is None,'Rotation curve needs keyed negation')
-        system[field]=dict(curve,scalar=-curve['scalar'],minScalar=-curve['minScalar'])
-    adaptations.append('rotation-negated-to-clockwise')
+        require(curve['mode'] in (0,3) and system.get('rotationX') is None,'Unsupported ADV billboard rotation profile')
+    adaptations.append('source-rotation-preserved-native-clockwise')
     return system,canvas,adaptations
 
 def prefab_roots(env,audit):

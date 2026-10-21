@@ -80,9 +80,10 @@ for (const [prefab, systems] of Object.entries(model.prefabs)) {
     assert.equal(Number(raw.main.prewarm), 0); assert.equal(raw.main.simulationSpeed, 1); assert.equal(Number(raw.main.moveWithTransform), 0)
     assert.equal(system.speed.scalar, initial.startSpeed.scalar, 'moving edge speed restored from RAW')
     assert.equal(system.speed.minScalar, initial.startSpeed.minScalar)
-    // Stored negated: Unity rotates particles clockwise on screen, the shared sampler counter-clockwise.
-    assert.equal(system.rotation.scalar, -initial.startRotation.scalar); assert.equal(system.rotation.minScalar, -initial.startRotation.minScalar)
-    if (raw.modules.RotationModule) assert.equal(system.angularVelocity.scalar, -raw.modules.RotationModule.curve.scalar)
+    // Shared billboard rendering now follows native clockwise angles; no ADV compensation.
+    assert.equal(system.rotation.scalar, initial.startRotation.scalar); assert.equal(system.rotation.minScalar, initial.startRotation.minScalar)
+    if (raw.modules.RotationModule) assert.equal(system.angularVelocity.scalar, raw.modules.RotationModule.curve.scalar)
+    assert.ok(!system.adaptations.includes('rotation-negated-to-clockwise'))
     // A disabled ShapeModule (punch) emits from the emitter point.
     if (shape) assert.deepEqual(system.shape.m_Rotation, shape.m_Rotation); else assert.equal(system.shape, null)
     assert.equal(system.commandAlphaPower, 'ColorModule' in raw.modules ? 2 : 1)

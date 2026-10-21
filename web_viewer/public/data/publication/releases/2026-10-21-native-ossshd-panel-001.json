@@ -1,0 +1,322 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-21-native-ossshd-panel-001",
+  "created_at": "2026-10-21T02:15:06.829650+00:00",
+  "prepared_from_commit": "f3cab3675cb3a462f365301964abb3c7eadd4aa3",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:bdac441632e29445db51ea8b",
+      "stage-object-emitters:d8109e6ab1dd216f5cc8c6f4",
+      "stage-object-emitters:2a934e4258f11b3d00f43841",
+      "stage-object-emitters:5bf134aa0c50a48b4e174f88"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:bdac441632e29445db51ea8b",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_ossshd.unity3d",
+        "sha256": "ede50a68a99662c835930a63d5a045d0f395aaee461a87757960e3950761cd48",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_ossshd_cloud",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-6164e5ced9c9be27a9892e7af7436a46:-308969276551898713",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 58d5d22658abbeb50f49f4b2a8862315f7d63a06dbf3d95f9d3e9a8371f99030; 1024x1024 RGBA export. Source-bound cloud/glitter system and two panel masks; 14 systems are admitted without Noise/stretch omissions. Native frame scheduling and scene parity remain outside this receipt."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/bdac441632e29445db51ea8b.png",
+          "url": "/data/stage-object-emitters/bdac441632e29445db51ea8b.png",
+          "bytes": 219641,
+          "sha256": "db60e9bb8da69735ec5d71bf06734ecfd1f2c7d6e222bd554a5dec6bed3efe0c"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original frame scheduling, RNG or device parity claim.",
+          "All previous 90 emitter models and 101 texture descriptors are structurally unchanged. Revert the scoped increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=ossshd&stage=ossshd_live_effect",
+        "tested_at": "2026-10-21T02:15:06.829650+00:00",
+        "tested_commit": "f3cab3675cb3a462f365301964abb3c7eadd4aa3",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted panel changes; main checkout dev5213 full mode, rm-release-20261015 candidate.",
+          "At song0ms panel attached with83 total native particles; at10000ms panel only,85 particles. At25000ms82 and72000ms155 total particles including other active objects; rewind and cold reload10000ms restore85.",
+          "Cloud and panel mask visible in desktop1280x720; actual playback10000 to27500ms. Mobile390x844 document width/scrollWidth390. Screenshots ossshd-cloud-10s-desktop.png and ossshd-cloud-10s-mobile.png.",
+          "Unsupported/deferred lists empty at sampled windows, console errors0. Local sample only; no production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:d8109e6ab1dd216f5cc8c6f4",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_ossshd.unity3d",
+        "sha256": "ede50a68a99662c835930a63d5a045d0f395aaee461a87757960e3950761cd48",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_ossshd_panel_1",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-6164e5ced9c9be27a9892e7af7436a46:-3059861086165989302",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 d0a62aba239890f66ec4cd8890fe4ef0426a7e60a233bb74ea4e38677926a550; 512x512 RGBA export. Source-bound cloud/glitter system and two panel masks; 14 systems are admitted without Noise/stretch omissions. Native frame scheduling and scene parity remain outside this receipt."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/d8109e6ab1dd216f5cc8c6f4.png",
+          "url": "/data/stage-object-emitters/d8109e6ab1dd216f5cc8c6f4.png",
+          "bytes": 5047,
+          "sha256": "7031bed65f2799b6f143a1201bb219d5fb7a67b9a58e1655b18d887e2d171d11"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original frame scheduling, RNG or device parity claim.",
+          "All previous 90 emitter models and 101 texture descriptors are structurally unchanged. Revert the scoped increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=ossshd&stage=ossshd_live_effect",
+        "tested_at": "2026-10-21T02:15:06.829650+00:00",
+        "tested_commit": "f3cab3675cb3a462f365301964abb3c7eadd4aa3",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted panel changes; main checkout dev5213 full mode, rm-release-20261015 candidate.",
+          "At song0ms panel attached with83 total native particles; at10000ms panel only,85 particles. At25000ms82 and72000ms155 total particles including other active objects; rewind and cold reload10000ms restore85.",
+          "Cloud and panel mask visible in desktop1280x720; actual playback10000 to27500ms. Mobile390x844 document width/scrollWidth390. Screenshots ossshd-cloud-10s-desktop.png and ossshd-cloud-10s-mobile.png.",
+          "Unsupported/deferred lists empty at sampled windows, console errors0. Local sample only; no production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:2a934e4258f11b3d00f43841",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_ossshd.unity3d",
+        "sha256": "ede50a68a99662c835930a63d5a045d0f395aaee461a87757960e3950761cd48",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_particle_variation",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-6164e5ced9c9be27a9892e7af7436a46:7726785084619450048",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 8a606c1e34b4974a5d92b88ddcb77a90c7174b68e3df93cdcb1cf843198780d8; 1024x1024 RGBA export. Source-bound cloud/glitter system and two panel masks; 14 systems are admitted without Noise/stretch omissions. Native frame scheduling and scene parity remain outside this receipt."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/2a934e4258f11b3d00f43841.png",
+          "url": "/data/stage-object-emitters/2a934e4258f11b3d00f43841.png",
+          "bytes": 156890,
+          "sha256": "0cc4425a19229651ef6f023cac6f16be733391341e620692adb0b26af937cb10"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original frame scheduling, RNG or device parity claim.",
+          "All previous 90 emitter models and 101 texture descriptors are structurally unchanged. Revert the scoped increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=ossshd&stage=ossshd_live_effect",
+        "tested_at": "2026-10-21T02:15:06.829650+00:00",
+        "tested_commit": "f3cab3675cb3a462f365301964abb3c7eadd4aa3",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted panel changes; main checkout dev5213 full mode, rm-release-20261015 candidate.",
+          "At song0ms panel attached with83 total native particles; at10000ms panel only,85 particles. At25000ms82 and72000ms155 total particles including other active objects; rewind and cold reload10000ms restore85.",
+          "Cloud and panel mask visible in desktop1280x720; actual playback10000 to27500ms. Mobile390x844 document width/scrollWidth390. Screenshots ossshd-cloud-10s-desktop.png and ossshd-cloud-10s-mobile.png.",
+          "Unsupported/deferred lists empty at sampled windows, console errors0. Local sample only; no production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:5bf134aa0c50a48b4e174f88",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_ossshd.unity3d",
+        "sha256": "ede50a68a99662c835930a63d5a045d0f395aaee461a87757960e3950761cd48",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_ossshd_panel_2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-6164e5ced9c9be27a9892e7af7436a46:-1082685577659854243",
+          "evidence": "Exact 64-bit PathID retained as a string. RAW object SHA-256 29c87ea1fc005803f19197662e06cec7981645db88fef48cdb3ea14943508e31; 512x512 RGBA export. Source-bound cloud/glitter system and two panel masks; 14 systems are admitted without Noise/stretch omissions. Native frame scheduling and scene parity remain outside this receipt."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/5bf134aa0c50a48b4e174f88.png",
+          "url": "/data/stage-object-emitters/5bf134aa0c50a48b4e174f88.png",
+          "bytes": 4935,
+          "sha256": "250c325784766c59643ed51b48e92707e4ae0c9344d4367408c3acdeb19ec70d"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW Texture2D RGBA comparison passed with prepare-chibi-object-emitters.py --consume-deferred. Texture parity only; no original frame scheduling, RNG or device parity claim.",
+          "All previous 90 emitter models and 101 texture descriptors are structurally unchanged. Revert the scoped increment and regenerate consumer shards; no production rollback was performed."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=ossshd&stage=ossshd_live_effect",
+        "tested_at": "2026-10-21T02:15:06.829650+00:00",
+        "tested_commit": "f3cab3675cb3a462f365301964abb3c7eadd4aa3",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted panel changes; main checkout dev5213 full mode, rm-release-20261015 candidate.",
+          "At song0ms panel attached with83 total native particles; at10000ms panel only,85 particles. At25000ms82 and72000ms155 total particles including other active objects; rewind and cold reload10000ms restore85.",
+          "Cloud and panel mask visible in desktop1280x720; actual playback10000 to27500ms. Mobile390x844 document width/scrollWidth390. Screenshots ossshd-cloud-10s-desktop.png and ossshd-cloud-10s-mobile.png.",
+          "Unsupported/deferred lists empty at sampled windows, console errors0. Local sample only; no production or device acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

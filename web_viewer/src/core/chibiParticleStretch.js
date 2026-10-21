@@ -38,3 +38,39 @@ export function samplePlanarStretch({position,velocity,size,scaleX,scaleY,length
   const x=vy/norm*half*scaleX,y=-vx/norm*half*scaleY
   return [{x:position.x+x,y:position.y+y},{x:tx+x,y:ty+y},{x:tx-x,y:ty-y},{x:position.x-x,y:position.y-y}]
 }
+
+// Source-bound spatial path. Callers supply a native world-to-camera matrix;
+// this is not a projection matrix or an inferred camera depth constant.
+export function transformSpatialStretchVelocity(matrix,velocity,cameraMatrix,depthScale=1) {
+  const a=f(matrix.a),b=f(matrix.b),c=f(matrix.c),d=f(matrix.d)
+  const vx=f(velocity.x),vy=f(velocity.y),vz=f(velocity.z),m=cameraMatrix
+  const A=f(f(m[0]*a)+f(m[4]*b)),C=f(f(m[0]*c)+f(m[4]*d))
+  const B=f(f(m[1]*a)+f(m[5]*b)),D=f(f(m[1]*c)+f(m[5]*d))
+  const x=f(f(A*vx)+f(C*vy)),y=f(f(B*vx)+f(D*vy)),z=f(f(m[10]*f(depthScale))*vz)
+  return {x:f(f(a*vx)+f(c*vy)),y:f(f(b*vx)+f(d*vy)),z:f(f(depthScale)*vz),speedSquared:f(f(f(x*x)+f(y*y))+f(z*z))}
+}
+
+export function sampleSpatialStretch({position,velocity,size,scaleX,scaleY,lengthScale,velocityScale,
+  cameraMatrix,minSize=0,maxSize=1,viewHeight=10}) {
+  const m=cameraMatrix,det=m?.[0]*m?.[5]-m?.[4]*m?.[1]
+  if(!m || m.length!==16 || m.some(x=>!Number.isFinite(x)) ||
+    [2,3,6,7,8,9,11].some(i=>Math.abs(m[i])>1e-6) || Math.abs(m[15]-1)>1e-6 ||
+    Math.abs(Math.abs(m[10])-1)>1e-5 || Math.abs(Math.abs(det)-1)>1e-5 ||
+    Math.abs(m[0]*m[4]+m[1]*m[5])>1e-5 || Math.abs(m[0]*m[0]+m[1]*m[1]-1)>1e-5)
+    throw Error('Spatial stretch needs a bound orthonormal XY camera view')
+  if(!(size>0&&scaleX>0&&scaleY>0) || minSize!==0 || size*scaleX>maxSize*viewHeight)
+    throw Error('Spatial stretch screen-size clamp is outside the proven profile')
+  const vx=f(velocity.x),vy=f(velocity.y),vz=f(velocity.z),speed2=velocity.speedSquared??f(f(f(vx*vx)+f(vy*vy))+f(vz*vz))
+  if(speed2<=1e-30)return Array.from({length:4},()=>({...position}))
+  const camera={x:(-m[5]*m[12]+m[4]*m[13])/det,y:(m[1]*m[12]-m[0]*m[13])/det,z:-m[14]/m[10]}
+  const rx=position.x-camera.x,ry=position.y-camera.y,rz=position.z-camera.z
+  const crossX=ry*vz-rz*vy,crossY=rz*vx-rx*vz,norm=Math.hypot(crossX,crossY)
+  if(norm<=1e-30)throw Error('Spatial stretch degenerate side is outside the proven profile')
+  // Reflection in Unity's camera Z axis reverses the projected cross product.
+  const hand=Math.sign(det*m[10]),x=hand*crossX/norm*size*.5*scaleX,y=hand*crossY/norm*size*.5*scaleY
+  const inverse=f(reciprocalSqrtEstimate(speed2)*f(1.0019569))
+  const factor=f(f(velocityScale)+f(f(f(lengthScale*scaleX)*size)*inverse))
+  const tail={x:f(position.x-f(vx*factor)),y:f(position.y-f(vy*factor)),z:f(position.z-f(vz*factor))}
+  return [{x:position.x+x,y:position.y+y,z:position.z},{x:tail.x+x,y:tail.y+y,z:tail.z},
+    {x:tail.x-x,y:tail.y-y,z:tail.z},{x:position.x-x,y:position.y-y,z:position.z}]
+}

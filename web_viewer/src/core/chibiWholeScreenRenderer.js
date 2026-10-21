@@ -2,7 +2,7 @@ import { wholeScreenAt, sampleWholeScreen } from './chibiWholeScreen.js'
 import { createNativeLightQuad } from './chibiLightQuad.js'
 import { configureNativeParticleTexture } from './chibiNativeParticleMask.js'
 
-export function createWholeScreenRenderer(PIXI) {
+export function createWholeScreenRenderer(PIXI,getRenderer) {
   const textures=new Map(),layers=new Map()
   let generation=0,prepared=null,loading=null
   function clear() {
@@ -53,7 +53,7 @@ export function createWholeScreenRenderer(PIXI) {
       let cursor=0
       for(const system of model.systems)for(const p of sampleWholeScreen(system,time,state.epochs)) {
         let mesh=layer.pool[cursor]
-        if(!mesh){mesh=createNativeLightQuad(PIXI,textures.get(system.texture),.5,.5,1,1);layer.addChild(mesh);layer.pool.push(mesh)}
+        if(!mesh){mesh=createNativeLightQuad(PIXI,getRenderer(),textures.get(system.texture),.5,.5,1,1);layer.addChild(mesh);layer.pool.push(mesh)}
         mesh.visible=true;mesh.position.set(p.x,p.y);mesh.scale.set(p.size);mesh.rotation=p.rotation-parent.rotation
         mesh.tint=p.color;mesh.alpha=p.alpha
         const cols=system.uv?.columns||1,rows=system.uv?.rows||1,x=p.frame%cols/cols,y=Math.floor(p.frame/cols)/rows

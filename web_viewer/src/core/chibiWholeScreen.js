@@ -87,7 +87,7 @@ export function sampleWholeScreen(system,time,epochs) {
       const frame=uv?((Math.floor((curve(uv.startFrame,0,rnd(6))+curve(uv.frameOverTime,(t*uv.cycles)%1,rnd(7)))*n)%n)+n)%n:0
       result.push({birth,epoch:epoch.start,x:p.x*100+velocity.x*age*100,y:-p.y*100-velocity.y*age*100,
         size:curve(system.size,0,rnd(8))*(system.scalingMode===1?72:100)*(system.sizeOverLife?curve(system.sizeOverLife,t,rnd(9)):1),
-        rotation:-curve(system.rotation,0,rnd(10))-(system.angularVelocity?curve(system.angularVelocity,t,rnd(11))*age:0),
+        rotation:curve(system.rotation,0,rnd(10))+(system.angularVelocity?curve(system.angularVelocity,t,rnd(11))*age:0),
         color,alpha:initial.a*sampleFloorGradient(system.colorOverLife.alphas,t),frame})
     }
   }

@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -28,6 +29,14 @@ assert.equal(coverage.guarded[0].guard,'not_loaded')
 assert.equal(stageCommandCoverage(song,inventory,{stageEffects:{}}).guarded[0].guard,'disabled')
 const enabled=stageCommandCoverage(song,inventory,{stageEffects:{oldSuspensionlightSongs:{test:{nativeCapability:'supported'}}}})
 assert.equal(enabled.guarded[0].guard,'enabled')
+// Partial tracks play normal instances while guarding unresolved generations.
+// Keep both that distinction and the aggregate incompleteness visible.
+for (const [capability, guard] of [['partial','partial'],['unsupported','disabled'],['future','disabled']]) {
+  const indexes={stageEffects:{oldSuspensionlightSongs:{test:{nativeCapability:capability}}}}
+  assert.equal(stageCommandCoverage(song,inventory,indexes).guarded[0].guard,guard)
+  const onlyOld={...inventory,songs:{test:{...inventory.songs.test,commands:{Suspensionlight:5}}}}
+  assert.equal(buildStageVfxCoverage(song,{...indexes,commandInventory:onlyOld}).status,'partial')
+}
 assert.equal(buildStageVfxCoverage(song,{commandInventory:inventory}).status,'partial')
 const future={...inventory,songs:{test:{...inventory.songs.test,commands:{NewSuspensionlight_future:1,Penlight_future:1}}}}
 assert.equal(stageCommandCoverage(song,future).unknown.length,2,'Unknown suffixes never inherit support')
@@ -48,8 +57,8 @@ const source=readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.u
 const fn=source.match(/export async function fetchLiveChibiCommandInventory\([^]*?\n\}/)[0]
 const indexText='{"songs":[]}', indexHash=createHash('sha256').update(indexText).digest('hex')
 const realInventory={...inventory,choreographyIndexSha256:indexHash}
-const load=new Function('indexTransport','LIVE_CHIBI_BASE','validateStageCommandInventory','crypto',
-  fn.replace('export async function','async function')+';return fetchLiveChibiCommandInventory')
+const load=withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','validateStageCommandInventory','crypto',
+  fn.replace('export async function','async function')+';return fetchLiveChibiCommandInventory'))
 const requests=[]
 const loader=load({async load(url,{signal}){requests.push(url);if(signal?.aborted)throw new DOMException('cancel','AbortError');
   return url.startsWith('/data/')?JSON.stringify(realInventory):indexText}},'/assets/live-chibi',validateStageCommandInventory,globalThis.crypto)

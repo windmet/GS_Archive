@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { projectChibiGround } from '../src/core/chibiStageCoordinates.js'
@@ -135,8 +136,8 @@ console.log('Native RAW Spotlight fields, scale, 500ms OutQuad handoff, free pos
 
 // Exercise the real loader: required sidecar, actual-byte digest and cancellation.
 const loaderSource=fs.readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.url),'utf8')
-const loaderSection=loaderSource.slice(loaderSource.indexOf('export async function fetchLiveChibiChoreography('),loaderSource.indexOf('export async function fetchLiveChibiCommandInventory(')).replace('export ','')
-const makeLoader=transport=>new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeSpotlights','attachWholeScreen','attachSearchlights',loaderSection+';return fetchLiveChibiChoreography')(
+const loaderSection=loaderSource.slice(loaderSource.indexOf('export async function fetchLiveChibiChoreography('),loaderSource.indexOf('export async function fetchLiveChibiCommandInventory(')).replace(/^export /gm,'')
+const makeLoader=transport=>withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeSpotlights','attachWholeScreen','attachSearchlights',loaderSection+';return fetchLiveChibiChoreography'))(
  transport,'/assets/live-chibi',crypto.webcrypto,attachNativeSpotlights,index=>index,index=>index)
 // Whole-screen and searchlight sidecars have their own verifiers; pass them through.
 const transport={load:async path=>path==='/data/stage-spotlight-commands.json'?JSON.stringify(canonical):/stage-(whole-screen|searchlights)/.test(path)?'{}':raw}

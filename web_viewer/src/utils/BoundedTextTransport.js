@@ -1,6 +1,7 @@
-// Raw bytes are shared; cancellation belongs to each subscriber, never its sibling.
+// Response/decode work is shared; cancellation belongs to each subscriber.
 export function createBoundedTextTransport({fetchImpl = (...args) => fetch(...args),
-  timeoutMs = 12000, maxBytes = 1024 * 1024, cacheBytes = 4 * 1024 * 1024, maxEntries = 32, binary = false} = {}) {
+  timeoutMs = 12000, maxBytes = 1024 * 1024, cacheBytes = 4 * 1024 * 1024, maxEntries = 32, binary = false,
+  decode = value => value} = {}) {
   const cache = new Map(), flights = new Map()
   let bytes = 0
   const aborted = () => new DOMException('Request cancelled', 'AbortError')
@@ -14,7 +15,7 @@ export function createBoundedTextTransport({fetchImpl = (...args) => fetch(...ar
     if (signal?.aborted) throw aborted()
     if (cache.has(key)) {
       const value = cache.get(key); cache.delete(key); cache.set(key,value)
-      return value.text
+      return value.value
     }
     let flight = flights.get(key)
     if (!flight) {
@@ -29,11 +30,13 @@ export function createBoundedTextTransport({fetchImpl = (...args) => fetch(...ar
         const size = binary ? text.byteLength : new TextEncoder().encode(text).byteLength
         if (size > maxBytes) throw Error('Response byte budget exceeded')
         if (flight.controller.signal.aborted || flights.get(key) !== flight) throw aborted()
-        cache.set(key,{text,bytes:size}); bytes += size
+        const value = await decode(text)
+        if (flight.controller.signal.aborted || flights.get(key) !== flight) throw aborted()
+        cache.set(key,{value,bytes:size}); bytes += size
         while (bytes > cacheBytes || cache.size > maxEntries) {
           const oldest = cache.keys().next().value; bytes -= cache.get(oldest).bytes; cache.delete(oldest)
         }
-        return text
+        return value
       })()
       let timer
       const deadline = new Promise((_,reject) => {timer=setTimeout(() => {

@@ -1,15 +1,126 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
-import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
+import {execFileSync} from 'node:child_process'
+import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement,emitterRenderBasis} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
 import {createNoiseClock} from '../src/core/chibiParticleNoiseClock.js'
-import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity} from '../src/core/chibiParticleStretch.js'
+import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity,sampleSpatialStretch} from '../src/core/chibiParticleStretch.js'
+import {objectSpatialContext,spatialEmitterQuads,OBJECT_SPATIAL_PROFILE,OBJECT_SPATIAL_BINDING} from '../src/core/chibiObjectSpatialContext.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
+function samplePreviewSystem(system,time,activatedAt,stoppedAt=Infinity) {
+  const spatial=system.stretch?.profile===OBJECT_SPATIAL_PROFILE?objectSpatialContext({verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0},{x:0,y:360,scale:1000},'pfofos_live_effect'):null
+  return sampleObjectEmitter(system,time,activatedAt,stoppedAt,{spatial})
+}
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
 const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
+const velocityProof=JSON.parse(read('scripts/fixtures/chibi-velocity-curve-native.json'))
+assert.equal(velocityProof.binarySha256,noiseProof.binarySha256)
+assert.equal(velocityProof.cases.length,8)
+for(const window of velocityProof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+for(const c of velocityProof.cases)for(const [i,phase] of c.phases.entries())for(const [axis,curve] of c.curves.entries()) {
+  assert.ok(Math.abs(sampleObjectCurve(curve,phase,0)-c.expected[i][axis])<2e-7,'RAW-bound native Velocity worker sample')
+}
 const stretchProof=JSON.parse(read('scripts/fixtures/chibi-stretch-kernel-native.json'))
+const spatialContext=JSON.parse(read('scripts/fixtures/chibi-spatial-context-native.json'))
+assert.equal(spatialContext.unityDataSha256,stretchProof.cameraBinding.unityDataSha256)
+assert.deepEqual(spatialContext.camera.chain,stretchProof.cameraBinding.chain)
+assert.deepEqual(spatialContext.cameraScript.gameObject,spatialContext.camera.gameObject)
+assert.deepEqual(spatialContext.stage.base,spatialContext.container.parent,'Container must bind the exact LiveStage Base, not a similarly named object')
+assert.deepEqual(spatialContext.container.chain.slice(1),spatialContext.stage.chain)
+assert.deepEqual(spatialContext.camera.chain.slice(1),spatialContext.stage.chain.slice(1),'Camera and Stage are siblings below the same parent')
+for(const entry of spatialContext.instructionWindows)assert.equal(sha(Buffer.from(entry.bytes,'hex')),entry.sha256)
+for(const entry of Object.values(spatialContext.constants))assert.equal(Buffer.from(entry.bytes,'hex').readFloatLE(),entry.value)
+assert.deepEqual(spatialContext.basePos,[0,360,0])
+assert.equal(spatialContext.constants.pixelToStage.value,Math.fround(.01))
+assert.equal(spatialContext.constants.scriptDivisor.value,100)
+assert.equal(spatialContext.constants.wideStageScale.value,Math.fround(1000/720))
+for(const [key,z] of [['camera',2],['stage',4],['container',14]]) {
+  const chain=spatialContext[key].chain
+  assert.ok(chain.every(t=>t.rotation.x===0&&t.rotation.y===0&&t.rotation.z===0&&t.rotation.w===1&&t.scale.z===1))
+  assert.equal(chain.reduce((sum,t)=>sum+t.position.z,0),z,'Serialized initial depth only, not a runtime constant')
+}
+assert.equal(spatialContext.arrangement.cameraEvents.length,152)
+assert.ok(spatialContext.arrangement.cameraEvents.every(e=>!e.focusSlot),'This bound pfofos track uses the free-camera branch')
+assert.equal(spatialContext.arrangement.fireEvents.length,200)
+const cameraMatrixProof=JSON.parse(read('scripts/fixtures/chibi-camera-matrix-native.json'))
+assert.equal(cameraMatrixProof.binarySha256,stretchProof.binarySha256)
+assert.equal(cameraMatrixProof.sourceContextSha256,sha(read('scripts/fixtures/chibi-spatial-context-native.json')))
+assert.equal(cameraMatrixProof.cases.length,153)
+for(const window of cameraMatrixProof.instructionWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+assert.equal(cameraMatrixProof.pixelToCamera,Math.fround(spatialContext.constants.wideStageScale.value/100))
+let cameraMatrixError=0
+for(const c of cameraMatrixProof.cases) {
+  const event=c.eventIndex<0?null:spatialContext.arrangement.cameraEvents[c.eventIndex]
+  assert.equal(c.time,event?.time??null)
+  assert.deepEqual(c.chain.slice(1),spatialContext.camera.chain.slice(1))
+  if(event) {
+    const x=event.reset?0:event.x,y=event.reset?360:event.y
+    assert.equal(c.chain[0].position.x,Math.fround(x*cameraMatrixProof.pixelToCamera))
+    assert.equal(c.chain[0].position.y,Math.fround((y-360)*cameraMatrixProof.pixelToCamera))
+    assert.equal(c.chain[0].position.z,0)
+  }
+  const q=c.chain[0].rotation,x=c.chain[0].position.x,y=c.chain[0].position.y
+  const co=1-2*q.z*q.z,si=2*q.w*q.z,z=c.chain.reduce((sum,t)=>sum+t.position.z,0)
+  const expected=[co,-si,0,0,si,co,0,0,0,0,-1,0,-co*x-si*y,si*x-co*y,z,1]
+  for(let i=0;i<16;i++)cameraMatrixError=Math.max(cameraMatrixError,Math.abs(c.expected[i]-expected[i]))
+}
+assert.ok(cameraMatrixError<2e-5,'Source camera target matrices retain native Z flip and world-to-local translation')
+const joinedProof=JSON.parse(read('scripts/fixtures/chibi-source-stretch-native.json'))
+assert.equal(OBJECT_SPATIAL_BINDING.sourceContextSha256,sha(read('scripts/fixtures/chibi-spatial-context-native.json')))
+assert.throws(()=>objectSpatialContext({verified:true,focusSlot:1,orthoSize:5},{scale:1000}),/free camera/)
+assert.equal(joinedProof.binarySha256,stretchProof.binarySha256)
+for(const [name,hash] of Object.entries(joinedProof.dependencies))assert.equal(sha(read('scripts/fixtures/'+name)),hash)
+const joinedAudit=JSON.parse(execFileSync(process.execPath,['scripts/audit-chibi-source-stretch.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'}))
+assert.equal(joinedAudit.sourceFrames,104)
+assert.equal(joinedAudit.totalCases,1664)
+assert.equal(joinedAudit.matches,1664,'Actual spatial implementation must match both native writers for every source Show placement')
+assert.equal(joinedAudit.planarMatches,832,'Zero-Z rays can match; nonzero-Z cases still need the spatial path')
+assert.ok(joinedAudit.maxPlanarError>.008,'The old planar projection still misses the source-bound spatial cases')
+for(const value of Object.values(joinedAudit.byAsset))assert.equal(value.cases,208)
+for(const row of joinedProof.cases)assert.deepEqual(row.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]])
+for(const frame of joinedProof.frames){
+  const event=spatialContext.arrangement.fireEvents[frame.eventIndex]
+  assert.equal(event.hide,false);assert.equal(frame.asset,event.asset)
+  assert.deepEqual(frame.input.cameraMatrix,cameraMatrixProof.cases[frame.cameraIndex].expected)
+}
+let bridgeCases=0,maxBridgeError=0
+for(const row of joinedProof.cases){
+  const frame=joinedProof.frames[row.frameIndex],event=spatialContext.arrangement.fireEvents[frame.eventIndex]
+  const ce=spatialContext.arrangement.cameraEvents[cameraMatrixProof.cases[frame.cameraIndex].eventIndex]
+  const camera=ce?{verified:true,focusSlot:0,orthoSize:ce.reset?5:5/(ce.zoom/1000),x:ce.reset?0:ce.x,y:ce.reset?360:ce.y,rotation:ce.reset?0:ce.rotation}
+    :{verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0}
+  const context=objectSpatialContext(camera,event,'pfofos_live_effect')
+  const system=data.assets[frame.asset]?.systems.find(s=>s.stretch?.profile===OBJECT_SPATIAL_PROFILE)
+  if(!system)continue
+  const quad=spatialEmitterQuads(system,emitterMatrix(system.chain),emitterRenderBasis(system.chain,system.alignment),
+    Object.fromEntries(['x','y','z'].map((k,i)=>[k,row.position[i]])),Object.fromEntries(['x','y','z'].map((k,i)=>[k,row.velocity[i]])),system.size.scalar,context)
+  for(const [i,q] of quad.entries())for(const [j,axis] of ['x','y'].entries())maxBridgeError=Math.max(maxBridgeError,
+    Math.abs((q[axis]*context.outer+context.offset[axis])*context.xyScale-row.expected[i].position[j]))
+  bridgeCases++
+}
+assert.equal(bridgeCases,1664,'All spatial sources must enter the actual object bridge')
+assert.ok(maxBridgeError<2e-5,'Actual source camera/placement bridge must recover native world corners')
+const sampleFrame=joinedProof.frames[0].input
+const spatialInput={...sampleFrame,position:{x:0,y:0,z:20},velocity:{x:1,y:2,z:.1},scaleX:sampleFrame.particleScale[0],scaleY:sampleFrame.particleScale[1]}
+assert.throws(()=>sampleSpatialStretch({...spatialInput,cameraMatrix:[1,0,.1,0,0,1,0,0,0,0,-1,0,0,0,2,1]}),/camera view/)
+assert.throws(()=>sampleSpatialStretch({...spatialInput,minSize:.1}),/clamp/)
+assert.throws(()=>sampleSpatialStretch({...spatialInput,maxSize:.0001}),/clamp/)
+const coneProof=JSON.parse(read('scripts/fixtures/chibi-cone-stretch-native.json'))
+assert.equal(coneProof.binarySha256,stretchProof.binarySha256)
+assert.equal(coneProof.objectIndexSha256,data.objectIndexSha256)
+assert.deepEqual(coneProof.cameraBinding,stretchProof.cameraBinding)
+for(const window of coneProof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+const coneAudit=JSON.parse(execFileSync(process.execPath,['scripts/audit-chibi-cone-stretch.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'}))
+assert.equal(coneAudit.sourceSystems,8)
+assert.equal(coneAudit.totalCases,2304)
+assert.equal(coneAudit.spatialMatches,2304,'Full source XYZ, flipped parents and native camera context must agree with spatial reference')
+assert.equal(coneAudit.planarMatches,0,'Planar runtime cannot silently admit the complete source cone contexts')
+assert.ok(coneAudit.maxPlanarError>.6,'Identity-position evidence must not hide the source-depth corner/UV mismatch')
+assert.deepEqual(Object.keys(coneAudit.byAsset).sort(),Object.keys(coneProof.models).sort())
+for(const value of Object.values(coneAudit.byAsset))assert.equal(value.cases,288,'Every source has both writers, all rays, ages and camera conditions')
+for(const row of coneProof.cases)assert.deepEqual(row.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]])
 assert.equal(stretchProof.binarySha256,noiseProof.binarySha256)
 assert.equal(stretchProof.cameraBinding.cameraPathId,'45565')
 assert.equal(stretchProof.cameraBinding.scriptPathId,'111805')
@@ -48,6 +159,13 @@ for(const c of stretchProof.cases.filter(c=>c.position)) {
   const actual=[p,tail,tail,p].map((v,i)=>Object.fromEntries(['x','y','z'].map(axis=>[axis,v[axis]+side[axis]*(i<2?1:-1)])))
   assert.deepEqual(c.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]])
   for(const [i,v] of actual.entries())for(const [j,axis] of ['x','y','z'].entries())assert.ok(Math.abs(v[axis]-c.expected[i].position[j])<2e-5,`Nonplanar native evidence ${c.function} ${c.name} ${i}.${axis}`)
+  if(c.sameViewMatrices){
+    const angle=c.cameraRotation||0,co=Math.cos(angle),si=Math.sin(angle)
+    const spatial=sampleSpatialStretch({position:p,velocity:{...velocity,z:vz,speedSquared:speed2},size:c.size,
+      scaleX:c.particleScale?.[0]||1,scaleY:c.particleScale?.[1]||1,lengthScale:c.lengthScale,velocityScale:c.velocityScale,
+      maxSize:c.maxParticleSize??100,cameraMatrix:[co,si,0,0,-si,co,0,0,0,0,1,0,0,0,-10,1]})
+    for(const [i,v] of spatial.entries())for(const [j,axis] of ['x','y','z'].entries())assert.ok(Math.abs(v[axis]-c.expected[i].position[j])<2e-5,`Spatial implementation legacy XYZ ${c.name}`)
+  }
 }
 assert.equal(noiseProof.binarySha256,nativeProof.binary.sha256)
 const point=([x,y,z])=>({x,y,z})
@@ -128,14 +246,14 @@ const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,80)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,102)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
 assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)
 assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreography binding/)
 const unproven=structuredClone(data)
 delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
 assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),720)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),830)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -152,9 +270,9 @@ const turn=emitterMatrix([{position:{x:2,y:3},rotation:{x:0,y:0,z:Math.SQRT1_2,w
 assert.ok(Math.abs(turn.a)<1e-12);assert.ok(Math.abs(turn.b-2)<1e-12);assert.equal(turn.tx,2);assert.equal(turn.ty,3)
 for(const model of Object.values(data.assets))for(const system of model.systems) {
   for(const time of [0,100,499,900,1300,2000,3900]) {
-    const samples=sampleObjectEmitter(system,time,0)
+    const samples=samplePreviewSystem(system,time,0)
     assert.ok(samples.length<=system.capacity)
-    assert.deepEqual(samples,sampleObjectEmitter(system,time,0))
+    assert.deepEqual(samples,samplePreviewSystem(system,time,0))
     for(const s of samples){assert.ok(Object.values(s).every(Number.isFinite));assert.ok(s.frame>=0 && s.frame<(system.uv?system.uv.columns*system.uv.rows:1))}
   }
 }
@@ -198,6 +316,30 @@ for(const c of noiseProof.gravitySpaceProof.cases) {
   assert.ok(Math.abs(actual.y+(m.b*vx+m.d*vy)*integral)<.0002,'Object gravity accumulated displacement differs from native replay')
 }
 const keys=(a,b,slope=b-a)=>[{time:0,value:a,inSlope:slope,outSlope:slope},{time:1,value:b,inSlope:slope,outSlope:slope}]
+const linearVelocity={mode:1,scalar:1,keys:keys(0,1)}
+for(const age of [0,.1,.5,.731,1,1.99])assert.ok(Math.abs(sampleObjectVelocityDisplacement(linearVelocity,age,2,0)-age*age/4)<1e-12,'Integrate the velocity rate, not endpoint velocity times age')
+for(const c of velocityProof.cases)for(const curve of c.curves) {
+  const life=c.lifetime.scalar
+  // Independent continuous Hermite antiderivative: midpoint replay converges
+  // to this polynomial integral, including the three-key reversal segments.
+  let integral=0
+  for(let i=0;i<curve.keys.length-1;i++) {
+    const a=curve.keys[i],b=curve.keys[i+1],span=b.time-a.time
+    integral+=span*((a.value+b.value)/2+span*(a.outSlope-b.inSlope)/12)*curve.scalar*life
+  }
+  assert.ok(Math.abs(sampleObjectVelocityDisplacement(curve,life,life,0)-integral)<2e-6,'Native-source Hermite displacement on the Web 60 Hz grid')
+  const earlier=sampleObjectVelocityDisplacement(curve,life*.3,life,0)
+  sampleObjectVelocityDisplacement(curve,life*.9,life,0)
+  assert.equal(sampleObjectVelocityDisplacement(curve,life*.3,life,0),earlier,'Cached rate integral survives rewind')
+  assert.equal(sampleObjectVelocityDisplacement(structuredClone(curve),life*.3,life,0),earlier,'Cold and cached rate integrals agree')
+}
+const curvedFlow={...movingNoise,noise:null,lifetime:{mode:0,scalar:2,minScalar:2},velocity:{x:{mode:0,scalar:0},y:linearVelocity,z:{mode:0,scalar:0}}}
+assert.ok(Math.abs(sampleObjectEmitter(curvedFlow,1000,0)[0].y+25)<1e-10,'Actual particle consumer integrates lifetime velocity')
+const curvedAt731=sampleObjectEmitter(curvedFlow,731,0)
+sampleObjectEmitter(curvedFlow,1800,0)
+assert.deepEqual(sampleObjectEmitter(curvedFlow,731,0),curvedAt731,'Curved particle rewind')
+assert.deepEqual(sampleObjectEmitter(structuredClone(curvedFlow),731,0),curvedAt731,'Curved particle cold seek')
+assert.deepEqual(sampleObjectEmitter(curvedFlow,731,0,300),curvedAt731,'StopEmitting preserves the living particle velocity')
 const twoCurves={mode:2,scalar:2,minScalar:100,keys:keys(.5,1),minKeys:keys(.2,.4)}
 assert.ok(Math.abs(sampleObjectCurve(twoCurves,.5,.5)-1.05)<1e-12,'Two curves share the multiplier and ignore constantMin')
 const frozen={...probe,shape:null,looping:false,duration:2,bursts:[{time:.5,count:1}],rate:0,sizeY:null,size:{mode:1,scalar:1,keys:keys(0,4)},lifetime:{mode:0,scalar:4,minScalar:4}}
@@ -233,7 +375,7 @@ const turning={...probe,looping:false,bursts:[{time:0,count:1}],rate:0,lifetime:
   angularVelocity:{mode:1,scalar:1,minScalar:0,keys:[{time:0,value:1,inSlope:0,outSlope:0},{time:1,value:1,inSlope:0,outSlope:0}]}}
 const turned=sampleObjectEmitter(turning,1000,0)[0]
 assert.ok(Math.abs(turned.a-Math.cos(1)*200)<1e-6)
-assert.ok(Math.abs(turned.c-Math.sin(1)*600)<1e-6)
+assert.ok(Math.abs(turned.c+Math.sin(1)*600)<1e-6,'Positive angular velocity turns the texture clockwise on screen')
 assert.equal(data.assets.fx_in_trhorz_star_1.deferred.length,0)
 assert.equal(data.assets.fx_in_trhorz_star_1.systems.length,4)
 assert.equal(data.assets.fx_in_trhorz_star_1.systems.filter(s=>s.partial&&s.partial.includes('stretch_omitted')).length,2)
@@ -241,22 +383,22 @@ assert.equal(data.assets.fx_in_swyrlv_leaf.deferred.length,0)
 assert.equal(data.assets.fx_in_swyrlv_leaf.systems.length,2)
 assert.ok(data.assets.fx_in_swyrlv_leaf.systems.some(s=>s.rotationX&&s.gravity))
 const partial=Object.values(data.assets).flatMap(m=>m.systems).filter(s=>s.partial)
-assert.equal(partial.length,28)
-assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,20)
+assert.equal(partial.length,105)
+assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,89)
 for(const s of partial.filter(s=>s.noise)) {
   assert.equal(s.noise.profile,'native-high-curl-v1')
   assert.equal(s.noise.octaveCount,1)
   assert.equal(s.noise.quality,2)
 }
 assert.equal(partial.filter(s=>s.partial.includes('stretch_omitted')).length,7)
-assert.equal(partial.filter(s=>s.partial.includes('stretch_preview')).length,1)
+assert.equal(partial.filter(s=>s.partial.includes('stretch_preview')).length,9)
 for(const asset of ['fire_1','fire_2','fire_3','turbo_1','turbo_2'].map(s=>'fx_in_rote77_'+s)) {
   const system=data.assets[asset].systems.find(s=>s.partial?.includes('stretch_omitted'))
   assert.equal(system.shape.type,4)
   assert.ok(system.shape.angle>0,'Cone spread retains a nonplanar velocity component')
   assert.equal(system.stretch,undefined,'Nonplanar cone must not enter the planar solver')
 }
-for(const system of partial.filter(s=>s.stretch)) {
+for(const system of partial.filter(s=>s.stretch?.profile==='native-classic-planar-v1')) {
   assert.equal(system.stretch.profile,'native-classic-planar-v1')
   assert.equal(system.stretch.rendererTreeSha256.length,64)
   const at=sampleObjectEmitter(system,49000,0)
@@ -270,7 +412,7 @@ for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
   assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
   assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
 }
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,80)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,102)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const r of stretchProof.renderers) {
   const source=rawObjects.find(o=>o.asset===r.asset)
@@ -304,11 +446,12 @@ for(const [name,count] of Object.entries({fx_in_pavetl_crystal_1:15,fx_in_pavetl
 }
 const promotions=JSON.parse(read('scripts/fixtures/chibi-object-emitter-promotions.json'))
 assert.equal(promotions.objectIndexSha256,data.objectIndexSha256)
-assert.equal(Object.keys(promotions.assets).length,32)
-assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),166)
+assert.equal(Object.keys(promotions.assets).length,33)
+assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),180)
 for(const [name,expected] of Object.entries(promotions.assets)) {
   const model=data.assets[name]
   assert.equal(model.systems.length,expected.systems,name)
+  if(expected.sources){assert.equal(model.bundleSha256,expected.bundleSha256,name);assert.deepEqual(model.systems.map(s=>s.source),expected.sources,name)}
   assert.equal(model.deferred.length,0,name)
   assert.ok(model.systems.every(s=>!s.partial?.length),name)
   // Every newly admitted resource must actually emit, survive rewind, and retire after stop.
@@ -319,5 +462,122 @@ for(const [name,expected] of Object.entries(promotions.assets)) {
     assert.equal(sampleObjectEmitter(system,retire,0,0).length,0,`${name}: retained particles after stop`)
   }
 }
+// Source-bound smoke and sakura previews remain explicitly partial. Preserve
+// the RED HOT BEAT reference window; retirement follows each source lifetime.
+function previewRetirementMs(system) {
+  assert.ok([0,3].includes(system.lifetime.mode),'Preview retirement requires a bounded constant or two-constant lifetime')
+  return Math.max(system.lifetime.scalar,system.lifetime.minScalar)*1000+100
+}
+function previewActivationMs(system) {
+  assert.ok([0,3].includes(system.delay.mode),'Preview activation requires a bounded start delay')
+  return Math.max(system.delay.value,system.delay.min)*1000+(system.looping?500:Math.min(...system.bursts.map(b=>b.time))*1000+Math.min(system.lifetime.scalar,system.lifetime.minScalar)*500)
+}
+assert.equal(Object.keys(promotions.previewAssets).length,21)
+for(const [name,expected] of Object.entries(promotions.previewAssets)) {
+  const model=data.assets[name]
+  assert.equal(model.bundleSha256,expected.bundleSha256)
+  assert.equal(model.systems.length,expected.systems)
+  assert.deepEqual(model.systems.map(s=>s.source),expected.sources)
+  assert.deepEqual(model.deferred,[])
+  assert.ok(rawObjects.some(o=>o.asset===name),'RAW source record is required')
+  for(const [i,system] of model.systems.entries()) {
+    assert.deepEqual(system.partial||[],expected.systemPartials?.[i]||expected.partialMarkers)
+    if(!system.partial?.length)continue
+    if(system.stretch)assert.equal(system.stretch.profile,OBJECT_SPATIAL_PROFILE)
+    else assert.equal(system.noise.profile,'native-high-curl-v1')
+    if(!system.looping) {
+      const at=11000+previewActivationMs(system),active=samplePreviewSystem(system,at,11000)
+      assert.ok(active.length>0 && active.length<=system.bursts.reduce((n,b)=>n+b.count,0),'Finite source bursts must emit within their own lifetime')
+      assert.equal(samplePreviewSystem(system,12000,11000).length,0,'Single pulse cannot keep spawning without another Play')
+      assert.deepEqual(samplePreviewSystem(system,at,11000),active,'Short pulse rewind')
+      assert.deepEqual(samplePreviewSystem(structuredClone(system),at,11000),active,'Cold short pulse')
+      continue
+    }
+    const active=samplePreviewSystem(system,20000,11000,24900)
+    assert.ok(active.length>0,`${name}: visible at requested 20-second position`)
+    assert.ok(samplePreviewSystem(system,25000,11000,24900).length>0,'StopEmitting keeps existing particles alive')
+    assert.equal(samplePreviewSystem(system,24900+previewRetirementMs(system),11000,24900).length,0,'Particles retire after their source lifetime')
+    if(name.includes('smoke'))assert.equal(samplePreviewSystem(system,26000,11000,24900).length,0,'Existing smoke retires before object hide completes at 27900')
+    assert.deepEqual(samplePreviewSystem(system,20000,11000,24900),active,'Rewind after stop must recover smoke')
+    assert.deepEqual(samplePreviewSystem(structuredClone(system),20000,11000,24900),active,'Cold seek and cached rewind agree')
+    assert.ok(samplePreviewSystem(system,66300+previewActivationMs(system),66300,73050).length>0,'Later activation must emit again after its source start delay')
+  }
+}
+if(published) {
+  const songs=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs
+  assert.equal(sha(read('public/assets/live-chibi/choreography/index.json')),spatialContext.choreographySha256)
+  const spatialSong=songs.find(s=>s.id===spatialContext.arrangement.id)
+  assert.deepEqual(spatialSong.cameraEvents,spatialContext.arrangement.cameraEvents)
+  assert.deepEqual(spatialSong.objectLayerEvents.filter(e=>e.asset.startsWith('fx_in_pfofos_fire_')),spatialContext.arrangement.fireEvents)
+  let windows=0
+  for(const name of Object.keys(promotions.previewAssets)) {
+    const references=songs.filter(s=>(s.objectLayerEvents||[]).some(e=>e.asset===name))
+    assert(references.length,`${name}: real choreography reference required`)
+    for(const song of references) {
+      const events=song.objectLayerEvents.filter(e=>e.asset===name)
+      for(const [i,event] of events.entries())if(!event.hide) {
+        const stop=events.slice(i+1).find(e=>e.hide)?.time
+        for(const system of data.assets[name].systems) {
+          const at=Math.min(event.time+previewActivationMs(system),stop===undefined?Infinity:stop-25)
+          const active=samplePreviewSystem(system,at,event.time,stop)
+          assert(active.length>0,`${name}@${at}: actual activation window must emit`)
+          if(stop!==undefined)assert.equal(samplePreviewSystem(system,stop+previewRetirementMs(system),event.time,stop).length,0,'Stopped particles must expire')
+          assert.deepEqual(samplePreviewSystem(system,at,event.time,stop),active,'Rewind through actual command history')
+          assert.deepEqual(samplePreviewSystem(structuredClone(system),at,event.time,stop),active,'Cold actual-command seek')
+        }
+        windows++
+      }
+    }
+  }
+  assert.equal(windows,164,'All21 preview assets actual show/restart commands across every referencing arrangement')
+  for(const name of ['fx_in_mainha_panel_1','fx_in_mainha_panel_2']) {
+    const model=data.assets[name],events=songs.find(s=>s.id==='mainha_live_effect').objectLayerEvents.filter(e=>e.asset===name)
+    assert.equal(events.length,1);assert.equal(events[0].time,-2000);assert.equal(events[0].hide,false)
+    assert.equal(model.masks.length,1,'Every panel has its own RAW-bound mask')
+    for(const system of model.systems) {
+      assert.ok(system.maskTexture && model.masks.some(m=>m.texture===system.maskTexture))
+      assert.ok([0,1000,2500,10000,30000].some(t=>sampleObjectEmitter(system,t,-2000).length),'Every panel system emits during its actual pre-zero history')
+      for(const t of [0,1000,10000,30000]) {
+        const active=sampleObjectEmitter(system,t,-2000)
+        assert.deepEqual(sampleObjectEmitter(structuredClone(system),t,-2000),active,'Cold panel positioning')
+        sampleObjectEmitter(system,72000,-2000)
+        assert.deepEqual(sampleObjectEmitter(system,t,-2000),active,'Panel rewind after long playback')
+      }
+      assert.equal(sampleObjectEmitter(system,previewRetirementMs(system),-2000,0).length,0,'Panel retirement after synthetic stop')
+    }
+  }
+  const shock=data.assets.fx_in_remasq_shockwave
+  assert.equal(shock.systems.length,3)
+  assert.deepEqual(shock.systems.map(s=>s.bursts),Array.from({length:3},()=>[{time:0,count:1}]))
+  assert.ok(Math.abs(shock.systems[1].delay.value-.07)<1e-8,'RAW second pulse delay is70ms')
+  const counts=t=>shock.systems.reduce((n,s)=>n+sampleObjectEmitter(s,t,0).length,0)
+  for(const [time,count] of [[0,2],[50,2],[100,3],[220,2],[270,1],[350,0],[1000,0]])assert.equal(counts(time),count,`RAW shock burst/delay/retirement at${time}`)
+  for(const system of shock.systems)assert.equal(sampleObjectEmitter(system,-1,0).length,0)
+  const cloud=data.assets.fx_in_ossshd_panel
+  const arrangement=songs.find(s=>s.id==='ossshd_live_effect')
+  const events=arrangement.objectLayerEvents.filter(e=>e.asset==='fx_in_ossshd_panel')
+  assert.equal(events.length,1)
+  assert.equal(events[0].time,-2000,'Cloud starts before song zero')
+  assert.equal(events[0].hide,false)
+  assert.equal(cloud.masks.length,2)
+  const curved=cloud.systems.filter(s=>s.velocity)
+  assert.equal(curved.length,8)
+  for(const [i,system] of curved.entries()) {
+    assert.deepEqual(system.source,velocityProof.cases[i].source)
+    assert.deepEqual(['x','y','z'].map(axis=>system.velocity[axis]),velocityProof.cases[i].curves)
+    assert.deepEqual(system.lifetime,velocityProof.cases[i].lifetime)
+  }
+  for(const system of cloud.systems) {
+    for(const at of [0,10000,25000,72000]) {
+      const active=sampleObjectEmitter(system,at,-2000)
+      assert.ok(active.length>0,'Every cloud/glitter system must survive its actual pre-zero activation history')
+      assert.deepEqual(sampleObjectEmitter(structuredClone(system),at,-2000),active,'Cold cloud seek')
+    }
+    const before=sampleObjectEmitter(system,10000,-2000)
+    sampleObjectEmitter(system,72000,-2000)
+    assert.deepEqual(sampleObjectEmitter(system,10000,-2000),before,'Cloud rewind after many loops')
+    assert.equal(sampleObjectEmitter(system,26000,-2000,0).length,0,'Synthetic stop retires long-lived cloud without spawning later loops')
+  }
+}
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 80 provenance-bound resources / 720 consumed (28 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
+console.log('Object emitters: 102 provenance-bound resources / 830 consumed (105 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')

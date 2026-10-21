@@ -26,7 +26,7 @@ export async function loadObjectEmitters(PIXI,model,loadTexture) {
       const sprites=Array.from({length:system.capacity},()=> {
         const sprite=new PIXI.Sprite(frames[0]);sprite.anchor.set(.5);sprite.visible=false;sprite.zIndex=system.sortingOrder
         sprite.blendMode=system.blend==='normal'?PIXI.BLEND_MODES.NORMAL_NPM:PIXI.BLEND_MODES.ADD_NPM
-        if(system.maskTexture)bindNativeParticleMask(sprite,{sprite:masks.get(system.maskTexture),kind:system.blend,materialTint:system.materialTint})
+        if(system.maskTexture || system.blend==='add')bindNativeParticleMask(sprite,{sprite:system.maskTexture?masks.get(system.maskTexture):null,kind:system.blend,materialTint:system.materialTint})
         container.addChild(sprite);return sprite
       })
       return {system,frames,sprites,w,h}
@@ -37,10 +37,10 @@ export async function loadObjectEmitters(PIXI,model,loadTexture) {
   }
 }
 
-export function updateObjectEmitters(PIXI,runtime,time,activatedAt,stoppedAt,cameraRotation,viewHeight=7.2) {
+export function updateObjectEmitters(PIXI,runtime,time,activatedAt,stoppedAt,cameraRotation,viewHeight=7.2,spatial=null) {
   let count=0
   for(const {system,frames,sprites,w,h} of runtime.nativeEmitters) {
-    const samples=sampleObjectEmitter(system,time,activatedAt,stoppedAt,{rotation:cameraRotation,height:viewHeight})
+    const samples=sampleObjectEmitter(system,time,activatedAt,stoppedAt,{rotation:cameraRotation,height:viewHeight,spatial})
     for(let i=0;i<sprites.length;i++) {
       const sprite=sprites[i],s=samples[i];sprite.visible=Boolean(s && s.alpha>0)
       if(!s)continue

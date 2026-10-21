@@ -1,0 +1,91 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-21-native-remasq-shockwave-001",
+  "created_at": "2026-10-21T08:12:33.322061+00:00",
+  "prepared_from_commit": "4c58bfd66262d45bcd4503afe5386d1b18c6a7b3",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:b962010c7c2a646d278d5902"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:b962010c7c2a646d278d5902",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_remasq.unity3d",
+        "sha256": "f699c8c75a2e803d13ae934e307a0ef2d06de23892b8d111d4044ffeab0a1376",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_pfofos_shockwave",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-245d2eceb63737a4f2767865e11c3873:8642296847954650572",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 d267e121fc1073cc498864add799d3132870fb607df4cccb097b2c480d4771b8; 1024x1024RGBA. Three source-bound burst systems remain noise_preview; no native clock/RNG/scene parity claim."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/b962010c7c2a646d278d5902.png",
+          "url": "/data/stage-object-emitters/b962010c7c2a646d278d5902.png",
+          "bytes": 209842,
+          "sha256": "3f20c49539a4fd82925c84383445c39a694bcf82d29c7962723ba8beca16ba33"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA comparison passed; texture parity only. Burst lifetimes,70ms delayed second pulse and all three actual show/restart windows validated.",
+          "Previous93models109texture descriptors unchanged; local source increment only."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=remasq&stage=remasq_live_effect",
+        "tested_at": "2026-10-21T11:32:08.224498+00:00",
+        "tested_commit": "4c58bfd66262d45bcd4503afe5386d1b18c6a7b3",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted changes; main checkout5213 PID32788,rm-release-20261015 full mode. Inherited manual casts, not original-member acceptance.",
+          "Reversed Masquerade76700ms three pulses visually present,77000ms zero; rewind and page reload76700ms restore3. Desktop1280x720/mobile390x844; mobile document/scrollWidth390. Unsupported/deferred empty at sampled windows.",
+          "PROOF OF ONESELF87300ms3,87700ms0,123700ms3,124000ms0; rewind87300ms3. Eight fire assets remain unsupported; no claim of complete song fidelity or clear per-pulse visual identification outside camera framing.",
+          "Cross-song pause button succeeded. Sampled console errors0; screenshots remasq-shockwave-76700-desktop.png,remasq-shockwave-76700-mobile.png,pfofos-shockwave-123700-desktop.png. Native RNG/clock/device/scene parity remain open."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}
