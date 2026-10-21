@@ -1,6 +1,8 @@
 import { watch } from 'vue'
 import { storyEventResources } from '../data/eventResourceGraph.js'
 import { withStoryText } from '../localization/story/StoryTextReadiness.js'
+// Story domains with their own landing page in the catalog; their collections and stories return there.
+const DOMAIN_LANDINGS = Object.freeze(['main', 'extra', 'birthday', 'unit_story'])
 
 export function useStoryNavigation({ view, loading, detailSourceRoute, filterQuery,
   currentStoryDomain, currentCharacterId, currentStoryMode, currentStorySection, currentStoryFile,
@@ -147,7 +149,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     if (section && ['main', 'unit_story', 'extra', 'birthday'].includes(domain)) {
       return openProjectedCollection({ domain, section })
     }
-    const opensFormalDomain = (mode === 'portal' && domain === 'main') ||
+    const opensFormalDomain = (mode === 'portal' && ['main', 'unit_story'].includes(domain)) ||
       ['extra', 'birthday'].includes(domain)
     if (opensFormalDomain) {
       currentStoryDomain.value = domain
@@ -237,6 +239,9 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     if (!entry?.file) return
     if (entry.domain === 'card_scenarios') return openStoryPhone(entry)
     if (idolStoryChapterOwner(entry)) return openIdolStoryChapter(entry)
+    // A unit prequel chapter has one page: its unit's collection, opened on that chapter.
+    if (entry.domain === 'unit_story' && entry.sectionId)
+      return openProjectedCollection({ domain: 'unit_story', section: entry.sectionId, storyFile: entry.file, parent: parentView })
     const file = entry.file
     const request = ++pendingStoryDetailNavigation
     navigation.invalidate()
@@ -297,7 +302,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   function goBackFromStoryCatalog() {
     if (
       currentStoryMode.value === 'portal' &&
-      ['main', 'extra', 'birthday'].includes(currentStoryDomain.value)
+      DOMAIN_LANDINGS.includes(currentStoryDomain.value)
     ) {
       currentStoryDomain.value = ''
       currentStorySection.value = ''
@@ -337,7 +342,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       return
     }
     const domain = currentStoryDomain.value
-    const returnsToDomainLanding = ['main', 'extra', 'birthday'].includes(domain) && parent !== 'external_story_resources'
+    const returnsToDomainLanding = DOMAIN_LANDINGS.includes(domain) && parent !== 'external_story_resources'
     storyCollectionParentView.value = ''
     if (parent === 'external_story_resources') {
       currentStoryDomain.value = ''
@@ -391,9 +396,11 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     return isCurrent() ? route : null
   }
 
-  // Domain landings use their own projections; other story views load the directory.
+  // Domain landings use their own projections; other story views load the directory. The unit landing
+  // groups the directory, as the portal's unit strip does.
   watch([view, currentStoryMode, currentStoryDomain, currentCharacterId], () => {
-    const landingOnly = currentStoryMode.value === 'portal' && !currentCharacterId.value && currentStoryDomain.value
+    const landingOnly = currentStoryMode.value === 'portal' && !currentCharacterId.value && currentStoryDomain.value &&
+      currentStoryDomain.value !== 'unit_story'
     if (view.value !== 'story_catalog' || landingOnly) return
     const options = navigation.getLoadOptions()
     void loadStoryReadModelCatalog(options).catch(error => {

@@ -146,6 +146,24 @@
       </section>
     </div>
 
+    <div v-else-if="mode === 'portal' && domain === 'unit_story'" class="unit-domain-landing">
+      <header class="story-head">
+        <h2 class="shell-named">组合前传</h2>
+        <ul class="story-footprint" aria-label="组合前传收录">
+          <li><b>{{ count(unitGateways.length) }}</b>组</li>
+          <li><b>{{ count(domainCount('unit_story')) }}</b>篇</li>
+        </ul>
+      </header>
+      <section class="story-section" aria-label="组合">
+        <div class="unit-grid unit-grid-full">
+          <button v-for="unit in unitGateways" :key="unit.id" @click="browse('unit_story', unit.id)">
+            <img :src="unitVisual(unit.id)" alt="" loading="lazy" decoding="async" width="446" height="150" />
+            <span><strong>{{ unit.label }}</strong><small>{{ unit.entries.length }} 篇</small></span>
+          </button>
+        </div>
+      </section>
+    </div>
+
     <div v-else-if="mode === 'portal'" class="story-portal">
       <section class="story-section main-story-section" aria-labelledby="main-story-title">
         <div class="story-section-head">
@@ -175,7 +193,7 @@
       <section class="story-section unit-section" aria-labelledby="unit-story-title">
         <div class="story-section-head">
           <h2 id="unit-story-title">组合前传 <small>{{ unitGateways.length }} 组</small></h2>
-          <button class="story-more" @click="browse('unit_story')">查看全部 <ArrowRight :size="15" /></button>
+          <button class="story-more" @click="openDomain('unit_story')">查看全部 <ArrowRight :size="15" /></button>
         </div>
         <div class="unit-grid" aria-label="组合前传">
           <button v-for="unit in unitGateways" :key="unit.id" @click="browse('unit_story', unit.id)">
@@ -420,6 +438,8 @@ function formatExtraDate(timestamp) {
 @container story-page (max-width: 560px) {
   /* Phones: the units become a two-row strip that scrolls sideways; events show one lead and three rows. */
   .unit-grid { grid-auto-columns: 160px; grid-auto-flow: column; grid-template-columns: none; grid-template-rows: repeat(2, auto); gap: var(--gs-space-5) var(--gs-space-4); overflow-x: auto; margin-right: calc(-1 * var(--gs-space-5)); padding: 0 var(--gs-space-5) var(--gs-space-2) 0; overscroll-behavior-x: contain; scrollbar-width: none; }
+  /* The unit landing lists every unit, two to a row, instead of the strip. */
+  .unit-grid-full { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; overflow-x: visible; margin-right: 0; padding: 0; }
   .main-story-section .story-tiles { grid-template-columns: 1fr; }
   .event-feature-rows > :nth-child(n+4) { display: none; }
   .catalog-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }

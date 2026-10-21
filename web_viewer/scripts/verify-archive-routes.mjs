@@ -186,7 +186,8 @@ assert.equal(collectionBreadcrumbs.length, 4)
 assert.equal(collectionBreadcrumbs.at(-1).route, undefined)
 assert.equal(collectionBreadcrumbs[2].route.parentView, '')
 assert.equal(collectionBreadcrumbs[2].route.view, 'story_catalog')
-assert.equal(collectionBreadcrumbs[2].route.storyType, '')
+// The unit prequel crumb opens its own landing, not the root catalogue.
+assert.equal(collectionBreadcrumbs[2].route.storyType, 'unit_story')
 assert.equal(collectionBreadcrumbs[2].route.storyMode, 'portal')
 
 for (const [storyType, label, section] of [

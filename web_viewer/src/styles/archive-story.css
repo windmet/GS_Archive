@@ -2,7 +2,7 @@
    layout. Things sit on the paper, rows are split by hairlines, counts are a footprint line.
    Layout follows the page's own width (container story-page), not the viewport. */
 .story-page { height:100%;overflow-x:hidden;overflow-y:auto;container:story-page / inline-size;background:var(--gs-paper);color:var(--gs-ink);font-family:var(--gs-font-body);font-size:var(--gs-text-body); }
-.story-page .story-head,.story-page .story-section { padding-inline:max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)); }
+.story-page .story-head,.story-page .story-section,.story-page > .archive-technical { padding-inline:max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)); }
 .story-page .story-head { padding-block:var(--gs-space-8) var(--gs-space-6); }
 .story-page .story-head h2 { margin:0;font-size:var(--gs-text-title);font-weight:var(--gs-weight-bold);line-height:1.3; }
 /* The shell's top bar already names a landing page; its heading stays for screen readers only. */
@@ -67,7 +67,7 @@
 .story-page :is(button,a):focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
 
 @container story-page (max-width: 560px) {
-  .story-page .story-head,.story-page .story-section { padding-inline:var(--gs-space-5); }
+  .story-page .story-head,.story-page .story-section,.story-page > .archive-technical { padding-inline:var(--gs-space-5); }
   .story-page .story-head { padding-block:var(--gs-space-6) var(--gs-space-4); }
   .story-page .story-head h2 { font-size:var(--gs-text-section); }
   .story-page .story-tiles { grid-template-columns:1fr; }

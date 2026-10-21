@@ -77,11 +77,11 @@ const AboutLink = {
 .about-section h3 { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .about-section p { margin: 0 0 var(--gs-space-3); color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.9; }
 .about-link-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--gs-space-5); }
-.about-links { display: grid; gap: var(--gs-space-2); margin: 0; padding: 0; list-style: none; }
-.about-links :deep(a), .about-links :deep(.about-link-pending) { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-3); min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); text-decoration: none; }
-.about-links :deep(a:hover) { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); }
+.about-links { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.about-links :deep(a), .about-links :deep(.about-link-pending) { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-3); min-height: var(--gs-control-touch); padding: 0 var(--gs-space-2) 0 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); font-size: var(--gs-text-ui); text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .about-links :deep(a:hover) { background: var(--gs-mint-wash); } }
 .about-links :deep(a svg) { flex: none; color: var(--gs-mint-ink); }
-.about-links :deep(.about-link-pending) { border-style: dashed; color: var(--gs-ink-3); }
+.about-links :deep(.about-link-pending) { border-bottom-style: dashed; color: var(--gs-ink-3); }
 .about-links :deep(.about-link-pending small) { font-size: var(--gs-text-caption); }
 @media (max-width: 760px) {
   .about-page { gap: var(--gs-space-6); padding: var(--gs-space-5) var(--gs-space-4); }
