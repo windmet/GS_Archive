@@ -202,13 +202,17 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       }
       const size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
-      const rz=sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13))
+      // Particle angles are clockwise in Unity's billboard builder. Convert
+      // them separately from emitter Transform rotations, which stay unchanged.
+      const rz=-(sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)))
       let A,B,C,D
       if(system.rotationX){
         // rotation3D: Unity Euler order Z, then X, then Y; project world axes onto the screen plane.
-        const rx=sample(system.rotationX,birthPhase,rnd(17))+rotationAt(system.angularX,age,life,rnd(21)),ry=sample(system.rotationY,birthPhase,rnd(18))+rotationAt(system.angularY,age,life,rnd(22))
+        const rx=-(sample(system.rotationX,birthPhase,rnd(17))+rotationAt(system.angularX,age,life,rnd(21))),ry=-(sample(system.rotationY,birthPhase,rnd(18))+rotationAt(system.angularY,age,life,rnd(22)))
         const cx=Math.cos(rx),sx=Math.sin(rx),cy=Math.cos(ry),sy=Math.sin(ry),cz=Math.cos(rz),sz=Math.sin(rz)
-        A=cy*cz+sy*sx*sz;B=-(cx*sz);C=-cy*sz+sy*sx*cz;D=-(cx*cz)
+        // Native UV(0,1) is the PNG/Pixi top-left corner: include both texture
+        // and screen Y conversions, as in the ordinary 2D branch below.
+        A=cy*cz+sy*sx*sz;B=-(cx*sz);C=cy*sz-sy*sx*cz;D=cx*cz
       } else {
         const c=Math.cos(rz),s=Math.sin(rz)
         const base=system.alignment===2?matrix:{a:Math.hypot(matrix.a,matrix.b),b:0,c:0,d:Math.hypot(matrix.c,matrix.d)}

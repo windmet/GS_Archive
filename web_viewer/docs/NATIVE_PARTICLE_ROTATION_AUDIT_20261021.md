@@ -2,6 +2,8 @@
 
 2026-10-21；舞台分支 `stage/20261020-native-followup`，运行时代码 HEAD `f3cab367`。核查时保留了另一个尚未提交的 ossshd 云雾晋升批次；本审计没有修改共用采样器、旋转数据或 ADV 分支。
 
+后续：[方向修复与验收](NATIVE_PARTICLE_ROTATION_FIX_20261021.md)已完成本次发现的角度/UV修正；本页保留修复前审计证据。
+
 ## 结论
 
 ADV 提交的问题在舞台普通 billboard 路径上成立。Unity 粒子角度的正号与 Transform 的正 Z 欧拉角不是同一个渲染约定；不能因为 Unity→屏幕都要翻转 Y，就把二者作相同处理。
@@ -27,7 +29,7 @@ ADV 提交的问题在舞台普通 billboard 路径上成立。Unity 粒子角�
 - 4 个 2D 与 5 个 3D 样例保存在 `scripts/fixtures/chibi-billboard-rotation-native.json`；绑定函数指令窗口、精确顶点和 UV。生成器不带 `--write` 重放检查通过。
 - 这是单位上下文的 CPU 顶点证据，没有执行 InitialModule 的 RAW→运行时转换、角速度更新、原游戏帧调度或场景回放。ADV 的 RAW 雨丝 93°=90°+3°、100°=90°+10°是独立的来源/下落方向证据，与本次顶点结果吻合。
 
-`node scripts/audit-chibi-billboard-rotation.mjs` 是诊断，执行成功不等于渲染通过：当前 **1/9** 角点样例相符，普通二维零角通过，其余明确报告 mismatch。它按同一 PNG/native UV 角点顺序比较，+0.5 rad 的角点最大差约 95.885 px（粒子单位100px）。
+`node scripts/audit-chibi-billboard-rotation.mjs` 是诊断，执行成功不等于渲染通过：修复前快照为 **1/9** 角点样例相符，普通二维零角通过，其余明确报告 mismatch。它按同一 PNG/native UV 角点顺序比较，+0.5 rad 的角点最大差约 95.885 px（粒子单位100px）。
 
 3D 支路还存在额外的纹理 Y 基方向不一致：单位上下文、XYZ 全零时，原生角点与当前输出也不符，不能只把 Z 角取负就宣称 3D 完成。混合 XYZ 样例继续明确失败，需连同纹理坐标转换一起修复。
 

@@ -264,7 +264,7 @@ const turning={...probe,looping:false,bursts:[{time:0,count:1}],rate:0,lifetime:
   angularVelocity:{mode:1,scalar:1,minScalar:0,keys:[{time:0,value:1,inSlope:0,outSlope:0},{time:1,value:1,inSlope:0,outSlope:0}]}}
 const turned=sampleObjectEmitter(turning,1000,0)[0]
 assert.ok(Math.abs(turned.a-Math.cos(1)*200)<1e-6)
-assert.ok(Math.abs(turned.c-Math.sin(1)*600)<1e-6)
+assert.ok(Math.abs(turned.c+Math.sin(1)*600)<1e-6,'Positive angular velocity turns the texture clockwise on screen')
 assert.equal(data.assets.fx_in_trhorz_star_1.deferred.length,0)
 assert.equal(data.assets.fx_in_trhorz_star_1.systems.length,4)
 assert.equal(data.assets.fx_in_trhorz_star_1.systems.filter(s=>s.partial&&s.partial.includes('stretch_omitted')).length,2)

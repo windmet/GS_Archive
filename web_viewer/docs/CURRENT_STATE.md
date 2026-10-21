@@ -2,13 +2,13 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-21（舞台成员槽序、烟雾及樱花续批，已同步 master #60–#65；站点/R2 仍为历史记录，未重新验收）
+更新：2026-10-21（舞台粒子接线与旋转方向修复，已同步 master #60–#68；站点/R2 仍为历史记录，未重新验收）
 
 ## 基线
 
 | 项 | 值 |
 |---|---|
-| master | 10-14 整合合并 PR #48，tag `baseline/2026-10-14`；之后并入 #49（codex R2 上传记录）、#50（release 绑定 + i18n 线）、#52（10-15 翻译）、#54（B036 情人节 2022 上）、#55（舞台原生还原收尾），以及本页所在的 #53（门户原生 ADV 站位、其他语音、事务所 ADV 预览、剧情服装、歌曲中心线）。#53 合入后打 `baseline/2026-10-20`。之后 10-20 再合 #56（门户视觉收敛）、#57（ADV 每帧姿势重置、脸红/汗、摄影工坊原生脸部 flags）、#58（电话/电视/混响走 CRI `bus_phone` / `bus_reverb`），以及 #59（重编译候选工具与原生裸 wait 停顿，不含语料）；之后 #60（门户 UX）、#61（导航命名与响应式导航）、#62（ADV 立绘缩放锚点）、#63（工作树共享语料服务）、#64（完整源码门禁报告）、#65（事务所/手机静态路径），当前头 `d2bbdf0a` |
+| master | 10-14 整合合并 PR #48，tag `baseline/2026-10-14`；之后并入 #49（codex R2 上传记录）、#50（release 绑定 + i18n 线）、#52（10-15 翻译）、#54（B036 情人节 2022 上）、#55（舞台原生还原收尾），以及本页所在的 #53（门户原生 ADV 站位、其他语音、事务所 ADV 预览、剧情服装、歌曲中心线）。#53 合入后打 `baseline/2026-10-20`。之后 10-20 再合 #56（门户视觉收敛）、#57（ADV 每帧姿势重置、脸红/汗、摄影工坊原生脸部 flags）、#58（电话/电视/混响走 CRI `bus_phone` / `bus_reverb`），以及 #59（重编译候选工具与原生裸 wait 停顿，不含语料）；之后 #60（门户 UX）、#61（导航命名与响应式导航）、#62（ADV 立绘缩放锚点）、#63（工作树共享语料服务）、#64（完整源码门禁报告）、#65（事务所/手机静态路径），之后合入 #66（ADV原生色彩滤镜）、#67（ADV背景模糊）、#68（ADV原生天气粒子），当前头 `2e115f68` |
 | read-model release | `2430ef3db583a07878f1967b45e039eb326212cda386b063f6c4f9f8d8a772c3`；候选目录 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261015` |
 | R2 data revision | `fda1a54c6df58cabc13e7a0d86b40ab14ff831270ca0d197fc9a7298279ec3ab`（worktree `.deploy/release-20261015`，6,397 个对象，已上传）。下一批的叠加链最新一项：worktree `.analysis/release-20261015/overlay-20261015.json` |
 | media epoch | `voice64-gzip-all-20260924` |
@@ -22,7 +22,7 @@
 | 剧情 / ADV | PR #59 已合入 `master`（重编译候选工具 + 原生裸 wait 停顿，不含语料） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；晋升后才恢复翻译批次 |
 | 门户 portal | #60 / #61 / #62 / #65 已合入 `master`，后续分支从最新 master 开 | 盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定。启动 JS 预算已由 master 的导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，已同步 `origin/master` / `d2bbdf0a`（#60–#65）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族及 Sprite 参考时钟、mixed/内置分支边界。原片对照、21种无consumer粒子、旧悬灯9份partial仍开放 |
+| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，已同步 `origin/master` / `2e115f68`（#60–#68）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族及 Sprite 参考时钟、mixed/内置分支边界。原片对照、21种无consumer粒子、旧悬灯9份partial仍开放 |
 
 舞台线同日加载进度：[编舞目录与逐编排分片](STAGE_CHOREOGRAPHY_SHARDS_20261020.md)已接入当前舞台；118份来源/轨道等价、156项门禁通过。新分片为本地派生资源，后续发布必须纳入目录引用的全部118片；本轮没有部署。其他全局大索引与加载预算仍待推进。
 
@@ -50,7 +50,9 @@
 
 10-21 [寿命速度曲线积分](NATIVE_VELOCITY_CURVES_20261021.md)核对原生Velocity worker并新增8个RAW系统/32采样点证据，消费者按Web 60Hz网格积分局部单曲线，保留坐标/Noise组合边界。ossshd目标提取14系统/deferred0，但尚未晋升；资源显示、生命周期及分片接线继续下一批，无consumer仍22。现有Inner Dignity常量速度烟雾桌面/手机回归通过，未部署。
 
-10-21 [OUR SONG云雾面板](NATIVE_OSSSHD_PANEL_20261021.md)接入14个无省略系统及两份面板蒙版，绑定前批速度曲线证据；负2秒启动、长寿命循环、回拖/冷定位和桌面/手机Browser通过。旧90组模型/101份纹理描述不变，无consumer22→21；共享粒子旋转问题另见[原生方向审计](NATIVE_PARTICLE_ROTATION_AUDIT_20261021.md)，尚未修复。未部署。
+10-21 [OUR SONG云雾面板](NATIVE_OSSSHD_PANEL_20261021.md)接入14个无省略系统及两份面板蒙版，绑定前批速度曲线证据；负2秒启动、长寿命循环、回拖/冷定位和桌面/手机Browser通过。旧90组模型/101份纹理描述不变，无consumer22→21；共享粒子旋转问题随后完成[方向修复](NATIVE_PARTICLE_ROTATION_FIX_20261021.md)。未部署。
+
+10-21 [粒子方向修复](NATIVE_PARTICLE_ROTATION_FIX_20261021.md)按原生顶点证据修正普通2D/3D、Floor/Whole_screen/Bloom角度，并取消已合入master的ADV数据负值补偿。原生角点1/9→9/9、168项源码门禁、build:check和舞台/独立ADV消费者Browser通过；保留3D复杂父链、原片/设备及参考时钟边界。未部署。
 
 10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)之后已完成[固定曲消费者接入](NATIVE_ORIGINAL_LINEUP_CONSUMER_20261021.md)：13首显式序优先，41首组合默认序来自表2字段37，纠正24首编号回退并修复`yknkmh`隐藏槽。随后已核实[所选Unit的独立原生选组排序](NATIVE_SELECTED_UNIT_LINEUP_20261021.md)，48个编排按16组合字段37排序，纠正30个编排。舞台专用索引v2直接消费，冻结read-model未改；164项源码检查、build:check及2/3/5人实际Browser通过。原片/设备对照、原生库存卡及完整编队交互仍不在验收范围。未部署。
 

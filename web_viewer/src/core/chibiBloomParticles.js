@@ -43,7 +43,7 @@ export function sampleBloomSystem(system,milliseconds,activatedAt,stoppedAt=Infi
   out.push({x:(system.position.x+x)*100,y:-(system.position.y+y)*100,
    size:range(system.size,rnd(5))*sampleParticleCurve(system.sizeOverLife,fraction)*100,
    alpha:gradient(system.color.alphas,cp,'value')*gradient(over.alphas,fraction,'value'),color,
-   rotation:-range(system.rotation,rnd(6)),birth})
+   rotation:range(system.rotation,rnd(6)),birth})
  }
  return out.slice(-system.capacity)
 }

@@ -62,7 +62,7 @@ export function sampleFloorSystem(system, milliseconds, activatedAt, stoppedAt=I
       y: -(system.position.y + y) * 100,
       frame:system.frameRange ? Math.min(15,Math.floor(range(system.frameRange,rnd(9))*16)) : system.frame,
       size: range(system.size, rnd(4)) * 100 * (system.sizeOverLife ? sampleParticleCurve(system.sizeOverLife, fraction) : 1),
-      rotation: -(range(system.rotation, rnd(5)) + (system.angularVelocity ? range(system.angularVelocity, rnd(6)) * age : 0)),
+      rotation: range(system.rotation, rnd(5)) + (system.angularVelocity ? range(system.angularVelocity, rnd(6)) * age : 0),
       color, alpha: startAlpha * sampleFloorGradient(system.alpha, fraction) })
   }
   // The native maximum is per emitter; older births are retired first.
