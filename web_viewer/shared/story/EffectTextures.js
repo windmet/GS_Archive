@@ -12,8 +12,10 @@ const EXTRACTED_ROOT = '/data/fx_extracted'
 
 const EFFECT_HANDLERS = {
   'bg_effects': {
-    cameraflare: { textures: ['fx_adv_flare_01'], runtimeDisabled: 'cameraflare-re-authored-as-particles' },
+    // Native fx_adv_* ParticleSystems (src/data/advParticleEffects.json).
+    cameraflare: { textures: ['fx_adv_flare_01'] },
     fx_adv_rain: { textures: ['fx_adv_rain'] },
+    fx_adv_rain_heavy: { textures: ['fx_adv_rain'] },
     fx_adv_rain_heavy2: { textures: ['fx_adv_rain'] },
     fx_adv_sakura: { textures: ['fx_adv_sakura'] },
     fx_adv_momiji: { textures: ['fx_adv_momiji'] },

@@ -5,12 +5,15 @@ export class CameraController {
   constructor({
     bgContainer,
     spineContainer,
+    effectContainers = [],
     getWidth,
     getHeight,
     onCameraMove = null,
   }) {
     this.bgContainer = bgContainer
     this.spineContainer = spineContainer
+    // BackEffect particles share the actor transform.
+    this.actorContainers = [spineContainer, ...effectContainers]
     this.getWidth = getWidth
     this.getHeight = getHeight
     this.onCameraMove = onCameraMove
@@ -31,9 +34,11 @@ export class CameraController {
     this.bgContainer.scale.set(view.bgScale)
     this.bgContainer.x = view.bgX
     this.bgContainer.y = view.bgY
-    this.spineContainer.scale.set(view.scale)
-    this.spineContainer.x = view.x
-    this.spineContainer.y = view.y
+    for (const container of this.actorContainers) {
+      container.scale.set(view.scale)
+      container.x = view.x
+      container.y = view.y
+    }
     this._camera = { zoom, x: cameraX, y: cameraY }
     if (moving || previous.zoom !== zoom || previous.x !== cameraX || previous.y !== cameraY) this.onCameraMove?.(zoom)
   }
@@ -91,9 +96,11 @@ export class CameraController {
     this.bgContainer.scale.set(1)
     this.bgContainer.x = 0
     this.bgContainer.y = 0
-    this.spineContainer.scale.set(1)
-    this.spineContainer.x = 0
-    this.spineContainer.y = 0
+    for (const container of this.actorContainers) {
+      container.scale.set(1)
+      container.x = 0
+      container.y = 0
+    }
   }
 
   cancelCameraTween() {

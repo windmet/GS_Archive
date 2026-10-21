@@ -16,6 +16,7 @@ export class BackgroundManager {
     app,
     bgContainer,
     bgEffectContainer,
+    nearEffectContainer = null,
     getWidth,
     getHeight,
     getBgUrl,
@@ -45,7 +46,7 @@ export class BackgroundManager {
     this._bgColor = 0xFFFFFF
     this._bgColorTarget = 0xFFFFFF
     this._bgColorTween = null
-    this.effects = new BackgroundEffectManager({ app, bgEffectContainer, getWidth, getHeight,
+    this.effects = new BackgroundEffectManager({ app, bgEffectContainer, nearEffectContainer, getWidth, getHeight,
       loadTextureFromUrl: url => loadTextureFromUrl(url, { allowFallback: false }),
     })
   }
