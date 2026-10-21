@@ -384,12 +384,12 @@
         :story="currentStory"
         :related="currentStoryRelated"
         :visual-url="currentStoryVisualUrl"
-        :idol-name="idolSourceName"
+        :idol-name="idolDisplayName"
         :identity="bootstrapIdolDictionary"
         :manifest="bootstrapMembership"
         :projected-cast-references="storyReadModelDetail?.view?.castReferences || null"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryExternalResources : []"
-        :reading-entries="readingCatalogEntries"
+        :reading-entries="readingCatalogEntries" :load-reading-document="loadSynopsisReadingDocument"
         @read="documentId => openStoryReader(documentId, { storyType: currentStoryDomain, story: currentStoryFile })"
         @play="playStoryDetail"
         @select="openStoryDetail"
@@ -401,6 +401,8 @@
         :collection="currentStoryCollection"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryCollectionExternalResources : []"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
+        :members="currentStoryCollectionMembers" :unit-code="currentStoryCollectionUnitCode" :identity="bootstrapIdolDictionary" :manifest="bootstrapMembership"
+        @open-idol="openStoryIdol" @open-unit="openArchiveUnit"
         :idol-name="idolDisplayName"
         :reading-entries="readingCatalogEntries" :reader-source="currentArchiveRoute()" :load-reading-document="loadSynopsisReadingDocument"
         @read-episode="openCollectionReader"
@@ -627,6 +629,8 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
+import { presentProducerAddressingText } from './presentation/ProducerAddressingText.js'
+import { useStoryTitles } from './components/archive/useReaderTitles.js'
 import {loadArchiveNames,archiveNamedText,archiveNamesSettled,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
@@ -1313,6 +1317,12 @@ const currentStoryCollectionChapter = computed(() =>
   ) || null,
 )
 
+// A unit's prequel lists the unit's members (bootstrap idols share the unit id with the story section).
+const currentStoryCollectionMemberIdols = computed(() => currentStoryCollection.value?.domain === 'unit_story'
+  ? archiveBootstrap.idols.filter(idol => String(idol.unitId) === String(currentStorySection.value)) : [])
+const currentStoryCollectionMembers = computed(() => currentStoryCollectionMemberIdols.value.map(idol => idol.id))
+const currentStoryCollectionUnitCode = computed(() => currentStoryCollectionMemberIdols.value[0]?.unitCode || '')
+
 const externalStoryNavigationEntries = []
 
 const currentStoryRelated = computed(() => storyReadModelDetail.value?.view?.related || [])
@@ -1492,6 +1502,10 @@ const archiveSection = computed(() => archiveSectionForRoute({
   collection: view.value === 'collection_catalog' ? currentCollectionState.value : undefined,
 }))
 
+// The story's title in the interface language, as the detail page shows it.
+const storyTitleText = useStoryTitles()
+const currentStoryTitle = computed(() => currentStory.value?.title
+  ? presentProducerAddressingText(storyTitleText(currentStory.value.file, currentStory.value.title)) : '')
 const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   // Section pages carry their navigation name, without a suffix (core/archiveSections.js).
@@ -1510,10 +1524,11 @@ const archiveTitle = computed(() => {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'birthday') return '生日剧情'
+    if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'unit_story') return '组合前传'
     return sectionLabel('stories')
   }
   if (view.value === 'external_story_resources') return STORY_KINDS.external.label
-  if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
+  if (view.value === 'story_detail') return currentStoryTitle.value || '故事详情'
   if (view.value === 'story_collection') return storyCollectionTitle(currentStoryCollection.value, idolDisplayName) || '故事章节'
   if (view.value === 'seasonal_campaign') return '季节企划'
   if (view.value === 'work_archive') return `${currentWorkIdol.value ? idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name) : ''} ${STORY_KINDS.work.label}`.trim()
@@ -1609,7 +1624,7 @@ const archiveBreadcrumbs = computed(() => {
       domainLabel: currentStoryCollection.value?.domainLabel,
     },
     story_detail: {
-      title: currentStory.value?.title,
+      title: currentStoryTitle.value,
       id: currentStoryFile.value,
       domainLabel: currentStory.value?.domainLabel,
     },
@@ -1882,6 +1897,8 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       // Old links to a phone call as a "card story" land on the call in the communication archive.
       if (route.view === 'story_detail' && detail.story.domain === 'card_scenarios') return openStoryPhone(detail.story)
       if (route.view === 'story_detail' && idolStoryChapterOwner(detail.story)) return openIdolStoryChapter(detail.story)
+      if (route.view === 'story_detail' && detail.story.domain === 'unit_story' && detail.story.sectionId)
+        return openProjectedCollection({ domain: 'unit_story', section: detail.story.sectionId, storyFile: detail.story.file })
       storyReadModelDetail.value = detail
       route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
     }

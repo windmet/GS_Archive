@@ -46,6 +46,18 @@
       </div>
     </header>
 
+    <section v-if="memberReferences.length" class="story-section" aria-labelledby="collection-members">
+      <div class="story-section-head">
+        <h3 id="collection-members">成员</h3>
+        <button v-if="unitCode" type="button" class="story-more" @click="emit('open-unit', { unit_code: unitCode })">组合资料 <ChevronRight :size="15" /></button>
+      </div>
+      <ul class="collection-members">
+        <li v-for="reference in memberReferences" :key="reference.idolCode">
+          <ArchiveIdolReference :reference="reference" @open="emit('open-idol', $event)" />
+        </li>
+      </ul>
+    </section>
+
     <section class="story-section chapter-section">
       <div class="story-section-head">
         <h3>{{ collection.domainLabel }}</h3>
@@ -123,6 +135,8 @@ import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import CollectionStorySynopsis from './CollectionStorySynopsis.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
 import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
@@ -143,9 +157,16 @@ const props = defineProps({
   readingError: { type: String, default: '' },
   loadReadingDocument: Function,
   idolName: { type: Function, default: () => '' },
+  members: { type: Array, default: () => [] },
+  unitCode: { type: String, default: '' },
+  identity: { type: Object, default: null },
+  manifest: { type: Object, default: null },
 })
-const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-song', 'open-idol-story'])
+const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-song', 'open-idol-story', 'open-idol', 'open-unit'])
 const expandedChapterId = ref('')
+const memberReferences = computed(() => props.members.map(code =>
+  buildIdolReference(code, props.identity, props.manifest, `collection:${props.collection?.id || ''}`))
+  .map(reference => reference.actionable ? { ...reference, displayName: props.idolName(reference.idolCode) || reference.displayName } : reference))
 // The April Fools series link the song their story leads into (extraStoryTaxonomy.js); read models stay unchanged.
 const relatedSong = computed(() => props.collection?.domain === 'extra' ? extraStorySeriesDefinition(props.collection.sectionId).song : null)
 const readingByFile = computed(() => { const map = new Map(); for (const entry of props.readingEntries) { if (!entry.source_file) continue; const existing = map.get(entry.source_file); map.set(entry.source_file, existing === undefined ? entry : null) } return map })
@@ -240,4 +261,5 @@ function externalResourcesForChapter(chapterId) {
   .collection-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-5); }
   .collection-hero:has(.collection-avatar) { grid-template-columns: auto minmax(0, 1fr); }
 }
+.collection-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: var(--gs-space-6); margin: 0; padding: 0; list-style: none; }
 </style>

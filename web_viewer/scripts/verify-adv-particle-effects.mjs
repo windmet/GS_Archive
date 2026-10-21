@@ -11,6 +11,26 @@ import {
 
 const root = new URL('../', import.meta.url)
 const fixture = JSON.parse(readFileSync(new URL('scripts/fixtures/adv-particle-effects-native.json', root), 'utf8'))
+
+// Raw placement: a RectTransform's planar position is (anchor - parent pivot) x parent size + anchoredPosition
+// (its serialized localPosition x/y is stale); the prefab root sits at the BackEffect origin.
+function rawEmitterCanvas(chain) {
+  let x = 0, y = 0, scale = 1
+  for (let i = chain.length - 1; i >= 0; i--) {
+    const transform = chain[i], parent = chain[i + 1]
+    let px = transform.position.x, py = transform.position.y
+    if (transform.rect) {
+      assert.deepEqual(transform.rect.anchorMin, transform.rect.anchorMax, 'point anchors')
+      if (!parent) { px = 0; py = 0; assert.deepEqual(transform.rect.anchoredPosition, { x: 0, y: 0 }) }
+      else {
+        px = (transform.rect.anchorMin.x - parent.rect.pivot.x) * parent.rect.sizeDelta.x + transform.rect.anchoredPosition.x
+        py = (transform.rect.anchorMin.y - parent.rect.pivot.y) * parent.rect.sizeDelta.y + transform.rect.anchoredPosition.y
+      }
+    }
+    x += px * scale; y += py * scale; scale *= transform.scale.x
+  }
+  return { x, y }
+}
 const close = (actual, expected, message, epsilon = 1e-6) => assert.ok(Math.abs(actual - expected) <= epsilon, `${message}: ${actual} vs ${expected}`)
 
 // 1. Binding and placement contract.
@@ -72,17 +92,20 @@ for (const [prefab, systems] of Object.entries(model.prefabs)) {
     const shader = raw.renderer.materials[0].shader.name
     assert.equal(system.blend, shader === 'Mobile/Particles/Alpha Blended' ? 'normal' : 'add')
     // Synthesized emitter: hierarchy position in particle units, own scale only.
-    const chain = raw.transformChain
-    let x = 0, y = 0, scale = 1
-    for (const transform of [...chain].reverse()) { x += transform.position.x * scale; y += transform.position.y * scale; scale *= transform.scale.x }
+    const { x, y } = rawEmitterCanvas(raw.transformChain)
     close(system.chain[0].position.x * ADV_CANVAS_PER_WORLD, x, `${prefab} emitter x`, 1e-3)
     close(system.chain[0].position.y * ADV_CANVAS_PER_WORLD, y, `${prefab} emitter y`, 1e-3)
-    assert.deepEqual(system.chain[0].scale, chain[0].scale)
+    assert.deepEqual(system.chain[0].scale, raw.transformChain[0].scale)
   }
 }
 // The flare roots sit at canvas (512, 253) with scale 72; the children put the emitters near the top corners.
 close(model.prefabs.fx_adv_cameraflare_left.systems[0].canvasPosition.x, 512 - 15.6 * 72, 'left flare x', 1e-3)
 close(model.prefabs.fx_adv_cameraflare_right.systems[0].canvasPosition.y, 253 + 0.9 * 72, 'right flare y', 1e-3)
+
+// Rain spawns above the frame and falls through all of it (the view is 2 x 4.347826 particle units tall).
+for (const prefab of ['fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_rain_heavy2'])
+  for (const system of advParticleSystems(prefab))
+    assert.ok(system.chain[0].position.y > 4.347826, `${prefab}/${system.name}: emitter above the top of the view`)
 
 // 3. Command alpha: CreateBgEffectCoroutine fallback, then SetEffectAlpha on start colour and lifetime keys.
 assert.equal(advParticleEffectAlpha('fx_adv_rain', undefined), 1)
@@ -114,13 +137,15 @@ const toWorld = (q, w, h) => {
 }
 for (const prefab of ['fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_rain_heavy2']) {
   for (const system of advParticleSystems(prefab)) {
-    const raw = fixture.prefabs[prefab].find(record => record.pathId === system.source.pathId).modules
+    const record = fixture.prefabs[prefab].find(record => record.pathId === system.source.pathId), raw = record.modules
+    const emitter = rawEmitterCanvas(record.transformChain)
     const theta = raw.ShapeModule.m_Rotation.z * Math.PI / 180, radius = raw.ShapeModule.radius.value
     const [low, high] = [raw.InitialModule.startSpeed.scalar, raw.InitialModule.startSpeed.minScalar].map(Math.abs).sort((a, b) => a - b)
     const quads = sampleAdvParticles(system, 4000, 1000, 1, width, height)
     assert.ok(quads.length > 0, `${prefab}/${system.name}: live particles`)
     for (const q of quads) {
-      const p = toWorld(q, width, height)
+      const world = toWorld(q, width, height)
+      const p = { ...world, x: world.x - emitter.x / ADV_CANVAS_PER_WORLD, y: world.y - emitter.y / ADV_CANVAS_PER_WORLD }
       // Edge along the rotated x axis through the emitter; motion along the rotated -Y.
       const along = p.x * Math.cos(theta) + p.y * Math.sin(theta), down = p.x * Math.sin(theta) - p.y * Math.cos(theta)
       assert.ok(Math.abs(along) <= radius + 1e-6, `${prefab}: on the ${radius} edge (${along})`)

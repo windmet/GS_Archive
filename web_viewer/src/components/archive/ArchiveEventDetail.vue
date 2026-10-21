@@ -433,10 +433,7 @@ button.episode-main { cursor: pointer; }
 .cast-group h4 { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 /* Hairline rows like the unit page's members; names wrap rather than truncate. */
 .idol-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 0 var(--gs-space-7); min-width: 0; }
-.idol-list :deep(.archive-idol-reference) { border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
 .idol-list :deep(.idol-reference-copy strong), .idol-list :deep(.idol-reference-copy small) { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
-.idol-list :deep(.idol-reference-copy strong) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.idol-list :deep(.idol-reference-copy small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .unit-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0 var(--gs-space-7); margin: 0; padding: 0; list-style: none; }
 .unit-list li { min-width: 0; }
 .unit-list button { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
@@ -495,7 +492,6 @@ button.episode-main { cursor: pointer; }
   .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-mint-ink); }
 }
 @media (hover: none), (pointer: coarse) {
-  .idol-list :deep(button.archive-idol-reference:hover) { border-color: var(--gs-line); background: none; }
   .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
   .detail-section :deep(button.domain-reward-name:hover) { background: transparent; color: inherit; }
 }

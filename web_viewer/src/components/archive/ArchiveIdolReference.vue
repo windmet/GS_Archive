@@ -48,12 +48,15 @@ function advanceImage() {
 </script>
 
 <style scoped>
-.archive-idol-reference { --reference-size: 44px; display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; min-height: 52px; padding: 6px 8px; border: 1px solid var(--gs-line); border-radius: 12px; background: var(--gs-mint-wash); color: var(--gs-ink); font: inherit; text-align: left; }
+/* Content flow (GS_UI_CONSTITUTION): a person is a row on the paper separated by a hairline, not a
+   boxed mint card. The mint wash appears only on hover, the way rows on paper answer the pointer. */
+.archive-idol-reference { --reference-size: 44px; display: flex; align-items: center; gap: var(--gs-space-3); box-sizing: border-box; width: 100%; min-width: 0; min-height: 52px; padding: 6px 8px; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); font: inherit; text-align: left; }
 button.archive-idol-reference { cursor: pointer; }
-button.archive-idol-reference:hover { border-color: var(--gs-selected-line); background: var(--gs-mint-wash); }
+button.archive-idol-reference:hover { background: var(--gs-mint-wash); }
+/* Touch has no hover: a tap must not leave the row tinted. */
+@media (hover: none), (pointer: coarse) { button.archive-idol-reference:hover { background: none; } }
 button.archive-idol-reference:focus-visible { outline: 3px solid var(--gs-mint); outline-offset: 2px; }
-.density-identity { --reference-size: 36px; width: auto; min-height: 44px; padding: 3px 5px; border-color: transparent; background: transparent; }
-button.density-identity:hover { border-color: var(--gs-line); }
+.density-identity { --reference-size: 36px; width: auto; min-height: 44px; padding: 3px 5px; border-bottom: 0; border-radius: var(--gs-radius-control); }
 .density-identity .idol-reference-copy { flex-direction: row; align-items: baseline; gap: 6px; }
 .density-identity .idol-reference-copy small::before { content: '·'; margin-right: 6px; }
 .density-portrait { --reference-size: 64px; min-height: 78px; }
@@ -69,6 +72,7 @@ button.density-identity:hover { border-color: var(--gs-line); }
 .idol-reference-art img { width: 100%; height: 100%; object-fit: cover; }
 .idol-reference-copy { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
 .idol-reference-copy strong, .idol-reference-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.idol-reference-copy strong { font-size: .82rem; }.idol-reference-copy small { color: var(--gs-ink-3); font-size: .67rem; }
-.idol-reference-arrow { flex: 0 0 auto; color: var(--gs-mint-ink); }
+.idol-reference-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.idol-reference-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.idol-reference-arrow { flex: 0 0 auto; color: var(--gs-ink-3); }
 </style>
