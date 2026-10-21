@@ -94,7 +94,7 @@ export class BackgroundEffectManager {
   }
 
   _loadEffectTexture(name) {
-    return loadEffectTexture(this._effectTextureCache, name, url => this.loadTextureFromUrl(url))
+    return loadEffectTexture(this._effectTextureCache, name, (url, options) => this.loadTextureFromUrl(url, options))
   }
 
   async _createNativeParticleEffect(entry) {
@@ -114,7 +114,7 @@ export class BackgroundEffectManager {
           sprite.anchor.set(0.5)
           sprite.visible = false
           sprite.eventMode = 'none'
-          // Mobile/Particles/Alpha Blended and Additive; the shared textures load premultiplied.
+          // Mobile/Particles/Alpha Blended and Additive over textures premultiplied on upload (effectTextureCache).
           sprite.blendMode = system.blend === 'normal' ? PIXI.BLEND_MODES.NORMAL : PIXI.BLEND_MODES.ADD
           layer.addChild(sprite)
           entry.sprites.push(sprite)

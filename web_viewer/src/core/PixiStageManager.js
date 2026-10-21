@@ -170,7 +170,7 @@ export class PixiStageManager {
     this.screenEffects = new ScreenEffectManager({
       app: this.app, overlay: this._effectOverlay, spineContainer: this.spineContainer,
       getWidth: () => this.width, getHeight: () => this.height,
-      loadTextureFromUrl: url => this._loadTextureFromUrl(url, { allowFallback: false }),
+      loadTextureFromUrl: (url, options) => this._loadTextureFromUrl(url, { ...options, allowFallback: false }),
     })
     this._debugMarkerUpdater = () => {
       if (!this._debugMode) return
@@ -1174,12 +1174,13 @@ export class PixiStageManager {
     }, { signal, timeoutMs: 10000, label: 'texture-probe' })
   }
 
-  _loadTextureFromUrl(url, { allowFallback = true, signal } = {}) {
+  _loadTextureFromUrl(url, { allowFallback = true, signal, alphaMode } = {}) {
     const controller = new AbortController()
     const signals = [signal, this._textureOwner.signal].filter(Boolean)
     const abort = () => controller.abort(signals.find(item => item.aborted)?.reason)
     for (const item of signals) { item.addEventListener('abort', abort, { once: true }); if (item.aborted) abort() }
-    return loadImageTexture(url, { allowFallback, signal: controller.signal, fallbackTexture: () => this._getFallbackTexture() })
+    return loadImageTexture(url, { allowFallback, signal: controller.signal, fallbackTexture: () => this._getFallbackTexture(),
+      ...(alphaMode === undefined ? {} : { alphaMode }) })
       .finally(() => { for (const item of signals) item.removeEventListener('abort', abort) })
   }
 

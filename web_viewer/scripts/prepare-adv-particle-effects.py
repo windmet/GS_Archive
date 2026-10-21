@@ -48,18 +48,36 @@ def quat_mul(a,b):
 def quat_apply(q,v):
     p=quat_mul(quat_mul(q,dict(w=0,**v)),dict(w=q['w'],x=-q['x'],y=-q['y'],z=-q['z']));return {k:p[k] for k in 'xyz'}
 
+def rect_position(t,parent):
+    """Planar placement of a RectTransform: UGUI drives localPosition x/y from the anchors and
+    m_AnchoredPosition (the serialized m_LocalPosition x/y is stale in these prefabs); z stays local."""
+    require(t['m_AnchorMin']==t['m_AnchorMax'],'Stretched RectTransform needs its parent rect')
+    if parent is None:
+        # Prefab root under BackEffect: only a centred, unshifted root keeps the BackEffect origin.
+        require(t['m_AnchorMin']==dict(x=0.5,y=0.5) and t['m_AnchoredPosition']==dict(x=0.0,y=0.0),'Prefab root offset needs the BackEffect rect')
+        return dict(x=0.0,y=0.0,z=t['m_LocalPosition']['z'])
+    require(parent['m_AnchorMin']==parent['m_AnchorMax'],'Stretched parent RectTransform')
+    anchor={k:(t['m_AnchorMin'][k]-parent['m_Pivot'][k])*parent['m_SizeDelta'][k] for k in 'xy'}
+    return dict(x=anchor['x']+t['m_AnchoredPosition']['x'],y=anchor['y']+t['m_AnchoredPosition']['y'],z=t['m_LocalPosition']['z'])
+
 def hierarchy_chain(particle,audit):
     """Transform chain of a system, leaf first. audit.transform_chain only follows plain Transforms; the rain
-    prefabs are RectTransforms, whose localPosition is the placement while both anchors coincide."""
+    prefabs are RectTransforms, placed by their anchors (rect_position)."""
     go=audit.local_object(particle,particle.read_typetree()['m_GameObject'],'GameObject')
     current=next(o for o in (audit.local_object(go,c['component']) for c in go.read_typetree()['m_Component']) if o.type.name in ('Transform','RectTransform'))
     chain=[]
     while current:
         t=current.read_typetree()
-        if current.type.name=='RectTransform':require(t['m_AnchorMin']==t['m_AnchorMax'],'Stretched RectTransform needs its parent rect')
         require(t['m_Father']['m_FileID']==0,'External effect parent')
-        chain.append({**audit.source_ref(current),'position':t['m_LocalPosition'],'rotation':t['m_LocalRotation'],'scale':t['m_LocalScale'],'parent':audit.pointer(t['m_Father'])})
-        current=audit.local_object(current,t['m_Father']) if t['m_Father']['m_PathID'] else None
+        parent=audit.local_object(current,t['m_Father']) if t['m_Father']['m_PathID'] else None
+        position=t['m_LocalPosition'];rect={}
+        if current.type.name=='RectTransform':
+            parent_tree=parent.read_typetree() if parent else None
+            require(parent is None or parent.type.name=='RectTransform','RectTransform under a plain Transform')
+            position=rect_position(t,parent_tree)
+            rect=dict(rect={k:t[f'm_{k[0].upper()}{k[1:]}'] for k in ('anchorMin','anchorMax','anchoredPosition','sizeDelta','pivot','localPosition')})
+        chain.append({**audit.source_ref(current),'position':position,'rotation':t['m_LocalRotation'],'scale':t['m_LocalScale'],**rect,'parent':audit.pointer(t['m_Father'])})
+        current=parent
     return chain
 
 def local_chain(chain):
