@@ -68,6 +68,8 @@
 
 10-21 舞台随后[同步master #69–#70](STAGE_MASTER70_SYNC_20261021.md)至`af58d6eb`。ADV冲突从APK重建，保留新锚点/纹理和RAW顺时针角度；168/168源码门禁、build:check及舞台/独立ADV消费者Browser通过，未部署。
 
+10-21 [剩余粒子清单复核](NATIVE_REMAINING_PARTICLES_20261021.md)修复离线报告遗漏native/Bloom/内置消费者的误报；当前仍21种/335事件/10编排。六组面板已回查RAW，mainha两组9系统可沿Noise预览继续，尚未晋升；另四组有非平面父链或shape拒绝，不能直接登记完成。
+
 - 主 checkout `E:/Web_build/SideM_Archived`，保存完整语料（public/assets）和 `.deploy` 历史批次。
 - 领域 worktree 在 `E:/Web_build/GS_Archive_Domain_Work/<名字>`，只需联接 `node_modules`，语料不拷不联接：dev 服务把 worktree `public/` 里没有的 `/assets`、`/data` 文件从主 checkout 的 `public/` 读（`scripts/lib/public-corpus-plugin.mjs`，两边都没有就是 404），源配置读主 checkout 的 `config/archive_sources.local.json`（JS 与 `data_pipeline/archive_paths.py` 同一规则）。旧 worktree 若 `web_viewer/public` 是联接，删 worktree 前先解联接。资产清单要加 `--follow-junctions`；`build:check` 在这里重写的 `config/resource-audit.json` 不要提交。
 - 本地验收服务：5177。不设 `SIDEM_READMODEL_CANDIDATE` 时，dev 服务在本地配置的 `readmodel_candidates_root`（本机为 `E:/Web_build/GS_Archive_Domain_Work`）里挑 release 与 `readmodels/bootstrap.inline.json` 相同的候选；找不到会在启动日志里警告，`/_catalog` 请求返回 404。要看别的候选仍可显式设置。
