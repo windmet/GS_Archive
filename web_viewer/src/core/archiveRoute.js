@@ -547,6 +547,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
       main: '主线剧情',
       extra: '额外剧情',
       birthday: '生日剧情',
+      unit_story: '组合前传',
     }
     const formalDomainLabel = formalDomainLabels[route.storyType] || ''
     const stories = {

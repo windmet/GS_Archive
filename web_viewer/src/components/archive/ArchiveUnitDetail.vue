@@ -215,9 +215,7 @@ const mixedEventItems = computed(() => relationItems(
 .unit-stat-grid dt { color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
 .unit-stat-grid dd { margin: 0; font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
 .unit-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 var(--gs-space-7); }
-.unit-members :deep(.archive-idol-reference) { border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
-.unit-members :deep(.idol-reference-copy strong) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); white-space: normal; overflow-wrap: anywhere; }
-.unit-members :deep(.idol-reference-copy small) { font-size: var(--gs-text-meta); white-space: normal; overflow-wrap: anywhere; }
+.unit-members :deep(.idol-reference-copy strong), .unit-members :deep(.idol-reference-copy small) { white-space: normal; overflow-wrap: anywhere; }
 .unit-songs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 var(--gs-space-7); }
 .unit-songs button, .unit-stories button { display: grid; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
 .unit-songs button { grid-template-columns: 48px minmax(0, 1fr) auto; }
