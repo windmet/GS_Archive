@@ -9,12 +9,12 @@ import {sampleBloomSystem} from '../src/core/chibiBloomParticles.js'
 const read=p=>JSON.parse(fs.readFileSync(new URL('../'+p,import.meta.url),'utf8'))
 const data=read('public/data/stage-object-emitters.json')
 const native=JSON.parse(execFileSync(process.execPath,['scripts/audit-chibi-billboard-rotation.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'}))
-assert.equal(native.totalCases,61)
+assert.equal(native.totalCases,62)
 assert.equal(native.matchingCases,native.totalCases,'Actual billboard vertices/UVs must match every 2D/3D native case')
 const rotationProof=read('scripts/fixtures/chibi-billboard-rotation-native.json'),parentProof=rotationProof.parentCases
 assert.equal(rotationProof.binarySha256,read('scripts/fixtures/chibi-noise-kernel-native.json').binarySha256)
 for(const window of rotationProof.sourceWindows)assert.equal(createHash('sha256').update(Buffer.from(window.bytes,'hex')).digest('hex'),window.sha256)
-assert.equal(parentProof.filter(c=>c.asset).length,16,'All admitted 3D source parents are bound')
+assert.equal(parentProof.filter(c=>c.asset).length,17,'All admitted 3D source parents are bound')
 assert.equal(Object.values(data.assets).flatMap(a=>a.systems).filter(s=>s.rotationX).length,parentProof.filter(c=>c.asset).length,'A newly admitted 3D parent needs native replay coverage')
 for(const c of parentProof){
   const basis=emitterRenderBasis(c.chain,c.alignment)
@@ -55,4 +55,4 @@ assert.ok(Math.abs(sampleWholeScreen(whole,1500,[{start:0,stop:Infinity}])[0].ro
 const bloom={...read('public/data/stage-bloom-particles.json').assets.fx_in_flslgt_bloom_1.systems[1],
   rotation:constant(.5),lifetime:constant(4),delay:0,rate:0,bursts:[{time:0,count:1}]}
 assert.equal(sampleBloomSystem(bloom,0,0)[0].rotation,.5,'Bloom clockwise birth angle')
-console.log('Particle rotation: 61 native vertex/UV cases including 16 source parents, signed scale, initial/spin, rewind, local/reflected parent and Floor/Whole_screen/Bloom directions passed')
+console.log('Particle rotation: 62 native vertex/UV cases including 17 source parents, signed scale, initial/spin, rewind, local/reflected parent and Floor/Whole_screen/Bloom directions passed')

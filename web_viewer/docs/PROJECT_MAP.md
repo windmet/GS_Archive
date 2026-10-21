@@ -174,7 +174,7 @@ parity 或兼容参考。
   1,203 artifacts；
 - publication ledger 为 206 releases / 1,376 stable logical IDs；
 <!-- authoritative-v2-summary collections=4 standalone=1170 artifacts=1199 -->
-<!-- publication-ledger-summary releases=206 stable_logical_ids=1376 -->
+<!-- publication-ledger-summary releases=207 stable_logical_ids=1380 -->
 - external GS translation registry 当前有 8 条 exact mapping；
 - tracked PNG 为 186 个；其中 108 个为 grandfathered，
   14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived

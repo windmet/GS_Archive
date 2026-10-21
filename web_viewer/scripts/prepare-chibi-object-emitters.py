@@ -229,7 +229,8 @@ def extract(mode='current', only=None, partial=False):
                 expected=PROMOTIONS['previewAssets'][name]
                 w.require(not deferred and len(systems)==expected['systems'] and models[name]['bundleSha256']==expected['bundleSha256']
                     and [s['source'] for s in systems]==expected['sources']
-                    and all(s.get('partial')==expected['partialMarkers'] and s.get('noise',{}).get('profile')=='native-high-curl-v1' for s in systems),
+                    and [s.get('partial',[]) for s in systems]==expected.get('systemPartials',[expected.get('partialMarkers',[])]*len(systems))
+                    and all(not s.get('partial') or (s['partial']==['noise_preview'] and s.get('noise',{}).get('profile')=='native-high-curl-v1') for s in systems),
                     'Preview emitter source or supported capability changed: '+name)
             for system in systems:
                 if system['maskTexture']:w.require(any(m['texture']==system['maskTexture'] for m in bound_masks),'Unbound per-particle mask')

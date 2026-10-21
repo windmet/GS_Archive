@@ -1,0 +1,326 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-21-native-mainha-panels-001",
+  "created_at": "2026-10-21T08:01:27.189173+00:00",
+  "prepared_from_commit": "30630e077e675144ef4957520292920cecc9b61a",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:4656ebbb76b55f096bd8b96b",
+      "stage-object-emitters:117ecfff396a16a280c130e0",
+      "stage-object-emitters:b8231c13079012d34ecab120",
+      "stage-object-emitters:1781f14b84ef34379aca979b"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:4656ebbb76b55f096bd8b96b",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_mainha.unity3d",
+        "sha256": "a91bfa826882a52ab46b2020f0d5b60b17f93ab44752b4002881dd4b0e936bd0",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_mainha_wind",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-3a121943c3fe01f994d5835a45e70a5a:-2042848128644407184",
+          "evidence": "Exact 64-bit PathID retained as a string; RAW object SHA-256 ff38944ff76ab2094088370fde0dd84f180c0f3dc402faac4a88a1d927ea8596; 1024x512 RGBA export. Two panels, 9 systems, 6 explicitly noise_preview. Not native scene/RNG/clock parity."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/4656ebbb76b55f096bd8b96b.png",
+          "url": "/data/stage-object-emitters/4656ebbb76b55f096bd8b96b.png",
+          "bytes": 456339,
+          "sha256": "5f02dd19e328560c31822cb23976a5040028d3ee5cb7d929cc4d60a660caebb2"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA comparison passed. Texture parity only; Noise preview remains explicit.",
+          "Previous 91 models and 105 texture descriptors unchanged; local source increment, no deployment."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=mainha&stage=mainha_live_effect",
+        "tested_at": "2026-10-21T08:03:43.576516+00:00",
+        "tested_commit": "30630e077e675144ef4957520292920cecc9b61a",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted changes; dev5213 PID43808, main checkout and rm-release-20261015. Full mode and inherited manual cast; no original-cast claim.",
+          "0ms978 total object particles,10000ms1011,72000ms1160; rewind and page reload10000ms restore1011. Both panel assets present; unsupported/deferred empty.",
+          "Desktop1280x720 and mobile390x844 masks/particles visible; mobile document width/scrollWidth390. Screenshots mainha-panel-10s-desktop.png and mainha-panel-10s-mobile.png.",
+          "Actual playback progressed from10s through66.3s to114s end. Two pause commands timed out while playing; no successful pause-interaction claim. UI recovered at end; response/performance remains open.",
+          "Reloaded scene has0 console errors; returned to /songs/mainha/?maintainer=1. No device, production or original-scene acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:117ecfff396a16a280c130e0",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_mainha.unity3d",
+        "sha256": "a91bfa826882a52ab46b2020f0d5b60b17f93ab44752b4002881dd4b0e936bd0",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_mainha_panel_1",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-3a121943c3fe01f994d5835a45e70a5a:571042421867167649",
+          "evidence": "Exact 64-bit PathID retained as a string; RAW object SHA-256 5c87a35d994ff3f949aa476d794a22c8c230bf081d0bce814df108084aaddc6e; 1024x1024 RGBA export. Two panels, 9 systems, 6 explicitly noise_preview. Not native scene/RNG/clock parity."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/117ecfff396a16a280c130e0.png",
+          "url": "/data/stage-object-emitters/117ecfff396a16a280c130e0.png",
+          "bytes": 20707,
+          "sha256": "d72ef17101ee7314e36aa6be4d4b792c671dd59dc08608ef48507f3e3d6fbb7b"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA comparison passed. Texture parity only; Noise preview remains explicit.",
+          "Previous 91 models and 105 texture descriptors unchanged; local source increment, no deployment."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=mainha&stage=mainha_live_effect",
+        "tested_at": "2026-10-21T08:03:43.576559+00:00",
+        "tested_commit": "30630e077e675144ef4957520292920cecc9b61a",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted changes; dev5213 PID43808, main checkout and rm-release-20261015. Full mode and inherited manual cast; no original-cast claim.",
+          "0ms978 total object particles,10000ms1011,72000ms1160; rewind and page reload10000ms restore1011. Both panel assets present; unsupported/deferred empty.",
+          "Desktop1280x720 and mobile390x844 masks/particles visible; mobile document width/scrollWidth390. Screenshots mainha-panel-10s-desktop.png and mainha-panel-10s-mobile.png.",
+          "Actual playback progressed from10s through66.3s to114s end. Two pause commands timed out while playing; no successful pause-interaction claim. UI recovered at end; response/performance remains open.",
+          "Reloaded scene has0 console errors; returned to /songs/mainha/?maintainer=1. No device, production or original-scene acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:b8231c13079012d34ecab120",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_mainha.unity3d",
+        "sha256": "a91bfa826882a52ab46b2020f0d5b60b17f93ab44752b4002881dd4b0e936bd0",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_particle_variation2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-3a121943c3fe01f994d5835a45e70a5a:3147239844506611722",
+          "evidence": "Exact 64-bit PathID retained as a string; RAW object SHA-256 2db3174c74b7452c69ef5709a691c82fceccb509a8ac1f9e258c1d186d98c664; 1024x1024 RGBA export. Two panels, 9 systems, 6 explicitly noise_preview. Not native scene/RNG/clock parity."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/b8231c13079012d34ecab120.png",
+          "url": "/data/stage-object-emitters/b8231c13079012d34ecab120.png",
+          "bytes": 196702,
+          "sha256": "f301c0fe171b5356b058126cfd5217abd533543492cf72ac6dec7b2b8f254d97"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA comparison passed. Texture parity only; Noise preview remains explicit.",
+          "Previous 91 models and 105 texture descriptors unchanged; local source increment, no deployment."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=mainha&stage=mainha_live_effect",
+        "tested_at": "2026-10-21T08:03:43.576578+00:00",
+        "tested_commit": "30630e077e675144ef4957520292920cecc9b61a",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted changes; dev5213 PID43808, main checkout and rm-release-20261015. Full mode and inherited manual cast; no original-cast claim.",
+          "0ms978 total object particles,10000ms1011,72000ms1160; rewind and page reload10000ms restore1011. Both panel assets present; unsupported/deferred empty.",
+          "Desktop1280x720 and mobile390x844 masks/particles visible; mobile document width/scrollWidth390. Screenshots mainha-panel-10s-desktop.png and mainha-panel-10s-mobile.png.",
+          "Actual playback progressed from10s through66.3s to114s end. Two pause commands timed out while playing; no successful pause-interaction claim. UI recovered at end; response/performance remains open.",
+          "Reloaded scene has0 console errors; returned to /songs/mainha/?maintainer=1. No device, production or original-scene acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:1781f14b84ef34379aca979b",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_mainha.unity3d",
+        "sha256": "a91bfa826882a52ab46b2020f0d5b60b17f93ab44752b4002881dd4b0e936bd0",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_mainha_panel_2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-3a121943c3fe01f994d5835a45e70a5a:-1657761093394293323",
+          "evidence": "Exact 64-bit PathID retained as a string; RAW object SHA-256 6a683c030b897be044c75f6445a0993aae4db3bcc1ca59d814b1784b1ca76d01; 1024x1024 RGBA export. Two panels, 9 systems, 6 explicitly noise_preview. Not native scene/RNG/clock parity."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/1781f14b84ef34379aca979b.png",
+          "url": "/data/stage-object-emitters/1781f14b84ef34379aca979b.png",
+          "bytes": 27499,
+          "sha256": "68753e7f56aff20b4541a45ec5a1ddb5a26808afae398f0c432b20a95673e29c"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Mounted RAW RGBA comparison passed. Texture parity only; Noise preview remains explicit.",
+          "Previous 91 models and 105 texture descriptors unchanged; local source increment, no deployment."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=mainha&stage=mainha_live_effect",
+        "tested_at": "2026-10-21T08:03:43.576594+00:00",
+        "tested_commit": "30630e077e675144ef4957520292920cecc9b61a",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped uncommitted changes; dev5213 PID43808, main checkout and rm-release-20261015. Full mode and inherited manual cast; no original-cast claim.",
+          "0ms978 total object particles,10000ms1011,72000ms1160; rewind and page reload10000ms restore1011. Both panel assets present; unsupported/deferred empty.",
+          "Desktop1280x720 and mobile390x844 masks/particles visible; mobile document width/scrollWidth390. Screenshots mainha-panel-10s-desktop.png and mainha-panel-10s-mobile.png.",
+          "Actual playback progressed from10s through66.3s to114s end. Two pause commands timed out while playing; no successful pause-interaction claim. UI recovered at end; response/performance remains open.",
+          "Reloaded scene has0 console errors; returned to /songs/mainha/?maintainer=1. No device, production or original-scene acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}
