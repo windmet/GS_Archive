@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
-import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
+import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
 import {createNoiseClock} from '../src/core/chibiParticleNoiseClock.js'
 import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity} from '../src/core/chibiParticleStretch.js'
@@ -9,6 +9,13 @@ const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.cr
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
 const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
+const velocityProof=JSON.parse(read('scripts/fixtures/chibi-velocity-curve-native.json'))
+assert.equal(velocityProof.binarySha256,noiseProof.binarySha256)
+assert.equal(velocityProof.cases.length,8)
+for(const window of velocityProof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+for(const c of velocityProof.cases)for(const [i,phase] of c.phases.entries())for(const [axis,curve] of c.curves.entries()) {
+  assert.ok(Math.abs(sampleObjectCurve(curve,phase,0)-c.expected[i][axis])<2e-7,'RAW-bound native Velocity worker sample')
+}
 const stretchProof=JSON.parse(read('scripts/fixtures/chibi-stretch-kernel-native.json'))
 assert.equal(stretchProof.binarySha256,noiseProof.binarySha256)
 assert.equal(stretchProof.cameraBinding.cameraPathId,'45565')
@@ -198,6 +205,30 @@ for(const c of noiseProof.gravitySpaceProof.cases) {
   assert.ok(Math.abs(actual.y+(m.b*vx+m.d*vy)*integral)<.0002,'Object gravity accumulated displacement differs from native replay')
 }
 const keys=(a,b,slope=b-a)=>[{time:0,value:a,inSlope:slope,outSlope:slope},{time:1,value:b,inSlope:slope,outSlope:slope}]
+const linearVelocity={mode:1,scalar:1,keys:keys(0,1)}
+for(const age of [0,.1,.5,.731,1,1.99])assert.ok(Math.abs(sampleObjectVelocityDisplacement(linearVelocity,age,2,0)-age*age/4)<1e-12,'Integrate the velocity rate, not endpoint velocity times age')
+for(const c of velocityProof.cases)for(const curve of c.curves) {
+  const life=c.lifetime.scalar
+  // Independent continuous Hermite antiderivative: midpoint replay converges
+  // to this polynomial integral, including the three-key reversal segments.
+  let integral=0
+  for(let i=0;i<curve.keys.length-1;i++) {
+    const a=curve.keys[i],b=curve.keys[i+1],span=b.time-a.time
+    integral+=span*((a.value+b.value)/2+span*(a.outSlope-b.inSlope)/12)*curve.scalar*life
+  }
+  assert.ok(Math.abs(sampleObjectVelocityDisplacement(curve,life,life,0)-integral)<2e-6,'Native-source Hermite displacement on the Web 60 Hz grid')
+  const earlier=sampleObjectVelocityDisplacement(curve,life*.3,life,0)
+  sampleObjectVelocityDisplacement(curve,life*.9,life,0)
+  assert.equal(sampleObjectVelocityDisplacement(curve,life*.3,life,0),earlier,'Cached rate integral survives rewind')
+  assert.equal(sampleObjectVelocityDisplacement(structuredClone(curve),life*.3,life,0),earlier,'Cold and cached rate integrals agree')
+}
+const curvedFlow={...movingNoise,noise:null,lifetime:{mode:0,scalar:2,minScalar:2},velocity:{x:{mode:0,scalar:0},y:linearVelocity,z:{mode:0,scalar:0}}}
+assert.ok(Math.abs(sampleObjectEmitter(curvedFlow,1000,0)[0].y+25)<1e-10,'Actual particle consumer integrates lifetime velocity')
+const curvedAt731=sampleObjectEmitter(curvedFlow,731,0)
+sampleObjectEmitter(curvedFlow,1800,0)
+assert.deepEqual(sampleObjectEmitter(curvedFlow,731,0),curvedAt731,'Curved particle rewind')
+assert.deepEqual(sampleObjectEmitter(structuredClone(curvedFlow),731,0),curvedAt731,'Curved particle cold seek')
+assert.deepEqual(sampleObjectEmitter(curvedFlow,731,0,300),curvedAt731,'StopEmitting preserves the living particle velocity')
 const twoCurves={mode:2,scalar:2,minScalar:100,keys:keys(.5,1),minKeys:keys(.2,.4)}
 assert.ok(Math.abs(sampleObjectCurve(twoCurves,.5,.5)-1.05)<1e-12,'Two curves share the multiplier and ignore constantMin')
 const frozen={...probe,shape:null,looping:false,duration:2,bursts:[{time:.5,count:1}],rate:0,sizeY:null,size:{mode:1,scalar:1,keys:keys(0,4)},lifetime:{mode:0,scalar:4,minScalar:4}}

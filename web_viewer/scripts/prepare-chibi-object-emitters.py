@@ -95,7 +95,9 @@ def model(p, partial=False, stationary=False):
     if velocity:
         w.require(not velocity['inWorldSpace'] and all(t['scale']==dict(x=1,y=1,z=1) for t in chain) and not c,'Unsupported velocity coordinate scale/limit')
         w.require(all(velocity[k]['minMaxState']==0 and velocity[k]['scalar']==0 for k in ['orbitalX','orbitalY','orbitalZ','orbitalOffsetX','orbitalOffsetY','orbitalOffsetZ','radial']) and velocity['speedModifier']['scalar']==1,'Unsupported orbital velocity')
-        w.require(all(velocity[k]['minMaxState'] in [0,3] for k in ['x','y','z']),'Velocity curve requires integration')
+        w.require(all(velocity[k]['minMaxState'] in [0,1,3] for k in ['x','y','z']),'Unsupported velocity curve mode')
+        w.require(not ('NoiseModule' in m and any(velocity[k]['minMaxState']==1 for k in ['x','y','z'])),'Curved velocity with Noise requires per-step sampling')
+        for k in ['x','y','z']:initial_curve(velocity[k])
     mat=r['materials'][0];masked=mat['shader']['name'].startswith('Alpha Masked/')
     if masked:material_tint=require_native_particle_mask(mat,allow_tint=True)
     else:w.require(mat['shader']['name'] in ['Mobile/Particles/Additive','Mobile/Particles/Alpha Blended'],'Unsupported material')

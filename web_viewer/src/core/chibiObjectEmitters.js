@@ -9,6 +9,25 @@ export function sampleObjectCurve(c,t,r) {
   return sampleParticleCurve(c,t)
 }
 const sample=sampleObjectCurve
+// VelocityModule evaluates a lifetime rate, then the position integrator adds
+// velocity * dt. Match this viewer's replayable 60 Hz boundary. Curves and
+// source lifetimes are immutable; bound the per-curve lifetime cache for reuse.
+const velocityIntegrals=new WeakMap()
+export function sampleObjectVelocityDisplacement(curve,age,life,randomValue) {
+  if(age<=0)return 0
+  if(curve.mode!==1)return sample(curve,0,randomValue)*age
+  let lifetimes=velocityIntegrals.get(curve)
+  if(!lifetimes){lifetimes=new Map();velocityIntegrals.set(curve,lifetimes)}
+  let sums=lifetimes.get(life)
+  if(!sums){
+    if(lifetimes.size>=8)lifetimes.delete(lifetimes.keys().next().value)
+    sums=[0];lifetimes.set(life,sums)
+  }
+  const steps=Math.floor(age*60)
+  for(let i=sums.length-1;i<steps;i++)sums.push(sums[i]+sample(curve,Math.min(1,(i+.5)/(60*life)),randomValue)/60)
+  const remainder=age-steps/60
+  return sums[steps]+(remainder>0?sample(curve,Math.min(1,(steps/60+remainder/2)/life),randomValue)*remainder:0)
+}
 // A Hermite segment lies inside its Bezier control hull. Include tangent overshoot
 // when selecting old birth loops, or long-lived particles can disappear early.
 function curveUpperBound(c) {
@@ -179,7 +198,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
           velocity:system.velocity?{x:sample(system.velocity.x,t,rnd(14)),y:sample(system.velocity.y,t,rnd(15)),z:sample(system.velocity.z,t,rnd(16))}:{x:0,y:0,z:0},
           gravity:{x:-matrix.c*g/det,y:matrix.a*g/det,z:0},limit:system.limit})
       } else {
-        p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
+        p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.x,age,life,rnd(14)):0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.y,age,life,rnd(15)):0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.z,age,life,rnd(16)):0)}
       }
       const size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
