@@ -82,6 +82,8 @@
 
 10-21 [空间帧/相机getter](NATIVE_STAGE_SPATIAL_FRAMES_20261021.md)闭合RAW的Stage/Base/Container/Camera引用；初始Z为4/14/2，Camera与Stage是兄弟节点。152条pfofos自由相机目标加初始状态共153例原生getter通过，确认Z翻转，初始平移+2；不能沿用合成+Z/−10。仍需将真实矩阵接入粒子context联合重放，未晋升火焰、缺口18种。
 
+10-21 [来源矩阵/context联合与空间求解](NATIVE_SOURCE_STRETCH_SOLVER_20261021.md)覆盖104条Show目标组合、1664例原生顶点，新空间函数1664/1664，旧平面832/1664。167项门禁及build:check通过；新函数尚未接入renderer，需实际相机/placement播放状态、来源晋升与Browser，火焰未晋升、缺口18种。未部署。
+
 - 主 checkout `E:/Web_build/SideM_Archived`，保存完整语料（public/assets）和 `.deploy` 历史批次。
 - 领域 worktree 在 `E:/Web_build/GS_Archive_Domain_Work/<名字>`，只需联接 `node_modules`，语料不拷不联接：dev 服务把 worktree `public/` 里没有的 `/assets`、`/data` 文件从主 checkout 的 `public/` 读（`scripts/lib/public-corpus-plugin.mjs`，两边都没有就是 404），源配置读主 checkout 的 `config/archive_sources.local.json`（JS 与 `data_pipeline/archive_paths.py` 同一规则）。旧 worktree 若 `web_viewer/public` 是联接，删 worktree 前先解联接。资产清单要加 `--follow-junctions`；`build:check` 在这里重写的 `config/resource-audit.json` 不要提交。
 - 本地验收服务：5177。不设 `SIDEM_READMODEL_CANDIDATE` 时，dev 服务在本地配置的 `readmodel_candidates_root`（本机为 `E:/Web_build/GS_Archive_Domain_Work`）里挑 release 与 `readmodels/bootstrap.inline.json` 相同的候选；找不到会在启动日志里警告，`/_catalog` 请求返回 404。要看别的候选仍可显式设置。

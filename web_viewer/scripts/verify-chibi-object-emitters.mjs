@@ -5,7 +5,7 @@ import {execFileSync} from 'node:child_process'
 import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
 import {createNoiseClock} from '../src/core/chibiParticleNoiseClock.js'
-import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity} from '../src/core/chibiParticleStretch.js'
+import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity,sampleSpatialStretch} from '../src/core/chibiParticleStretch.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
@@ -62,6 +62,27 @@ for(const c of cameraMatrixProof.cases) {
   for(let i=0;i<16;i++)cameraMatrixError=Math.max(cameraMatrixError,Math.abs(c.expected[i]-expected[i]))
 }
 assert.ok(cameraMatrixError<2e-5,'Source camera target matrices retain native Z flip and world-to-local translation')
+const joinedProof=JSON.parse(read('scripts/fixtures/chibi-source-stretch-native.json'))
+assert.equal(joinedProof.binarySha256,stretchProof.binarySha256)
+for(const [name,hash] of Object.entries(joinedProof.dependencies))assert.equal(sha(read('scripts/fixtures/'+name)),hash)
+const joinedAudit=JSON.parse(execFileSync(process.execPath,['scripts/audit-chibi-source-stretch.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'}))
+assert.equal(joinedAudit.sourceFrames,104)
+assert.equal(joinedAudit.totalCases,1664)
+assert.equal(joinedAudit.matches,1664,'Actual spatial implementation must match both native writers for every source Show placement')
+assert.equal(joinedAudit.planarMatches,832,'Zero-Z rays can match; nonzero-Z cases still need the spatial path')
+assert.ok(joinedAudit.maxPlanarError>.008,'The old planar projection still misses the source-bound spatial cases')
+for(const value of Object.values(joinedAudit.byAsset))assert.equal(value.cases,208)
+for(const row of joinedProof.cases)assert.deepEqual(row.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]])
+for(const frame of joinedProof.frames){
+  const event=spatialContext.arrangement.fireEvents[frame.eventIndex]
+  assert.equal(event.hide,false);assert.equal(frame.asset,event.asset)
+  assert.deepEqual(frame.input.cameraMatrix,cameraMatrixProof.cases[frame.cameraIndex].expected)
+}
+const sampleFrame=joinedProof.frames[0].input
+const spatialInput={...sampleFrame,position:{x:0,y:0,z:20},velocity:{x:1,y:2,z:.1},scaleX:sampleFrame.particleScale[0],scaleY:sampleFrame.particleScale[1]}
+assert.throws(()=>sampleSpatialStretch({...spatialInput,cameraMatrix:[1,0,.1,0,0,1,0,0,0,0,-1,0,0,0,2,1]}),/camera view/)
+assert.throws(()=>sampleSpatialStretch({...spatialInput,minSize:.1}),/clamp/)
+assert.throws(()=>sampleSpatialStretch({...spatialInput,maxSize:.0001}),/clamp/)
 const coneProof=JSON.parse(read('scripts/fixtures/chibi-cone-stretch-native.json'))
 assert.equal(coneProof.binarySha256,stretchProof.binarySha256)
 assert.equal(coneProof.objectIndexSha256,data.objectIndexSha256)
@@ -114,6 +135,13 @@ for(const c of stretchProof.cases.filter(c=>c.position)) {
   const actual=[p,tail,tail,p].map((v,i)=>Object.fromEntries(['x','y','z'].map(axis=>[axis,v[axis]+side[axis]*(i<2?1:-1)])))
   assert.deepEqual(c.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]])
   for(const [i,v] of actual.entries())for(const [j,axis] of ['x','y','z'].entries())assert.ok(Math.abs(v[axis]-c.expected[i].position[j])<2e-5,`Nonplanar native evidence ${c.function} ${c.name} ${i}.${axis}`)
+  if(c.sameViewMatrices){
+    const angle=c.cameraRotation||0,co=Math.cos(angle),si=Math.sin(angle)
+    const spatial=sampleSpatialStretch({position:p,velocity:{...velocity,z:vz,speedSquared:speed2},size:c.size,
+      scaleX:c.particleScale?.[0]||1,scaleY:c.particleScale?.[1]||1,lengthScale:c.lengthScale,velocityScale:c.velocityScale,
+      maxSize:c.maxParticleSize??100,cameraMatrix:[co,si,0,0,-si,co,0,0,0,0,1,0,0,0,-10,1]})
+    for(const [i,v] of spatial.entries())for(const [j,axis] of ['x','y','z'].entries())assert.ok(Math.abs(v[axis]-c.expected[i].position[j])<2e-5,`Spatial implementation legacy XYZ ${c.name}`)
+  }
 }
 assert.equal(noiseProof.binarySha256,nativeProof.binary.sha256)
 const point=([x,y,z])=>({x,y,z})

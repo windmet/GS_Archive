@@ -89,11 +89,14 @@ def vertices(function,case):
         angle=case.get('cameraRotation',0);cos=math.cos(angle);sin=math.sin(angle)
         floats(camera+4,[cos,sin,0,0,-sin,cos,0,0,0,0,1,0,0,0,-10,1])
         floats(camera+0x44,[cos,-sin,0,0,sin,cos,0,0,0,0,1,0,0,0,10,1])
+        if 'cameraMatrix' in case:
+            assert len(case['cameraMatrix'])==16 and case.get('sameViewMatrices')
+            floats(camera+4,case['cameraMatrix'])
         if case.get('sameViewMatrices'):
             # 0x6c5a3c -> 0x603d8c passes 0x5e5440(camera) as the
             # third argument; 0x603d8c also reads that getter for +0x44.
             uc.mem_write(camera+0x44,bytes(uc.mem_read(camera+4,64)))
-        floats(camera+0xd4,[0,0,1]);floats(camera+0xe0,[10,1,1])
+        floats(camera+0xd4,[0,0,1]);floats(camera+0xe0,[case.get('viewHeight',10),1,1])
         uc.mem_write(camera+0xec,bytes([1]))
         execute(0x6c505c,[renderer,engine,camera,0,context,params,0])
         if 'position' not in case:field(0x40,0)
