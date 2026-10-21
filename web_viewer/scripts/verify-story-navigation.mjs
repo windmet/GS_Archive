@@ -64,7 +64,8 @@ function fixture({ cached = true, initialView = '__boot__' } = {}) {
   for (const row of storyRows) data.set(row.file, storyDetail(row.file))
   for (const row of collectionRows) data.set(row.id, collectionDetail(row.domain, row.sectionId))
   const context = { ...state, computed, useStoryNavigation, navigation,
-    archiveBootstrap: { domains: { collections: { key: 'collection-index' }, stories: { key: 'story-index' } }, counts: { catalog_story_entries: 2 } },
+    archiveBootstrap: { domains: { collections: { key: 'collection-index' }, stories: { key: 'story-index' } }, counts: { catalog_story_entries: 2 },
+      idols: [{ id: '001tom' }, { id: '002sht' }] },
     readModelClient: { load: async (descriptor, options = {}) => {
       const key = descriptor.key; loads.push({ key, descriptor, options })
       const value = requests.has(key) ? await requests.get(key).promise : data.get(key)
@@ -77,10 +78,9 @@ function fixture({ cached = true, initialView = '__boot__' } = {}) {
     commitView: view => { navigation.invalidate(); state.view.value = view; state.loading.value = false; calls.push(['commit', view]) },
     commitArchiveSelection: () => calls.push(['selection']), goHome: () => calls.push(['home']),
   }
-  for (const name of ['openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'openStoryReader', 'loadScenario', 'startEpisodeQueue', 'openIdolStoryChapter']) {
+  for (const name of ['openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'openStoryReader', 'loadScenario', 'startEpisodeQueue', 'openIdolStoryChapter', 'openWorkArchive']) {
     context[name] = (...args) => calls.push([name, ...args])
   }
-  context.idolStoryChapterOwner = story => story?.domain === 'idol_story' ? '002sht' : ''
   context.currentStory = vm.runInNewContext(script.slice(currentStory.init.start, currentStory.init.end), context)
   const scope = effectScope(); scopes.push(scope)
   const api = scope.run(() => vm.runInNewContext(call, context))
@@ -198,6 +198,7 @@ try {
     t.scope.stop()
   }
   for (const [mode, domain, idol, expected] of [['portal', '', '', true], ['search', 'event', '', true],
+    ['portal', 'event', '', true], ['portal', 'unit_story', '', true],
     ['portal', 'main', '001tom', true], ['portal', 'main', '', false], ['portal', 'extra', '', false], ['portal', 'birthday', '', false]]) {
     const t = fixture({ cached: false })
     t.state.currentStoryMode.value = mode; t.state.currentStoryDomain.value = domain; t.state.currentCharacterId.value = idol
@@ -228,20 +229,57 @@ try {
     t.openCatalogStory({ file: 'phone.json', domain: 'card_scenarios' })
     assert.deepEqual(t.calls.slice(0, 3), [['openEventDetail', { id: '17' }, 'external_story_resources'],
       ['openIdolStoryArchive', '001tom'], ['openStoryPhone', { file: 'phone.json', domain: 'card_scenarios' }]])
-    // A personal-story chapter opens its owner's story page, never the generic story detail.
-    t.openCatalogStory({ file: 'chapter.json', domain: 'idol_story' })
-    assert.deepEqual(t.calls.at(-1), ['openIdolStoryChapter', { file: 'chapter.json', domain: 'idol_story' }])
+    // Every story opens the page that owns it (core/StoryOwner.js), never the generic story detail.
+    const chapter = { file: '1_2_002sht_01_1_2_002_01.json', domain: 'idol_story' }
+    t.openCatalogStory(chapter)
+    assert.deepEqual(t.calls.at(-1), ['openIdolStoryChapter', chapter])
+    t.openCatalogStory({ file: '1_5_001tom_1_5_001_00_0.json', domain: 'work' })
+    assert.deepEqual(t.calls.at(-1), ['openWorkArchive', '001tom', '1_5_001tom_1_5_001_00_0.json'])
     const graph = JSON.parse(readFileSync(new URL('../public/data/editorial/event-resource-graph.json', import.meta.url), 'utf8'))
     const event = graph.events.find(row => row.firstReadingId && row.storyFile)
     assert.ok(event)
-    t.openCatalogStory({ file: event.storyFile, sectionId: event.eventCode, eventRelation: { event_code: event.eventCode, event_id: event.id } })
+    const eventEntry = { file: event.storyFile, domain: 'event', sectionId: event.eventCode, eventRelation: { event_code: event.eventCode, event_id: event.id } }
+    // An event row or search hit opens the event page; only the lead card's "开始阅读" reads directly.
+    t.openCatalogStory(eventEntry)
+    assert.deepEqual(t.calls.at(-1), ['openEventDetail', { event_id: event.id }, 'story_catalog'])
+    t.readEventStory(eventEntry)
     assert.deepEqual(t.calls.at(-1), ['openStoryReader', event.firstReadingId,
       { event: event.id, parentView: 'story_catalog', storyType: 'event', story: event.storyFile }])
-    t.openExternalStoryInternal({ target: { kind: 'story', story: { file: 'alpha.json' } } }); await flush()
-    assert.equal(t.state.storyDetailParentView.value, 'external_story_resources')
+    // A link that names only the file reads its owner from the loaded story.
+    await t.openExternalStoryInternal({ target: { kind: 'story', story: { file: 'alpha.json' } } }); await flush()
+    assert.equal(t.state.view.value, 'story_collection')
+    assert.equal(t.state.currentStorySection.value, '101'); assert.equal(t.state.currentStoryFile.value, 'alpha.json')
+    assert.equal(t.state.storyCollectionParentView.value, 'external_story_resources')
+    assert.equal(t.state.storyReadModelDetail.value, null, 'an owned story never publishes the detail page')
     t.openExternalStoryInternal({ target: { kind: 'collection', domain: 'extra', section: '60101', storyFile: 'beta.json' } }); await flush()
     assert.equal(t.state.storyCollectionParentView.value, 'external_story_resources')
     assert.equal(t.state.currentStoryFile.value, 'beta.json')
+    t.scope.stop()
+  }
+  // Portal search names a unit prequel without its section, an extra story has none: both reach the collection.
+  {
+    const t = fixture()
+    t.data.set('alpha.json', storyDetail('alpha.json', 'unit_story', '10'))
+    t.data.set('unit_story:10', collectionDetail('unit_story', '10'))
+    t.state.collectionReadModelCatalog.value = [...collectionRows,
+      { id: 'unit_story:10', domain: 'unit_story', sectionId: '10', title: 'Unit', detail: { key: 'unit_story:10' } }]
+    await t.openStoryDetail({ file: 'alpha.json', domain: 'unit_story' }, 'portal'); await flush()
+    assert.equal(t.state.view.value, 'story_collection'); assert.equal(t.state.currentStoryDomain.value, 'unit_story')
+    assert.equal(t.state.currentStorySection.value, '10'); assert.equal(t.state.storyCollectionParentView.value, 'portal')
+    t.data.set('beta.json', storyDetail('beta.json', 'extra', ''))
+    t.data.set('landing:extra', { value: { collections: [{ id: 'extra:601', logicalEntryIds: ['extra:6010101'] }],
+      logicalEntries: [{ id: 'extra:6010101', compiledFile: 'beta.json' }] } })
+    await t.openStoryDetail({ file: 'beta.json' }); await flush()
+    assert.equal(t.state.view.value, 'story_collection'); assert.equal(t.state.currentStorySection.value, '601')
+    assert.equal(t.state.currentStoryFile.value, 'beta.json')
+    t.scope.stop()
+  }
+  // A story no page owns is the only one the generic detail page still shows.
+  {
+    const t = fixture()
+    t.data.set('alpha.json', storyDetail('alpha.json', 'event', ''))
+    await t.openStoryDetail({ file: 'alpha.json' }); await flush()
+    assert.equal(t.state.view.value, 'story_detail'); assert.equal(t.state.storyReadModelDetail.value.id, 'alpha.json')
     t.scope.stop()
   }
   // Selection/history and chapter/segment queue intent remain owned by the existing player boundary.

@@ -1,4 +1,4 @@
-import { STORY_KINDS } from '../core/archiveSections.js'
+import { STORY_KINDS, storyKindAliases } from '../core/archiveSections.js'
 import { songMatchesIdol, storyMatchesIdol, idolEventIds, eventMatchesIdol, cardAttribute } from './CatalogIdolScope.js'
 import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortraitUrl } from '../utils/CardAssetResolver.js'
 import { getCharaIconUrl } from '../utils/AssetResolver.js'
@@ -25,7 +25,7 @@ const integer = value => Number.isInteger(value) && value >= 0 ? value : null
 const normalizeSearch = value => text(value).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim()
 const sourceText = (callback, source, ...args) => typeof callback === 'function' ? text(callback(source, ...args)) || source : source
 const safeAssetUrl = value => typeof value === 'string' && /^\/assets\/[a-zA-Z0-9_./-]+\.(?:png|webp|jpg|jpeg)$/u.test(value) && !value.includes('..')
-const storyLabels = { main: '主线剧情', event: '活动剧情', unit_story: '组合剧情', idol_story: STORY_KINDS.idol_story.label,
+const storyLabels = { main: '主线剧情', event: '活动剧情', unit_story: STORY_KINDS.unit_story.label, idol_story: STORY_KINDS.idol_story.label,
   card_scenarios: STORY_KINDS.card_scenarios.label, work: STORY_KINDS.work.label, birthday: '生日剧情', extra: '额外剧情' }
 
 function requireValue(condition, message) {
@@ -357,7 +357,7 @@ export function buildPortalSearchResults({ query = '', rowsByDomain = {}, bootst
         result = { key: `stories:${row.id}`, domain, label: text(row.title),
           subtitle: [storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle)].filter(Boolean).join(' · '), image: null,
           target: storyTarget(row) }
-        searchable = [row.title, row.subtitle, row.episodeLabel, storyLabels[row.domain], row.id, row.file,
+        searchable = [row.title, row.subtitle, row.episodeLabel, storyLabels[row.domain], ...storyKindAliases(row.domain), row.id, row.file,
           ...(Array.isArray(row.domainAliases) ? row.domainAliases : []),
           ...(Array.isArray(row.characters) ? row.characters.flatMap(id => directory.has(id)
             ? [idolDisplay(id, directory, idolName), text(directory.get(id).name), sourceText(idolSearch, id, text(directory.get(id).name))] : []) : [])]

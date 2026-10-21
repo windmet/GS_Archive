@@ -44,6 +44,7 @@ import {computed,ref,watch,onMounted,onBeforeUnmount} from 'vue'
 import {Search,UserRound,BookOpen,ArrowRight,List,Table2,SlidersHorizontal} from '@lucide/vue'
 import {storyDiscoveryState as state} from '../../data/storyDiscoveryState.js'
 import {storyEventResources} from '../../data/eventResourceGraph.js'
+import {STORY_KINDS,storyKindAliases} from '../../core/archiveSections.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import {presentIdolEpisodeLabel} from '../../presentation/idolEpisodeLabel.js'
 import localization from '../../../public/data/editorial/story-search-localization.json'
@@ -56,7 +57,7 @@ const updateViewport=event=>{compact.value=event.matches}
 onMounted(()=>viewport?.addEventListener('change',updateViewport))
 onBeforeUnmount(()=>viewport?.removeEventListener('change',updateViewport))
 const page=computed({get:()=>state.page,set:value=>{state.page=Math.max(1,Math.min(pages.value,value))}})
-const tabs=[{id:'',label:'全部剧情'},{id:'GROWING SIGN@L',label:'GROWING SIGN@L'},{id:'GROWING SELECTION',label:'GROWING SELECTION'},{id:'unit_story',label:'组合前传'},{id:'idol_story',label:'个人剧情'}]
+const tabs=[{id:'',label:'全部剧情'},{id:'GROWING SIGN@L',label:'GROWING SIGN@L'},{id:'GROWING SELECTION',label:'GROWING SELECTION'},{id:'unit_story',label:STORY_KINDS.unit_story.label},{id:'idol_story',label:'个人剧情'}]
 const units=computed(()=>[...new Set(props.idolDirectory.map(row=>row.unitName).filter(Boolean))])
 const knownIdols=computed(()=>new Set(props.idolDirectory.map(row=>row.id)))
 const cast=entry=>(storyEventResources(entry)?.storyCast||entry.characters||[]).filter(code=>knownIdols.value.has(code))
@@ -82,7 +83,7 @@ const filtered=computed(()=>props.entries.filter(entry=>{
  if(state.idols.length&&!state.idols.some(code=>codes.includes(code)))return false
  if(state.unit&&!codes.some(code=>props.idolDirectory.find(row=>row.id===code)?.unitName===state.unit))return false
  if(state.language&&language(entry)!==state.language)return false
- const text=[entry.title,description(entry),...codes.map(code=>props.idolSearch(code))].join(' ').toLowerCase()
+ const text=[entry.title,description(entry),...storyKindAliases(entry.domain),...codes.map(code=>props.idolSearch(code))].join(' ').toLowerCase()
  return text.includes(props.query.trim().toLowerCase())
 }))
 const pages=computed(()=>Math.max(1,Math.ceil(filtered.value.length/40)))

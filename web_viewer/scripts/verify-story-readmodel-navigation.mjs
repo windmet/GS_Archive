@@ -54,16 +54,18 @@ function setup() {
   bindStoryNavigation(app, context).stop()
   return { context, jobs, commits, errors, captures: () => captures, invalidate: navigation.invalidate }
 }
-const detail = (file, domain = 'main', sectionId = '101') =>
+// Stories a page owns redirect there (the story navigation verifier covers that); the detail page, and the load races
+// below, are for a story no page owns, hence the made-up kinds.
+const detail = (file, domain = 'unowned', sectionId = '101') =>
   ({ story: { file, domain, sectionId }, view: { related: [], castReferences: [], promotedVisualUrl: '', readingEntries: [] } })
 {
   const t = setup()
   const old = t.context.openStoryDetail({ file: 'old.json' })
   const current = t.context.openStoryDetail({ file: 'current.json' }, 'external_story_resources')
-  t.jobs.get('current.json').resolve(detail('current.json', 'extra', '601')); await current
+  t.jobs.get('current.json').resolve(detail('current.json', 'unowned_extra', '601')); await current
   t.jobs.get('old.json').resolve(detail('old.json')); await old
   assert.equal(t.context.currentStoryFile.value, 'current.json')
-  assert.equal(t.context.currentStoryDomain.value, 'extra')
+  assert.equal(t.context.currentStoryDomain.value, 'unowned_extra')
   assert.equal(t.context.currentStorySection.value, '601')
   assert.equal(t.context.storyDetailParentView.value, 'external_story_resources')
   assert.equal(t.captures(), 1)

@@ -204,7 +204,8 @@ export function useStoryArchiveNavigation({
     if (queue.length) startEpisodeQueue(queue, 0, 'seasonal_campaign')
   }
 
-  function openWorkArchive(idolCode = '') {
+  // storyFile opens the page on that story (a search hit); the page shows its idol's first story otherwise.
+  function openWorkArchive(idolCode = '', storyFile = '') {
     if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('work')
     const request = ++pendingWorkNavigation
     navigation.invalidate()
@@ -217,7 +218,7 @@ export function useStoryArchiveNavigation({
       workReadModelStatus.value = ''
       captureDetailSource()
       currentStoryDomain.value = 'work'
-      currentStoryFile.value = ''
+      currentStoryFile.value = typeof storyFile === 'string' ? storyFile : ''
       currentWorkMode.value = 'stories'
       currentStoryMode.value = 'portal'
       currentStorySection.value = ''
