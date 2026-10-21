@@ -46,11 +46,15 @@ async function managerProbe(domain, effect, bgProfile = LIT_BACKGROUND) {
     return Promise.resolve(texture)
   }
   const common = { app, getWidth: () => 1024, getHeight: () => 506, loadTextureFromUrl }
+  // effect_single prefabs (punch) are native particles owned by the background effect layer,
+  // wired exactly as PixiStageManager wires them.
+  const particles = domain === 'background' ? null : new BackgroundEffectManager({ ...common, bgEffectContainer: bgContainer })
   const manager = domain === 'background'
     ? new BackgroundEffectManager({ ...common, bgEffectContainer: bgContainer })
     : new ScreenEffectManager({ ...common,
       overlay: { destroyed: false, alpha: 1, visible: false, width: 1024, height: 506, tint: 0xffffff },
-      spineContainer: null })
+      spineContainer: null,
+      playParticleEffect: (id, effect, nowMilliseconds) => particles.playSingleParticleEffect(id, effect, nowMilliseconds) || null })
   try {
     if (domain === 'background') manager.applyBgEffects([effect], bgProfile, () => now)
     else manager.playScreenEffects([effect], { nowMilliseconds: () => now })
@@ -68,7 +72,7 @@ async function managerProbe(domain, effect, bgProfile = LIT_BACKGROUND) {
       fx_adv_rain_heavy: nativeCount('fx_adv_rain_heavy'), fx_adv_rain_heavy2: nativeCount('fx_adv_rain_heavy2'),
       fx_adv_sakura: 32, fx_adv_momiji: 28 }
     assert.ok(domain !== 'background' || !(effect.id in backgroundCounts) || bgProfile?.lightPosition === 0 || backgroundCounts[effect.id] > 0, `${effect.id}: handler draws`)
-    const screenCounts = { fx_adv_punch: 1, fx_adv_sakura: 30, fx_adv_momiji: 30, fx_adv_kamifubuki: 48 }
+    const screenCounts = { fx_adv_punch: nativeCount('fx_adv_punch'), fx_adv_sakura: 30, fx_adv_momiji: 30, fx_adv_kamifubuki: 48 }
     const collectSprites = node => (node instanceof PIXI.Sprite ? 1 : 0)
       + (node.children || []).reduce((sum, child) => sum + collectSprites(child), 0)
     const expectedCount = (domain === 'background' ? backgroundCounts : screenCounts)[effect.id] || 0
@@ -80,6 +84,7 @@ async function managerProbe(domain, effect, bgProfile = LIT_BACKGROUND) {
     return requested
   } finally {
     manager.destroy()
+    particles?.destroy()
     assert.equal(tickers.size, 0, 'manager disposal removes every ticker')
     assert.equal(frames.size, 0, 'manager disposal cancels every frame')
     stage.destroy({ children: true })
@@ -192,6 +197,38 @@ const wrongDomain = structuredClone(plan.source) && createStoryAssetPlan({
 assert.equal(wrongDomain.dependenciesComplete, false, 'a wrong-domain effect stays unresolved')
 assert.ok(wrongDomain.unresolved.some(item => item.reason === 'effect-unhandled-in-domain'))
 
+
+// 7. effect_single lifecycle: the punch prefab removes itself after duration + lifetime, and cancel is idempotent.
+{
+  const tickers = new Set(), textures = []
+  const bg = new PIXI.Container(), near = new PIXI.Container()
+  const manager = new BackgroundEffectManager({
+    app: { stage: new PIXI.Container(), ticker: { add: fn => tickers.add(fn), remove: fn => tickers.delete(fn) } },
+    bgEffectContainer: bg, nearEffectContainer: near, getWidth: () => 1024, getHeight: () => 506,
+    loadTextureFromUrl: () => { const t = PIXI.Texture.fromBuffer(new Uint8Array(96 * 64 * 4), 96, 64); textures.push(t); return Promise.resolve(t) },
+  })
+  const start = now
+  const clock = () => now
+  assert.equal(manager.playSingleParticleEffect('fx_adv_rain', {}, clock), null, 'looping bg prefabs are not effect_single')
+  const cancel = manager.playSingleParticleEffect('fx_adv_punch', { x: -300, y: 20, scale: 1.5 }, clock)
+  await advance(0)
+  assert.equal(tickers.size, 1, 'punch ticks while alive'); assert.equal(bg.children.length + near.children.length, 2)
+  now = start + 1229; for (const tick of [...tickers]) tick()
+  assert.equal(tickers.size, 1, 'still alive before duration + lifetime')
+  now = start + 1231; for (const tick of [...tickers]) tick()
+  assert.equal(tickers.size, 0, 'natural end removes the ticker')
+  assert.equal(bg.children.length + near.children.length, 0, 'natural end removes both layers')
+  cancel()
+  const second = manager.playSingleParticleEffect('fx_adv_punch', {}, clock)
+  await advance(0)
+  second(); second()
+  assert.equal(tickers.size, 0, 'cancel removes the ticker'); assert.equal(bg.children.length + near.children.length, 0)
+  manager.playSingleParticleEffect('fx_adv_punch', {}, clock)
+  await advance(0)
+  manager.destroy()
+  assert.equal(tickers.size, 0, 'destroy disposes live effect_single entries')
+  for (const texture of textures) texture.destroy(true)
+}
 
 console.log('Effect request parity and synthetic PIXI object lifecycle verified; real texture decode/GPU rendering NOT verified')
 } finally {
