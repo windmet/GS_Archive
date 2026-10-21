@@ -95,8 +95,8 @@ try {
   // (AdventureBackgroundPanel.UpdateBackGroundScale).
   for (const [width, height] of [[1280, 720], [1968, 1060], [390, 844]]) {
     const originY = advViewOriginY(width, height)
-    const actors = new Container(), background = new Container()
-    const camera = new CameraController({ bgContainer: background, spineContainer: actors,
+    const actors = new Container(), background = new Container(), backEffect = new Container(), nearEffect = new Container()
+    const camera = new CameraController({ bgContainer: background, spineContainer: actors, effectContainers: [backEffect, nearEffect],
       getWidth: () => width, getHeight: () => height })
     // Portrait squeezes horizontal canvas offsets (advHorizontalSqueeze); 1 elsewhere.
     const unit = advStageUnit(width, height), squeeze = advHorizontalSqueeze(width, height)
@@ -111,8 +111,12 @@ try {
       // The background panel centre (canvas origin) moves with the camera like any canvas point.
       close(width / 2 * background.scale.x + background.x, width / 2 - offset_x * unit * squeeze * zoom)
       close(originY * background.scale.x + background.y, originY + offset_y * unit * zoom)
+      // BackEffect particles are canvas children like the idols, so both effect layers share the actor transform.
+      for (const layer of [backEffect, nearEffect]) assert.deepEqual([layer.scale.x, layer.scale.y, layer.x, layer.y], [actors.scale.x, actors.scale.y, actors.x, actors.y])
     }
-    camera.destroy(); actors.destroy(); background.destroy()
+    camera.resetCameraZoom()
+    for (const layer of [backEffect, nearEffect]) assert.deepEqual([layer.scale.x, layer.x, layer.y], [1, 0, 0])
+    camera.destroy(); actors.destroy(); background.destroy(); backEffect.destroy(); nearEffect.destroy()
   }
 } finally {
   if (originalRequest === undefined) delete globalThis.requestAnimationFrame

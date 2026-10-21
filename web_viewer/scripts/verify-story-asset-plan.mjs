@@ -56,16 +56,12 @@ assert.deepEqual(effectTextures, ['fx_adv_rain', 'fx_adv_flare_01', 'fx_adv_saku
   'composite effects expand, heavy rain shares the rain texture and overlays add none')
 assert.equal(effectPlan.dependenciesComplete, true, 'mapped effect textures are complete logical requirements')
 const cameraflare = effectPlan.assets.find(asset => asset.id === 'fx_adv_flare_01')
-assert.equal(cameraflare.runtimeDisabled, 'cameraflare-re-authored-as-particles')
 assert.ok(cameraflare.uses.some(use => use.path === 'entry_snapshot.bg_effects[1]'), 'effect provenance is kept')
-// The runtime never requests a disabled handler's texture, so it must not be
-// offered as a required download: a preloader that counted it would fetch a
-// file nothing plays and report progress for work it did not need to do.
-assert.equal(cameraflare.required, false, 'a runtime-disabled texture is not a required asset')
+// cameraflare plays as the native fx_adv_cameraflare ParticleSystem, so its texture is a real download.
+assert.equal(cameraflare.runtimeDisabled, undefined)
+assert.equal(cameraflare.required, true, 'the native cameraflare texture is a required asset')
 assert.deepEqual(effectPlan.assets.filter(asset => asset.kind === 'effect-texture' && asset.required).map(asset => asset.id),
-  ['fx_adv_rain', 'fx_adv_sakura', 'fx_adv_star'], 'only textures the runtime requests are required')
-assert.equal(effectPlan.assets.find(asset => asset.id === 'fx_adv_rain').runtimeDisabled, undefined)
-assert.equal(effectPlan.assets.find(asset => asset.id === 'fx_adv_rain').required, true)
+  ['fx_adv_rain', 'fx_adv_flare_01', 'fx_adv_sakura', 'fx_adv_star'], 'every texture the runtime requests is required')
 const unknownEffect = structuredClone(effects)
 unknownEffect.steps[0].entry_snapshot.bg_effects = [{ id: 'fx_adv_unknown' }]
 unknownEffect.steps[0].entry_snapshot.screen_effects = []

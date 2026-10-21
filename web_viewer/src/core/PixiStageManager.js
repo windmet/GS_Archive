@@ -32,6 +32,8 @@ import { BackgroundManager } from './BackgroundManager.js'
 import { ScreenEffectManager } from './ScreenEffectManager.js'
 import { loadImageTexture } from './loadImageTexture.js'
 import { CameraController } from './CameraController.js'
+import { ColorFilterController } from './ColorFilterController.js'
+import { IDENTITY_COLOR_FILTER, backgroundIdolColorPreset, cameraColorPreset } from '../../shared/story/ColorFilter.js'
 import { SpineManager } from './SpineManager.js'
 
 import { LipSyncController } from './LipSyncController.js'
@@ -79,7 +81,6 @@ export class PixiStageManager {
     this.screenEffects = null
 
     // Visual filters
-    this._grayFilter = null     // PIXI.ColorMatrixFilter for grayscale
     this._blurFilter = null     // PIXI.BlurFilter for bg DOF
     this._bgOverlaySprite = null  // color overlay sprite for bg_color
     this._bgBlurAmount = 0
@@ -108,17 +109,22 @@ export class PixiStageManager {
     this._visibilityHandler()
     this.container.appendChild(this.app.view)
 
-    // Layer structure: bgContainer (bottom) -> spineContainer -> fadeOverlay (top)
+    // Layer structure: bgContainer (bottom) -> bgEffectContainer -> spineContainer -> nearEffectContainer
+    // -> fadeOverlay (top). The effect layers are StoryIdolCanvas BackEffect particles below and above
+    // CharacterParent's sorting order, and move with the camera like the idols.
     this.bgContainer = new PIXI.Container()
     this.bgEffectContainer = new PIXI.Container()
     this.spineContainer = new PIXI.Container()
+    this.nearEffectContainer = new PIXI.Container()
     this.app.stage.addChild(this.bgContainer)
     this.app.stage.addChild(this.bgEffectContainer)
     this.app.stage.addChild(this.spineContainer)
+    this.app.stage.addChild(this.nearEffectContainer)
     this.backgroundManager = new BackgroundManager({
       app: this.app,
       bgContainer: this.bgContainer,
       bgEffectContainer: this.bgEffectContainer,
+      nearEffectContainer: this.nearEffectContainer,
       getWidth: () => this.width,
       getHeight: () => this.height,
       getBgUrl,
@@ -127,9 +133,13 @@ export class PixiStageManager {
     this.cameraController = new CameraController({
       bgContainer: this.bgContainer,
       spineContainer: this.spineContainer,
+      effectContainers: [this.bgEffectContainer, this.nearEffectContainer],
       getWidth: () => this.width,
       getHeight: () => this.height,
+      onCameraMove: zoom => this.backgroundManager?.setCameraBlur(zoom),
     })
+    this.cameraColorFilter = new ColorFilterController({ app: this.app, getTarget: () => this.app?.stage })
+    this.idolColorFilter = new ColorFilterController({ app: this.app, getTarget: () => this.spineContainer })
     this.spineManager = new SpineManager(this)
     this._debugOverlay = new PIXI.Container()
     this._debugOverlay.eventMode = 'none'
@@ -451,32 +461,24 @@ export class PixiStageManager {
     return this.backgroundManager?.setBgBlur(amount, duration, delay, nowMilliseconds)
   }
 
-  _ensureBgBlurFilter() {
-    return this.backgroundManager?._ensureBgBlurFilter()
-  }
-
-  setBgBlurInstant(amount) {
-    return this.backgroundManager?.setBgBlurInstant(amount)
-  }
-
   clearBgBlur() {
     return this.backgroundManager?.clearBgBlur()
   }
 
-  setBgColorOverlay(hexColor, duration = 0, delay = 0, nowMilliseconds) {
-    return this.backgroundManager?.setBgColorOverlay(hexColor, duration, delay, nowMilliseconds)
+  setBgColor(hexColor, duration = 0, delay = 0, nowMilliseconds) {
+    return this.backgroundManager?.setBgColor(hexColor, duration, delay, nowMilliseconds)
   }
 
-  clearBgColorOverlay() {
-    return this.backgroundManager?.clearBgColorOverlay()
+  clearBgColor() {
+    return this.backgroundManager?.clearBgColor()
   }
 
   _hexToRgb(color) {
-    return this.backgroundManager?._hexToRgb(color)
+    return { r: (color >> 16) & 255, g: (color >> 8) & 255, b: color & 255 }
   }
 
-  _rgbToHex(rgb) {
-    return this.backgroundManager?._rgbToHex(rgb)
+  _rgbToHex({ r, g, b }) {
+    return ((Math.round(r) & 255) << 16) | ((Math.round(g) & 255) << 8) | (Math.round(b) & 255)
   }
 
   applyBgEffects(effects = [], bgProfile = null, nowMilliseconds) {
@@ -514,42 +516,19 @@ export class PixiStageManager {
   // Visual Filters
 
   /**
-   * Apply camera color filter to the entire stage.
-   * @param {string|null} filter - 'gray', 'sepia_light', or null to clear.
+   * camera_color / camera_defaultcolor: the Camera target of Growing.ColorFilter, over the whole stage.
+   * @param {string|null} filter - color_preset_<name>, or null for the default (identity) preset.
+   * @param {{delay: number, duration: number}|null} transition - the authoring step's one-shot timing.
    */
-  setCameraFilter(filter) {
-    if (filter === 'gray') {
-      if (!this._grayFilter) {
-        this._grayFilter = new PIXI.ColorMatrixFilter()
-        this._grayFilter.padding = 0
-      }
-      this._grayFilter.resolution = this.app.renderer.resolution
-      this._grayFilter.multisample = PIXI.MSAA_QUALITY.MEDIUM
-      this._grayFilter.matrix = [
-        0.58, 0.26, 0.08, 0, 0,
-        0.12, 0.76, 0.08, 0, 0,
-        0.08, 0.20, 0.58, 0, 0,
-        0,    0,    0,    1, 0,
-      ]
-      this.app.stage.filters = [this._grayFilter]
-    } else if (filter === 'sepia_light') {
-      if (!this._grayFilter) {
-        this._grayFilter = new PIXI.ColorMatrixFilter()
-        this._grayFilter.padding = 0
-      }
-      this._grayFilter.resolution = this.app.renderer.resolution
-      this._grayFilter.multisample = PIXI.MSAA_QUALITY.MEDIUM
-      // Light warm archive tone: keep enough saturation that costume colors remain readable.
-      this._grayFilter.matrix = [
-        0.90, 0.12, 0.02, 0, 0,
-        0.06, 0.94, 0.02, 0, 0,
-        0.03, 0.08, 0.78, 0, 0,
-        0,    0,    0,    1, 0,
-      ]
-      this.app.stage.filters = [this._grayFilter]
-    } else {
-      this.app.stage.filters = null
-    }
+  setCameraFilter(filter, transition = null, nowMilliseconds) {
+    const preset = filter ? cameraColorPreset(filter) : IDENTITY_COLOR_FILTER
+    if (!preset) console.warn(`[PixiStageManager] Unknown camera color preset "${filter}"`)
+    this.cameraColorFilter.set(preset || IDENTITY_COLOR_FILTER, { ...(transition || {}), nowMilliseconds })
+  }
+
+  /** The IdolFigure target: the current background's preset, applied instantly when the sprite is swapped. */
+  setIdolBackgroundColorFilter(bgProfile) {
+    this.idolColorFilter.set(backgroundIdolColorPreset(bgProfile))
   }
 
   // Camera zoom / pan
@@ -1583,6 +1562,8 @@ export class PixiStageManager {
     this._resizeObserver?.disconnect()
     this._resizeObserver = null
     this.cameraController?.destroy()
+    this.cameraColorFilter?.destroy()
+    this.idolColorFilter?.destroy()
     this.cameraController = null
     this.backgroundManager?.destroy()
     this.backgroundManager = null

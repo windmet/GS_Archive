@@ -33,6 +33,7 @@ const snapshotObjectContracts = new Map([
   ['bg_dof_transition', ajv.compile(schemaRef('durationTransition'))],
   ['bg_profile', ajv.compile(schemaRef('backgroundProfile'))],
   ['bg_transition', ajv.compile(schemaRef('backgroundTransition'))],
+  ['camera_filter_transition', ajv.compile(schemaRef('durationTransition'))],
   ['camera_zoom', ajv.compile(schemaRef('cameraPayload'))],
   ['environmental', ajv.compile(schemaRef('environmentalState'))],
   ['image_icon', ajv.compile(schemaRef('imageIcon'))],

@@ -36,50 +36,47 @@ for (const size of [undefined, { width: 0, height: 1 }, { width: 1, height: Infi
 }
 assert.equal(query({ schema_version: 2, steps: [{ entry_snapshot: {}, cues: [] }] }, 0).backgroundGeometry.status, 'projected')
 console.log(`Background geometry: ${geometryComparisons} production Sprite comparisons across aspect ratios and resized viewports`)
+// A fresh BackgroundManager's blur/colour state; the blurred image itself needs a GPU and is not built here.
+const backgroundFilterFields = { _bgBlurAmount: 0, _bgOffsetBlur: 0, _bgBlurTarget: 0, _bgBlurAlpha: 0,
+  _bgColor: 0xFFFFFF, _bgColorTarget: 0xFFFFFF, _createBlurTexture: () => null }
 for (const state of [{}, { bg_color: '#AAAAAA', bg_dof: .8 }, { bg_color: '#FFFFFF', bg_dof: 2 },
   { bg_color: '#ffffff', bg_dof: .8 }, { bg_color: '#112233', bg_dof: .001 }, { bg_color: '#000000', bg_dof: -1 }]) {
   const sprite = new Sprite(new Texture(new BaseTexture(null, { width: 4, height: 4 })))
   const manager = Object.assign(Object.create(BackgroundManager.prototype), {
-    bgContainer: new Container(), bgSprite: sprite, _bgBlurAmount: 0, _blurFilter: { blur: 0 },
-    _bgOverlaySprite: new Sprite(sprite.texture), getWidth: () => 1280, getHeight: () => 720,
-    setCameraFilter() {}, applyBgEffects() {},
+    bgContainer: new Container(), bgSprite: sprite, ...backgroundFilterFields,
+    getWidth: () => 1280, getHeight: () => 720, setCameraFilter() {}, applyBgEffects() {},
   })
-  manager._bgOverlaySprite.blendMode = 2
   applyStepSceneState({ manager, state })
   const projected = query({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] }, 0).backgroundFilters
   assert.equal(projected.status, 'projected'); close(projected.blur, manager._bgBlurAmount)
-  assert.equal(projected.overlay.visible, !!manager._bgOverlaySprite.parent)
-  if (projected.overlay.visible) {
-    assert.equal(projected.overlay.tint, manager._bgOverlaySprite.tint)
-    close(projected.overlay.alpha, manager._bgOverlaySprite.alpha)
-    assert.equal(manager._bgOverlaySprite.blendMode, 2)
-  }
-  manager.clearBgColorOverlay(); manager._bgOverlaySprite.destroy(); sprite.destroy({ texture: true, baseTexture: true })
+  assert.equal(projected.color, manager._bgColor); assert.equal(sprite.tint, projected.color)
+  manager.clearBgColor(); sprite.destroy({ texture: true, baseTexture: true })
 }
 for (const key of ['bg_color_transition', 'bg_dof_transition']) {
   const state = { bg_color: '#AAAAAA', bg_dof: .8, [key]: { delay: .1, duration: .4 } }
   assert.equal(query({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] }, 100).backgroundFilters.reason, 'unresolved-filter-transition')
 }
 for (const state of [{ bg_color: 'bad-color' }, { bg_color: '#AAAAAA', bg_dof: Infinity },
-  { bg_color: '#AAAAAA', bg_dof: 1e308 }]) {
+  { bg_color: '#AAAAAA', bg_dof: 'x' }]) {
   assert.equal(query({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] }, 0).backgroundFilters.reason, 'invalid-filter-state')
 }
 console.log('Background filters: 6 scene-adapter/manager static cases; unresolved transitions and invalid inputs rejected')
 const filterInput = { schema_version: 2, steps: [{ entry_snapshot: { bg_color: '#224466', bg_dof: 1,
   bg_dof_transition: { duration: 2 }, bg_color_transition: { duration: 2 } }, cues: [] }] }
 const filterOrigins = { backgroundFilterOrigins: {
-  blur: { from: 2, startedAt: 2 }, overlay: { from: { visible: false }, startedAt: 3 },
+  blur: { from: 2, startedAt: 2 }, color: { from: 0xFFFFFF, startedAt: 3 },
 } }
 assert.deepEqual(query(filterInput, 1, filterOrigins).backgroundFilters,
-  { status: 'projected', blur: 2, overlay: { visible: false } })
-assert.equal(query(filterInput, 2.5, filterOrigins).backgroundFilters.overlay.visible, false)
-assert.ok(query(filterInput, 2.5, filterOrigins).backgroundFilters.blur > 2)
-for (const from of [-1, NaN]) {
+  { status: 'projected', blur: 2, color: 0xFFFFFF })
+assert.equal(query(filterInput, 2.5, filterOrigins).backgroundFilters.color, 0xFFFFFF)
+close(query(filterInput, 2.5, filterOrigins).backgroundFilters.blur, 1.75)
+assert.equal(query(filterInput, 4, filterOrigins).backgroundFilters.color, 0x91A2B3)
+for (const from of [Infinity, NaN]) {
   assert.equal(query(filterInput, 3, { backgroundFilterOrigins: { ...filterOrigins.backgroundFilterOrigins,
     blur: { from, startedAt: 2 } } }).backgroundFilters.reason, 'invalid-filter-origin')
 }
 assert.equal(query(filterInput, 3, { backgroundFilterOrigins: { ...filterOrigins.backgroundFilterOrigins,
-  overlay: { from: { visible: true, tint: -1, alpha: .85 }, startedAt: 3 } } }).backgroundFilters.reason, 'invalid-filter-origin')
+  color: { from: -1, startedAt: 3 } } }).backgroundFilters.reason, 'invalid-filter-origin')
 const input = scenario([cue('camera.transform', { zoom: 2, offset_x: 30, offset_y: -20 }),
   cue('screen.fade', { type: 'out', alpha: .8 }), cue('background.change', { bg: 'B', type: 'dissolve' })])
 const frozen = JSON.stringify(input)
@@ -161,31 +158,23 @@ try {
     for (const time of [.5, .7, .9, 1.9, 3]) {
       const sprite = new Sprite(texture())
       const manager = Object.assign(Object.create(BackgroundManager.prototype), {
-        bgContainer: new Container(), bgSprite: sprite, _bgBlurAmount: 0, _blurFilter: { blur: 0 },
-        _bgOverlaySprite: new Sprite(sprite.texture), getWidth: () => 1280, getHeight: () => 720,
-        setCameraFilter() {}, applyBgEffects() {},
+        bgContainer: new Container(), bgSprite: sprite, ...backgroundFilterFields,
+        getWidth: () => 1280, getHeight: () => 720, setCameraFilter() {}, applyBgEffects() {},
       })
-      manager._bgOverlaySprite.blendMode = 2
       applyStepSceneState({ manager, state: initial })
-      const fromOverlay = manager._bgOverlaySprite.parent ? { visible: true,
-        tint: manager._bgOverlaySprite.tint, alpha: manager._bgOverlaySprite.alpha } : { visible: false }
-      const context = freeze({ backgroundFilterOrigins: { blur: { from: manager._bgBlurAmount, startedAt: .5 },
-        overlay: { from: fromOverlay, startedAt: .5 } } })
+      const context = freeze({ backgroundFilterOrigins: { blur: { from: manager._bgOffsetBlur, startedAt: .5 },
+        color: { from: manager._bgColor, startedAt: .5 } } })
       const state = freeze({ ...target, bg_dof_transition: { delay: .4, duration }, bg_color_transition: { delay: .4, duration } })
       const input = freeze({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] })
       const stageStep = { step_id: 713, state }
       const adapter = { backgroundManager: manager, width: 1280, height: 720,
         setCameraFilter() {}, applyBgEffects() {},
-        setBgBlur: manager.setBgBlur.bind(manager), setBgColorOverlay: manager.setBgColorOverlay.bind(manager) }
+        setBgBlur: manager.setBgBlur.bind(manager), setBgColor: manager.setBgColor.bind(manager) }
       now = 500; applyStepSceneState({ manager: adapter, step: stageStep, state, nowMilliseconds: () => now })
       now = time * 1000; tick()
       const projected = query(input, time, context).backgroundFilters
       assert.equal(projected.status, 'projected'); close(projected.blur, manager._bgBlurAmount)
-      assert.equal(projected.overlay.visible, !!manager._bgOverlaySprite.parent)
-      if (projected.overlay.visible) {
-        assert.equal(projected.overlay.tint, manager._bgOverlaySprite.tint)
-        close(projected.overlay.alpha, manager._bgOverlaySprite.alpha)
-      }
+      assert.equal(projected.color, manager._bgColor); assert.equal(sprite.tint, projected.color)
       const capture = (overrides = {}) => captureProjectorShadow({ scenario: input, stepIndex: 0,
         stageStep, manager: adapter, runtime: { clock: { time }, entries: [] }, ...overrides })
       assert.equal(capture().channels.backgroundFilters.status, 'match')
@@ -200,7 +189,7 @@ try {
       assert.deepEqual(query(input, time, context).backgroundFilters, projected)
       manager._bgBlurTween?.cancel(); manager._bgColorTween?.cancel()
       assert.equal(capture().channels.backgroundFilters.status, 'not-comparable', 'cancelled invocation cannot remain a valid source')
-      manager.clearBgColorOverlay(); manager._bgOverlaySprite.destroy(); sprite.destroy({ texture: true, baseTexture: true })
+      manager.clearBgColor(); sprite.destroy({ texture: true, baseTexture: true })
       filterComparisons++
     }
   }

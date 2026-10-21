@@ -458,7 +458,7 @@ function verifyNavigationOverlayReset() {
     setBackground: () => {},
     clearBackground: () => {},
     setBgBlur: () => {},
-    setBgColorOverlay: () => {},
+    setBgColor: () => {},
     resetCameraZoom: () => {},
     clearScreenFade: () => {},
   }
@@ -478,7 +478,7 @@ function verifyRetiredLegacyOwners() {
     setCameraFilter: () => calls.push('camera-filter'),
     applyBgEffects: () => calls.push('background-effects'),
     setBgBlur: () => calls.push('background-blur'),
-    setBgColorOverlay: () => calls.push('background-color'),
+    setBgColor: () => calls.push('background-color'),
     setBackground: () => calls.push('legacy-background'),
     clearBackground: () => calls.push('legacy-background-clear'),
     setCameraZoom: () => calls.push('legacy-camera'),

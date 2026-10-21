@@ -1,13 +1,22 @@
 import * as PIXI from 'pixi.js'
 import { BackgroundEffectManager } from './BackgroundEffectManager.js'
-import { easeOutCubic, runRafTween } from './rafTween.js'
+import { runRafTween } from './rafTween.js'
 import { backgroundPanelRect } from '../../shared/story/AdvStageLayout.js'
+import {
+  backgroundBlurAlpha,
+  backgroundBlurTarget,
+  backgroundColorValue,
+  cameraBlurAlpha,
+  gaussianBlurFragment,
+  lerpBackgroundColor,
+} from '../../shared/story/BackgroundBlur.js'
 
 export class BackgroundManager {
   constructor({
     app,
     bgContainer,
     bgEffectContainer,
+    nearEffectContainer = null,
     getWidth,
     getHeight,
     getBgUrl,
@@ -26,13 +35,18 @@ export class BackgroundManager {
 
     this._bgTransitionToken = 0
     this._bgTransition = null
-    this._blurFilter = null
+    this._blurPasses = null
+    // _bgBlurAmount is the SetOffsetBlur value, _bgOffsetBlur its last completed target and _bgBlurAlpha
+    // the CanvasGroup alpha last written by either the offset blur or a camera move.
     this._bgBlurAmount = 0
+    this._bgOffsetBlur = 0
+    this._bgBlurTarget = 0
+    this._bgBlurAlpha = 0
     this._bgBlurTween = null
+    this._bgColor = 0xFFFFFF
+    this._bgColorTarget = 0xFFFFFF
     this._bgColorTween = null
-    this._bgOverlaySprite = null
-    this._bgOverlayColor = 0xFFFFFF
-    this.effects = new BackgroundEffectManager({ app, bgEffectContainer, getWidth, getHeight,
+    this.effects = new BackgroundEffectManager({ app, bgEffectContainer, nearEffectContainer, getWidth, getHeight,
       loadTextureFromUrl: url => loadTextureFromUrl(url, { allowFallback: false }),
     })
   }
@@ -40,10 +54,6 @@ export class BackgroundManager {
   handleResize() {
     if (this.bgSprite) {
       this._applyBgCover(this.bgSprite)
-    }
-    if (this._bgOverlaySprite) {
-      this._bgOverlaySprite.width = this.getWidth()
-      this._bgOverlaySprite.height = this.getHeight()
     }
     this._resizeBgEffects()
   }
@@ -105,9 +115,11 @@ export class BackgroundManager {
       const newSprite = new PIXI.Sprite(texture)
       this._applyBgCover(newSprite)
       newSprite.alpha = 0
+      newSprite.tint = this._bgColor
       this.bgContainer.addChild(newSprite)
       this.bgSprite = newSprite
       record.newSprite = newSprite
+      this._syncBlurLayer(newSprite)
 
       const delayMs = record.settleOnLoad ? 0 : Math.max(0, Number(transition?.delay || 0)) * 1000
       const durationSeconds = record.settleOnLoad ? 0 : transition?.duration == null ? 0.5 : Number(transition.duration)
@@ -162,8 +174,7 @@ export class BackgroundManager {
     this._bgTransitionToken++
     record.controller?.abort()
     if (record.tickerFn) this.app.ticker.remove(record.tickerFn)
-    if (record.newSprite?.parent) this.bgContainer.removeChild(record.newSprite)
-    record.newSprite?.destroy?.({ texture: true })
+    this._destroyBgSprite(record.newSprite)
     if (record.oldSprite && !record.oldSprite.destroyed) {
       record.oldSprite.alpha = 1
       this.bgSprite = record.oldSprite
@@ -181,10 +192,7 @@ export class BackgroundManager {
     if (!record || this._bgTransition !== record) return
     if (record.tickerFn) this.app.ticker.remove(record.tickerFn)
     record.newSprite.alpha = 1
-    if (record.oldSprite?.parent) {
-      this.bgContainer.removeChild(record.oldSprite)
-      record.oldSprite.destroy({ texture: true })
-    }
+    if (record.oldSprite?.parent) this._destroyBgSprite(record.oldSprite)
     this.bgSprite = record.newSprite
     this.currentBgId = record.newBgId
     this._bgTransition = null
@@ -195,173 +203,159 @@ export class BackgroundManager {
     this.cancelBackgroundTransition()
     this._bgTransitionToken++
     this.currentBgId = null
-    if (this.bgSprite) {
-      if (this.bgSprite.parent) {
-        this.bgContainer.removeChild(this.bgSprite)
-      }
-      this.bgSprite.destroy({ texture: true })
-      this.bgSprite = null
-    }
+    this._destroyBgSprite(this.bgSprite)
+    this.bgSprite = null
   }
 
+  /** image_bg_dof: SetOffsetBlur lerps linearly from the previous amount target after the delay. */
   setBgBlur(amount, duration = 0, delay = 0, nowMilliseconds) {
-    const target = Math.max(0, Number(amount || 0))
-    const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    const delayMs = Math.max(0, Number(delay || 0)) * 1000
+    const target = backgroundBlurTarget(amount)
+    const durationMs = Math.max(0, Number(duration) || 0) * 1000
+    const delayMs = Math.max(0, Number(delay) || 0) * 1000
+    // Cumulative snapshots repeat the settled amount; only a new command restarts SetOffsetBlur, so a
+    // camera-written alpha survives until then.
+    if (target === this._bgBlurTarget && durationMs === 0 && delayMs === 0) return
     this._bgBlurTween?.cancel?.()
-    const apply = (value) => {
-      this._bgBlurAmount = value
-      if (value > 0.01) {
-        this._ensureBgBlurFilter()
-        this._blurFilter.blur = value
-      } else {
-        this._bgBlurAmount = 0
-        this.clearBgBlur()
-      }
+    this._bgBlurTween = null
+    this._bgBlurTarget = target
+    const from = this._bgOffsetBlur
+    const finish = () => {
+      this._bgOffsetBlur = target
+      this._setOffsetBlur(target)
     }
-    if (durationMs > 0 || delayMs > 0) {
-      this._bgBlurTween = runRafTween({
-        nowMilliseconds,
-        durationMs,
-        delayMs,
-        startValue: this._bgBlurAmount || 0,
-        endValue: target,
-        ease: easeOutCubic,
-        onUpdate: apply,
-      })
-    } else {
-      apply(target)
+    if (durationMs === 0 && delayMs === 0) {
+      finish()
+      return
     }
+    this._bgBlurTween = runRafTween({
+      nowMilliseconds,
+      durationMs,
+      delayMs,
+      startValue: from,
+      endValue: target,
+      ease: t => t,
+      onUpdate: value => this._setOffsetBlur(value),
+      // The finished handle stays readable for the projector shadow's origin check.
+      onComplete: finish,
+    })
   }
 
-  _ensureBgBlurFilter() {
-    if (!this._blurFilter) {
-      this._blurFilter = new PIXI.BlurFilter()
-      this._blurFilter.quality = 4
-      this._blurFilter.resolution = this.app.renderer.resolution
-      this._blurFilter.padding = 0
-    }
-    if (this.bgSprite) {
-      this.bgSprite.filters = this.bgSprite.filters || []
-      if (!this.bgSprite.filters.includes(this._blurFilter)) {
-        this.bgSprite.filters.push(this._blurFilter)
-      }
-    }
-  }
-
-  setBgBlurInstant(amount) {
-    const value = Math.max(0, Number(amount || 0))
-    if (value > 0) {
-      if (!this._blurFilter) {
-        this._blurFilter = new PIXI.BlurFilter()
-        this._blurFilter.quality = 4
-        this._blurFilter.resolution = this.app.renderer.resolution
-        this._blurFilter.padding = 0
-      }
-      this._blurFilter.blur = value
-      this._bgBlurAmount = value
-      if (this.bgSprite) {
-        this.bgSprite.filters = this.bgSprite.filters || []
-        if (!this.bgSprite.filters.includes(this._blurFilter)) {
-          this.bgSprite.filters.push(this._blurFilter)
-        }
-      }
-    } else {
-      this.clearBgBlur()
-    }
+  /** StoryCamera.BlurBackGround: a camera move frame overwrites the blur alpha. */
+  setCameraBlur(zoom) {
+    this._setBlurAlpha(cameraBlurAlpha(zoom))
   }
 
   clearBgBlur() {
-    this._bgBlurAmount = 0
-    if (this._blurFilter && this.bgSprite?.filters) {
-      this.bgSprite.filters = this.bgSprite.filters.filter(f => f !== this._blurFilter)
-      if (this.bgSprite.filters.length === 0) this.bgSprite.filters = null
-    }
+    this._bgBlurTween?.cancel?.()
+    this._bgBlurTween = null
+    this._bgBlurTarget = 0
+    this._bgOffsetBlur = 0
+    this._setOffsetBlur(0)
   }
 
-  setBgColorOverlay(hexColor, duration = 0, delay = 0, nowMilliseconds) {
-    this._bgColorTween?.cancel?.()
+  _setOffsetBlur(value) {
+    this._bgBlurAmount = value
+    this._setBlurAlpha(backgroundBlurAlpha(value))
+  }
 
-    if (!hexColor || (typeof hexColor === 'string' && hexColor.toUpperCase() === '#FFFFFF')) {
-      if (duration > 0 && this._bgOverlaySprite && this._bgOverlaySprite.parent) {
-        const durationMs = Math.max(0, Number(duration)) * 1000
-        const delayMs = Math.max(0, Number(delay)) * 1000
-        const startAlpha = this._bgOverlaySprite.alpha
-        this._bgColorTween = runRafTween({
-          nowMilliseconds,
-          durationMs,
-          delayMs,
-          startValue: startAlpha,
-          endValue: 0,
-          ease: t => 1 - Math.pow(1 - t, 3),
-          onUpdate: (alpha) => {
-            if (this._bgOverlaySprite) this._bgOverlaySprite.alpha = Math.max(0, alpha)
-          },
-          onComplete: () => this.clearBgColorOverlay(),
-        })
-      } else {
-        this.clearBgColorOverlay()
-      }
+  _setBlurAlpha(alpha) {
+    this._bgBlurAlpha = alpha
+    for (const sprite of this._backgroundSprites()) this._syncBlurLayer(sprite)
+  }
+
+  _backgroundSprites() {
+    const record = this._bgTransition
+    return [...new Set([this.bgSprite, record?.oldSprite, record?.newSprite])].filter(sprite => sprite && !sprite.destroyed)
+  }
+
+  // The blurred image is created on first use and lives as a child of its sharp sprite, so the cover
+  // geometry, cross-fade and disposal follow the background.
+  _syncBlurLayer(sprite) {
+    let layer = sprite._nativeBlurLayer
+    if (!layer && this._bgBlurAlpha > 0) {
+      const texture = this._createBlurTexture(sprite.texture)
+      if (!texture) return
+      layer = new PIXI.Sprite(texture)
+      layer.width = sprite.texture.width
+      layer.height = sprite.texture.height
+      sprite.addChild(layer)
+      sprite._nativeBlurLayer = layer
+    }
+    if (!layer) return
+    layer.alpha = this._bgBlurAlpha
+    layer.visible = this._bgBlurAlpha > 0
+    layer.tint = this._bgColor
+  }
+
+  _createBlurTexture(texture) {
+    const renderer = this.app?.renderer
+    if (!renderer || !texture?.valid) return null
+    const width = Math.floor(texture.width), height = Math.floor(texture.height)
+    if (!this._blurPasses) {
+      const fragment = gaussianBlurFragment()
+      this._blurPasses = [[1, 0], [0, 1]].map(direction => {
+        const pass = new PIXI.Filter(undefined, fragment, { uDirection: new Float32Array(direction) })
+        pass.resolution = 1
+        pass.padding = 0
+        return pass
+      })
+    }
+    const source = new PIXI.Sprite(texture)
+    source.width = width
+    source.height = height
+    source.filters = this._blurPasses
+    source.filterArea = new PIXI.Rectangle(0, 0, width, height)
+    const output = PIXI.RenderTexture.create({ width, height, resolution: 1 })
+    renderer.render(source, { renderTexture: output, clear: true })
+    source.filters = null
+    source.destroy()
+    return output
+  }
+
+  _destroyBgSprite(sprite) {
+    if (!sprite || sprite.destroyed) return
+    if (sprite.parent) sprite.parent.removeChild(sprite)
+    sprite._nativeBlurLayer?.destroy({ texture: true, baseTexture: true })
+    sprite._nativeBlurLayer = null
+    sprite.destroy({ texture: true })
+  }
+
+  /** image_bg_color: Color.Lerp of both images from the current colour after the delay. */
+  setBgColor(hexColor, duration = 0, delay = 0, nowMilliseconds) {
+    const target = backgroundColorValue(hexColor) ?? 0xFFFFFF
+    const durationMs = Math.max(0, Number(duration) || 0) * 1000
+    const delayMs = Math.max(0, Number(delay) || 0) * 1000
+    if (target === this._bgColorTarget && durationMs === 0 && delayMs === 0) return
+    this._bgColorTween?.cancel?.()
+    this._bgColorTween = null
+    this._bgColorTarget = target
+    if (durationMs === 0 && delayMs === 0) {
+      this._applyBgColor(target)
       return
     }
-
-    const targetColor = parseInt(hexColor.replace('#', ''), 16)
-    const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    const delayMs = Math.max(0, Number(delay || 0)) * 1000
-    if (!this._bgOverlaySprite) {
-      this._bgOverlaySprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-      this._bgOverlaySprite.blendMode = PIXI.BLEND_MODES.MULTIPLY
-    }
-    if (!this._bgOverlaySprite.parent) {
-      this.bgContainer.addChild(this._bgOverlaySprite)
-      this._bgOverlaySprite.tint = 0xFFFFFF
-      this._bgOverlayColor = 0xFFFFFF
-    }
-    this._bgOverlaySprite.alpha = 0.85
-    this._bgOverlaySprite.width = this.getWidth()
-    this._bgOverlaySprite.height = this.getHeight()
-    const startColor = this._bgOverlayColor ?? 0xFFFFFF
-    const startRgb = this._hexToRgb(startColor)
-    const targetRgb = this._hexToRgb(targetColor)
-    const apply = (rgb) => {
-      const color = this._rgbToHex(rgb)
-      this._bgOverlayColor = color
-      this._bgOverlaySprite.tint = color
-    }
-    if (durationMs > 0 || delayMs > 0) {
-      this._bgColorTween = runRafTween({
-        nowMilliseconds,
-        durationMs,
-        delayMs,
-        startValue: 0,
-        endValue: 1,
-        ease: easeOutCubic,
-        onUpdate: (t) => {
-          apply({
-            r: startRgb.r + (targetRgb.r - startRgb.r) * t,
-            g: startRgb.g + (targetRgb.g - startRgb.g) * t,
-            b: startRgb.b + (targetRgb.b - startRgb.b) * t,
-          })
-        },
-      })
-    } else {
-      apply(targetRgb)
-    }
+    const from = this._bgColor
+    this._bgColorTween = runRafTween({
+      nowMilliseconds,
+      durationMs,
+      delayMs,
+      ease: t => t,
+      onUpdate: t => this._applyBgColor(lerpBackgroundColor(from, target, t)),
+    })
   }
 
-  clearBgColorOverlay() {
-    this._bgOverlayColor = 0xFFFFFF
-    if (this._bgOverlaySprite && this._bgOverlaySprite.parent) {
-      this.bgContainer.removeChild(this._bgOverlaySprite)
+  clearBgColor() {
+    this._bgColorTween?.cancel?.()
+    this._bgColorTween = null
+    this._bgColorTarget = 0xFFFFFF
+    this._applyBgColor(0xFFFFFF)
+  }
+
+  _applyBgColor(color) {
+    this._bgColor = color
+    for (const sprite of this._backgroundSprites()) {
+      sprite.tint = color
+      if (sprite._nativeBlurLayer) sprite._nativeBlurLayer.tint = color
     }
-  }
-
-  _hexToRgb(color) {
-    return { r: (color >> 16) & 255, g: (color >> 8) & 255, b: color & 255 }
-  }
-
-  _rgbToHex({ r, g, b }) {
-    return ((Math.round(r) & 255) << 16) | ((Math.round(g) & 255) << 8) | (Math.round(b) & 255)
   }
 
   applyBgEffects(effects = [], bgProfile = null, nowMilliseconds) {
@@ -403,11 +397,9 @@ export class BackgroundManager {
     this._bgColorTween = null
     this.clearBackground()
     this.clearBgBlur()
-    this.clearBgColorOverlay()
-    this._bgOverlaySprite?.destroy({ texture: false, baseTexture: false })
-    this._bgOverlaySprite = null
-    this._blurFilter?.destroy?.()
-    this._blurFilter = null
+    this.clearBgColor()
+    this._blurPasses?.forEach(pass => pass.destroy())
+    this._blurPasses = null
     this.effects?.destroy()
     this.effects = null
   }

@@ -730,6 +730,12 @@
         "bgm_stop_fade": { "type": ["number", "null"] },
         "bgm_volume": { "type": "number" },
         "camera_filter": { "type": ["string", "null"] },
+        "camera_filter_transition": {
+          "anyOf": [
+            { "$ref": "#/$defs/durationTransition" },
+            { "type": "null" }
+          ]
+        },
         "camera_zoom": {
           "anyOf": [
             { "$ref": "#/$defs/cameraPayload" },

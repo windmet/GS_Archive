@@ -150,7 +150,7 @@ try {
     active.getWidth = () => 1280; active.getHeight = () => 720; active.spineContainer = { x: 0, y: 0 }
     active.app = { stage: root, ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) } }
     active._loadEffectTexture = async () => texture
-    active.setCameraFilter = active.setBgBlur = active.setBgColorOverlay = () => {}
+    active.setCameraFilter = active.setBgBlur = active.setBgColor = () => {}
     active.applyBgEffects = () => {}
     const clock = new StoryClock({ nowMilliseconds: () => wall }); clock.start({ offset: 18 })
     applyStepSceneState({ manager: active, step: { step_id: id },
