@@ -684,16 +684,26 @@ class ScenarioCompiler(ScenarioFileIO):
         self._mark_stage_change()
 
     def _camera_color(self, vals: list):
-        """Values: [filter_name, delay, duration, ...] — e.g. ["gray", "0", "0"]"""
+        """Values: [filter_name, delay, duration, ...] — e.g. ["gray", "0", "0"].
+
+        StoryCamera.SetColorFilter waits the delay, then lerps the preset over the duration.
+        """
         if vals and vals[0]:
             self.state.camera_filter = vals[0]
+            self.state.camera_filter_transition = self._camera_filter_transition(vals, 1)
             self._extend_pending_text_disable_from_vals(vals, 1, 2)
             self._mark_stage_change()
 
     def _camera_defaultcolor(self, vals: list):
-        """Revert camera filter/color to default."""
+        """Revert camera filter/color to default. Values: [delay, duration, ...]."""
         self.state.camera_filter = None
+        self.state.camera_filter_transition = self._camera_filter_transition(vals, 0)
         self._mark_stage_change()
+
+    def _camera_filter_transition(self, vals: list, start: int) -> dict:
+        delay = self._safe_float(vals[start], 0.0) if len(vals) > start else 0.0
+        duration = self._safe_float(vals[start + 1], 0.0) if len(vals) > start + 1 else 0.0
+        return {"delay": max(0.0, delay), "duration": max(0.0, duration)}
 
     def _image_bg_dof(self, vals: list):
         """Background depth-of-field blur.
@@ -1777,6 +1787,7 @@ class ScenarioCompiler(ScenarioFileIO):
         self.state.bg_transition = None
         self.state.bg_dof_transition = None
         self.state.bg_color_transition = None
+        self.state.camera_filter_transition = None
         self.state.bgm_stop_fade = None
         self.state.environmental_duck_target = None
         self.state.clear_audio_delays()

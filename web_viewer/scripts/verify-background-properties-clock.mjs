@@ -20,7 +20,7 @@ try {
     getWidth: () => 1280, getHeight: () => 720,
   })
   const stage = Object.assign(Object.create(PixiStageManager.prototype), {
-    backgroundManager: manager, setCameraFilter: () => {}, applyBgEffects: () => {},
+    backgroundManager: manager, setCameraFilter: () => {}, setIdolBackgroundColorFilter: () => {}, applyBgEffects: () => {},
   })
   const clock = new StoryClock({ nowMilliseconds: () => wall }); clock.start({ offset: 9 })
   const apply = (color, dof) => applyStepSceneState({ manager: stage, step: { step_id: 'properties' },

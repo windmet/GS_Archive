@@ -12,7 +12,7 @@ const knownSnapshotFields = new Set(['bg', 'bg_effect', 'bg_effects', 'bg_transi
   'bgm', 'bgm_volume', 'bgm_stop_fade', 'se', 'se_events', 'environmental', 'environmental_volume',
   'environmental_duck_target', 'bgm_delay', 'bgm_stop_delay', 'environmental_stop_delay',
   'environmental_ducking_delay', 'spines', 'talk_mode', 'phone_mode', 'camera_zoom', 'screen_fade',
-  'screen_slide', 'screen_effects', 'camera_filter', 'bg_color', 'bg_dof', 'bg_color_transition',
+  'screen_slide', 'screen_effects', 'camera_filter', 'camera_filter_transition', 'bg_color', 'bg_dof', 'bg_color_transition',
   'bg_dof_transition', 'text_disabled', 'image_icon', 'screen_overlay'])
 
 /**

@@ -38,6 +38,7 @@ class ScenarioState:
         self.environmental_ducking_delay: Optional[float] = None
         # Visual filters (memory/flashback effects)
         self.camera_filter: Optional[str] = None   # e.g. "gray" from camera_color
+        self.camera_filter_transition: Optional[dict] = None
         self.bg_color: Optional[str] = None        # hex color overlay e.g. "#AAAAAA"
         self.bg_dof: Optional[float] = None        # depth-of-field blur amount
         self.bg_color_transition: Optional[dict] = None
@@ -160,6 +161,7 @@ class ScenarioState:
         self.screen_effects = []
         self.camera_zoom = None
         self.camera_filter = None
+        self.camera_filter_transition = None
         self.bg_color = None
         self.bg_dof = None
         self.bg_color_transition = None

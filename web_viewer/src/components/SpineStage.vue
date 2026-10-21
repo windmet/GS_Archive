@@ -512,6 +512,7 @@ watch(() => props.step, (step, oldStep) => {
       manager.clearBackground()
     }
     manager.setCameraFilter(null)
+    manager.setIdolBackgroundColorFilter?.(null)
     manager.clearBgBlur()
     manager.clearBgColorOverlay()
     manager.applyBgEffects?.([])

@@ -13,10 +13,9 @@ export function applyStepSceneState({
     lastScreenEffectsKey = ''
   }
 
-  manager.setCameraFilter(null)
+  manager.setCameraFilter(state.camera_filter || null, state.camera_filter_transition || null, nowMilliseconds)
+  manager.setIdolBackgroundColorFilter?.(state.bg_profile || null)
   manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null, nowMilliseconds)
-
-  if (state.camera_filter) manager.setCameraFilter(state.camera_filter)
 
   const bgDofTransition = state.bg_dof_transition || {}
   const bgColorTransition = state.bg_color_transition || {}

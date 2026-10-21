@@ -115,6 +115,7 @@ def _strip_transient_state(state: Any) -> dict[str, Any]:
         "bg_transition": None,
         "bg_dof_transition": None,
         "bg_color_transition": None,
+        "camera_filter_transition": None,
         "bgm_stop_fade": None,
         "environmental_duck_target": None,
         "bgm_delay": None,
