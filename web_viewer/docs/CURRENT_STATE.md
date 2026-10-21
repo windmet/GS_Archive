@@ -15,6 +15,8 @@
 | 正式站 | `gs-archive-preview.pages.dev`，仍是 10-12 的 `?view=` 版本（源码 `612f7519` 一线）。发布需用户授权 |
 | 测试站 | `preview.gs-archive.com` / `gs-architecture-device-test.gs-archive-preview.pages.dev`：源码 `126567c8`、release `2430ef3d`、data `fda1a54c`（2026-10-15）。部署记录见 [GS_ARCHIVE_TEST_DEPLOY_20261014.md](GS_ARCHIVE_TEST_DEPLOY_20261014.md) |
 
+10-21 R2 后续批次：已按用户清单清理 6 个旧 versions 前缀（28,413 对象 / 864,334,155 B），并上传 manifest 7f82de33 的 8,540 个对象，新数据版本 d1486597。实际桶占用 7,688,943,418 B。站点与 read-model 绑定仍为上表值；本批未部署。最新新增批次及下一次 baseline overlay 的使用方式见 [R2 批次记录](GS_ARCHIVE_R2_RELEASE_20261021.md)。
+
 ## 各条线
 
 | 线 | 当前分支 | 下一步 |
