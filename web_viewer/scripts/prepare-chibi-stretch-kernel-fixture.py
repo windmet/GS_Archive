@@ -68,7 +68,8 @@ def vertices(function,case):
         field(0x60+axis*0x20,case['velocity'][axis])
         field(0xc0+axis*0x20,case.get('animatedVelocity',[0,0,0])[axis])
     field(0x2a0,case['size']);field(0x2c0,case['size']);field(0x2e0,case['size'])
-    field(0x3c0,case.get('rotation',0))
+    # Rotation Z is +0x220. +0x3c0 is lifetime percentage, not rotation.
+    field(0x220,case.get('rotation',0))
     if case.get('packedContext'):
         # Include the real context/compact-renderer construction, not a guessed
         # set of independent context matrices. Camera remains a synthetic input.
