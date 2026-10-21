@@ -54,7 +54,7 @@ function setup() {
   bindStoryNavigation(app, context).stop()
   return { context, jobs, commits, errors, captures: () => captures, invalidate: navigation.invalidate }
 }
-// Stories a page owns redirect there (verify-story-navigation.mjs); the detail page, and the load races
+// Stories a page owns redirect there (the story navigation verifier covers that); the detail page, and the load races
 // below, are for a story no page owns, hence the made-up kinds.
 const detail = (file, domain = 'unowned', sectionId = '101') =>
   ({ story: { file, domain, sectionId }, view: { related: [], castReferences: [], promotedVisualUrl: '', readingEntries: [] } })
