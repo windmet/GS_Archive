@@ -222,6 +222,9 @@ def extract(mode='current', only=None, partial=False):
             if any(s.get('distanceRate') for s in systems):models[name]['distanceMotionProof']=distance_proof
             if name in PROMOTIONS['assets']:
                 w.require(not deferred and not any(s.get('partial') for s in systems) and len(systems)==PROMOTIONS['assets'][name]['systems'],'Promoted emitter source no longer passes the bounded profile: '+name)
+                expected=PROMOTIONS['assets'][name]
+                if 'sources' in expected:
+                    w.require(models[name]['bundleSha256']==expected['bundleSha256'] and [s['source'] for s in systems]==expected['sources'],'Promoted emitter source identity changed: '+name)
             if name in PROMOTIONS.get('previewAssets',{}):
                 expected=PROMOTIONS['previewAssets'][name]
                 w.require(not deferred and len(systems)==expected['systems'] and models[name]['bundleSha256']==expected['bundleSha256']

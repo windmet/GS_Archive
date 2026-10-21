@@ -135,14 +135,14 @@ const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,90)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,91)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
 assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)
 assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreography binding/)
 const unproven=structuredClone(data)
 delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
 assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),748)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),762)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -301,7 +301,7 @@ for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
   assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
   assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
 }
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,90)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,91)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const r of stretchProof.renderers) {
   const source=rawObjects.find(o=>o.asset===r.asset)
@@ -335,11 +335,12 @@ for(const [name,count] of Object.entries({fx_in_pavetl_crystal_1:15,fx_in_pavetl
 }
 const promotions=JSON.parse(read('scripts/fixtures/chibi-object-emitter-promotions.json'))
 assert.equal(promotions.objectIndexSha256,data.objectIndexSha256)
-assert.equal(Object.keys(promotions.assets).length,32)
-assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),166)
+assert.equal(Object.keys(promotions.assets).length,33)
+assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),180)
 for(const [name,expected] of Object.entries(promotions.assets)) {
   const model=data.assets[name]
   assert.equal(model.systems.length,expected.systems,name)
+  if(expected.sources){assert.equal(model.bundleSha256,expected.bundleSha256,name);assert.deepEqual(model.systems.map(s=>s.source),expected.sources,name)}
   assert.equal(model.deferred.length,0,name)
   assert.ok(model.systems.every(s=>!s.partial?.length),name)
   // Every newly admitted resource must actually emit, survive rewind, and retire after stop.
@@ -404,6 +405,31 @@ if(published) {
     }
   }
   assert.equal(windows,55,'All ten preview assets actual show/restart commands across every referencing arrangement')
+  const cloud=data.assets.fx_in_ossshd_panel
+  const arrangement=songs.find(s=>s.id==='ossshd_live_effect')
+  const events=arrangement.objectLayerEvents.filter(e=>e.asset==='fx_in_ossshd_panel')
+  assert.equal(events.length,1)
+  assert.equal(events[0].time,-2000,'Cloud starts before song zero')
+  assert.equal(events[0].hide,false)
+  assert.equal(cloud.masks.length,2)
+  const curved=cloud.systems.filter(s=>s.velocity)
+  assert.equal(curved.length,8)
+  for(const [i,system] of curved.entries()) {
+    assert.deepEqual(system.source,velocityProof.cases[i].source)
+    assert.deepEqual(['x','y','z'].map(axis=>system.velocity[axis]),velocityProof.cases[i].curves)
+    assert.deepEqual(system.lifetime,velocityProof.cases[i].lifetime)
+  }
+  for(const system of cloud.systems) {
+    for(const at of [0,10000,25000,72000]) {
+      const active=sampleObjectEmitter(system,at,-2000)
+      assert.ok(active.length>0,'Every cloud/glitter system must survive its actual pre-zero activation history')
+      assert.deepEqual(sampleObjectEmitter(structuredClone(system),at,-2000),active,'Cold cloud seek')
+    }
+    const before=sampleObjectEmitter(system,10000,-2000)
+    sampleObjectEmitter(system,72000,-2000)
+    assert.deepEqual(sampleObjectEmitter(system,10000,-2000),before,'Cloud rewind after many loops')
+    assert.equal(sampleObjectEmitter(system,26000,-2000,0).length,0,'Synthetic stop retires long-lived cloud without spawning later loops')
+  }
 }
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 90 provenance-bound resources / 748 consumed (56 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
+console.log('Object emitters: 91 provenance-bound resources / 762 consumed (56 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')

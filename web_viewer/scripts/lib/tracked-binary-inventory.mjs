@@ -198,6 +198,8 @@ function classify(relativePath) {
         ? '2026-10-20-native-suspension-sprites-001'
         : stageNativeTexture[1]==='stage-backmonitor-logos'
         ? '2026-10-19-native-backmonitor-logos-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ['bdac441632e29445db51ea8b','d8109e6ab1dd216f5cc8c6f4','2a934e4258f11b3d00f43841','5bf134aa0c50a48b4e174f88'].includes(logicalStem)
+        ? '2026-10-21-native-ossshd-panel-001'
         : stageNativeTexture[1]==='stage-object-emitters' && ['311c4f525f7c85111edfa035','3b5dc517006c69c8b7e9c383','70070f4d8534abe4033b757b','eaf6e6b1839545e535e4ecce'].includes(logicalStem)
         ? '2026-10-21-native-sakura-followup-001'
         : stageNativeTexture[1]==='stage-object-emitters' && ['732271f8d5859572f2fa1ef1','e0cf2224571e1c8f2b7a5389'].includes(logicalStem)
