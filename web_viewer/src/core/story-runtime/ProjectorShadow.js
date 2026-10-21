@@ -26,10 +26,7 @@ export function readProjectorActual(manager) {
   const timing = handle => !handle || handle.cancelled ? null : { started_at: handle.startedAtMilliseconds / 1000, sampled_at: handle.sampledAtMilliseconds == null ? null : handle.sampledAtMilliseconds / 1000 }
   return {
     backgroundTextures, backgroundGeometry,
-    backgroundFilters: background ? { blur: background._bgBlurAmount ?? 0,
-      overlay: background._bgOverlaySprite?.parent ? { visible: true,
-        tint: background._bgOverlaySprite.tint, alpha: background._bgOverlaySprite.alpha,
-        blendMode: background._bgOverlaySprite.blendMode === 2 ? 'multiply' : background._bgOverlaySprite.blendMode } : { visible: false } } : null,
+    backgroundFilters: background ? { blur: background._bgBlurAmount ?? 0, color: background._bgColor ?? 0xFFFFFF } : null,
     backgroundFilterTransitionActive: [background?._bgBlurTween, background?._bgColorTween].some(tween => tween?.rafId != null && !tween.cancelled),
     timing: { camera: timing(manager.cameraController?._cameraTween), fade: timing(manager._screenFadeTween), wipe: timing(manager._screenSlideTween) },
     background: background ? { layers, pending_texture: !!transition && !transition.newSprite,
@@ -93,12 +90,12 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
   delete basis.backgroundFilterOrigins
   if (filterOriginMatches && Number.isFinite(sceneTimeOffset) && context.cuePolicy !== 'suppressed') {
     basis.backgroundFilterOrigins = {}
-    for (const [channel, name] of [['blur', '_bgBlurTween'], ['overlay', '_bgColorTween']]) {
+    for (const [channel, name] of [['blur', '_bgBlurTween'], ['color', '_bgColorTween']]) {
       const handle = filterRecord.handles[channel]
       if (handle && handle === manager.backgroundManager[name] && !handle.cancelled) {
         basis.backgroundFilterOrigins[channel] = { from: structuredClone(filterRecord.from[channel]), startedAt: handle.startedAtMilliseconds / 1000 - sceneTimeOffset }
       } else if (!handle && manager.backgroundManager[name] === filterRecord.observedHandles[channel] && Number.isFinite(filterRecord.calledAt[channel])) {
-        // A white target with no existing overlay creates no tween at all.
+        // A repeated target without timing creates no tween at all.
         basis.backgroundFilterOrigins[channel] = { from: structuredClone(filterRecord.from[channel]), startedAt: filterRecord.calledAt[channel] / 1000 - sceneTimeOffset }
       }
     }
@@ -136,7 +133,7 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     const delta = differences(expected.backgroundGeometry.layers, actual.backgroundGeometry)
     samples.backgroundGeometry = { status: delta.length ? 'difference' : 'match', differences: delta }
   }
-  const activeFilterOriginsOwned = filterOriginMatches && [['blur', '_bgBlurTween'], ['overlay', '_bgColorTween']].every(([channel, name]) => {
+  const activeFilterOriginsOwned = filterOriginMatches && [['blur', '_bgBlurTween'], ['color', '_bgColorTween']].every(([channel, name]) => {
     const handle = manager.backgroundManager?.[name]
     return !handle || handle.rafId == null || handle.cancelled ||
       (filterRecord.handles[channel] === handle && !!basis.backgroundFilterOrigins?.[channel])
@@ -146,8 +143,8 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     : actual.backgroundFilterTransitionActive && !activeFilterOriginsOwned ? 'filter-transition-active' : null
   if (filterReason) samples.backgroundFilters = { status: 'not-comparable', reason: filterReason }
   else {
-    const { blur, overlay } = expected.backgroundFilters
-    const delta = differences({ blur, overlay }, actual.backgroundFilters)
+    const { blur, color } = expected.backgroundFilters
+    const delta = differences({ blur, color }, actual.backgroundFilters)
     samples.backgroundFilters = { status: delta.length ? 'difference' : 'match', differences: delta }
   }
   const tintSamples = expected.spineTints.entries.map(tint => {

@@ -21,21 +21,17 @@ export function applyStepSceneState({
   const bgColorTransition = state.bg_color_transition || {}
   const background = manager.backgroundManager
   const previousBlurTween = background?._bgBlurTween, previousColorTween = background?._bgColorTween
-  const filterFrom = background ? {
-    blur: background._bgBlurAmount || 0,
-    overlay: background._bgOverlaySprite?.parent ? { visible: true,
-      tint: background._bgOverlaySprite.tint, alpha: background._bgOverlaySprite.alpha } : { visible: false },
-  } : null
-  const keepHeartVoiceBlur = state.bg_color && state.bg_color !== '#FFFFFF'
+  // SetOffsetBlur starts from the previous amount target; image_bg_color from the current colour.
+  const filterFrom = background ? { blur: background._bgOffsetBlur ?? 0, color: background._bgColor ?? 0xFFFFFF } : null
   const blurCalledAt = nowMilliseconds?.()
   manager.setBgBlur(
-    keepHeartVoiceBlur && state.bg_dof ? state.bg_dof * 6 : 0,
+    state.bg_dof ?? null,
     bgDofTransition.duration ?? 0,
     bgDofTransition.delay ?? 0,
     nowMilliseconds,
   )
-  const overlayCalledAt = nowMilliseconds?.()
-  manager.setBgColorOverlay(
+  const colorCalledAt = nowMilliseconds?.()
+  manager.setBgColor(
     state.bg_color || null,
     bgColorTransition.duration ?? 0,
     bgColorTransition.delay ?? 0,
@@ -45,11 +41,11 @@ export function applyStepSceneState({
     // One bounded diagnostic record, bound to the actual projected step object.
     // Capture before setters; never infer an origin from a later sampled value.
     const blur = background._bgBlurTween !== previousBlurTween ? background._bgBlurTween : null
-    const overlay = background._bgColorTween !== previousColorTween ? background._bgColorTween : null
+    const color = background._bgColorTween !== previousColorTween ? background._bgColorTween : null
     background._projectorFilterInvocation = { step, state: Object.fromEntries(
       ['bg_color', 'bg_dof', 'bg_color_transition', 'bg_dof_transition'].map(key => [key, state[key] == null ? null : JSON.parse(JSON.stringify(state[key]))])),
-      from: filterFrom, handles: { blur, overlay }, calledAt: { blur: blurCalledAt, overlay: overlayCalledAt },
-      observedHandles: { blur: background._bgBlurTween, overlay: background._bgColorTween } }
+      from: filterFrom, handles: { blur, color }, calledAt: { blur: blurCalledAt, color: colorCalledAt },
+      observedHandles: { blur: background._bgBlurTween, color: background._bgColorTween } }
   }
 
   const screenEffects = (state.screen_effects || [])

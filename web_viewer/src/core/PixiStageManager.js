@@ -130,6 +130,7 @@ export class PixiStageManager {
       spineContainer: this.spineContainer,
       getWidth: () => this.width,
       getHeight: () => this.height,
+      onCameraMove: zoom => this.backgroundManager?.setCameraBlur(zoom),
     })
     this.cameraColorFilter = new ColorFilterController({ app: this.app, getTarget: () => this.app?.stage })
     this.idolColorFilter = new ColorFilterController({ app: this.app, getTarget: () => this.spineContainer })
@@ -454,32 +455,24 @@ export class PixiStageManager {
     return this.backgroundManager?.setBgBlur(amount, duration, delay, nowMilliseconds)
   }
 
-  _ensureBgBlurFilter() {
-    return this.backgroundManager?._ensureBgBlurFilter()
-  }
-
-  setBgBlurInstant(amount) {
-    return this.backgroundManager?.setBgBlurInstant(amount)
-  }
-
   clearBgBlur() {
     return this.backgroundManager?.clearBgBlur()
   }
 
-  setBgColorOverlay(hexColor, duration = 0, delay = 0, nowMilliseconds) {
-    return this.backgroundManager?.setBgColorOverlay(hexColor, duration, delay, nowMilliseconds)
+  setBgColor(hexColor, duration = 0, delay = 0, nowMilliseconds) {
+    return this.backgroundManager?.setBgColor(hexColor, duration, delay, nowMilliseconds)
   }
 
-  clearBgColorOverlay() {
-    return this.backgroundManager?.clearBgColorOverlay()
+  clearBgColor() {
+    return this.backgroundManager?.clearBgColor()
   }
 
   _hexToRgb(color) {
-    return this.backgroundManager?._hexToRgb(color)
+    return { r: (color >> 16) & 255, g: (color >> 8) & 255, b: color & 255 }
   }
 
-  _rgbToHex(rgb) {
-    return this.backgroundManager?._rgbToHex(rgb)
+  _rgbToHex({ r, g, b }) {
+    return ((Math.round(r) & 255) << 16) | ((Math.round(g) & 255) << 8) | (Math.round(b) & 255)
   }
 
   applyBgEffects(effects = [], bgProfile = null, nowMilliseconds) {
