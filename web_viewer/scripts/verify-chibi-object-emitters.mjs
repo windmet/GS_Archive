@@ -18,6 +18,50 @@ for(const c of velocityProof.cases)for(const [i,phase] of c.phases.entries())for
   assert.ok(Math.abs(sampleObjectCurve(curve,phase,0)-c.expected[i][axis])<2e-7,'RAW-bound native Velocity worker sample')
 }
 const stretchProof=JSON.parse(read('scripts/fixtures/chibi-stretch-kernel-native.json'))
+const spatialContext=JSON.parse(read('scripts/fixtures/chibi-spatial-context-native.json'))
+assert.equal(spatialContext.unityDataSha256,stretchProof.cameraBinding.unityDataSha256)
+assert.deepEqual(spatialContext.camera.chain,stretchProof.cameraBinding.chain)
+assert.deepEqual(spatialContext.cameraScript.gameObject,spatialContext.camera.gameObject)
+assert.deepEqual(spatialContext.stage.base,spatialContext.container.parent,'Container must bind the exact LiveStage Base, not a similarly named object')
+assert.deepEqual(spatialContext.container.chain.slice(1),spatialContext.stage.chain)
+assert.deepEqual(spatialContext.camera.chain.slice(1),spatialContext.stage.chain.slice(1),'Camera and Stage are siblings below the same parent')
+for(const entry of spatialContext.instructionWindows)assert.equal(sha(Buffer.from(entry.bytes,'hex')),entry.sha256)
+for(const entry of Object.values(spatialContext.constants))assert.equal(Buffer.from(entry.bytes,'hex').readFloatLE(),entry.value)
+assert.deepEqual(spatialContext.basePos,[0,360,0])
+assert.equal(spatialContext.constants.pixelToStage.value,Math.fround(.01))
+assert.equal(spatialContext.constants.scriptDivisor.value,100)
+assert.equal(spatialContext.constants.wideStageScale.value,Math.fround(1000/720))
+for(const [key,z] of [['camera',2],['stage',4],['container',14]]) {
+  const chain=spatialContext[key].chain
+  assert.ok(chain.every(t=>t.rotation.x===0&&t.rotation.y===0&&t.rotation.z===0&&t.rotation.w===1&&t.scale.z===1))
+  assert.equal(chain.reduce((sum,t)=>sum+t.position.z,0),z,'Serialized initial depth only, not a runtime constant')
+}
+assert.equal(spatialContext.arrangement.cameraEvents.length,152)
+assert.ok(spatialContext.arrangement.cameraEvents.every(e=>!e.focusSlot),'This bound pfofos track uses the free-camera branch')
+assert.equal(spatialContext.arrangement.fireEvents.length,200)
+const cameraMatrixProof=JSON.parse(read('scripts/fixtures/chibi-camera-matrix-native.json'))
+assert.equal(cameraMatrixProof.binarySha256,stretchProof.binarySha256)
+assert.equal(cameraMatrixProof.sourceContextSha256,sha(read('scripts/fixtures/chibi-spatial-context-native.json')))
+assert.equal(cameraMatrixProof.cases.length,153)
+for(const window of cameraMatrixProof.instructionWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+assert.equal(cameraMatrixProof.pixelToCamera,Math.fround(spatialContext.constants.wideStageScale.value/100))
+let cameraMatrixError=0
+for(const c of cameraMatrixProof.cases) {
+  const event=c.eventIndex<0?null:spatialContext.arrangement.cameraEvents[c.eventIndex]
+  assert.equal(c.time,event?.time??null)
+  assert.deepEqual(c.chain.slice(1),spatialContext.camera.chain.slice(1))
+  if(event) {
+    const x=event.reset?0:event.x,y=event.reset?360:event.y
+    assert.equal(c.chain[0].position.x,Math.fround(x*cameraMatrixProof.pixelToCamera))
+    assert.equal(c.chain[0].position.y,Math.fround((y-360)*cameraMatrixProof.pixelToCamera))
+    assert.equal(c.chain[0].position.z,0)
+  }
+  const q=c.chain[0].rotation,x=c.chain[0].position.x,y=c.chain[0].position.y
+  const co=1-2*q.z*q.z,si=2*q.w*q.z,z=c.chain.reduce((sum,t)=>sum+t.position.z,0)
+  const expected=[co,-si,0,0,si,co,0,0,0,0,-1,0,-co*x-si*y,si*x-co*y,z,1]
+  for(let i=0;i<16;i++)cameraMatrixError=Math.max(cameraMatrixError,Math.abs(c.expected[i]-expected[i]))
+}
+assert.ok(cameraMatrixError<2e-5,'Source camera target matrices retain native Z flip and world-to-local translation')
 const coneProof=JSON.parse(read('scripts/fixtures/chibi-cone-stretch-native.json'))
 assert.equal(coneProof.binarySha256,stretchProof.binarySha256)
 assert.equal(coneProof.objectIndexSha256,data.objectIndexSha256)
@@ -408,6 +452,10 @@ for(const [name,expected] of Object.entries(promotions.previewAssets)) {
 }
 if(published) {
   const songs=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs
+  assert.equal(sha(read('public/assets/live-chibi/choreography/index.json')),spatialContext.choreographySha256)
+  const spatialSong=songs.find(s=>s.id===spatialContext.arrangement.id)
+  assert.deepEqual(spatialSong.cameraEvents,spatialContext.arrangement.cameraEvents)
+  assert.deepEqual(spatialSong.objectLayerEvents.filter(e=>e.asset.startsWith('fx_in_pfofos_fire_')),spatialContext.arrangement.fireEvents)
   let windows=0
   for(const name of Object.keys(promotions.previewAssets)) {
     const references=songs.filter(s=>(s.objectLayerEvents||[]).some(e=>e.asset===name))
