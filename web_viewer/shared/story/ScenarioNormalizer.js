@@ -106,6 +106,7 @@ function stripLegacyTransientState(state) {
   settled.bg_transition = null
   settled.bg_dof_transition = null
   settled.bg_color_transition = null
+  settled.camera_filter_transition = null
   settled.bgm_stop_fade = null
   settled.environmental_duck_target = null
   settled.bgm_delay = null
