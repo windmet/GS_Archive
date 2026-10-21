@@ -45,4 +45,6 @@ Codex In-app Browser，本地 5213 / PID 70704、主 checkout、`rm-release-2026
 
 ## 保留边界
 
+批次提交 `d202c521` 后，普通合并 `origin/master` / `fc4baf45`（#75）为 `904e00d1`。该更新仅有 R2 历史记录与导出器 linked compiled 读取修正；没有在本舞台任务部署。合并后 emitter、发布台账、source-only 总基线、分片闭包与 preview transform 门禁补跑通过。
+
 来源组合证明的是 Camera 命令目标姿势，不是原生 tween 中间帧历史。消费者继续采用明确的 Web 参考时钟；原生随机出生/Noise、设备帧调度、实际遮挡和原片整场景等价均未证明。还有十种未接入资源，不能据本批标记舞台还原完成。
