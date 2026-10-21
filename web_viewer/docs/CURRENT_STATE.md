@@ -2,7 +2,7 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-21（舞台同步 master #60–#65；站点/R2 仍为历史记录，未重新验收）
+更新：2026-10-21（舞台成员槽序及烟雾续批，已同步 master #60–#65；站点/R2 仍为历史记录，未重新验收）
 
 ## 基线
 
@@ -22,7 +22,7 @@
 | 剧情 / ADV | PR #59 已合入 `master`（重编译候选工具 + 原生裸 wait 停顿，不含语料） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；晋升后才恢复翻译批次 |
 | 门户 portal | #60 / #61 / #62 / #65 已合入 `master`，后续分支从最新 master 开 | 盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定。启动 JS 预算已由 master 的导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，已同步 `origin/master` / `d2bbdf0a`（#60–#65）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族及 Sprite 参考时钟、mixed/内置分支边界。原片对照、30种无consumer粒子、旧悬灯9份partial仍开放 |
+| 舞台 stage | `stage/20261020-native-followup`，从 `e6cd9641` 新开，已同步 `origin/master` / `d2bbdf0a`（#60–#65）；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项加载策略见 [STAGE_LOAD_STRATEGY_20261020.md](STAGE_LOAD_STRATEGY_20261020.md)，同时继续缺家族及 Sprite 参考时钟、mixed/内置分支边界。原片对照、26种无consumer粒子、旧悬灯9份partial仍开放 |
 
 舞台线同日加载进度：[编舞目录与逐编排分片](STAGE_CHOREOGRAPHY_SHARDS_20261020.md)已接入当前舞台；118份来源/轨道等价、156项门禁通过。新分片为本地派生资源，后续发布必须纳入目录引用的全部118片；本轮没有部署。其他全局大索引与加载预算仍待推进。
 
@@ -43,6 +43,8 @@
 10-21 [Sprite 消费者续批](NATIVE_OBJECT_SPRITE_CONSUMER_20261021.md)已落实每个 renderer 的透明度、active 与存活 tween，覆盖上述 46 组；原生样本扩到 9 组（含零时长）并追加 3 条 RAW 参考轨道，首次 show / 初始 alpha 限制的隔离反例均归零。161/161 源码门禁、build:check、实际 SFC 接线回归及桌面/手机尺寸 Browser 通过。播放与 seek 共用明确的 Web 60 Hz 参考帧，保留 preview 边界；原设备帧历史、mixed/CanvasGroup、APK built-in 分支和原片对照仍开放。未部署。
 
 ## 未合入但保留的分支
+
+10-21 [mtples / pfofos烟雾续批](NATIVE_SMOKE_FOLLOWUP_20261021.md)接入四组、八个Noise预览系统，旧82组模型与95份纹理描述不变；无consumer粒子30→26，缺口事件413→369。真实32个show/restart窗口、RAW像素、发布依赖闭包及两首歌Browser通过，保留noise_preview和火焰等缺口。未部署。
 
 10-21 [原曲成员载入链路复核](NATIVE_ORIGINAL_LINEUP_AUDIT_20261021.md)之后已完成[固定曲消费者接入](NATIVE_ORIGINAL_LINEUP_CONSUMER_20261021.md)：13首显式序优先，41首组合默认序来自表2字段37，纠正24首编号回退并修复`yknkmh`隐藏槽。随后已核实[所选Unit的独立原生选组排序](NATIVE_SELECTED_UNIT_LINEUP_20261021.md)，48个编排按16组合字段37排序，纠正30个编排。舞台专用索引v2直接消费，冻结read-model未改；164项源码检查、build:check及2/3/5人实际Browser通过。原片/设备对照、原生库存卡及完整编队交互仍不在验收范围。未部署。
 
