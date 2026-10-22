@@ -45,6 +45,8 @@ const ROUTE_QUERY_KEYS = [
   'entity',
   'photo_idol',
   'photo',
+  'voices',
+  'sound',
   'gasha',
   'gasha_type',
   'rarity',
@@ -75,6 +77,7 @@ const VALID_VIEWS = new Set([
   'collection_catalog',
   'photo_catalog',
   'unused_archive',
+  'score_archive',
   'picture_studio',
   'gashas',
   'gasha_detail',
@@ -143,6 +146,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   collection_catalog: { section: 'collections', required: [] },
   photo_catalog: { section: 'photos', required: [] },
   unused_archive: { section: 'unused', required: [] },
+  score_archive: { section: 'scores', required: [] },
   picture_studio: { section: 'studio', required: [], fallback:'studio' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
@@ -161,7 +165,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
 })
 
 // Route sections that have a navigation entry; their names come from archiveSections.js.
-const ARCHIVE_NAVIGATION = Object.freeze(['home', 'stories', 'songs', 'idols', 'cards', 'gashas', 'interactions', 'events',
+const ARCHIVE_NAVIGATION = Object.freeze(['home', 'stories', 'songs', 'scores', 'idols', 'cards', 'gashas', 'interactions', 'events',
   'collections', 'honors', 'currencies', 'costumes', 'photos', 'unused', 'live', 'studio', 'resources']
   .map(id => Object.freeze({ id, label: sectionLabel(id) })))
 
@@ -387,6 +391,8 @@ export function normalizeArchiveRoute(input = {}) {
     ...(['photo_catalog','picture_studio'].includes(view) ? {
       photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : '',
       photoEntity:/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(input.photoEntity || '') ? input.photoEntity : ''} : {}),
+    ...((view === 'unused_archive' || (view === 'player' && clean(input.returnView) === 'unused_archive')) && /^[a-z][a-z-]{1,23}$/.test(input.voiceShelf || '') ? { voiceShelf: input.voiceShelf } : {}),
+    ...((view === 'score_archive' || (view === 'player' && clean(input.returnView) === 'score_archive')) && /^[a-z][a-z-]{1,23}$/.test(input.soundShelf || '') ? { soundShelf: input.soundShelf } : {}),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
@@ -616,6 +622,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (route.view === 'archive_status') return [home, { label: sectionLabel('resources') }]
   if (route.view === 'about') return [home, { label: sectionLabel('about') }]
   if (route.view === 'unused_archive') return [home, { label: sectionLabel('unused') }]
+  if (route.view === 'score_archive') return [home, { label: sectionLabel('scores') }]
   const storyRoot = { label: sectionLabel('stories'), route: breadcrumbRoute(route, 'story_catalog') }
   if (route.view === 'seasonal_campaign') return [home, storyRoot, current('季节企划', route.storySection)]
   if (route.view === 'work_archive') return [home, storyRoot, current(STORY_KINDS.work.label, route.idol)]
@@ -665,6 +672,7 @@ const SECTION_PATH_ROUTES = Object.freeze([
   Object.freeze({ view: 'collection_catalog', prefix: 'costumes', implied: { collection_kind: 'costumes' } }),
   Object.freeze({ view: 'photo_catalog', prefix: 'photos', implied: {} }),
   Object.freeze({ view: 'unused_archive', prefix: 'unused', implied: {} }),
+  Object.freeze({ view: 'score_archive', prefix: 'scores', implied: {} }),
 ])
 // Yamamura's office system lines preview in the player without a card (src/data/officeVoicePreviews.json).
 export const OFFICE_VOICE_CUE = /^4_1_101_0[0-2]_a\d{4}$/
@@ -781,6 +789,8 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     collection: { kind:params.get('collection_kind'), category:params.get('collection_category'), idol:params.get('collection_idol'), unit:params.get('collection_unit'), attribute:params.get('collection_attribute'), page:params.get('collection_page') },
     photoIdol: params.get('photo_idol'),
     photoEntity: params.get('photo'),
+    voiceShelf: params.get('voices'),
+    soundShelf: params.get('sound'),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
@@ -818,6 +828,8 @@ export function buildArchiveUrl(input, route) {
   }
   if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
   if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoEntity) url.searchParams.set('photo', normalized.photoEntity)
+  if (normalized.voiceShelf) url.searchParams.set('voices', normalized.voiceShelf)
+  if (normalized.soundShelf) url.searchParams.set('sound', normalized.soundShelf)
   if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)

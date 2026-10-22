@@ -12,7 +12,7 @@ export const ROUTE_SCHEMA = Object.freeze({
   collection_catalog: ['entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
   photo_catalog: ['photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type'], gasha_detail: ['gasha', 'parent', 'story_type', 'story_section'],
   song_catalog: ['song_scope'], song_detail: ['song'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
-  experiments: [], live: [], studio: [], about: [], unused_archive: [], archive_status: [], spine_lab: [],
+  experiments: [], live: [], studio: [], about: [], unused_archive: ['voices'], score_archive: ['sound'], archive_status: [], spine_lab: [],
   story_catalog: ['story_mode', 'story_type', 'event_scope', 'availability', 'sort', 'idol', 'q'],
   external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'idol'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
   seasonal_campaign: ['story_type', 'story_section', 'idol'], work_archive: ['idol', 'story', 'work_mode', 'story_type'],
@@ -38,7 +38,7 @@ export function ownedRouteParams(view, returnView = '') {
 // unchanged: older URLs with extra parameters still parse, and the next write drops them. Grow this set one
 // confirmed group at a time.
 export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
-  'about', 'unused_archive', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog',
+  'about', 'unused_archive', 'score_archive', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog',
   // Detail pages whose address is only their identity; list filters ride the history source, not the URL.
   'idol_detail', 'unit_detail', 'card_detail', 'song_detail',
   // Their address is only the event or gasha; the owned opened-from fields move to history state on write (archiveRoute.js).

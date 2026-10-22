@@ -89,6 +89,18 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     const old = readArchiveRoute('http://localhost/?view=idol_detail&idol=001tom&unit_filter=1&q=x&card=c&story_type=main', { history: false })
     assert.equal(old.view, 'idol_detail'); assert.equal(old.idol, '001tom')
     assert.equal(buildArchiveUrl('http://localhost/', old).search, '?view=idol_detail&category=idol&idol=001tom', 'an old idol link is shortened on write')
+    // 其他语音 keeps its shelf (?voices=) and nothing else; another view never carries it.
+    state.currentVoiceShelf.value = 'live-result'; state.view.value = 'unused_archive'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=unused_archive&voices=live-result')
+    assert.equal(readArchiveRoute('http://localhost/unused/?voices=live-result&q=x', { history: false }).voiceShelf, 'live-result')
+    state.view.value = 'cards'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).searchParams.has('voices'), false)
+    // 配乐 likewise keeps only its shelf (?sound=).
+    state.currentSoundShelf.value = 'se'; state.view.value = 'score_archive'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=score_archive&sound=se')
+    assert.equal(readArchiveRoute('http://localhost/scores/?sound=se&q=x', { history: false }).soundShelf, 'se')
+    state.view.value = 'cards'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).searchParams.has('sound'), false)
   }
   // A view outside the enforced set is unchanged by pruning.
   assert.ok(buildArchiveUrl('http://localhost/', { view: 'story_catalog', storyType: 'main', query: 'x' }).searchParams.has('story_type'))

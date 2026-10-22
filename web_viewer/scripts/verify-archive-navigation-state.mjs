@@ -32,7 +32,7 @@ navigation.currentScenarioEndStep.value = 12
 const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_collection', 'song_detail', '']
 let cases = 0
 for (const view of VALID_VIEWS) {
-  if (['portal', 'reader', 'welcome', 'idol_picker','collection_catalog','photo_catalog','event_catalog','picture_studio','chart_lab','live','studio','experiments','story_detail'].includes(view)) continue // New domain surfaces have their own identity contract.
+  if (['portal', 'reader', 'welcome', 'idol_picker','collection_catalog','photo_catalog','event_catalog','picture_studio','chart_lab','live','studio','experiments','story_detail','unused_archive','score_archive'].includes(view)) continue // New domain surfaces have their own identity contract (unused_archive's shelf: verify-route-schema).
   for (const returnView of contexts) {
     for (const parent of contexts) {
       navigation.view.value = view

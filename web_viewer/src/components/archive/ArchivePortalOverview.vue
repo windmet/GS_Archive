@@ -539,8 +539,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-directory button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-2);min-width:0;min-height:60px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
   .overview-directory button svg { width:22px;height:22px;color:var(--gs-ink-2); }
   .overview-directory button:active { background:var(--gs-mint-wash); }
-  /* A large phone fits five columns: the fifteen sections fill three rows with nothing left over. */
-  @container portal (min-width:540px) { .overview-directory { grid-template-columns:repeat(5,minmax(0,1fr)); } }
   .overview-panel { margin-top:var(--gs-space-8); }
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
