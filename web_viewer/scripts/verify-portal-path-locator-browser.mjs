@@ -373,10 +373,10 @@ try {
     if ((await loc()) !== path) break
   }
   await open('/?view=about', `document.body.innerText.trim().length > 40`)
-  // Both sections of a sidebar pair are one click each: 活动 opens events, 卡池 the gasha catalogue.
-  await clickText('.archive-nav-items button', '活动'); await waitFor(atRoot('events'))
+  // Each catalogue is its own sidebar link: 活动 opens events, 卡池 the gasha catalogue.
+  await clickText('.archive-nav-cluster button', '活动'); await waitFor(atRoot('events'))
   const sidebarEvents = await loc()
-  await clickText('.archive-nav-items button', '卡池'); await waitFor(atRoot('gashas'))
+  await clickText('.archive-nav-cluster button', '卡池'); await waitFor(atRoot('gashas'))
   const sidebarGashas = await loc()
   check('P41 section roots open at their path with section titles', roots.length === 5 && roots.every(row => row.endsWith(' · GS Archive')) && sidebarEvents === '/events/' && sidebarGashas === '/gashas/' && errors.length === 0,
     `${roots.join(' ')}; sidebar ${sidebarEvents} -> ${sidebarGashas}; errors=${errors.join(' | ') || 0}`)
@@ -404,7 +404,7 @@ try {
   check('P44 sidebar office opens the favorite idol path and backs out', officeFavorite.startsWith('/office/002sht/') && (await loc()) === '/idols/' && errors.length === 0,
     `/idols/ -> ${officeFavorite} -> back ${await loc()}; errors=${errors.join(' | ') || 0}`)
   // P45: sidebar 通信 opens the favorite's /mobile/<idol>/; switching idol rewrites the path and title, and a reload keeps it.
-  await clickText('.archive-nav-items button', '通信'); await waitFor(atMobile('002sht'))
+  await clickText('.archive-nav-cluster button', '通信'); await waitFor(atMobile('002sht'))
   const mobileFavorite = await loc()
   await navigate(() => ev(`(() => { const s = [...document.querySelectorAll('select')].find(x => [...x.options].some(o => o.value === '001tom')); s.value = '001tom'; s.dispatchEvent(new Event('change', { bubbles: true })) })()`))
   await waitFor(atMobile('001tom'))

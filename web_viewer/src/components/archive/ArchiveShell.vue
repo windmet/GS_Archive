@@ -21,11 +21,21 @@
             <component :is="group.icon" :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ group.label }}</span>
           </button>
           <template v-else>
-            <!-- Every section is one click away: a pair shares its row (剧情 · 通信); a larger group (图鉴) lays its
-                 sections out as a two-column grid under its name. The group name stays as the row's accessible label. -->
-            <div class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id, 'is-pair': group.items.length === 2 }" role="group" :aria-label="group.label">
-              <span class="archive-nav-group-head" aria-hidden="true"><component :is="group.icon" :size="18" :stroke-width="1.8" /><span v-if="group.items.length > 2">{{ group.label }}</span></span>
-              <div class="archive-nav-items">
+            <!-- The catalogues a reader came for are one column, one click each, every section with its own glyph (the
+                 phone drawer's tiles); a group is a cluster, named for assistive tech. 图鉴's six low-traffic sections
+                 fold under their name and open in filled cells, as in the drawer: their names run two to four
+                 characters, so the cells' edges, not the text, keep the columns. -->
+            <div v-if="group.items.length === 2" class="archive-nav-cluster" role="group" :aria-label="group.label">
+              <button v-for="item in group.items" :key="item.id" type="button" class="archive-nav-link" :class="{ active: navigationSection === item.id }" :aria-current="navigationSection === item.id ? 'page' : undefined" @click="emit('navigate', item.id)">
+                <component :is="archiveNavigationIcons[item.id] || group.icon" :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ item.label }}</span>
+              </button>
+            </div>
+            <div v-else class="archive-nav-fold" :class="{ 'is-active': activeNavigationGroup === group.id }">
+              <button type="button" class="archive-nav-link" :aria-expanded="foldOpen(group)" :aria-controls="`archive-nav-fold-${group.id}`" @click="toggleFold(group)">
+                <component :is="group.icon" :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ group.label }}</span>
+                <ChevronDown class="archive-nav-fold-caret" :size="15" :stroke-width="2" aria-hidden="true" />
+              </button>
+              <div v-show="foldOpen(group)" :id="`archive-nav-fold-${group.id}`" class="archive-nav-cells" role="group" :aria-label="group.label">
                 <button v-for="item in group.items" :key="item.id" type="button" :class="{ active: navigationSection === item.id }" :aria-current="navigationSection === item.id ? 'page' : undefined" @click="emit('navigate', item.id)">{{ item.label }}</button>
               </div>
             </div>
@@ -159,6 +169,16 @@ const siblingSections = computed(() => {
   return group.length > 1 && group.length <= 3 ? group.filter(section => section.id !== props.rootSection) : []
 })
 
+// 图鉴 stays open while one of its sections is showing; elsewhere it opens and closes in place without navigating.
+const openFolds = ref(new Set())
+const foldOpen = group => activeNavigationGroup.value === group.id || openFolds.value.has(group.id)
+function toggleFold(group) {
+  if (activeNavigationGroup.value === group.id) return
+  const next = new Set(openFolds.value)
+  next.has(group.id) ? next.delete(group.id) : next.add(group.id)
+  openFolds.value = next
+}
+
 // On the icon rail a group opens its first section, and does nothing while one of its sections is open.
 function openDestination(group) {
   if (activeNavigationGroup.value === group.id) return
@@ -284,41 +304,45 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
   border-radius: var(--gs-radius-pill);
   background: var(--gs-mint);
 }
-/* A group's sections sit on one two-column axis whose labels start where a link's label does (12 + 18 + 12 px):
-   a pair beside its icon, 图鉴's six under its name. The current section is filled; the group carries the bar. */
-.archive-nav-group { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; column-gap: 6px; padding-left: var(--gs-space-4); }
-.archive-nav-group-head { display: contents; color: var(--gs-chrome-ink); font-size: var(--gs-text-ui); }
-.archive-nav-group-head > span { display: flex; align-items: center; min-height: var(--gs-control-compact); padding-left: 6px; }
-.archive-nav-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-1); grid-column: 2; }
-.archive-nav-items button {
+/* Groups are clusters of ordinary links, a little apart from each other. */
+.archive-nav-cluster { display: grid; gap: var(--gs-space-1); }
+.archive-nav-cluster + .archive-nav-cluster, .archive-nav-cluster + .archive-nav-fold { margin-top: var(--gs-space-2); }
+.archive-nav-fold { display: grid; gap: var(--gs-space-1); margin-top: var(--gs-space-2); }
+.archive-nav-fold-caret { margin-left: auto; opacity: .7; transition: transform var(--gs-motion-feedback) var(--gs-motion-ease); }
+.archive-nav-fold > .archive-nav-link[aria-expanded='true'] .archive-nav-fold-caret { transform: rotate(180deg); }
+.archive-nav-fold.is-active > .archive-nav-link { color: var(--gs-chrome-ink-active); cursor: default; }
+.archive-nav-fold.is-active > .archive-nav-link::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: var(--gs-radius-pill); background: var(--gs-mint); }
+/* 图鉴's sections: filled cells two to a row, starting on the labels' axis (12 + 18 + 12 px). */
+.archive-nav-cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-1) var(--gs-space-2); padding-left: 36px; }
+.archive-nav-cells button {
   min-width: 0;
   min-height: var(--gs-control-compact);
-  padding: 0 6px;
+  padding: 0 var(--gs-space-3);
   border: 0;
   border-radius: var(--gs-radius-control);
-  background: transparent;
+  background: color-mix(in srgb, var(--gs-chrome-hover) 55%, transparent);
   color: var(--gs-chrome-ink);
   font: inherit;
-  font-size: var(--gs-text-ui);
+  font-size: var(--gs-text-meta);
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
 }
-.archive-nav-group.is-pair .archive-nav-items button { min-height: var(--gs-control-toolbar); }
-.archive-nav-items button.active { color: var(--gs-chrome-ink-active); background: var(--gs-chrome-hover); font-weight: var(--gs-weight-semibold); }
-.archive-nav-group.is-active > .archive-nav-group-head { color: var(--gs-chrome-ink-active); }
-.archive-nav-group.is-active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: var(--gs-radius-pill); background: var(--gs-mint); }
+.archive-nav-cells button.active { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); font-weight: var(--gs-weight-semibold); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gs-mint) 55%, transparent); }
 .archive-nav-rail { display: none; }
 .archive-nav-divider { margin: var(--gs-space-4) var(--gs-space-4); border: 0; border-top: 1px solid var(--gs-chrome-hover); }
 /* 关于本站 sits at the foot of the sidebar, quieter than the destinations above it. */
 .archive-sidebar-about { flex-shrink: 0; margin: auto 0 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-chrome-ink); font: inherit; font-size: var(--gs-text-meta); text-align: left; cursor: pointer; opacity: .78; }
 .archive-sidebar-about:hover, .archive-sidebar-about[aria-current='page'] { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); opacity: 1; }
-@media (max-height: 680px) {
+/* Laptop and tablet heights: the whole sidebar, 图鉴 open, still fits without scrolling. */
+@media (max-height: 880px) {
   .archive-brand { margin-block: var(--gs-space-4) var(--gs-space-3); }
-  .archive-nav-link { min-height: var(--gs-control-compact); }
-  .archive-nav-group.is-pair .archive-nav-items button { min-height: var(--gs-control-compact); }
+  .archive-nav-link { min-height: calc(var(--gs-control-compact) + var(--gs-space-2)); }
   .archive-nav-divider { margin-block: var(--gs-space-2); }
   .archive-sidebar-about { min-height: var(--gs-control-compact); }
+}
+@media (max-height: 680px) {
+  .archive-nav-link { min-height: var(--gs-control-compact); }
 }
 /* A phone on its side (wide but short): the sidebar folds to an icon rail so the page keeps the
    width. Labels stay in the accessibility tree; a destination's sections are reached on its page. */
@@ -330,15 +354,15 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
   .archive-sidebar :deep(.stage-idol-copy), .archive-sidebar :deep(.stage-idol-switch > svg) { display: none; }
   .archive-nav { padding: 0 var(--gs-space-2) var(--gs-space-3); }
   .archive-nav-link { justify-content: center; padding: 0; }
-  .archive-nav-group { display: none; }
+  .archive-nav-cluster, .archive-nav-fold { display: none; }
   .archive-nav-rail { display: flex; }
   .archive-nav-divider { margin-inline: var(--gs-space-2); }
   .archive-sidebar-about { padding: 0; font-size: var(--gs-text-caption); text-align: center; }
 }
 @media (hover: hover) {
-  .archive-brand:hover, .archive-nav-link:hover, .archive-nav-items button:hover { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
+  .archive-brand:hover, .archive-nav-link:hover, .archive-nav-cells button:hover { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
 }
-.archive-brand:focus-visible, .archive-nav-link:focus-visible, .archive-nav-items button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
+.archive-brand:focus-visible, .archive-nav-link:focus-visible, .archive-nav-cells button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 .archive-topbar {
   grid-column: 2 / -1;
   display: grid;
