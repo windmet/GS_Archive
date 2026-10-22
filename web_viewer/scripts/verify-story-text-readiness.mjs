@@ -16,6 +16,9 @@ const detail = { view: { readingEntries: [{ document_id: 'a' }, { document_id: '
 assert.deepEqual(storyTextNeeds('collection', detail), { documents: ['a', 'b'], names: [] })
 assert.deepEqual(storyTextNeeds('work', detail).names, ['profiles', 'photos'])
 assert.deepEqual(storyTextNeeds('event', detail).names, ['cards'])
+// The mobile page waits for its call titles' card-line shards, not the whole card-lines overlay.
+const phones = { view: { phoneBundles: [{ kind: 'idol_phone', scenarios: [{ title: '感謝の念話' }] }, { kind: 'idol_phone', scenarios: [] }] } }
+assert.deepEqual(storyTextNeeds('mobile', phones), { documents: [], names: ['chats', 'profiles'], lines: ['感謝の念話'] })
 
 // A translation download that never answers holds the page for at most the wait, then lets it show.
 globalThis.fetch = () => new Promise(() => {})
