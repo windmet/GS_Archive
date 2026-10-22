@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url'
 import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
 import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
+import { archiveBootstrapPlugin } from './lib/archive-bootstrap-plugin.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const template = `<!DOCTYPE html>
@@ -18,6 +19,7 @@ const template = `<!DOCTYPE html>
     <meta charset="UTF-8" />
     <title>GS Archive · SideM GROWING STARS 资料馆</title>
     <script type="module" crossorigin src="/_app/index-abc.js"></script>
+<link rel="preload" href="/_catalog/v/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/portal/index.json" as="fetch" crossorigin>
   </head>
   <body>
     <div id="app"></div>
@@ -43,6 +45,7 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   assert.deepEqual(shells.filter(s => s.kind === 'card').map(s => s.path).sort(), cards.map(c => `cards/${c.resource_id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'idol').map(s => s.path).sort(), idols.map(i => `idols/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'unit').map(s => s.path).sort(), unitCodes.map(c => `units/${c}/index.html`).sort())
+  assert.ok(shells.every(s => !s.html.includes('/portal/index.json')), 'entity pages do not preload the Portal index')
   for (const shell of shells) {
     const { html } = shell
     const location = `${origin}/${shell.path.replace(/index\.html$/, '')}`
@@ -175,6 +178,18 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   assert.equal(archiveDocumentTitle('about', 'x'), ARCHIVE_SITE_TITLE)
   assert.ok(template.includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'the site title constant matches index.html')
   assert.ok(readFileSync(path.join(root, 'index.html'), 'utf8').includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'index.html still ships the site title')
+}
+
+// The built index.html preloads the Portal index of the checked-in release (archive-bootstrap-plugin); the
+// shells rendered from it, which never open on the Portal, drop that preload.
+{
+  const plugin = archiveBootstrapPlugin()
+  plugin.configResolved({ command: 'build' })
+  const page = plugin.transformIndexHtml(template.replace(/<link rel="preload"[^>]*>\n/, ''))
+  const portal = JSON.parse(readFileSync(path.join(root, 'readmodels/bootstrap.inline.json'), 'utf8')).domains.portal.url
+  assert.equal(count(page, new RegExp(`<link rel="preload" href="${portal}" as="fetch" crossorigin>`, 'g')), 1, 'the page preloads the pinned Portal index')
+  const shells = renderEntityHeadShells({ template: page, idols: [{ id: '001tom', name: '天ヶ瀬 冬馬', unitCode: '01jup', unitName: 'Jupiter' }] })
+  assert.ok(shells.every(shell => !shell.html.includes('rel="preload"') && shell.html.includes('id="archive-bootstrap"')))
 }
 
 // Real sources: every bootstrap idol has a zh-CN display name, so no title silently falls back to Japanese.

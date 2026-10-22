@@ -5,9 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href="/assets/brand/image_chara_icon_producer.png" />
     <title>GS Archive · SideM GROWING STARS 资料馆</title>
+    <!-- Shown from the HTML alone until the app mounts over it (the entry script takes seconds on a slow
+         phone). Not faded in: Chrome does not count content that starts transparent as a first paint.
+         Values from GS_UI_TOKENS. -->
+    <style>
+      .gs-boot { display: grid; place-content: center; justify-items: center; gap: 10px; min-height: 100vh; min-height: 100dvh; background: #f5f6f8; color: #6a7586; font: 14px/1.6 "Noto Sans SC", "PingFang SC", "Hiragino Sans", "Microsoft YaHei", system-ui, sans-serif; }
+      .gs-boot strong { color: #13213a; font: italic 700 22px/1.2 "Arial Narrow", system-ui, sans-serif; }
+      .gs-boot strong b { margin-left: 4px; color: #6a7586; font: 400 13px/1 "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+      .gs-boot i { width: 48px; height: 3px; overflow: hidden; border-radius: 2px; background: #dfe3e8; }
+      .gs-boot i::after { content: ""; display: block; width: 40%; height: 100%; background: #12c48b; animation: gs-boot-bar 1.2s ease-in-out infinite; }
+      @keyframes gs-boot-bar { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+      @media (prefers-reduced-motion: reduce) { .gs-boot i::after { animation: none; } }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app"><div class="gs-boot" role="status"><strong>GS<b>资料馆</b></strong><i aria-hidden="true"></i><span>正在打开资料馆…</span></div></div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
