@@ -101,6 +101,9 @@ export function loadArchiveSources({
     publishRoot: requiredPath(payload.publish_root || 'web_viewer/public', archiveRoot, 'publish_root'),
     // Optional: a folder of build_readmodels outputs; the dev server picks the one matching the checked-in release.
     readmodelCandidatesRoot: optionalPath(payload.readmodel_candidates_root, archiveRoot, 'readmodel_candidates_root'),
+    // RAW game files and the converted media derived from them (ignored by git; see archive_sources.example.json).
+    rawRoot: requiredPath(payload.raw_root || 'RAW', archiveRoot, 'raw_root'),
+    derivedRoot: requiredPath(payload.derived_root || 'web_viewer/.analysis/derived', archiveRoot, 'derived_root'),
     legacyRoot,
     legacyConfigured: configuredLegacyRoot !== null,
     legacyPath: (...parts) => path.resolve(legacyRoot, ...parts),

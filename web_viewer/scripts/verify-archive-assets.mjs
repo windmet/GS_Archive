@@ -11,7 +11,7 @@ import { createArchiveAssetResolver, loadArchiveAssetRoots, isWithinRoot } from 
 
 const viewerRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const root = await mkdtemp(path.join(os.tmpdir(), 'sidem-asset-contract-'))
-const keys = ['SIDEM_ARCHIVE_SOURCES_CONFIG', 'SIDEM_AUDIO_ROOT', 'SIDEM_LEGACY_AUDIO_ROOT', 'SIDEM_LIPSYNC_ROOT', 'SIDEM_CARD_ART_ROOT','SIDEM_DOMAIN_IMAGE_ROOT']
+const keys = ['SIDEM_ARCHIVE_SOURCES_CONFIG', 'SIDEM_AUDIO_ROOT', 'SIDEM_LEGACY_AUDIO_ROOT', 'SIDEM_DERIVED_AUDIO_ROOT', 'SIDEM_LIPSYNC_ROOT', 'SIDEM_CARD_ART_ROOT','SIDEM_DOMAIN_IMAGE_ROOT']
 const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]))
 async function request(url) {
   if (process.env.SIDEM_ASSET_FIXTURE_TRACE) console.log('fixture GET',url)
@@ -32,7 +32,8 @@ try {
   const environment = { SIDEM_ARCHIVE_SOURCES_CONFIG: configPath }
   const roots = loadArchiveAssetRoots({ environment })
   assert.equal(roots.audio, path.join(root, 'legacy/GS_Res/Audio'))
-  const overrideNames = { audio: 'SIDEM_AUDIO_ROOT', legacyAudio: 'SIDEM_LEGACY_AUDIO_ROOT', lipsync: 'SIDEM_LIPSYNC_ROOT', cardArt: 'SIDEM_CARD_ART_ROOT',domainImages:'SIDEM_DOMAIN_IMAGE_ROOT' }
+  assert.equal(roots.derivedAudio, path.join(root, 'web_viewer/.analysis/derived/audio'))
+  const overrideNames = { audio: 'SIDEM_AUDIO_ROOT', legacyAudio: 'SIDEM_LEGACY_AUDIO_ROOT', derivedAudio: 'SIDEM_DERIVED_AUDIO_ROOT', lipsync: 'SIDEM_LIPSYNC_ROOT', cardArt: 'SIDEM_CARD_ART_ROOT',domainImages:'SIDEM_DOMAIN_IMAGE_ROOT' }
   for (const [name, key] of Object.entries(overrideNames)) {
     assert.equal(loadArchiveAssetRoots({ environment: { ...environment, [key]: root } })[name], root)
   }
@@ -42,7 +43,13 @@ try {
     ...['step_walk_come_conc_boot', 'step_walk_come_conc_boot_hall', 'step_walk_come_conc_boot_slow'].flatMap(cue => [
       ...['sfx', 'telephone', 'system'].map(dir => path.join(roots.audio, dir, `${cue}.ogg`)),
       path.join(roots.legacyAudio, `${cue}.ogg`),
+      path.join(roots.derivedAudio, 'sfx', `${cue}.ogg`),
     ]),
+  ])
+  // Converted library first, then the RAW-derived fill-in for cues it never had.
+  assert.deepEqual(resolver.audioCandidates('/bgm/adv_idol_birthday.ogg'), [
+    path.join(roots.audio, 'bgm', 'adv_idol_birthday.ogg'),
+    path.join(roots.derivedAudio, 'bgm', 'adv_idol_birthday.ogg'),
   ])
   assert.deepEqual(resolver.audioCandidates('/unknown/test.ogg'), [])
   assert.deepEqual(resolver.audioCandidates('/se/'), [])

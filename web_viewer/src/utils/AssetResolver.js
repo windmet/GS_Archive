@@ -50,10 +50,16 @@ export function getBgUrl(bgId) {
     : `${ASSET_BASE}/bg/${bgId}.png`
 }
 
+/** A song's full mix (the exact song3_<code> cue of its RAW ACB), the file the song page and LIVE stage play. */
+export function getSongFullMixUrl(songCode) {
+  return `${ASSET_BASE}/live-chibi/music/${songCode}.m4a`
+}
+
 export function getBgmUrl(bgmId) {
-  return hasRawAudioCandidate('bgm', bgmId)
-    ? `${ASSET_BASE}/audio-candidate/bgm/${bgmId}.m4a`
-    : `${ASSET_BASE}/audio/bgm/${bgmId}.ogg`
+  if (hasRawAudioCandidate('bgm', bgmId)) return `${ASSET_BASE}/audio-candidate/bgm/${bgmId}.m4a`
+  // A story that plays a song plays the song3_<code> cue: the same full mix, not a converted BGM file.
+  const songCode = /^song3_([a-z0-9]+)$/.exec(bgmId)?.[1]
+  return songCode ? getSongFullMixUrl(songCode) : `${ASSET_BASE}/audio/bgm/${bgmId}.ogg`
 }
 
 /**

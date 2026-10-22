@@ -1,0 +1,977 @@
+{
+  "schema": "GS-DERIVED-STORY-AUDIO-V1",
+  "about": "Story cues the legacy converted library lacks, decoded from RAW. Files live under <derived_root>/audio (git-ignored); this manifest is their provenance. Built by scripts/build-derived-story-audio.mjs.",
+  "encoder": {
+    "vgmstream": "r2117-35-gc01f584b",
+    "ffmpeg": "ffmpeg version 2024-01-04-git-33698ef891-full_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers\r",
+    "render": "vgmstream default (2 loops + 10 s fade when looping)",
+    "codec": "libvorbis 160k stereo / 96k mono, bitexact"
+  },
+  "counts": {
+    "bgm": 41,
+    "ambient": 0,
+    "se": 4
+  },
+  "files": [
+    {
+      "kind": "bgm",
+      "cue": "adv_idol_birthday",
+      "source": {
+        "path": "RAW/audio/adv_idol_birthday.awb",
+        "sha256": "19fd83599c5bbd0d00cb9681650aad61bd9be4463bee2b2882532dfbbfa7c0c5",
+        "subsong": null,
+        "stream_name": "adv_idol_birthday",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 2816285,
+        "loop": {
+          "start": 291339,
+          "end": 2815963
+        }
+      },
+      "output": {
+        "path": "audio/bgm/adv_idol_birthday.ogg",
+        "sha256": "812f4d06af8921cfd1a59658fcfe70a3dc056d8c2232b02175ed388bca026689",
+        "bytes": 2503679,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_grwsml_inst",
+      "source": {
+        "path": "RAW/audio/bgm_grwsml_inst.acb",
+        "sha256": "9bc2915e0cf067a01b80b672f7d5c2773f44e819876576ad7e21d6399dce45de",
+        "subsong": null,
+        "stream_name": "bgm_grwsml_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5569571,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_grwsml_inst.ogg",
+        "sha256": "02a2e5e1b4434f54768495a6b7f32eaeb33b2715f63d80e8bf9ebe0afe785e9e",
+        "bytes": 2185770,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_bnckgy_inst",
+      "source": {
+        "path": "RAW/audio/bgm_bnckgy_inst.acb",
+        "sha256": "e0d855d8fe540a613344b5c9f4466495e4e3650f336df397430d1a41533679b5",
+        "subsong": null,
+        "stream_name": "bgm_bnckgy_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5404596,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_bnckgy_inst.ogg",
+        "sha256": "7f73a8a90e00911b0ce1c69025a14f2fa9168f37e715031aa31ed2a1a02de620",
+        "bytes": 2108697,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_drvalv_inst",
+      "source": {
+        "path": "RAW/audio/bgm_drvalv_inst.acb",
+        "sha256": "c234694a614050947bf2556561c8e802eba6eec1e50a547d5cbc3edb5e8b9fa6",
+        "subsong": null,
+        "stream_name": "bgm_drvalv_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5745600,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_drvalv_inst.ogg",
+        "sha256": "5acb09f4a568bd99711e0137ca39d2cf0088706a39e6c6314ea0e9675635ad40",
+        "bytes": 2438504,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_tkstp1_inst",
+      "source": {
+        "path": "RAW/audio/bgm_tkstp1_inst.acb",
+        "sha256": "34bd4f675515b0bec9c5a122764e8056e3fb5ef09dcdf37e49cd83005fa47290",
+        "subsong": null,
+        "stream_name": "bgm_tkstp1_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5211820,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_tkstp1_inst.ogg",
+        "sha256": "7af70f43b65e0026e96d0ec785f101fcf9ef3a24d413c02687c93cbb92aca34f",
+        "bytes": 2133664,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "adv_dazwld",
+      "source": {
+        "path": "RAW/audio/adv_dazwld.awb",
+        "sha256": "71fafbe75291383d46bee58d91e10476d9084581d48da585b76e115255e2207f",
+        "subsong": null,
+        "stream_name": "adv_dazwld",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5470669,
+        "loop": {
+          "start": 0,
+          "end": 5470669
+        }
+      },
+      "output": {
+        "path": "audio/bgm/adv_dazwld.ogg",
+        "sha256": "5f6548a03d2532a173861f33042564d9198bbcf815f93654a4cb9ab67cd3ec71",
+        "bytes": 4678803,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "adv_dazwlm",
+      "source": {
+        "path": "RAW/audio/adv_dazwlm.awb",
+        "sha256": "7e629a06b0be661508ebd90f50791d51d8be296c009978d27081f2b7feeffce3",
+        "subsong": null,
+        "stream_name": "adv_dazwlm",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5470940,
+        "loop": {
+          "start": 0,
+          "end": 5470940
+        }
+      },
+      "output": {
+        "path": "audio/bgm/adv_dazwlm.ogg",
+        "sha256": "a74e3bdc647ce4c8c6b03a9239981661f367b50a5f753ded269c661c288889a6",
+        "bytes": 4740073,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "adv_drvalv_006fra",
+      "source": {
+        "path": "RAW/audio/adv_drvalv_006fra.acb",
+        "sha256": "1622b41dd7ab4647dfd313e14b451725278013ad51c6960efe5b6b9ac5518bdc",
+        "subsong": null,
+        "stream_name": "adv_drvalv_006fra",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5745601,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/adv_drvalv_006fra.ogg",
+        "sha256": "421dbe926f2c10d9bd04b5ae7ad8c5bf5f240cc55a7e2a2385b7a557709f5375",
+        "bytes": 2375262,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "adv_grwsml_nomaster",
+      "source": {
+        "path": "RAW/audio/adv_grwsml_nomaster.awb",
+        "sha256": "7f5c4ebc55d971df2ae68b877d40a30120c015ef23ebadbc9bdb7da47f422b33",
+        "subsong": null,
+        "stream_name": "adv_grwsml_nomaster",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5168402,
+        "loop": {
+          "start": 0,
+          "end": 5168129
+        }
+      },
+      "output": {
+        "path": "audio/bgm/adv_grwsml_nomaster.ogg",
+        "sha256": "679826896f13b8c74af9cf817a9d1ef7bd76d54970db4038c82f790f969cfc3d",
+        "bytes": 4224467,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "adv_ldyrdm_tv_inst",
+      "source": {
+        "path": "RAW/audio/adv_ldyrdm_tv_inst.acb",
+        "sha256": "2b3cbc2a55c78a7393600db18ff1ec49280fd6059979b8227893d3af87db075d",
+        "subsong": null,
+        "stream_name": "adv_ldyrdm_tv_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5393121,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/adv_ldyrdm_tv_inst.ogg",
+        "sha256": "3819edb2c1ab1db8a5f5d42e166308d64a0d1c40dcecf8a76c1e5b8c8a9170cd",
+        "bytes": 2176462,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "ambi_park_calm_evening",
+      "source": {
+        "path": "RAW/audio/ambi_park_calm_evening.acb",
+        "sha256": "4e90bda14b1a3aceeb67630512ae114ea341f23383177ccccfa7e8f7ddaa5f68",
+        "subsong": null,
+        "stream_name": "ambi_park_calm_evening",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 439608,
+        "loop": {
+          "start": 0,
+          "end": 439608
+        }
+      },
+      "output": {
+        "path": "audio/bgm/ambi_park_calm_evening.ogg",
+        "sha256": "5f623c2f051d551206e48f6804a50d121ac1b408da091048244a124d62b8c15f",
+        "bytes": 479883,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_cfprde_inst",
+      "source": {
+        "path": "RAW/audio/bgm_cfprde_inst.acb",
+        "sha256": "2c0f0988eebbed674bc2cf447a38801ed08ef41c16665e2a23e44abbcd68c4eb",
+        "subsong": null,
+        "stream_name": "bgm_cfprde_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5965526,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_cfprde_inst.ogg",
+        "sha256": "09cf2212494baec454ec9bdde2a88549233ed9b5ce08b1a85c7fb4952c1e294b",
+        "bytes": 2422941,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_hgjmnl_inst",
+      "source": {
+        "path": "RAW/audio/bgm_hgjmnl_inst.acb",
+        "sha256": "eeff5b46caa4d160312adcb6c416a8f9ca72af63b16857967e2bdb5d451dbbbe",
+        "subsong": null,
+        "stream_name": "bgm_hgjmnl_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5232540,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_hgjmnl_inst.ogg",
+        "sha256": "f53c987f0bf717776413c3b86a04bff248f0e06a17c4e699da1a16aabf5cf859",
+        "bytes": 2023769,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_hrkzbn_inst",
+      "source": {
+        "path": "RAW/audio/bgm_hrkzbn_inst.acb",
+        "sha256": "3775761489d78e2cf0c3edeac1bde1c0f2a6a48e853f5f7f698f3797961f880b",
+        "subsong": null,
+        "stream_name": "bgm_hrkzbn_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5530380,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_hrkzbn_inst.ogg",
+        "sha256": "05a32d1c8e3ebdf4e034a102de40090edd0abc6cacbbbff9c162b17306738e27",
+        "bytes": 2342538,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_infoct_inst",
+      "source": {
+        "path": "RAW/audio/bgm_infoct_inst.acb",
+        "sha256": "ae6c63ebfee5874567ea9ad9bccb690a844676a925b36f97102894b22562954b",
+        "subsong": null,
+        "stream_name": "bgm_infoct_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5460086,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_infoct_inst.ogg",
+        "sha256": "d478952166904a183681e83c8f9c9651eea4dd9e7258cbf201b8f8d4a742228d",
+        "bytes": 2056224,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_inndgn_inst",
+      "source": {
+        "path": "RAW/audio/bgm_inndgn_inst.acb",
+        "sha256": "ea21253889e6ec3785d5502b5a2caf900121c30a285433b9119fa84034bba4f6",
+        "subsong": null,
+        "stream_name": "bgm_inndgn_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5474483,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_inndgn_inst.ogg",
+        "sha256": "c93a7b43b809da503c13b72f9bd7135a4364ff0987bfde8b66bcd79873c4b374",
+        "bytes": 2172891,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_itowks_inst",
+      "source": {
+        "path": "RAW/audio/bgm_itowks_inst.acb",
+        "sha256": "8e546b03484449b49a6e69049efe773c95dc3f23525b7bfc8018564f3ea06b74",
+        "subsong": null,
+        "stream_name": "bgm_itowks_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4848155,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_itowks_inst.ogg",
+        "sha256": "fc26eb5124af4bf15f1ba00438d2ffddd70af193570f24e537de0cc0d002bc7d",
+        "bytes": 1937410,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_jfhtmk_inst",
+      "source": {
+        "path": "RAW/audio/bgm_jfhtmk_inst.acb",
+        "sha256": "20b28905106878698cb5b336d870ff4047c431bcd13fbb0cd4ccd5787b3d4600",
+        "subsong": null,
+        "stream_name": "bgm_jfhtmk_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4884924,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_jfhtmk_inst.ogg",
+        "sha256": "e5b3979a7d3795796e373d237e3d5b0549ffb4f2cb20b36448cdbe93b9cae85b",
+        "bytes": 1950038,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_ldyrdm_inst",
+      "source": {
+        "path": "RAW/audio/bgm_ldyrdm_inst.acb",
+        "sha256": "e5fe00271ea4fd35632fd4a45fd974533132058a820bd958987778ed547d34c3",
+        "subsong": null,
+        "stream_name": "bgm_ldyrdm_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5393121,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_ldyrdm_inst.ogg",
+        "sha256": "3819edb2c1ab1db8a5f5d42e166308d64a0d1c40dcecf8a76c1e5b8c8a9170cd",
+        "bytes": 2176462,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_lgcosr_inst",
+      "source": {
+        "path": "RAW/audio/bgm_lgcosr_inst.acb",
+        "sha256": "e3bcd5d29930942da7b913777a740b08e90f4b802e70fcf951da457dbaa17a96",
+        "subsong": null,
+        "stream_name": "bgm_lgcosr_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4897915,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_lgcosr_inst.ogg",
+        "sha256": "9b1d4f8fdd81431ebfd4de487f85f021c152331a6390556c9e929dc76077d61d",
+        "bytes": 1906586,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_mainha_inst",
+      "source": {
+        "path": "RAW/audio/bgm_mainha_inst.acb",
+        "sha256": "bf4e2a967582ca95d0a1966e1ea2b368d9a84ab6cbad00ad48109de87ecd5910",
+        "subsong": null,
+        "stream_name": "bgm_mainha_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5027400,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_mainha_inst.ogg",
+        "sha256": "b0b95c7dba73e6906939c1dafac7f76fd003317e60d34639c211ee125c90ab5b",
+        "bytes": 2121402,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_montns_inst",
+      "source": {
+        "path": "RAW/audio/bgm_montns_inst.acb",
+        "sha256": "d1ef56e095459907b17d59ae53406a72fd39cc4e30966bf2fecee19fab3f9b57",
+        "subsong": null,
+        "stream_name": "bgm_montns_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5404596,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_montns_inst.ogg",
+        "sha256": "e9198dce70311b8a8e99c8ceedb0bbabc5ec9a2b0d796ea6e36005059d8db913",
+        "bytes": 2210491,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_ntalon_inst",
+      "source": {
+        "path": "RAW/audio/bgm_ntalon_inst.acb",
+        "sha256": "7abcc4331b99ffd779cd513eb98cd78a8d91c92b9b959846e7a07c5ccdda9fa6",
+        "subsong": null,
+        "stream_name": "bgm_ntalon_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5699077,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_ntalon_inst.ogg",
+        "sha256": "c19d680af2d7d3793b97b783f46ae5512e9021a6d30fea823119f6b6a8858d89",
+        "bytes": 2299835,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_ometny_inst",
+      "source": {
+        "path": "RAW/audio/bgm_ometny_inst.acb",
+        "sha256": "74fad3f004e0fab36b660a2fb630f20a09f2785590cdd6a6975a59a52aa12880",
+        "subsong": null,
+        "stream_name": "bgm_ometny_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5670000,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_ometny_inst.ogg",
+        "sha256": "3fcb94d0112352b25a5ef308a934aa3440b4ffcbb2fbc3292fff2d4bb3f57556",
+        "bytes": 2347302,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_ominut_inst",
+      "source": {
+        "path": "RAW/audio/bgm_ominut_inst.acb",
+        "sha256": "b68bffd4bfe0d2260d3aa17ac627e209931f5855c3e2497aa1a201e27f61abb5",
+        "subsong": null,
+        "stream_name": "bgm_ominut_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4831827,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_ominut_inst.ogg",
+        "sha256": "6782ac46c0b695f1d966805f7f099dc11991e0f2bad8531a01c73db52fda86b4",
+        "bytes": 2097073,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_pavetl_inst",
+      "source": {
+        "path": "RAW/audio/bgm_pavetl_inst.acb",
+        "sha256": "004aeb8ada5aa049773466ad977eaa6670b16b6a88244b5ee4efb230b1bdec63",
+        "subsong": null,
+        "stream_name": "bgm_pavetl_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5055750,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_pavetl_inst.ogg",
+        "sha256": "587689841bbf9d424dff43f0eee1e2cc69399cae3ae8d9656fc1dbf9a44d06cc",
+        "bytes": 2074269,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_pfofos_inst",
+      "source": {
+        "path": "RAW/audio/bgm_pfofos_inst.acb",
+        "sha256": "1e6f1ff18a4cd53e1df439bb6cdcaf4cfa35770e63a738010c43dbf5ce4b38ac",
+        "subsong": null,
+        "stream_name": "bgm_pfofos_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5933456,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_pfofos_inst.ogg",
+        "sha256": "2ef63640c536a089e07069f3e75966aec0c656943bb99cc93fac134ebb87f772",
+        "bytes": 2362045,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_pl1gdd_inst",
+      "source": {
+        "path": "RAW/audio/bgm_pl1gdd_inst.acb",
+        "sha256": "058f544b1532734925d3b85b7a67c7ccb3fdcbeb6a2305a76183bc6bb5b33373",
+        "subsong": null,
+        "stream_name": "bgm_pl1gdd_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5164992,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_pl1gdd_inst.ogg",
+        "sha256": "248308213154f597797bc54d2b5a80dd467820c931681c51f3e286048188056c",
+        "bytes": 2135783,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_rehobe_inst",
+      "source": {
+        "path": "RAW/audio/bgm_rehobe_inst.acb",
+        "sha256": "388088419e13bdd89bc57eb303d3234a4f79f5bcdfc653ee8a368231e0d596be",
+        "subsong": null,
+        "stream_name": "bgm_rehobe_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4906492,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_rehobe_inst.ogg",
+        "sha256": "78d176c59a499c1a5410379c72860b262b77b876b23bb2b1a40a6084bed8c2ed",
+        "bytes": 1976419,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_remasq_inst",
+      "source": {
+        "path": "RAW/audio/bgm_remasq_inst.acb",
+        "sha256": "d4ecceb8b44102df31cff92f24c3cae2d0a0ece1a25fc57946d59bb115bbfc79",
+        "subsong": null,
+        "stream_name": "bgm_remasq_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5645690,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_remasq_inst.ogg",
+        "sha256": "b5e5174512709e614d7e0cd69b99ea01f74472f245705263498c7ebec53b39b0",
+        "bytes": 2337099,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_rote77_inst",
+      "source": {
+        "path": "RAW/audio/bgm_rote77_inst.acb",
+        "sha256": "ecaa048b98637b9558b609b83baa45327988ee4ae8ff996cb9fb6776011a3b84",
+        "subsong": null,
+        "stream_name": "bgm_rote77_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 6093819,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_rote77_inst.ogg",
+        "sha256": "2e6425e72642dc99f403f93e6e74b90be867eca7ef13a3ac28307ec227322244",
+        "bytes": 2344397,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_steqmg_inst",
+      "source": {
+        "path": "RAW/audio/bgm_steqmg_inst.acb",
+        "sha256": "ea617f91b8e02a82a48c6b914c4b964625fbb75d20c8a0d841ef3ad677517b0d",
+        "subsong": null,
+        "stream_name": "bgm_steqmg_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4775708,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_steqmg_inst.ogg",
+        "sha256": "36dfc8ae470a0e355e865613717a9b9fc00cbac7becbc461657ec2a6eb17459f",
+        "bytes": 1953922,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_swyrlv_inst",
+      "source": {
+        "path": "RAW/audio/bgm_swyrlv_inst.acb",
+        "sha256": "8966854cd9fe53a7ae398f3c825cd91569a97aae6c27a1b995d88bd891bf4e69",
+        "subsong": null,
+        "stream_name": "bgm_swyrlv_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5603295,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_swyrlv_inst.ogg",
+        "sha256": "b43349b6b55be08f6cea9ed82f3ff6a62fb81177cc1b92b27b14ac0123d1a71c",
+        "bytes": 2323443,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_tibeti_inst",
+      "source": {
+        "path": "RAW/audio/bgm_tibeti_inst.acb",
+        "sha256": "87f6cac183d7a7c3ee34e253edb90b1aabb92d864dec76217cc8b62ecffc7d33",
+        "subsong": null,
+        "stream_name": "bgm_tibeti_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5532656,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_tibeti_inst.ogg",
+        "sha256": "5c71c904f45150f1da59978d72c4c98b1f6c8039668f5313e417b7fe4da5e261",
+        "bytes": 2298875,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_tktkkt_inst",
+      "source": {
+        "path": "RAW/audio/bgm_tktkkt_inst.acb",
+        "sha256": "14d2561ce51184daad13ab09d1a4fbb73e178390659abd93f992177c95de102e",
+        "subsong": null,
+        "stream_name": "bgm_tktkkt_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4649619,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_tktkkt_inst.ogg",
+        "sha256": "8de4ffcefbd63a2cd0aa076dbed77f266b8d2f3fedd7c685ec30e034d4d051be",
+        "bytes": 1918068,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_tnsdst_inst",
+      "source": {
+        "path": "RAW/audio/bgm_tnsdst_inst.acb",
+        "sha256": "af5690f9cdefc0072b07f63d587c9c160c435bebe2c1e21f2ca1320c93c985c1",
+        "subsong": null,
+        "stream_name": "bgm_tnsdst_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5532545,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_tnsdst_inst.ogg",
+        "sha256": "dca7fdb98c33388773d3fd1371aa9b6b585c269d3e03f6953661de2ebd6b3b2e",
+        "bytes": 2277568,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_trhorz_inst",
+      "source": {
+        "path": "RAW/audio/bgm_trhorz_inst.acb",
+        "sha256": "a5571e084cc418cf3852c986f3e86c62361ca751c0f7b4a1312baa05860ca43b",
+        "subsong": null,
+        "stream_name": "bgm_trhorz_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5909929,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_trhorz_inst.ogg",
+        "sha256": "934b832b6afa8d3e98e85fb17842e34b955b4fdc243b13ed5e17de43e580d659",
+        "bytes": 2468906,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_unmikn_inst",
+      "source": {
+        "path": "RAW/audio/bgm_unmikn_inst.acb",
+        "sha256": "6fafb276c8c31f8be73c899974bb035b9a305e88d203a520702e06afd63ddf34",
+        "subsong": null,
+        "stream_name": "bgm_unmikn_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 4891091,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_unmikn_inst.ogg",
+        "sha256": "10ba044c638cd77171af9f353e1976fff797d4f132bf9f48ec0ce14a12b43885",
+        "bytes": 2069022,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_vctblv_inst",
+      "source": {
+        "path": "RAW/audio/bgm_vctblv_inst.acb",
+        "sha256": "1c5d54492a251251303558b3c329b92b36526477afe4e1a8b81cade529c29480",
+        "subsong": null,
+        "stream_name": "bgm_vctblv_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5369824,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_vctblv_inst.ogg",
+        "sha256": "47e22f9fd1ff2002a6aeab5f0afe6ff9ee72ad5187e489a64c57da10d023c90f",
+        "bytes": 2119526,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_vvfmrm_inst",
+      "source": {
+        "path": "RAW/audio/bgm_vvfmrm_inst.acb",
+        "sha256": "069ab3c910ae5959f72b71e9bf3388687449a9ba083e78ce22b48604f996d439",
+        "subsong": null,
+        "stream_name": "bgm_vvfmrm_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5870813,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_vvfmrm_inst.ogg",
+        "sha256": "a3b8fa5080974f0ff9d74347dbe7cb7cc251bd641cecf79ac33ea6117a487372",
+        "bytes": 2454672,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "bgm",
+      "cue": "bgm_wtstry_inst",
+      "source": {
+        "path": "RAW/audio/bgm_wtstry_inst.acb",
+        "sha256": "2b3df89e16501d07128fe98d17f7e1f83b2cc29560969cee2ce436ab36e86bce",
+        "subsong": null,
+        "stream_name": "bgm_wtstry_inst",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 5240622,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/bgm/bgm_wtstry_inst.ogg",
+        "sha256": "c6e21f694ba37a94b6c0a02da2fbdcf474f911d9ecaa68d1f5f81eb880c402ab",
+        "bytes": 2033127,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "se",
+      "cue": "kaisou_short",
+      "source": {
+        "path": "RAW/audio/se_commu.acb",
+        "sha256": "220afbea6bac80ff814e01a4ee84a85f9a402b76464439666bb274c88be85715",
+        "subsong": 136,
+        "stream_name": "kaisou_short; kaisou_short_low",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 95596,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/sfx/kaisou_short.ogg",
+        "sha256": "64980e64fe6c23c56b5bb7d209679886d7f8c9877d79753d49a4860e7783fa88",
+        "bytes": 37738,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "se",
+      "cue": "kaisou_short_low",
+      "source": {
+        "path": "RAW/audio/se_commu.acb",
+        "sha256": "220afbea6bac80ff814e01a4ee84a85f9a402b76464439666bb274c88be85715",
+        "subsong": 136,
+        "stream_name": "kaisou_short; kaisou_short_low",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 95596,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/sfx/kaisou_short_low.ogg",
+        "sha256": "64980e64fe6c23c56b5bb7d209679886d7f8c9877d79753d49a4860e7783fa88",
+        "bytes": 37738,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "se",
+      "cue": "violin_rei_solo_01",
+      "source": {
+        "path": "RAW/audio/se_commu.acb",
+        "sha256": "220afbea6bac80ff814e01a4ee84a85f9a402b76464439666bb274c88be85715",
+        "subsong": 256,
+        "stream_name": "violin_rei_solo_01; violin_rei_solo_01_loop",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 426521,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/sfx/violin_rei_solo_01.ogg",
+        "sha256": "ec2e17f78c1b7253e43f09757023b6566b55579b53ac58f309529f37b93483e7",
+        "bytes": 178689,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    },
+    {
+      "kind": "se",
+      "cue": "violin_rei_solo_01_loop",
+      "source": {
+        "path": "RAW/audio/se_commu.acb",
+        "sha256": "220afbea6bac80ff814e01a4ee84a85f9a402b76464439666bb274c88be85715",
+        "subsong": 256,
+        "stream_name": "violin_rei_solo_01; violin_rei_solo_01_loop",
+        "sample_rate": 44100,
+        "channels": 2,
+        "samples": 426521,
+        "loop": null
+      },
+      "output": {
+        "path": "audio/sfx/violin_rei_solo_01_loop.ogg",
+        "sha256": "ec2e17f78c1b7253e43f09757023b6566b55579b53ac58f309529f37b93483e7",
+        "bytes": 178689,
+        "codec": "vorbis",
+        "bitrate": "160k"
+      }
+    }
+  ]
+}

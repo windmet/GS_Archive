@@ -10,6 +10,7 @@ import vue from '@vitejs/plugin-vue'
 import { renderToString } from '@vue/server-renderer'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
+import { getBgmUrl, getSongFullMixUrl } from '../src/utils/AssetResolver.js'
 
 const root = new URL('..', import.meta.url)
 const mounted = process.argv.includes('--mounted')
@@ -53,7 +54,9 @@ for (const code of expectedCodes) {
     entry.song_code !== code ||
     entry.kind !== 'full-mix' ||
     entry.label !== '完整混音' ||
-    entry.url !== `/assets/live-chibi/music/${code}.m4a` ||
+    entry.url !== getSongFullMixUrl(code) ||
+    // A story's song3_<code> BGM cue plays this same file.
+    getBgmUrl(exactCue) !== entry.url ||
     entry.source?.path !== `RAW/audio/song3_${code}.acb` ||
     !aliases.includes(exactCue)
   ) {
