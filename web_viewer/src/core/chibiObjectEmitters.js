@@ -251,8 +251,9 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       let size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       if(system.rendererBounds){
         const bounds=system.rendererBounds,height=view.height??7.2
-        if(bounds.profile!=='native-uniform-screen-size-v1'||bounds.min!==0||bounds.max!==1||system.sizeY||system.rotationX||system.stretch||!(height>0))throw Error('Unsupported uniform renderer bounds')
-        size=Math.min(size,height*100)
+        const scale=bounds.profile==='native-scaled-uniform-screen-size-v1'?Math.abs(renderBasis.scaleX):1
+        if(!['native-uniform-screen-size-v1','native-scaled-uniform-screen-size-v1'].includes(bounds.profile)||bounds.min!==0||bounds.max!==1||system.sizeY||system.rotationX||system.stretch||!(height>0)||!(scale>0))throw Error('Unsupported uniform renderer bounds')
+        size=Math.min(size,height*100/scale)
       }
       const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
       // Particle angles are clockwise in Unity's billboard builder. Convert

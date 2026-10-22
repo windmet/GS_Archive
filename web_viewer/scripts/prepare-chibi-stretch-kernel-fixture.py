@@ -151,7 +151,7 @@ assert by_name['x']['expected']==by_name['rotation']['expected'],'Classic stretc
 assert len({tuple(v['position']) for v in by_name['stationary']['expected']})==1,'Zero velocity must collapse this classic stretch profile'
 assert [v['uv'] for v in by_name['x']['expected']]==[[0,1],[1,1],[1,0],[0,0]],'Unexpected native texture orientation'
 
-# Read the exact eight currently marked renderer sources. No material or public export.
+# Re-read renderer sources in the current native catalog. No material/public export.
 sys.path.insert(0,str(root/'scripts'))
 effects=runpy.run_path(str(root/'scripts/prepare-live-chibi-stage-effects.py'),run_name='stretch_source_import')
 sources=effects['load_archive_sources'](None)

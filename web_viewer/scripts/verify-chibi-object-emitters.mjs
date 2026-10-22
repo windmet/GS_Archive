@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import crypto from 'node:crypto'
 import './verify-chibi-limit-curve.mjs'
 import './verify-chibi-color-pair.mjs'
+import './verify-chibi-fire.mjs'
 import {execFileSync} from 'node:child_process'
 import {attachObjectEmitters,emitterMatrix,emitterSpatialMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement,emitterRenderBasis} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
@@ -129,7 +130,7 @@ for(const c of [...localParentProof.cases,...localSizeProof.cases,...bloomParent
 }
 assert.equal(legacyLocalParentMismatches,102,'Nonzero local Z exposes the old planar parent loss')
 function samplePreviewSystem(system,time,activatedAt,stoppedAt=Infinity) {
-  const spatial=system.stretch?.profile===OBJECT_SPATIAL_PROFILE?objectSpatialContext({verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0},{x:0,y:360,scale:1000},'pfofos_live_effect'):null
+  const spatial=system.stretch?.profile===OBJECT_SPATIAL_PROFILE?objectSpatialContext({verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0},{x:0,y:360,scale:1000},system.stretch.binding.arrangements[0]):null
   return sampleObjectEmitter(system,time,activatedAt,stoppedAt,{spatial})
 }
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
@@ -392,7 +393,7 @@ const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,111)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,112)
 for(const change of [m=>m.nonEmitting[0].emission.enabled=true,m=>m.nonEmitting[0].subEmitters.enabled=true,m=>m.nonEmitting[0].source.pathId=m.systems[0].source.pathId,m=>m.nonEmittingProof=null]){
   const broken=structuredClone(data);change(broken.assets.fx_in_tktkkt_electric)
   assert.throws(()=>attachObjectEmitters(index,broken,hash,choreographyHash),/inactive emitters/)
@@ -403,7 +404,7 @@ assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreogr
 const unproven=structuredClone(data)
 delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
 assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),873)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),909)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -533,15 +534,15 @@ assert.equal(data.assets.fx_in_swyrlv_leaf.deferred.length,0)
 assert.equal(data.assets.fx_in_swyrlv_leaf.systems.length,2)
 assert.ok(data.assets.fx_in_swyrlv_leaf.systems.some(s=>s.rotationX&&s.gravity))
 const partial=Object.values(data.assets).flatMap(m=>m.systems).filter(s=>s.partial)
-assert.equal(partial.length,106)
-assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,90)
+assert.equal(partial.length,130)
+assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,108)
 for(const s of partial.filter(s=>s.noise)) {
   assert.equal(s.noise.profile,'native-high-curl-v1')
   assert.equal(s.noise.octaveCount,1)
   assert.equal(s.noise.quality,2)
 }
 assert.equal(partial.filter(s=>s.partial.includes('stretch_omitted')).length,7)
-assert.equal(partial.filter(s=>s.partial.includes('stretch_preview')).length,9)
+assert.equal(partial.filter(s=>s.partial.includes('stretch_preview')).length,15)
 for(const asset of ['fire_1','fire_2','fire_3','turbo_1','turbo_2'].map(s=>'fx_in_rote77_'+s)) {
   const system=data.assets[asset].systems.find(s=>s.partial?.includes('stretch_omitted'))
   assert.equal(system.shape.type,4)
@@ -562,7 +563,7 @@ for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
   assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
   assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
 }
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,111)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,112)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const r of stretchProof.renderers) {
   const source=rawObjects.find(o=>o.asset===r.asset)
@@ -622,7 +623,7 @@ function previewActivationMs(system) {
   assert.ok([0,3].includes(system.delay.mode),'Preview activation requires a bounded start delay')
   return Math.max(system.delay.value,system.delay.min)*1000+(system.looping?500:Math.min(...system.bursts.map(b=>b.time))*1000+Math.min(system.lifetime.scalar,system.lifetime.minScalar)*500)
 }
-assert.equal(Object.keys(promotions.previewAssets).length,22)
+assert.equal(Object.keys(promotions.previewAssets).length,23)
 for(const [name,expected] of Object.entries(promotions.previewAssets)) {
   const model=data.assets[name]
   assert.equal(model.bundleSha256,expected.bundleSha256)
@@ -679,7 +680,7 @@ if(published) {
       }
     }
   }
-  assert.equal(windows,164,'All21 preview assets actual show/restart commands across every referencing arrangement')
+  assert.equal(windows,189,'All23 preview assets actual show/restart commands across every referencing arrangement')
   for(const name of ['fx_in_mainha_panel_1','fx_in_mainha_panel_2']) {
     const model=data.assets[name],events=songs.find(s=>s.id==='mainha_live_effect').objectLayerEvents.filter(e=>e.asset===name)
     assert.equal(events.length,1);assert.equal(events[0].time,-2000);assert.equal(events[0].hide,false)
@@ -730,4 +731,4 @@ if(published) {
   }
 }
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 111 provenance-bound resources / 873 consumed (106 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
+console.log('Object emitters: 112 provenance-bound resources / 909 consumed (130 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')

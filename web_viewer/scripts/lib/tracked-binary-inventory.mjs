@@ -192,7 +192,9 @@ function classify(relativePath) {
       consumer: ['ChibiStageViewer'],
       reason_tracked: 'RAW-derived native stage effect texture; identity is serialized file + PathID and the filename is its SHA-256 prefix',
       force_add_allowed: false,
-      owner_release: stageNativeTexture[1]==='stage-object-emitters' && ["07e0faa2a7954f8825653bd9","49551f60ab5846e295a9c8b5","efde3136a9e0b781fd9af124"].includes(logicalStem)
+      owner_release: stageNativeTexture[1]==='stage-object-emitters' && ["9530f2442e6cc6e2561ed2c2","91279b424b690b79d6dcbdc1","517297414a5a24a2cbcd35e7"].includes(logicalStem)
+        ? '2026-10-23-native-bnckgy-fire-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ["07e0faa2a7954f8825653bd9","49551f60ab5846e295a9c8b5","efde3136a9e0b781fd9af124"].includes(logicalStem)
         ? '2026-10-22-native-tktkkt-electric-001'
         : stageNativeTexture[1]==='stage-object-emitters' && ["99916964340aad44a43cf51c"].includes(logicalStem)
         ? '2026-10-22-native-pcuslv-bloom-001'

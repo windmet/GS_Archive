@@ -12,6 +12,9 @@ BLOOM_PARENTS=json.loads((ROOT/'scripts/fixtures/chibi-bloom-parent-native.json'
 LIFETIME_LIMITS=json.loads((ROOT/'scripts/fixtures/chibi-limit-curve-native.json').read_text(encoding='utf8'))
 COLOR_PAIRS=json.loads((ROOT/'scripts/fixtures/chibi-color-pair-native.json').read_text(encoding='utf8'))
 UNIFORM_SIZES=json.loads((ROOT/'scripts/fixtures/chibi-uniform-size-native.json').read_text(encoding='utf8'))
+FIRE_PROOFS=json.loads((ROOT/'scripts/fixtures/chibi-bnckgy-fire-native.json').read_text(encoding='utf8'))
+FIRE_SIZES=json.loads((ROOT/'scripts/fixtures/chibi-fire-uniform-size-native.json').read_text(encoding='utf8'))
+FIRE_SCENE=json.loads((ROOT/'scripts/fixtures/chibi-fire-scene-native.json').read_text(encoding='utf8'))
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
@@ -182,8 +185,9 @@ def model(p, partial=False, stationary=False, spatial_source=None, parent_source
                     and i['startSize']['minMaxState']==i['startSpeed']['minMaxState']==i['gravityModifier']['minMaxState']==0
                     and i['gravityModifier']['scalar']==0 and r['alignment']==0 and sr['velocityScale']==0 and sr['cameraVelocityScale']==0,
                     'Spatial stretch exceeds the source-bound profile')
-                data['stretch']={**sr,'profile':'native-source-spatial-v1','binding':dict(arrangements=[SPATIAL_CONTEXT['arrangement']['id']],
+                data['stretch']={**sr,'profile':'native-source-spatial-v1','binding':dict(arrangements=[spatial_source.get('arrangementId',SPATIAL_CONTEXT['arrangement']['id'])],
                     sourceContextSha256=w.sha((ROOT/'scripts/fixtures/chibi-spatial-context-native.json').read_bytes()))}
+                if spatial_source.get('arrangementId'):data['stretch']['binding']['sceneProofSha256']=w.sha((ROOT/'scripts/fixtures/chibi-fire-scene-native.json').read_bytes())
                 marks.append('stretch_preview')
             else:marks.append('stretch_omitted')
         if marks:data['partial']=marks
@@ -229,9 +233,17 @@ def extract(mode='current', only=None, partial=False):
             asset_partial=partial or name in PROMOTIONS.get('previewAssets',{})
             pair_profile=PROMOTIONS.get('previewAssets',{}).get(name,{}).get('colorPairProfile')
             pair_model=COLOR_PAIRS['models'].get(name) if pair_profile else None
+            fire_profile=PROMOTIONS.get('previewAssets',{}).get(name,{}).get('fireProfile')
+            fire_model=FIRE_PROOFS['models'].get(name) if fire_profile else None
+            static_model=fire_model or pair_model
+            static_proof_file='chibi-bnckgy-fire-native.json' if fire_model else 'chibi-color-pair-native.json'
+            if fire_profile:
+                w.require(fire_profile=='native-bnckgy-fire-v1' and fire_model and w.sha(path.read_bytes())==fire_model['bundleSha256'] and w.sha(choreopath.read_bytes())==FIRE_PROOFS['choreographySha256'],'Fire source/context binding changed')
+                for dependency,identity in FIRE_SCENE['dependencies'].items():w.require(w.sha((ROOT/'scripts/fixtures'/dependency).read_bytes())==identity,'Fire scene proof dependency changed')
             if pair_model:
                 w.require(pair_profile=='native-two-gradient-bytes-v1' and w.sha(path.read_bytes())==pair_model['bundleSha256'],'Two-gradient bundle binding changed')
-                for component in pair_model['staticComponents']:
+            if static_model:
+                for component in static_model['staticComponents']:
                     co=next(o for o in env.objects if str(o.path_id)==component['source']['pathId'])
                     w.require(a.json_hash(co.read_typetree())==component['treeSha256'],'Static electric hierarchy changed')
             if any(p.get('modules',{}).get('EmissionModule',{}).get('rateOverDistance',{}).get('scalar',0) for p in record['particles']):
@@ -243,7 +255,7 @@ def extract(mode='current', only=None, partial=False):
                 if prenderer.get('renderMode')!=0:reasons.append('native_stretched_billboard_solver')
                 if 'NoiseModule' in (p.get('modules') or {}):reasons.append('unity_noise_displacement')
                 ob=next((o for o in env.objects if str(o.path_id)==p.get('pathId')),None)
-                inactive=next((s for s in pair_model['nonEmitting'] if s['source']['pathId']==p['pathId']),None) if pair_model else None
+                inactive=next((s for s in static_model['nonEmitting'] if s['source']['pathId']==p['pathId']),None) if static_model else None
                 if inactive:
                     w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==inactive['source'] and p['transformChain']==inactive['chain'] and not inactive['emission']['enabled'] and not inactive['subEmitters']['enabled'],'Inactive emitter source changed')
                     non_emitting.append(inactive);continue
@@ -251,6 +263,9 @@ def extract(mode='current', only=None, partial=False):
                 if reasons and not asset_partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
                     spatial_source=SPATIAL_CONES['models'].get(name) if PROMOTIONS.get('previewAssets',{}).get(name,{}).get('spatialProfile') else None
+                    if fire_model and prenderer.get('renderMode')==1:
+                        spatial_source=next(s for s in fire_model['stretchSystems'] if s['system']['source']['pathId']==p['pathId'])
+                        spatial_source={**spatial_source,'arrangementId':FIRE_PROOFS['arrangement']['id']}
                     parent_source=None
                     limit_source=None
                     limit_profile=PROMOTIONS.get('assets',{}).get(name,{}).get('limitProfile')
@@ -279,10 +294,11 @@ def extract(mode='current', only=None, partial=False):
                         w.require(torus_source is not None,'Missing torus proof')
                     color_source=next((s for s in pair_model['systems'] if s['source']['pathId']==p['pathId']),None) if pair_model else None
                     system=model(p,asset_partial,bool(distance_proof),spatial_source,parent_source,torus_source,limit_source,color_source)
-                    if pair_model:
-                        bound=next(s for s in UNIFORM_SIZES['models'][name]['systems'] if s['source']['pathId']==p['pathId'])
+                    if pair_model or (fire_model and prenderer.get('renderMode')==0):
+                        size_proof=FIRE_SIZES if fire_model else UNIFORM_SIZES
+                        bound=next(s for s in size_proof['models'][name]['systems'] if s['source']['pathId']==p['pathId'])
                         w.require(bound['source']==system['source'] and bound['chain']==system['chain'] and bound['rendererSource']==prenderer['pathId'] and bound['alignment']==system['alignment'] and bound['bounds']==[0,1] and not system['sizeY'] and not system['rotationX'] and not system.get('stretch'),'Uniform renderer bounds source changed')
-                        system['rendererBounds']=dict(profile='native-uniform-screen-size-v1',min=0,max=1,proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-uniform-size-native.json').read_bytes()))
+                        system['rendererBounds']=dict(profile='native-scaled-uniform-screen-size-v1' if fire_model else 'native-uniform-screen-size-v1',min=0,max=1,proofSha256=w.sha((ROOT/('scripts/fixtures/chibi-fire-uniform-size-native.json' if fire_model else 'scripts/fixtures/chibi-uniform-size-native.json')).read_bytes()))
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')
@@ -303,10 +319,10 @@ def extract(mode='current', only=None, partial=False):
             bound_masks=[{**m,'texture':f'{m["source"]["serializedFile"]}:{m["texture"]}'} for m in masks if m['chain'][-1]['pathId']==root]
             all_masks.extend(bound_masks)
             models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=record['keeper'],systems=systems,deferred=deferred,masks=bound_masks)
-            if pair_model:
-                w.require(len(non_emitting)==3 and len(systems)==14 and not deferred,'Incomplete electric source partition')
+            if static_model:
+                w.require(len(non_emitting)==len(static_model['nonEmitting']) and len(systems)+len(non_emitting)==entry['particleCount'] and not deferred,'Incomplete static source partition')
                 models[name]['nonEmitting']=non_emitting
-                models[name]['nonEmittingProof']=dict(profile='native-static-disabled-emission-v1',proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-color-pair-native.json').read_bytes()),components=pair_model['staticComponents'])
+                models[name]['nonEmittingProof']=dict(profile='native-static-disabled-emission-v1',proofSha256=w.sha((ROOT/'scripts/fixtures'/static_proof_file).read_bytes()),components=static_model['staticComponents'])
             if any(s.get('distanceRate') for s in systems):models[name]['distanceMotionProof']=distance_proof
             if name in PROMOTIONS['assets']:
                 w.require(not deferred and not any(s.get('partial') for s in systems) and len(systems)==PROMOTIONS['assets'][name]['systems'],'Promoted emitter source no longer passes the bounded profile: '+name)
@@ -316,8 +332,9 @@ def extract(mode='current', only=None, partial=False):
             if name in PROMOTIONS.get('previewAssets',{}):
                 expected=PROMOTIONS['previewAssets'][name]
                 if expected.get('spatialProfile'):
-                    w.require(w.sha(choreopath.read_bytes())==SPATIAL_CONTEXT['choreographySha256']
-                        and all(song['id']==SPATIAL_CONTEXT['arrangement']['id'] for song in choreography['songs'] if any(e['asset']==name for e in song.get('objectLayerEvents',[]))),
+                    context_proof=FIRE_PROOFS if fire_model else SPATIAL_CONTEXT
+                    w.require(w.sha(choreopath.read_bytes())==context_proof['choreographySha256']
+                        and all(song['id']==context_proof['arrangement']['id'] for song in choreography['songs'] if any(e['asset']==name for e in song.get('objectLayerEvents',[]))),
                         'Spatial source needs its bound free-camera choreography')
                 w.require(not deferred and len(systems)==expected['systems'] and models[name]['bundleSha256']==expected['bundleSha256']
                     and [s['source'] for s in systems]==expected['sources']
