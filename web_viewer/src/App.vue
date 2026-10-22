@@ -576,7 +576,7 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import {loadArchiveNames,archiveNamedText,archiveNamesSettled,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
+import {loadArchiveNames,loadArchiveLines,archiveNamedText,archiveNamesSettled,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
@@ -2379,13 +2379,20 @@ async function selectPlayerEpisode(request) {
 
 function playNextEpisode(request = {}) { return playbackController.next(request.instance, { chapter: request.chapter === true }) }
 
+// A voice preview is built once to learn the lines it speaks, then again with their card-line shards in.
+async function translatedPreview(build, kind) {
+  const sources = []
+  await build(source => { sources.push(source); return '' })
+  await loadArchiveLines(sources).catch(error => console.warn('Card line translations unavailable', error))
+  return build(source => archiveNamedTranslation(kind, source, 'text'))
+}
+
 // Card voice previews are touch voices; the player gets their card-lines translation inline. Null when
 // the cue has no stage preview; otherwise the scenario promise, whose shard load overlaps the player's
 // and which the playback controller awaits under its own navigation ownership.
 function translatedVoicePreview(card, cue) {
   if (!buildCardVoicePreviewScenario(card, cue)) return null
-  return loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
-    .then(() => buildCardVoicePreviewScenario(card, cue, { translate: source => archiveNamedTranslation('card-touch', source, 'text') }))
+  return translatedPreview(translate => buildCardVoicePreviewScenario(card, cue, { translate }), 'card-touch')
 }
 
 async function openVoicePreview(card, cue, returnView) {
@@ -2398,9 +2405,8 @@ async function openVoicePreview(card, cue, returnView) {
 
 // Yamamura's office lines open in the player from the other-voices archive and return there.
 async function officeVoiceScenario(cue) {
-  const [{ buildOfficeVoicePreviewScenario }] = await Promise.all([import('./data/officeVoicePreview.js'),
-    loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))])
-  return buildOfficeVoicePreviewScenario(cue, { translate: source => archiveNamedTranslation('office-voice', source, 'text') })
+  const { buildOfficeVoicePreviewScenario } = await import('./data/officeVoicePreview.js')
+  return translatedPreview(translate => buildOfficeVoicePreviewScenario(cue, { translate }), 'office-voice')
 }
 function previewOfficeVoice(cue, options = {}) {
   loadingPurpose.value = 'story-playback'

@@ -1,6 +1,6 @@
 import { uiLocale } from '../ui/UiLocaleStore.js'
 import { prepareReaderTitles } from '../../components/archive/useReaderTitles.js'
-import { loadArchiveNames } from '../../components/archive/useArchiveNamedText.js'
+import { loadArchiveLines, loadArchiveNames } from '../../components/archive/useArchiveNamedText.js'
 
 // Story pages show text from translation files published apart from the read model: Reader
 // titles (index + shards) and archive names (work titles, card titles, chat lines). Components used
@@ -9,14 +9,16 @@ import { loadArchiveNames } from '../../components/archive/useArchiveNamedText.j
 // translations the page needs are fetched with its data, and the page is shown when both are in,
 // or after a short wait at most, in which case the components' own pending states take over.
 //
-// One table says what each kind of story page needs; nothing else decides it.
+// One table says what each kind of story page needs; nothing else decides it. lines names the card
+// lines a page shows (they load per line, see useArchiveNamedText.js).
 const PAGE_TEXT = {
   collection: { names: [] },
   story: { names: [] },
   event: { names: ['cards'] },
   work: { names: ['profiles', 'photos'] },
   idol_story: { names: ['profiles'] },
-  mobile: { names: ['chats', 'card-lines', 'profiles'] },
+  mobile: { names: ['chats', 'profiles'], lines: detail => (detail?.view?.phoneBundles || [])
+    .filter(bundle => bundle.kind === 'idol_phone').map(bundle => bundle.scenarios?.[0]?.title) },
   seasonal: { names: [] },
 }
 export const STORY_TEXT_WAIT_MS = 1200
@@ -27,15 +29,16 @@ export function storyTextNeeds(kind, detail) {
   // A page that lists documents without their manifest entries (the seasonal ledger) names them by id.
   const documents = [...(detail?.view?.readingEntries || []).map(entry => entry?.document_id),
     ...(detail?.view?.documentIds || [])].filter(Boolean)
-  return { documents, names: page.names }
+  return { documents, names: page.names, ...(page.lines ? { lines: page.lines(detail).filter(Boolean) } : {}) }
 }
 
 export async function withStoryText(kind, detail, { signal, waitMs = STORY_TEXT_WAIT_MS, timer = setTimeout } = {}) {
   if (uiLocale.value !== 'zh-CN') return detail
-  const { documents, names } = storyTextNeeds(kind, detail)
+  const { documents, names, lines = [] } = storyTextNeeds(kind, detail)
   const ready = Promise.allSettled([
     prepareReaderTitles(documents, { signal }),
     ...names.map(domain => loadArchiveNames(domain)),
+    loadArchiveLines(lines),
   ])
   await Promise.race([ready, new Promise(resolve => timer(resolve, waitMs))])
   return detail

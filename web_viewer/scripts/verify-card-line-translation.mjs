@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { sourceUnits, CARD_LINE_KINDS, CHAT_KINDS, shards, validateGeneralReturn, rootOverlayEntries, loadGeneralRevisions } from './lib/general-translation-batches.mjs'
 import { validateProducerAddressingOverlay, protectProducerAddressingForTranslation } from '../src/localization/story/ProducerAddressing.js'
+import { cardLineShardDrift } from './lib/card-line-shards.mjs'
+import { cardLineShardKeys, validateCardLineShard } from '../src/presentation/CardLineShards.mjs'
 import { planCompactBatches, renderCompactInput, parseCompactReturn, returnHeading } from './lib/general-translation-markdown.mjs'
 
 // Card lines, home touch voices and call titles go through the general (source-text) workflow:
@@ -83,4 +85,10 @@ const shard = read('public/translations/zh-CN/archive-general/card-lines.json')
 assert.ok(Object.keys(shard.entries).every(kind => CARD_LINE_KINDS.includes(kind)), 'the card-lines shard holds only card lines')
 for (const fields of Object.values(shard.entries)) for (const texts of Object.values(fields))
   for (const [source, text] of Object.entries(texts)) assert.ok(validateProducerAddressingOverlay(source, text), `published slot drift: ${text}`)
+// Pages read the per-line shards; they must be exactly card-lines.json split by source text.
+assert.deepEqual(cardLineShardDrift(`${root}/public/translations/zh-CN/archive-general`, shard.entries), [], 'card-line shards match card-lines.json (node scripts/generate-card-line-shards.mjs)')
+const published = cardLineShardKeys().map(key => validateCardLineShard(read(`public/translations/zh-CN/archive-general/card-lines/${key}.json`), key))
+const lineCount = entries => Object.values(entries).reduce((n, fields) => n + Object.values(fields).reduce((m, texts) => m + Object.keys(texts).length, 0), 0)
+assert.equal(published.reduce((n, value) => n + lineCount(value.entries), 0), lineCount(shard.entries), 'every published line is in exactly one shard')
+assert.ok(published.every(value => Buffer.byteLength(JSON.stringify(value)) < 96 * 1024), 'each shard stays small enough for a first visit')
 console.log(`Card line translation: ${lines.length} speaker-bound lines in ${lineBatches.length} batches; slots protected as markers and restored verbatim; repair recorded with approvals; lazy shard only`)

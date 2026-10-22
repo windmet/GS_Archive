@@ -10,12 +10,11 @@
 import { computed, useId } from 'vue'
 import { producerName, saveProducerName } from '../../utils/LanguageStore.js'
 import { PRODUCER_NAME_WITH_P_TOKEN } from '../../localization/story/ProducerAddressing.js'
-import { archiveLineText, loadArchiveNames } from './useArchiveNamedText.js'
+import { archiveLineText } from './useArchiveNamedText.js'
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
 const inputId = useId()
 // The sample is a real home touch voice (天ヶ瀬冬馬), shown the way the home page shows it.
 const SAMPLE = `${PRODUCER_NAME_WITH_P_TOKEN}、\nいつもありがとな！　この調子で\nトップアイドルを目指すぜ！`
-void loadArchiveNames('card-lines').catch(() => {})
 const preview = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], SAMPLE))
 </script>
 <style scoped>

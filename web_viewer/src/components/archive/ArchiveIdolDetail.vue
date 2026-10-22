@@ -152,7 +152,6 @@ const props = defineProps({
 
 const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor','play-introduction'])
 // The self-introduction is the idol's IdolDetail home voice (home-voice, self-intro in the card-lines shard).
-void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
 const introLine = computed(() => archiveLineText('card-lines', [['home-voice', 'self-intro']], props.selfIntroduction?.text || ''))
 // Bond honors (担当 at bond Lv.50, the catchphrase at Lv.100), then FES achievements, then event
 // rankings grouped by event. Notes say where each group comes from in reader terms.

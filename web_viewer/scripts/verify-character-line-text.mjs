@@ -7,7 +7,7 @@ import vue from '@vitejs/plugin-vue'
 // page through archiveLineText: one lookup, one pending rule, Producer macros resolved after the
 // translation is chosen. The home dialogue and the card voice preview use the same path as the card page.
 const read = file => fs.readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
-const shardText = read('public/translations/zh-CN/archive-general/card-lines.json')
+const shardText = read('public/translations/zh-CN/archive-general/card-lines.json') // the whole overlay, for fixtures
 const shard = JSON.parse(shardText).entries
 const touches = Object.entries(shard['card-touch'].text)
 const withP = touches.find(([source, text]) => source.includes('●●●●プロデューサー、') && text.includes('●●●●プロデューサー，'))
@@ -17,11 +17,15 @@ assert.ok(withP && withChan && plain, 'fixtures exist in the published shard')
 
 const server = await createServer({ configFile: false, plugins: [vue()], optimizeDeps: { noDiscovery: true }, server: { middlewareMode: true, watch: null, hmr: false }, appType: 'custom' })
 const originalFetch = globalThis.fetch
-let release
+// Pages fetch the shown line's shard (card-lines/<key>.json), never the whole overlay.
+const requested = [], held = []
+let hold = true
 globalThis.fetch = async url => {
-  assert.match(url, /\/card-lines\.json\?rev=[a-f0-9]{64}$/)
-  await new Promise(resolve => { release = resolve })
-  return new Response(shardText, { headers: { 'content-type': 'application/json' } })
+  const key = url.match(/\/archive-general\/card-lines\/([0-9a-f]{2})\.json\?rev=[a-f0-9]{64}$/)?.[1]
+  assert.ok(key, `a card-line shard URL: ${url}`)
+  requested.push(key)
+  if (hold) await new Promise(resolve => held.push(resolve))
+  return new Response(read(`public/translations/zh-CN/archive-general/card-lines/${key}.json`), { headers: { 'content-type': 'application/json' } })
 }
 try {
   const names = await server.ssrLoadModule('/src/components/archive/useArchiveNamedText.js')
@@ -33,15 +37,19 @@ try {
   const touch = source => names.archiveLineText('card-lines', [['card-touch', 'text']], source)
   locale.setUiLocale('zh-CN'); producerName.value = ''
 
-  // Not requested yet: the source is usable. Loading: hidden in place. Loaded: Chinese.
-  assert.deepEqual(touch(plain[0]), { text: plain[0], lang: 'ja', pending: false })
-  const loading = names.loadArchiveNames('card-lines')
+  // The first lookup hides the line and requests its shard (after the render); loaded: Chinese.
+  const { cardLineShardKey } = await server.ssrLoadModule('/src/presentation/CardLineShards.mjs')
+  assert.equal(touch(plain[0]).pending, true, 'no Japanese flash before the shard arrives')
+  assert.deepEqual(requested, [], 'a lookup does not fetch during render')
   await new Promise(resolve => setTimeout(resolve, 0))
-  assert.equal(touch(plain[0]).pending, true, 'no Japanese flash while the shard loads')
-  release(); await loading
+  assert.deepEqual(requested, [cardLineShardKey(plain[0])], 'only the shown line\'s shard is requested')
+  assert.equal(touch(plain[0]).pending, true, 'still hidden while the shard loads')
+  hold = false; held.splice(0).forEach(resolve => resolve())
+  await names.loadArchiveLines([plain[0]])
   // Translations join the game's textbox wraps (the container wraps instead); the Japanese original keeps them.
   assert.deepEqual(touch(plain[0]), { text: plain[1].split(String.fromCharCode(10)).join(''), lang: 'zh-CN', pending: false })
 
+  await names.loadArchiveLines([withP[0], withChan[0]])
   // Producer macros: never raw dots; the unnamed word follows the shown language; a set name replaces it.
   assert.ok(!touch(withP[0]).text.includes('●') && touch(withP[0]).text.includes('制作人，'))
   assert.ok(touch(withChan[0]).text.includes('P酱') && !touch(withChan[0]).text.includes('制作人酱'))
@@ -55,6 +63,7 @@ try {
   // Operational voices (scout change) are card lines word for word.
   const details = JSON.parse(read('public/data/masterdata/card_detail_index.json')).cards_by_resource_id
   const scout = Object.values(details).flatMap(card => card.operational_voice_cues || []).find(cue => cue.text_source === 'masterdata' && cue.text?.trim() && cue.text.trim() !== '0')
+  await names.loadArchiveLines([scout.text])
   assert.equal(names.archiveLineText('card-lines', names.ANY_CARD_LINE, scout.text).lang, 'zh-CN', 'an operational voice uses its card-line translation')
 
   // Card voice preview: the player receives the touch translation and resolves it like a story line.

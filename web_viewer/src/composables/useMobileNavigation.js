@@ -204,7 +204,7 @@ export function useMobileNavigation({
       archive: { by_unit_code: Object.fromEntries(units.map(unit => [unit.id, true])) },
     })
     const unit = unitCode ? await loadMobileDetail('mobile-units', unitCode, options) : null
-    await withStoryText('mobile', null, options)
+    await withStoryText('mobile', idol, options)
     return { idol, unit, unitCode }
   }
 

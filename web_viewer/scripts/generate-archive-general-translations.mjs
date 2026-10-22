@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
 import {randomTalkTitleAliases} from './lib/random-talk-titles.mjs';
 import {sourceUnits,loadGeneralRevisions,shards,rootOverlayEntries} from './lib/general-translation-batches.mjs';
+import {writeCardLineShards} from './lib/card-line-shards.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
 import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
 import {photoStickerDraft, photoUnitNames, backgroundVariantNames} from '../translation/studio/general/photo-drafts.mjs';
@@ -97,6 +98,8 @@ for (const [name, select] of Object.entries(shards)) {
   fs.writeFileSync(path.join(shardDirectory,`${name}.json`),JSON.stringify({schemaVersion:1,status:'draft',
     entries:Object.fromEntries(Object.entries(entries).filter(([kind])=>select(kind)))},null,2)+'\n');
 }
+// Pages read card lines from per-line shards (src/presentation/CardLineShards.mjs).
+writeCardLineShards(shardDirectory, Object.fromEntries(Object.entries(entries).filter(([kind])=>shards['card-lines'](kind))));
 const bondTarget = path.join(root, 'public/data/editorial/honor-bonds.json');
 fs.mkdirSync(path.dirname(bondTarget), {recursive: true});
 fs.writeFileSync(bondTarget, JSON.stringify({schemaVersion: 1, evidence: 'user-reported', entries: bonds}, null, 2) + '\n');
