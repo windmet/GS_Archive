@@ -12,7 +12,11 @@ assert.deepEqual([start.route.view, start.source], ['portal', 'new-user'])
 assert.equal(resolveArchiveStartup('http://localhost/', { ...unset, onboardingComplete: true }, []).route.view, 'portal')
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8').replace(/\r\n/g, '\n')
-assert.match(app, /<ArchiveOnboarding\n\s+v-if="view === 'portal' && !userPreferences\.onboardingComplete/, 'the sheet only covers the archive, only until onboarding is complete')
+assert.match(app, /<ArchiveOnboarding\n\s+v-if="onboardingVisible"/)
+assert.match(app, /const onboardingVisible = computed\(\(\) => view\.value === 'portal' && !userPreferences\.value\.onboardingComplete/, 'the sheet only covers the archive, only until onboarding is complete')
+// The sheet's main line is the sample's card-line shard; it is requested with the decision to show the sheet.
+assert.match(app, /watch\(onboardingVisible, visible => \{ if \(visible\) loadArchiveLines\(\[PRODUCER_NAME_SAMPLE\]\)/)
+assert.match(readFileSync(new URL('../src/components/archive/ProducerNameSetting.vue', import.meta.url), 'utf8'), /archiveLineText\('card-lines', \[\['card-touch', 'text'\]\], PRODUCER_NAME_SAMPLE\)/)
 const begin = app.indexOf('function completeOnboarding(')
 assert.ok(begin >= 0, 'completeOnboarding exists')
 const source = app.slice(begin, app.indexOf('\n}\n', begin) + 2)

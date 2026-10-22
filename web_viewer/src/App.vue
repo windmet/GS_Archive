@@ -1023,9 +1023,6 @@ const archiveHomeIdols = computed(() => homeReadModelIndex.value
   })
   : archiveBootstrap.idols.filter(idol => idol.home_available))
 const archivePickerIdols = computed(() => archiveBootstrap.idols)
-const onboardingVisible = computed(() => view.value === 'portal' && !userPreferences.value.onboardingComplete && archivePickerIdols.value.length > 0)
-// The sheet's main line (producerNameSample.js) is requested with the decision to show the sheet.
-watch(onboardingVisible, visible => { if (visible) loadArchiveLines([PRODUCER_NAME_SAMPLE]).catch(() => {}) }, { immediate: true })
 const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => idol.id))
 const preferredArchiveIdol = computed(() =>
   archivePickerIdols.value.find(idol => idol.id === userPreferences.value.preferredIdol) || null)
@@ -1052,6 +1049,9 @@ const {
   captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
   loadHomeSupplements: loadStoryCostumes,
 })
+const onboardingVisible = computed(() => view.value === 'portal' && !userPreferences.value.onboardingComplete && archivePickerIdols.value.length > 0)
+// The sheet's main line (producerNameSample.js) is requested with the decision to show the sheet.
+watch(onboardingVisible, visible => { if (visible) loadArchiveLines([PRODUCER_NAME_SAMPLE]).catch(() => {}) }, { immediate: true })
 
 const {
   openPrimaryIdol, openIdolReadModel, openIdolDirectory, selectPrimaryIdol,
