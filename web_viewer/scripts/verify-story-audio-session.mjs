@@ -8,6 +8,7 @@ import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.j
 import { useVoicePlayer } from '../src/core/useVoicePlayer.js'
 import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 import { AudioManager } from '../src/core/AudioManager.js'
+import { AMBIENCE_DUCK_CURVE, AMBIENCE_RESTORE_CURVE } from '../src/core/story-runtime/storyAmbienceCurves.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import {
   isKnownDanglingStoryVoice,
@@ -475,6 +476,56 @@ try {
   await oldAmbient
   assert.equal(raceManager.captureState().ambient.cue, 'new-ambient', 'late stale Ambient load must not replace the newest cue')
   assert.equal(raceSession.inspect().active_sources, 2, 'one BGM and one Ambient source must remain')
+
+  // Web Audio rejects any automation event inside an active setValueCurveAtTime
+  // span. Skipping a text cut (ambience duck curve) into a step that stops,
+  // replaces or re-levels the ambience used to throw from inside the readiness
+  // listener and block the step as a missing background (1_1_012_03 step 69).
+  class CurveAudioParam extends FakeAudioParam {
+    constructor(value, { hold = true } = {}) {
+      super(value)
+      this.events = []
+      if (!hold) this.cancelAndHoldAtTime = undefined
+    }
+    _reject(time) {
+      if (this.events.some(e => e.curve && time > e.time && time < e.time + e.duration)) {
+        throw Object.assign(new Error(`automation at ${time} overlaps setValueCurveAtTime`), { name: 'NotSupportedError' })
+      }
+    }
+    setValueAtTime(value, time) { this._reject(time); super.setValueAtTime(value); this.events.push({ time }) }
+    linearRampToValueAtTime(value, time) { this._reject(time); super.linearRampToValueAtTime(value); this.events.push({ time }) }
+    setValueCurveAtTime(values, time, duration) {
+      this._reject(time); this._reject(time + duration)
+      this.value = values.at(-1); this.events.push({ time, duration, curve: true })
+    }
+    cancelScheduledValues(time) { this.events = this.events.filter(e => e.time < time && !(e.curve && e.time + e.duration > time)) }
+    cancelAndHoldAtTime(time) {
+      this.events = this.events.filter(e => e.time <= time).map(e => e.curve && e.time + e.duration > time ? { ...e, duration: time - e.time } : e)
+    }
+  }
+  for (const hold of [true, false]) {
+    const curveContext = new FakeAudioContext()
+    curveContext.state = 'running'
+    curveContext.createGain = function () { const gain = new FakeGain(); gain.gain = new CurveAudioParam(1, { hold }); this.gains.push(gain); return gain }
+    const curveManager = new AudioManager({ audioSession: new StoryAudioSession({ contextFactory: () => curveContext }) })
+    globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
+    const label = hold ? 'cancelAndHoldAtTime' : 'cancelScheduledValues fallback'
+    await curveManager.playAmbient('ambi_shop_mall', 0.5, 1)
+    curveContext.currentTime = 1
+    curveManager.setAmbientCurve(AMBIENCE_DUCK_CURVE)
+    curveContext.currentTime = 1.3
+    assert.doesNotThrow(() => curveManager.setAmbientCurve(AMBIENCE_RESTORE_CURVE), `${label}: a new curve must replace an active duck curve`)
+    curveManager.setAmbientCurve(AMBIENCE_DUCK_CURVE)
+    curveContext.currentTime = 1.5
+    assert.doesNotThrow(() => curveManager.setAmbientVolume(0.4), `${label}: re-levelling must truncate an active duck curve`)
+    curveManager.setAmbientCurve(AMBIENCE_DUCK_CURVE)
+    curveContext.currentTime = 1.7
+    await assert.doesNotReject(curveManager.playAmbient('ambi_room', 0.5, 1), `${label}: a crossfade must truncate an active duck curve`)
+    curveManager.setAmbientCurve(AMBIENCE_DUCK_CURVE)
+    curveContext.currentTime = 2
+    assert.doesNotThrow(() => curveManager.stopAmbient(), `${label}: stopping must truncate an active duck curve`)
+    assert.equal(curveManager.captureState().ambient, null)
+  }
 
   const probeContext = new FakeAudioContext()
   probeContext.state = 'running'
