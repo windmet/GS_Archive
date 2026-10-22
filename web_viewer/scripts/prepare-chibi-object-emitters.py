@@ -5,6 +5,7 @@ ROOT=Path(__file__).resolve().parents[1]
 PROMOTIONS=json.loads((ROOT/'scripts/fixtures/chibi-object-emitter-promotions.json').read_text(encoding='utf8'))
 SPATIAL_CONTEXT=json.loads((ROOT/'scripts/fixtures/chibi-spatial-context-native.json').read_text(encoding='utf8'))
 SPATIAL_CONES=json.loads((ROOT/'scripts/fixtures/chibi-cone-stretch-native.json').read_text(encoding='utf8'))
+LOCAL_PARENTS=json.loads((ROOT/'scripts/fixtures/chibi-local-parent-native.json').read_text(encoding='utf8'))
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
@@ -51,7 +52,7 @@ def stationary_distance_proof(record, environment, audit, choreography):
     w.require(bool(arrangements),'No choreography proof for distance emitter')
     return dict(profile='stationary-object-layer-v1',components=components,arrangements=arrangements)
 
-def model(p, partial=False, stationary=False, spatial_source=None):
+def model(p, partial=False, stationary=False, spatial_source=None, parent_source=None):
     m=p.get('modules') or {};i=m.get('InitialModule');e=m.get('EmissionModule');r=p.get('renderer') or {};main=p.get('main') or {}
     w.require(bool(i) and bool(e) and bool(r) and bool(main),'Missing core particle modules')
     s=m.get('ShapeModule');u=m.get('UVModule');c=m.get('ClampVelocityModule');chain=p.get('transformChain') or []
@@ -71,7 +72,10 @@ def model(p, partial=False, stationary=False, spatial_source=None):
     if s:w.require(s['randomDirectionAmount']==s['sphericalDirectionAmount']==s['randomPositionAmount']==0 and not s['alignToDirection'],'Unsupported shape direction')
     if s and s['type'] in [0,2,4,10]:
         w.require(s['radius']['mode']==0 and s['arc']['mode']==0 and s['arc']['spread']==0,'Unsupported animated or stepped shape radius/arc')
-    for t in chain:
+    if parent_source:
+        w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==parent_source['source'] and chain==parent_source['chain'],'Local parent source changed')
+        w.require(r['alignment']==2 and r['renderMode']==0 and not i['size3D'] and not i.get('rotation3D') and not c and not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0,'Unsupported spatial local parent profile')
+    for t in chain if not parent_source else []:
         q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
         w.require(abs(2*(x*z-v*y))<1e-5 and abs(2*(y*z+v*x))<1e-5,'Nonplanar emitter transform')
     if s and s['type']==12:w.require(s['radius']['mode']==0 and i['startSpeed']['scalar']==0,'Unsupported moving edge')
@@ -114,6 +118,7 @@ def model(p, partial=False, stationary=False, spatial_source=None):
         velocity={k:w.curve(velocity[k]) for k in ['x','y','z']} if velocity else None,
         limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') or mat['shader']['name']=='Mobile/Particles/Alpha Blended' else 'add')
     if masked and material_tint!=[1,1,1,1]:data['materialTint']=material_tint
+    if parent_source:data['parentProjection']=dict(profile='native-local-orthographic-v1',proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-local-parent-native.json').read_bytes()))
     if distance['scalar']:
         data['distanceRate']=w.curve(distance)
         data['distanceMode']='stationary-object-layer-v1'
@@ -212,7 +217,8 @@ def extract(mode='current', only=None, partial=False):
                 if reasons and not asset_partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
                     spatial_source=SPATIAL_CONES['models'].get(name) if PROMOTIONS.get('previewAssets',{}).get(name,{}).get('spatialProfile') else None
-                    system=model(p,asset_partial,bool(distance_proof),spatial_source)
+                    parent_source=next((s for s in LOCAL_PARENTS['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None) if PROMOTIONS.get('assets',{}).get(name,{}).get('parentProfile') else None
+                    system=model(p,asset_partial,bool(distance_proof),spatial_source,parent_source)
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')

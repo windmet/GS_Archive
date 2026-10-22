@@ -198,6 +198,8 @@ function classify(relativePath) {
         ? '2026-10-20-native-suspension-sprites-001'
         : stageNativeTexture[1]==='stage-backmonitor-logos'
         ? '2026-10-19-native-backmonitor-logos-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ["979df7f87c603a9a755b4541","9769050e6fb1fe5f30004a47","39750b57bcd9457fae273951","c9cea295b9c3adbfe443e3a4"].includes(logicalStem)
+        ? '2026-10-22-native-local-panels-001'
         : stageNativeTexture[1]==='stage-object-emitters' && ["f161574dfb114a551856d7d7","f28fab56c8b010ae67658e9e","1c5ef5b6904c30a23586aa62"].includes(logicalStem)
         ? '2026-10-21-native-pfofos-fire-001'
         : stageNativeTexture[1]==='stage-object-emitters' && logicalStem==='b962010c7c2a646d278d5902'

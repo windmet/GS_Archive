@@ -56,6 +56,19 @@ export function emitterMatrix(chain) {
   }
   return m
 }
+// Preserve local Z through the complete static hierarchy before projecting XY.
+// Admission is source-bound to Local billboards without 3D particle rotation.
+export function emitterSpatialMatrix(chain) {
+  let m=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]
+  for(const t of chain) {
+    const {x,y,z,w}=t.rotation,s=t.scale,p=t.position
+    const a=[(1-2*(y*y+z*z))*s.x,2*(x*y+w*z)*s.x,2*(x*z-w*y)*s.x,0,
+      2*(x*y-w*z)*s.y,(1-2*(x*x+z*z))*s.y,2*(y*z+w*x)*s.y,0,
+      2*(x*z+w*y)*s.z,2*(y*z-w*x)*s.z,(1-2*(x*x+y*y))*s.z,0,p.x,p.y,p.z,1]
+    m=Array.from({length:16},(_,i)=>{const row=i%4,col=Math.floor(i/4);return [0,1,2,3].reduce((v,k)=>v+a[k*4+row]*m[col*4+k],0)})
+  }
+  return {a:m[0],b:m[1],c:m[4],d:m[5],zx:m[8],zy:m[9],tx:m[12],ty:m[13],full:m}
+}
 // View-aligned billboards use signed native lossy scale, not column lengths.
 // A reflected ancestor conjugates descendant rotations. Local alignment keeps
 // the complete hierarchy matrix, including shear, for both orientation and position.
@@ -175,6 +188,8 @@ function noiseMotion(system,id,initial,age,born,options) {
   return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:options.clock.timeAt(born+age)}).position:saved.state.position
 }
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,view={}) {
+  if(system.parentProjection && (system.parentProjection.profile!=='native-local-orthographic-v1' || system.alignment!==2 || system.rotationX || system.sizeY || system.noise || system.stretch))
+    throw Error('Unsupported local parent projection')
   // Nonzero distance rates are retained. This profile proves the world emitter
   // stays fixed after placement/Play, so native dt*|velocity| contributes zero.
   // Never apply that reduction to an unproven moving emitter.
@@ -193,7 +208,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
   const maxLife=Math.max(.00001,curveUpperBound(system.lifetime)),period=system.duration
   const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
   const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
-  const matrix=emitterMatrix(system.chain),renderBasis=emitterRenderBasis(system.chain,system.alignment,matrix),out=[]
+  const matrix=system.parentProjection?emitterSpatialMatrix(system.chain):emitterMatrix(system.chain),renderBasis=emitterRenderBasis(system.chain,system.alignment,matrix),out=[]
   const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
   if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
   const timeline=system.noise?noiseTimeline(system,births,last,cutoff,wait,maxLife,seed):null
@@ -242,7 +257,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       const color=['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
       // World gravity (Unity default -9.81 y) after the emitter matrix; screen y is negated.
-      const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+(system.noise?0:0.5*g*age*age)
+      const wx=matrix.a*p.x+matrix.c*p.y+(matrix.zx||0)*p.z+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+(matrix.zy||0)*p.z+matrix.ty+(system.noise?0:0.5*g*age*age)
       let geometry={x:wx*100,y:-wy*100,a:A*size,b:B*size,c:C*sizeY,d:D*sizeY}
       if(system.stretch) {
         const fp=Math.fround,speed=fp(sample(system.speed,birthPhase,rnd(4)))

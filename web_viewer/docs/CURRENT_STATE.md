@@ -2,7 +2,7 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-21（master 到 #76；站点/R2 仍为历史记录，未重新验收）
+更新：2026-10-22（本轮舞台从 master #78 新开；站点/R2 仍为历史记录，未重新验收）
 
 ## 基线
 
@@ -24,7 +24,7 @@
 | 剧情 / ADV | 无进行中分支（#59 候选工具、#66–#69/#71/#73 原生效果已合入） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；#58 的 SE `sheet` 总线路由与 #73 的 part 开头黑场都要晋升后才在已发布 compiled 上生效。晋升后才恢复翻译批次。粒子剩樱花（需给共用采样器加 ForceModule，红叶/雪语料未使用）；part 之间原生是 0.5 秒渐黑再停 1 秒，我们是直接切黑 |
 | 门户 portal | 无进行中分支（#60–#62、#65、#70、#72、#74 已合入；后续从最新 master 开） | 故事入口一律经 `src/core/StoryOwner.js` 落到归属页，不再新增通用故事页。盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定；关于页联系方式待定。启动 JS 预算已由导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 舞台 stage | 10-20/21 轮已随 #76 合入（逐批记录见 [STAGE_ROUND_20261020_21.md](STAGE_ROUND_20261020_21.md)）；下一轮从最新 master 开 | 无 consumer 粒子剩 10 种 / 128 次事件 / 7 编排（[剩余粒子清单](NATIVE_REMAINING_PARTICLES_20261021.md)）；Noise 与原生参考时钟仍是预览边界；原片/设备对照、原生 RNG、mixed/CanvasGroup 与 APK 内置分支未验；Made in 面板播放中暂停在 CDP 下超时待查；冷加载只有测量入口（[STAGE_COLD_LOAD_MEASUREMENT_20261020.md](STAGE_COLD_LOAD_MEASUREMENT_20261020.md)），未做受控新旧对比。本轮新增的舞台分片与 emitter 纹理都未部署，下一批 R2 必须按分片闭包门禁整包带上 |
+| 舞台 stage | `stage/20261022-particle-gaps`，从 `origin/master` / `aa987f40`（#78）新开；前轮已随 #76 合入（[前轮记录](STAGE_ROUND_20261020_21.md)） | [倾斜父链面板接线](NATIVE_LOCAL_PARENT_PANELS_20261022.md)：運命光年/VIVA 两组十系统已接入，90例原生顶点通过；无consumer剩8种/124事件/5编排。下一项继续 jfhtmk 非等比尺寸、shape17、颜色/速度模块及火焰组合。Noise、参考时钟、原片/设备、RNG、mixed/CanvasGroup 与内置分支边界不变；既有暂停响应和受控冷加载对比仍开放；本轮资源及分片未部署 |
 
 ## 未合入但保留的分支
 
