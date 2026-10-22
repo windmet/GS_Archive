@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceDigest": "c29e32828611bc66d2d38c6d1d481fea42c58a14ad5724749c06b23f31e9e723",
-  "auditedAt": "2026-10-14T12:50:27.996Z",
+  "sourceDigest": "3ddef7e050d84dff24561a43cc4c64668cbbe49ed8172c25aa5c2ed991ff2c82",
+  "auditedAt": "2026-10-22T04:26:32.849Z",
   "scope": "当前客户端资料目录与本地 public/assets 文件清单；不代表在线全资源可用或设备验收",
   "counts": [
     {
@@ -42,7 +42,7 @@
     },
     {
       "label": "发布来源记录",
-      "count": 1365
+      "count": 1384
     }
   ],
   "chartIntegrity": {
@@ -66,7 +66,7 @@
       "label": "其他语音存档",
       "count": 963,
       "unit": "条",
-      "detail": "8 个编号系列（2 个为标题呼号）；15 条有脚本文字，其余只有音频",
+      "detail": "8 个编号系列（3 个已确认在用）；15 条有脚本文字，其余只有音频",
       "surface": "收藏 → 其他语音（/unused/）",
       "state": "live",
       "source": "src/data/unusedVoiceArchive.json"
@@ -94,41 +94,21 @@
   ],
   "supplementsUnavailable": [],
   "localAssets": {
-    "files": 59083,
-    "bytes": 7965050158,
-    "latestFileChange": "2026-10-14T12:45:09.568Z",
+    "files": 242,
+    "bytes": 53172952,
+    "latestFileChange": "2026-10-22T04:20:14.716Z",
     "groups": {
-      "bg": {
-        "files": 753,
-        "bytes": 827609608
+      "attributes": {
+        "files": 4,
+        "bytes": 14712
       },
       "brand": {
         "files": 2,
         "bytes": 22032
       },
-      "cards": {
-        "files": 1367,
-        "bytes": 51470689
-      },
-      "emojis": {
-        "files": 44,
-        "bytes": 723077
-      },
       "events": {
-        "files": 86,
-        "bytes": 26454618
-      },
-      "gasha": {
-        "files": 61,
-        "bytes": 42024096
-      },
-      "idols": {
-        "files": 236,
-        "bytes": 23196365
-      },
-      "live-chibi": {
-        "files": 11027,
-        "bytes": 1297910777
+        "files": 3,
+        "bytes": 760838
       },
       "portal": {
         "files": 1,
@@ -150,75 +130,23 @@
         "files": 6,
         "bytes": 9460
       },
-      "song-experiment": {
-        "files": 250,
-        "bytes": 710522439
-      },
       "songs": {
         "files": 61,
         "bytes": 14822790
       },
-      "spines": {
-        "files": 10785,
-        "bytes": 1698116212
-      },
-      "stamps": {
-        "files": 15,
-        "bytes": 369672
-      },
       "stories": {
-        "files": 133,
-        "bytes": 40654297
-      },
-      "terminal": {
-        "files": 1766,
-        "bytes": 545524118
+        "files": 112,
+        "bytes": 36023478
       },
       "units": {
-        "files": 32,
-        "bytes": 2765108
-      },
-      "voice": {
-        "files": 32421,
-        "bytes": 2681894417
+        "files": 16,
+        "bytes": 559259
       }
     },
     "extensions": {
       ".png": {
-        "files": 13169,
-        "bytes": 2611428994
-      },
-      ".json": {
-        "files": 200,
-        "bytes": 56970230
-      },
-      ".mp4": {
-        "files": 81,
-        "bytes": 11344349
-      },
-      ".atlas": {
-        "files": 1278,
-        "bytes": 26243036
-      },
-      ".bin": {
-        "files": 1728,
-        "bytes": 63326931
-      },
-      ".motion": {
-        "files": 7350,
-        "bytes": 278857041
-      },
-      ".m4a": {
-        "files": 32780,
-        "bytes": 3711701122
-      },
-      ".skel": {
-        "files": 731,
-        "bytes": 659654337
-      },
-      ".webp": {
-        "files": 1766,
-        "bytes": 545524118
+        "files": 242,
+        "bytes": 53172952
       }
     },
     "unavailable": []
@@ -226,31 +154,31 @@
   "sources": [
     {
       "file": "public/data/masterdata/card_index.json",
-      "sha256": "bcde2c6bebc5d449fb6615931ca8c28d22afb0b8ffe7fc5a0169ebda6695d71a"
+      "sha256": "4271e0fc8a3310469ca5fdcf7c594fc2cc2b2cda92cc39642566f72bbd04bd84"
     },
     {
       "file": "public/data/masterdata/costume_dictionary.json",
-      "sha256": "7a6e6d819097c0379766995668c6609c856d29bfcce20ebad235424c72351071"
+      "sha256": "11a3502f3b59b02bc568f85d4b7c6da2d2b6f4a4c857065a4be2990e4645d218"
     },
     {
       "file": "public/data/masterdata/idol_unit_dictionary.json",
-      "sha256": "d441c9120c6f80df2f30a684705f6297e9330afa46ef32781c70f6a1882692f5"
+      "sha256": "00125a7496a77670509584d07cdb3653a941bd9636b3544f7b4dc6b4672ce87c"
     },
     {
       "file": "public/data/masterdata/domains/item_catalog.json",
-      "sha256": "dad9722485338c646a95c7d9776aa0b38efb6e0999f14cd07727b0cf161914ff"
+      "sha256": "78898da694b62d86f8181fe31f2a0e505f2cf62abec92510b21eaf0d19e05497"
     },
     {
       "file": "public/data/masterdata/domains/honor_catalog.json",
-      "sha256": "cfb0d8ec544d9ebfda7893fdd7fdf9f8235f6ae2453100a46ab3dd35a39476f0"
+      "sha256": "b7cd6bbcce31b136f3542713a694f2e0d0354a13f3dce58d2b1a7acbb588bee7"
     },
     {
       "file": "public/data/masterdata/domains/photo_materials.json",
-      "sha256": "9cd6d9ec8dd5d1c92ba1fb3c0ad7b358486536f3797508ba9e016ebc16ec1ee4"
+      "sha256": "e1de8c09eb4c0087694670fc13c69ff1ec8a4ec0cec86925d0424adee0a38c22"
     },
     {
       "file": "public/data/song_catalog.json",
-      "sha256": "71bc28022333b05b37c0131ed47c04b8b624f0f7ed36dc45f39be1a5b9f5d9ac"
+      "sha256": "ea26a010e47e79cd07fb3fa5de8f1412314b9f484b3aa30d20f4f8db4f89b63d"
     },
     {
       "file": "public/data/song_charts/manifest.json",
@@ -258,11 +186,11 @@
     },
     {
       "file": "public/data/reading/manifest.json",
-      "sha256": "24da8085426b3b2b8cefdaa49594ee8ca4c962faa7b6d6e19719d845139be41c"
+      "sha256": "3f924b4f50372913fb7c112acb2f6751697a321a1fc1958459e0ef3350879d41"
     },
     {
       "file": "public/data/publication/manifest.json",
-      "sha256": "a355f08bbe97fcb317f75c369e2fc3af90f0f0db20e7bb2ef27658935915600e"
+      "sha256": "9a3fb0b310e6b6c172594cbfd5db1882d5eeaf48ebe6b0c35f59a14a06f72724"
     },
     {
       "file": "src/data/officeSystemVoices.json",
@@ -270,15 +198,15 @@
     },
     {
       "file": "src/data/unusedVoiceArchive.json",
-      "sha256": "3bb883535ab74aa184d23f3d677b73e3576fc55cf6dfb671ca7279bc5c6dd9f2"
+      "sha256": "e65164dbc27c5d85c4b3e7ee904ade50e6c6072c8ccff5009f644bd1efc87721"
     },
     {
       "file": "../data_pipeline/curated/card_voice_transcripts.json",
-      "sha256": "09049fe304195ed63813af876b9966cbbe627edf5f308264b4bac91efacad8fc"
+      "sha256": "8fbe787473438174c103ab9aee19ce6bec824dc851d3cfe845d6c731a0b088cd"
     },
     {
       "file": "public/data/masterdata/card_detail_index.json",
-      "sha256": "7746cfc050e56174a94ac13a8173b156bd2b5d84a3ce26b358be504c6f9dc9d7"
+      "sha256": "de129accc8bf106524d8fe289785f7c12bcf819fb4d65302433bf79bb9a34659"
     },
     {
       "file": "public/data/editorial/gasha-ticket-evidence.json",

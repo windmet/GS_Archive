@@ -45,6 +45,7 @@ const ROUTE_QUERY_KEYS = [
   'entity',
   'photo_idol',
   'photo',
+  'voices',
   'gasha',
   'gasha_type',
   'rarity',
@@ -387,6 +388,7 @@ export function normalizeArchiveRoute(input = {}) {
     ...(['photo_catalog','picture_studio'].includes(view) ? {
       photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : '',
       photoEntity:/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(input.photoEntity || '') ? input.photoEntity : ''} : {}),
+    ...((view === 'unused_archive' || (view === 'player' && clean(input.returnView) === 'unused_archive')) && /^[a-z][a-z-]{1,23}$/.test(input.voiceShelf || '') ? { voiceShelf: input.voiceShelf } : {}),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
@@ -781,6 +783,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     collection: { kind:params.get('collection_kind'), category:params.get('collection_category'), idol:params.get('collection_idol'), unit:params.get('collection_unit'), attribute:params.get('collection_attribute'), page:params.get('collection_page') },
     photoIdol: params.get('photo_idol'),
     photoEntity: params.get('photo'),
+    voiceShelf: params.get('voices'),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
@@ -818,6 +821,7 @@ export function buildArchiveUrl(input, route) {
   }
   if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
   if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoEntity) url.searchParams.set('photo', normalized.photoEntity)
+  if (normalized.voiceShelf) url.searchParams.set('voices', normalized.voiceShelf)
   if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)

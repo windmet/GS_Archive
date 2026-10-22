@@ -106,7 +106,7 @@
       />
 
       <ArchiveAbout v-if="view === 'about'" />
-      <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" @preview-office-voice="previewOfficeVoice" />
+      <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" :shelf="currentVoiceShelf" @shelf="currentVoiceShelf = $event; syncArchiveRoute({ replace: true })" @preview-office-voice="previewOfficeVoice" />
       <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" @photo-catalog="openDomainCatalog('photos')" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
@@ -824,6 +824,7 @@ const {
   currentCollectionState,
   currentPhotoIdol,
   currentPhotoEntity,
+  currentVoiceShelf,
   currentGashaId,
   currentGashaCategory,
   currentCardRarity,
@@ -1786,6 +1787,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentCollectionState.value = route.collection || {kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
     currentPhotoIdol.value = route.photoIdol || ''
     currentPhotoEntity.value = route.photoEntity || ''
+    currentVoiceShelf.value = route.voiceShelf || ''
     eventParentView.value = route.parentView || ''
     detailSourceRoute.value = ownsArchiveSource(route.view, route.returnView) ? (route.sourceRoute || '') : ''
     storyCollectionParentView.value = (
@@ -1960,7 +1962,7 @@ function navigateArchiveSection(section) {
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'live' || section === 'studio') { filterQuery.value = ''; commitView(section) }
   else if (section === 'about') { filterQuery.value = ''; commitView('about') }
-  else if (section === 'unused') { filterQuery.value = ''; commitView('unused_archive') }
+  else if (section === 'unused') { filterQuery.value = ''; currentVoiceShelf.value = ''; commitView('unused_archive') }
   else if (section === 'resources') openArchiveStatus()
   else if (['events','collections','honors','currencies','costumes','photos'].includes(section)) openDomainCatalog(section)
 }

@@ -1,10 +1,10 @@
 {
- "schema": "GS-UNUSED-VOICE-ARCHIVE-V1",
+ "schema": "GS-UNUSED-VOICE-ARCHIVE-V2",
  "families": [
   {
    "id": "9_1",
-   "label": "登录标题呼号",
-   "use": "title",
+   "label": "标题呼号",
+   "status": "used",
    "note": "登录时偶像念出游戏标题「アイドルマスター SideM GROWING STARS」（试听核对）。每人 1 条，平均约 3.7 秒；客户端 IdolController 读取 9_1_ 前缀的语音包，有对应口型数据，没有脚本或文字行。",
    "count": 51,
    "speakers": [
@@ -421,7 +421,7 @@
   {
    "id": "9_9",
    "label": "万代南梦宫呼号",
-   "use": "title",
+   "status": "unconfirmed",
    "note": "偶像各自喊「バンダイナムコ」（试听核对），编号末尾为 99。每人 1 条，平均约 0.8 秒，有对应口型数据，没有脚本或文字行；具体播放时机未在客户端核实。",
    "count": 51,
    "speakers": [
@@ -837,7 +837,8 @@
   },
   {
    "id": "2_5",
-   "label": "Live 应援（appeal）",
+   "label": "LIVE 应援",
+   "status": "unconfirmed",
    "note": "原资源整理者归为 appeal。49 位偶像各 7 条，齋藤只有 01 和 07 两条，都没有文字。客户端代码里只直接写了齋藤的 2_5_102_00。",
    "count": 345,
    "speakers": [
@@ -2130,8 +2131,9 @@
   },
   {
    "id": "3_2",
-   "label": "Live 结算（live_result）",
-   "note": "每人 4 条。主数据有 343 行指向 3_2_NNN 脚本，但脚本里只有播放语音的指令，没有文字。",
+   "label": "LIVE 结算",
+   "status": "used",
+   "note": "原资源整理者归为 live_result。每人 4 条。主数据有 343 行指向 3_2_NNN 脚本，但脚本里只有播放语音的指令，没有文字。",
    "count": 200,
    "speakers": [
     {
@@ -2988,8 +2990,9 @@
   },
   {
    "id": "3_3",
-   "label": "欢呼（cheers）",
-   "note": "每人 1 条，平均约 0.5 秒，没有文字。",
+   "label": "欢呼",
+   "status": "unconfirmed",
+   "note": "原资源整理者归为 cheers。每人 1 条，平均约 0.5 秒，没有文字。",
    "count": 49,
    "speakers": [
     {
@@ -3388,8 +3391,9 @@
   },
   {
    "id": "3_4",
-   "label": "3_4 系列（未分类）",
-   "note": "原资源整理者未分类。每人 5 条，平均约 1 秒。脚本里只有演出指令，没有文字。",
+   "label": "摄影姿势语音",
+   "status": "used",
+   "note": "摄影功能的姿势语音：主数据 PhotoPoseVoiceData（表 122）以 3_4_NNN 为 cue sheet 指向这些语音。每人 5 条，平均约 1 秒；脚本里只有演出指令，没有文字。",
    "count": 245,
    "speakers": [
     {
@@ -4376,8 +4380,9 @@
   },
   {
    "id": "3_5",
-   "label": "山村 3_5",
-   "note": "山村贤的 1 条语音，没有脚本或文字。",
+   "label": "山村 · 其他",
+   "status": "unconfirmed",
+   "note": "山村贤的 1 条语音（3_5_101_00），没有脚本或文字，用途未确认。",
    "count": 1,
    "speakers": [
     {
@@ -4392,7 +4397,8 @@
   },
   {
    "id": "3_1_102",
-   "label": "齋藤 首页语音（未上线）",
+   "label": "齋藤 · 首页语音",
+   "status": "unreleased",
    "note": "共 21 条，其中 00–14 的 15 条在原始脚本里有文字，15–20 没有。主数据里没有对应行，游戏里也没有用到，判断为未上线内容。",
    "count": 21,
    "speakers": [
