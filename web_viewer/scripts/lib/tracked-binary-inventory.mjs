@@ -192,7 +192,9 @@ function classify(relativePath) {
       consumer: ['ChibiStageViewer'],
       reason_tracked: 'RAW-derived native stage effect texture; identity is serialized file + PathID and the filename is its SHA-256 prefix',
       force_add_allowed: false,
-      owner_release: stageNativeTexture[1]==='stage-built-in-objects'
+      owner_release: stageNativeTexture[1]==='stage-object-emitters' && ["7130baf7f1ca4fa3ae87d306","b1f6480822e2074beb75c1e5","e014c42f55d0f8e56d961057"].includes(logicalStem)
+        ? '2026-10-22-native-pavetl-torus-001'
+        : stageNativeTexture[1]==='stage-built-in-objects'
         ? '2026-10-20-apk-built-in-objects-001'
         : stageNativeTexture[1]==='stage-new-suspension-sprites'
         ? '2026-10-20-native-suspension-sprites-001'

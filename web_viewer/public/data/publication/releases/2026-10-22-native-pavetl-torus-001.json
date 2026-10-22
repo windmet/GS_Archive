@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-22-native-pavetl-torus-001",
+  "created_at": "2026-10-22T04:23:53.176958+00:00",
+  "prepared_from_commit": "7ebfaf3c639dfe3403df4bd7d1e9954d1a33a611",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:7130baf7f1ca4fa3ae87d306",
+      "stage-object-emitters:b1f6480822e2074beb75c1e5",
+      "stage-object-emitters:e014c42f55d0f8e56d961057"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:7130baf7f1ca4fa3ae87d306",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_pavetl.unity3d",
+        "sha256": "124604c81bf008d86c73b664cd78445f8266f6f3c60e19e80bc2749db85179d7",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_particle_variation",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-9ecc6428176b0ec890afc69365ca8977:7726785084619450048",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 6616be28b5200a1d1fe64f0a96f4762a1dede32d5809150ee1b96cbeb8567b42; 1024x1024 RGBA. Source-bound static torus birth geometry; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/7130baf7f1ca4fa3ae87d306.png",
+          "url": "/data/stage-object-emitters/7130baf7f1ca4fa3ae87d306.png",
+          "bytes": 156890,
+          "sha256": "0cc4425a19229651ef6f023cac6f16be733391341e620692adb0b26af937cb10"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Actual torus worker120controlled particles cover birth positions and observed raw/helper directions.",
+          "All105previous models and119texture descriptors unchanged. Two bound zero-speed torus systems and one sphere system; moving torus/native RNG/clock/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=pavetl&stage=pavetl_live_effect",
+        "tested_at": "2026-10-22T04:44:55.945102+00:00",
+        "tested_commit": "7ebfaf3c639dfe3403df4bd7d1e9954d1a33a611",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 PID73812,rm-release-20261015,full mode,inherited manual5-member cast;not original-member acceptance.",
+          "Negative2s activation:0s panel loaded,112 total object particles.10s/60s panel visible with120;rewind10s and cold reload/seek restore120,ready=true,unsupported/deferred empty.",
+          "Playback observed10s through109.8s,ended at114.6s. First pause lookup coincided with song-end button change;rewind/restart then manual pause succeeded at19.1s with paused DOM.",
+          "Desktop1280x720/mobile390x844,document/scrollWidth390. Actual in-stage switch to VIVA clears old objects to0,then loads VIVA. Console errors0;warn-free not claimed. Screenshots torus-pavetl-10s-desktop.png,torus-pavetl-10s-mobile.png.",
+          "Source-bound zero-speed torus geometry only. Native raw directions and controlled helper outputs are separately recorded;moving torus caller matrices,native birth RNG/clock/device/original scene remain unverified."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:b1f6480822e2074beb75c1e5",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_pavetl.unity3d",
+        "sha256": "124604c81bf008d86c73b664cd78445f8266f6f3c60e19e80bc2749db85179d7",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_pavetl_panel",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-9ecc6428176b0ec890afc69365ca8977:-1675936717038088485",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 7d4107f6e58634d5a1ba4d1d18df527b92914ebfe120bab02879e0bde41f39de; 1024x1024 RGBA. Source-bound static torus birth geometry; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/b1f6480822e2074beb75c1e5.png",
+          "url": "/data/stage-object-emitters/b1f6480822e2074beb75c1e5.png",
+          "bytes": 35345,
+          "sha256": "e5e7088a0693cb34e6c904d3d1be9ff38d45795ef87974a9356d6ff48fcc6e93"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Actual torus worker120controlled particles cover birth positions and observed raw/helper directions.",
+          "All105previous models and119texture descriptors unchanged. Two bound zero-speed torus systems and one sphere system; moving torus/native RNG/clock/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=pavetl&stage=pavetl_live_effect",
+        "tested_at": "2026-10-22T04:44:55.945148+00:00",
+        "tested_commit": "7ebfaf3c639dfe3403df4bd7d1e9954d1a33a611",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 PID73812,rm-release-20261015,full mode,inherited manual5-member cast;not original-member acceptance.",
+          "Negative2s activation:0s panel loaded,112 total object particles.10s/60s panel visible with120;rewind10s and cold reload/seek restore120,ready=true,unsupported/deferred empty.",
+          "Playback observed10s through109.8s,ended at114.6s. First pause lookup coincided with song-end button change;rewind/restart then manual pause succeeded at19.1s with paused DOM.",
+          "Desktop1280x720/mobile390x844,document/scrollWidth390. Actual in-stage switch to VIVA clears old objects to0,then loads VIVA. Console errors0;warn-free not claimed. Screenshots torus-pavetl-10s-desktop.png,torus-pavetl-10s-mobile.png.",
+          "Source-bound zero-speed torus geometry only. Native raw directions and controlled helper outputs are separately recorded;moving torus caller matrices,native birth RNG/clock/device/original scene remain unverified."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:e014c42f55d0f8e56d961057",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_pavetl.unity3d",
+        "sha256": "124604c81bf008d86c73b664cd78445f8266f6f3c60e19e80bc2749db85179d7",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_particle_variation2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-9ecc6428176b0ec890afc69365ca8977:3147239844506611722",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 f76c0c3507408c76b78ecfbc7847e9195245c60b26fc75e4567292a1df2108a4; 1024x1024 RGBA. Source-bound static torus birth geometry; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/e014c42f55d0f8e56d961057.png",
+          "url": "/data/stage-object-emitters/e014c42f55d0f8e56d961057.png",
+          "bytes": 196702,
+          "sha256": "f301c0fe171b5356b058126cfd5217abd533543492cf72ac6dec7b2b8f254d97"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Actual torus worker120controlled particles cover birth positions and observed raw/helper directions.",
+          "All105previous models and119texture descriptors unchanged. Two bound zero-speed torus systems and one sphere system; moving torus/native RNG/clock/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=pavetl&stage=pavetl_live_effect",
+        "tested_at": "2026-10-22T04:44:55.945162+00:00",
+        "tested_commit": "7ebfaf3c639dfe3403df4bd7d1e9954d1a33a611",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 PID73812,rm-release-20261015,full mode,inherited manual5-member cast;not original-member acceptance.",
+          "Negative2s activation:0s panel loaded,112 total object particles.10s/60s panel visible with120;rewind10s and cold reload/seek restore120,ready=true,unsupported/deferred empty.",
+          "Playback observed10s through109.8s,ended at114.6s. First pause lookup coincided with song-end button change;rewind/restart then manual pause succeeded at19.1s with paused DOM.",
+          "Desktop1280x720/mobile390x844,document/scrollWidth390. Actual in-stage switch to VIVA clears old objects to0,then loads VIVA. Console errors0;warn-free not claimed. Screenshots torus-pavetl-10s-desktop.png,torus-pavetl-10s-mobile.png.",
+          "Source-bound zero-speed torus geometry only. Native raw directions and controlled helper outputs are separately recorded;moving torus caller matrices,native birth RNG/clock/device/original scene remain unverified."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

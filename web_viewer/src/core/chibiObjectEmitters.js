@@ -106,6 +106,15 @@ export function sampleEmitterShape(shape,rnd) {
   const unit={x:Math.cos(phi),y:Math.sin(phi)}
   let position,direction={x:0,y:0,z:1}
   switch(shape.type) {
+    case 17:{
+      const theta=rnd(2)*Math.PI*2,c=Math.cos(theta),s=Math.sin(theta)
+      // Native random-arc torus uses a linear tube-radius fraction, with the
+      // same 0.001 inner floor as Cone; it does not use sqrt(volume fraction).
+      const inner=Math.max(.001,1-thickness),r=Number(shape.donutRadius||0)*(inner+(1-inner)*rnd(3))
+      const ring=radius+r*c
+      position={x:unit.x*ring,y:unit.y*ring,z:r*s}
+      direction={x:unit.x*c,y:unit.y*c,z:s};break
+    }
     case 12:position={x:(rnd(1)*2-1)*radius,y:0,z:0};direction={x:0,y:1,z:0};break
     case 5:position={x:rnd(1)-.5,y:rnd(2)-.5,z:rnd(3)-.5};break
     case 10:{
@@ -188,6 +197,7 @@ function noiseMotion(system,id,initial,age,born,options) {
   return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:options.clock.timeAt(born+age)}).position:saved.state.position
 }
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,view={}) {
+  if(system.shape?.type===17 && system.shapeBinding?.profile!=='native-random-torus-v1')throw Error('Unbound torus source')
   if(system.parentProjection && (!['native-local-orthographic-v1','native-local-size-orthographic-v1'].includes(system.parentProjection.profile) || system.alignment!==2 || system.rotationX || (system.sizeY && system.parentProjection.profile!=='native-local-size-orthographic-v1') || system.noise || system.stretch))
     throw Error('Unsupported local parent projection')
   // Nonzero distance rates are retained. This profile proves the world emitter
