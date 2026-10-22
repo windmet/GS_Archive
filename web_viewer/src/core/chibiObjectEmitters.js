@@ -3,6 +3,7 @@ import { createNoiseClock } from './chibiParticleNoiseClock.js'
 import { samplePlanarStretch, transformStretchVelocity } from './chibiParticleStretch.js'
 import {spatialEmitterQuads,OBJECT_SPATIAL_PROFILE} from './chibiObjectSpatialContext.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
+import { sampleLifetimeLimitDistance } from './chibiParticleLimit.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 export function sampleObjectCurve(c,t,r) {
   if(c.mode===3)return c.minScalar+(c.scalar-c.minScalar)*r
@@ -232,7 +233,9 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       const t=age/life,shape=system.shape
       const emitted=shape?sampleEmitterShape(shape,rnd):{position:{x:0,y:0,z:0},direction:{x:0,y:0,z:1}}
       let p=shape?euler(emitted.position,shape.m_Rotation):emitted.position
-      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction,d=system.noise?0:distance(sample(system.speed,birthPhase,rnd(4)),system.limit,age)
+      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction
+      const birthSpeed=sample(system.speed,birthPhase,rnd(4))
+      const d=system.noise?0:system.limit?.curve?sampleLifetimeLimitDistance(birthSpeed,system.limit,age,life):distance(birthSpeed,system.limit,age)
       const g=(system.gravity?sample(system.gravity,birthPhase,rnd(19)):0)*-9.81
       if(system.noise) {
         const speed=sample(system.speed,birthPhase,rnd(4)),det=matrix.a*matrix.d-matrix.b*matrix.c

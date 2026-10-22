@@ -1,7 +1,8 @@
 """Bind actual tilted panel parents to native hierarchy/context/vertex execution."""
 import argparse,hashlib,json,runpy,sys
 from pathlib import Path
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--native-engine',required=True);p.add_argument('--unicorn-path');p.add_argument('--write',action='store_true');p.add_argument('--nonuniform',action='store_true');args=p.parse_args()
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--native-engine',required=True);p.add_argument('--unicorn-path');p.add_argument('--write',action='store_true');p.add_argument('--nonuniform',action='store_true');p.add_argument('--bloom',action='store_true');args=p.parse_args()
+assert not (args.bloom and args.nonuniform)
 root=Path(__file__).resolve().parents[1]
 sys.argv=[str(root/'scripts/prepare-chibi-billboard-rotation-fixture.py'),'--native-engine',args.native_engine]
 if args.unicorn_path:sys.argv+=['--unicorn-path',args.unicorn_path]
@@ -18,12 +19,18 @@ if args.nonuniform:
  events=[e for s in songs for e in s.get('objectLayerEvents',[]) if e['asset']=='fx_in_jfhtmk_panel_1' and not e['hide']]
  assert all(e['scale']>0 for e in events) and all(s['id']==song['id'] for s in songs if any(e['asset']=='fx_in_jfhtmk_panel_1' for e in s.get('objectLayerEvents',[])))
  envelope=dict(arrangement=song['id'],maxZoom=maxZoom,maxObjectScale=max(e['scale'] for e in events)/1000,minViewHeight=10000/maxZoom,maxSourceSize=7.5,stageScaleUpperBound=1000/720)
-for name in (['fx_in_jfhtmk_panel_1'] if args.nonuniform else ['fx_in_unmikn_panel_3','fx_in_vvfmrm_panel_1']):
+for name in ([f'fx_in_pcuslv_bloom_{i}' for i in range(1,5)] if args.bloom else ['fx_in_jfhtmk_panel_1'] if args.nonuniform else ['fx_in_unmikn_panel_3','fx_in_vvfmrm_panel_1']):
  entry=index['assets'][name];path=sources.raw_root/'asset'/entry['bundle'];blob=path.read_bytes();env=UnityPy.load(blob);record=a.inspect_asset(env,name,entry,True,dependencies)
  systems=[]
  for particle in record['particles']:
+  if args.bloom and particle['renderer']['alignment']!=2:continue
   source={k:particle[k] for k in ['serializedFile','pathId','parameterTreeSha256']}
   systems.append(dict(source=source,chain=particle['transformChain'],alignment=particle['renderer']['alignment']))
+  if args.bloom:
+   initial=particle['modules']['InitialModule'];assert initial['startSpeed']['minMaxState']==0 and initial['startSpeed']['scalar']==0
+   renderer=next(o for o in env.objects if str(o.path_id)==particle['renderer']['pathId']).read_typetree()
+   assert renderer['m_Flip']==renderer['m_Pivot']==dict(x=0,y=0,z=0)
+   assert [renderer['m_MinParticleSize'],renderer['m_MaxParticleSize']]==[0,10]
   if args.nonuniform:
    assert 'SizeModule' not in particle['modules'],'Size envelope requires constant birth dimensions'
    initial=particle['modules']['InitialModule']
@@ -44,6 +51,9 @@ n['uc'].hook_del(hook)
 proof=dict(schemaVersion=1,binarySha256=n['native']['identity'],sourceWindows=n['proof']['sourceWindows'],models=models,cases=cases,
  boundary='Actual RAW static parent chains; native hierarchy/context and 2D Local vertex writer, controlled positions/angles/uniform size2, identity orthographic camera, no pivot/flip. Not RNG, native scene/tween history, perspective, nonuniform particle size or 3D particle rotation.')
 target=root/'scripts/fixtures/chibi-local-parent-native.json'
+if args.bloom:
+ assert len(cases)==36 and all(len(m['systems'])==1 for m in models.values())
+ target=root/'scripts/fixtures/chibi-bloom-parent-native.json'
 if args.nonuniform:
  assert all(s['sizeBounds']==[0,50] and all(t['scale']==dict(x=1,y=1,z=1) for t in s['chain']) for m in models.values() for s in m['systems'])
  assert envelope['maxSourceSize']*envelope['stageScaleUpperBound']*envelope['maxObjectScale'] < 50*envelope['minViewHeight']

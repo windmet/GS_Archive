@@ -8,6 +8,8 @@ SPATIAL_CONES=json.loads((ROOT/'scripts/fixtures/chibi-cone-stretch-native.json'
 LOCAL_PARENTS=json.loads((ROOT/'scripts/fixtures/chibi-local-parent-native.json').read_text(encoding='utf8'))
 LOCAL_SIZES=json.loads((ROOT/'scripts/fixtures/chibi-local-size-native.json').read_text(encoding='utf8'))
 TORUS_SHAPES=json.loads((ROOT/'scripts/fixtures/chibi-torus-native.json').read_text(encoding='utf8'))
+BLOOM_PARENTS=json.loads((ROOT/'scripts/fixtures/chibi-bloom-parent-native.json').read_text(encoding='utf8'))
+LIFETIME_LIMITS=json.loads((ROOT/'scripts/fixtures/chibi-limit-curve-native.json').read_text(encoding='utf8'))
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
@@ -54,7 +56,7 @@ def stationary_distance_proof(record, environment, audit, choreography):
     w.require(bool(arrangements),'No choreography proof for distance emitter')
     return dict(profile='stationary-object-layer-v1',components=components,arrangements=arrangements)
 
-def model(p, partial=False, stationary=False, spatial_source=None, parent_source=None, torus_source=None):
+def model(p, partial=False, stationary=False, spatial_source=None, parent_source=None, torus_source=None, limit_source=None):
     m=p.get('modules') or {};i=m.get('InitialModule');e=m.get('EmissionModule');r=p.get('renderer') or {};main=p.get('main') or {}
     w.require(bool(i) and bool(e) and bool(r) and bool(main),'Missing core particle modules')
     s=m.get('ShapeModule');u=m.get('UVModule');c=m.get('ClampVelocityModule');chain=p.get('transformChain') or []
@@ -81,7 +83,8 @@ def model(p, partial=False, stationary=False, spatial_source=None, parent_source
     if parent_source:
         if parent_source['profile']=='native-local-size-orthographic-v1':w.require('SizeModule' not in m,'Nonuniform size envelope excludes lifetime size modules')
         w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==parent_source['source'] and chain==parent_source['chain'],'Local parent source changed')
-        w.require(r['alignment']==2 and r['renderMode']==0 and i['size3D']==parent_source.get('size3D',False) and not i.get('rotation3D') and not c and not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0,'Unsupported spatial local parent profile')
+        passive_limit=bool(limit_source) and i['startSpeed']['minMaxState']==0 and i['startSpeed']['scalar']==0
+        w.require(r['alignment']==2 and r['renderMode']==0 and i['size3D']==parent_source.get('size3D',False) and not i.get('rotation3D') and (not c or passive_limit) and not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0,'Unsupported spatial local parent profile')
     for t in chain if not parent_source else []:
         q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
         w.require(abs(2*(x*z-v*y))<1e-5 and abs(2*(y*z+v*x))<1e-5,'Nonplanar emitter transform')
@@ -102,7 +105,12 @@ def model(p, partial=False, stationary=False, spatial_source=None, parent_source
         w.require(b['countCurve']['minMaxState']==0 and b['cycleCount']==1 and b['probability']==1,'Unsupported burst')
         bursts.append(dict(time=b['time'],count=int(b['countCurve']['scalar'])))
     if u:w.require(u['mode']==u['timeMode']==u['animationType']==0 and u['flipU']==u['flipV']==0,'Unsupported sheet')
-    if c:w.require(not c['separateAxis'] and c['drag']['scalar']==0 and c['magnitude']['minMaxState']==0,'Unsupported velocity limit')
+    if limit_source:
+        w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==limit_source['source'] and chain==limit_source['chain'] and c==limit_source['limit'],'Lifetime limit source binding changed')
+        w.require(c and not c['separateAxis'] and not c['inWorldSpace'] and c['drag']['minMaxState']==0 and c['drag']['scalar']==0 and c['magnitude']['minMaxState'] in (0,1) and 0<=c['dampen']<=1,'Unsupported lifetime magnitude limit')
+        w.require(not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0 and i['startSpeed']['minMaxState'] in (0,3) and min(i['startSpeed']['scalar'],i['startSpeed']['minScalar'])>=0,'Lifetime limit requires force-free source')
+        initial_curve(c['magnitude'])
+    elif c:w.require(not c['separateAxis'] and c['drag']['scalar']==0 and c['magnitude']['minMaxState']==0,'Unsupported velocity limit')
     w.require(len(r['materials'])==1,'Ambiguous renderer material')
     velocity=m.get('VelocityModule')
     if velocity:
@@ -127,6 +135,7 @@ def model(p, partial=False, stationary=False, spatial_source=None, parent_source
     if masked and material_tint!=[1,1,1,1]:data['materialTint']=material_tint
     if s and s['type']==17:data['shapeBinding']=dict(profile='native-random-torus-v1',proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-torus-native.json').read_bytes()))
     if parent_source:data['parentProjection']=dict(profile=parent_source['profile'],proofSha256=parent_source['proofSha256'])
+    if limit_source:data['limit']=dict(profile='native-lifetime-magnitude-v1',curve=initial_curve(c['magnitude']),dampen=c['dampen'],proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-limit-curve-native.json').read_bytes()))
     if distance['scalar']:
         data['distanceRate']=w.curve(distance)
         data['distanceMode']='stationary-object-layer-v1'
@@ -226,6 +235,17 @@ def extract(mode='current', only=None, partial=False):
                 try:
                     spatial_source=SPATIAL_CONES['models'].get(name) if PROMOTIONS.get('previewAssets',{}).get(name,{}).get('spatialProfile') else None
                     parent_source=None
+                    limit_source=None
+                    limit_profile=PROMOTIONS.get('assets',{}).get(name,{}).get('limitProfile')
+                    if limit_profile:
+                        w.require(limit_profile=='native-lifetime-magnitude-v1','Unknown lifetime limit profile')
+                        w.require(w.sha(choreopath.read_bytes())==LIFETIME_LIMITS['choreographySha256'],'Lifetime limit size envelope changed')
+                        limit_source=next((s for s in LIFETIME_LIMITS['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
+                        w.require(limit_source is not None,'Missing lifetime limit proof')
+                        if prenderer.get('alignment')==2:
+                            parent_source=next((s for s in BLOOM_PARENTS['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
+                            w.require(parent_source is not None,'Missing Bloom local parent proof')
+                            parent_source={**parent_source,'profile':'native-local-orthographic-v1','proofSha256':w.sha((ROOT/'scripts/fixtures/chibi-bloom-parent-native.json').read_bytes())}
                     parent_profile=PROMOTIONS.get('assets',{}).get(name,{}).get('parentProfile')
                     if parent_profile:
                         w.require(parent_profile in ['native-local-orthographic-v1','native-local-size-orthographic-v1'],'Unknown local parent profile')
@@ -240,7 +260,7 @@ def extract(mode='current', only=None, partial=False):
                         w.require(shape_profile=='native-random-torus-v1','Unknown torus source profile')
                         torus_source=next((s for s in TORUS_SHAPES['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
                         w.require(torus_source is not None,'Missing torus proof')
-                    system=model(p,asset_partial,bool(distance_proof),spatial_source,parent_source,torus_source)
+                    system=model(p,asset_partial,bool(distance_proof),spatial_source,parent_source,torus_source,limit_source)
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')

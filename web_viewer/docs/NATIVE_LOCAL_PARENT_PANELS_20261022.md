@@ -53,7 +53,7 @@ Codex In-app Browser，主 checkout 5213 / PID 58104，`rm-release-20261015`，�
 |---|---|
 | jfhtmk_panel_1 | 本批时因非等比尺寸探针未完成而保留；随后已核实真正的原生分派并完成[接入与换行绑定修正](NATIVE_JFHTMK_PANEL_20261022.md) |
 | pavetl_panel | 两个 shape=17 系统；需核对发射形状的原生 worker |
-| pcuslv_bloom_1..4 | Velocity limit 的独立轴/拖曳组合，以及部分非平面 Local 系统 |
+| pcuslv_bloom_1..4 | 当时未接：寿命曲线速度上限与非平面 Local 系统；本批重新核实 RAW，独立轴为false且drag=0，已由[后续Bloom批次](NATIVE_PCUSLV_BLOOM_20261022.md)接通 |
 | tktkkt_electric | 寿命颜色模式、无发射模块的容器系统需明确处理 |
 | bnckgy_fire | 容器系统、多个 Noise/Clamp 组合与 Stretch，不能直接套用 pfofos 的来源绑定 |
 

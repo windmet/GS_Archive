@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
+import './verify-chibi-limit-curve.mjs'
 import {execFileSync} from 'node:child_process'
 import {attachObjectEmitters,emitterMatrix,emitterSpatialMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement,emitterRenderBasis} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
@@ -11,6 +12,42 @@ const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.cr
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const localParentProof=JSON.parse(read('scripts/fixtures/chibi-local-parent-native.json'))
 const localSizeProof=JSON.parse(read('scripts/fixtures/chibi-local-size-native.json'))
+const bloomParentProof=JSON.parse(read('scripts/fixtures/chibi-bloom-parent-native.json'))
+const limitCurveProof=JSON.parse(read('scripts/fixtures/chibi-limit-curve-native.json'))
+assert.equal(bloomParentProof.cases.length,36)
+assert.equal(limitCurveProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
+const limitSong=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs.find(s=>s.id==='pcuslv_live_effect')
+assert.equal(limitCurveProof.nonbindingSizeEnvelope.minViewHeight,10000/Math.max(...limitSong.cameraEvents.map(e=>e.zoom||1000)))
+assert.equal(limitCurveProof.nonbindingSizeEnvelope.maxObjectScale,Math.max(...limitSong.objectLayerEvents.filter(e=>e.asset.includes('pcuslv_bloom')&&!e.hide).map(e=>e.scale))/1000)
+for(const [name,bound] of Object.entries(limitCurveProof.models)){
+  assert.equal(data.assets[name].bundleSha256,bound.bundleSha256)
+  for(const [i,s] of data.assets[name].systems.entries()){
+    const raw=bound.systems[i]
+    assert.deepEqual(s.source,raw.source);assert.deepEqual(s.chain,raw.chain)
+    assert.equal(s.limit.profile,'native-lifetime-magnitude-v1')
+    assert.equal(s.limit.proofSha256,sha(read('scripts/fixtures/chibi-limit-curve-native.json')))
+    assert.equal(s.limit.dampen,raw.limit.dampen)
+    assert.equal(s.limit.curve.mode,raw.limit.magnitude.minMaxState)
+    assert.equal(s.limit.curve.scalar,raw.limit.magnitude.scalar)
+    if(s.limit.curve.mode===1)assert.deepEqual(s.limit.curve.keys,raw.limit.magnitude.maxCurve.m_Curve.map(k=>Object.fromEntries(['time','value','inSlope','outSlope'].map(f=>[f,k[f]]))))
+    assert.ok(raw.sizeUpperBound*limitCurveProof.nonbindingSizeEnvelope.maxObjectScale*limitCurveProof.nonbindingSizeEnvelope.stageScaleUpperBound<raw.sizeBounds[1]*limitCurveProof.nonbindingSizeEnvelope.minViewHeight)
+    if(s.alignment===2){
+      const parent=bloomParentProof.models[name].systems[0]
+      assert.deepEqual({source:s.source,chain:s.chain,alignment:s.alignment},parent)
+      assert.deepEqual(s.parentProjection,{profile:'native-local-orthographic-v1',proofSha256:sha(read('scripts/fixtures/chibi-bloom-parent-native.json'))})
+    }
+  }
+}
+for(const c of limitCurveProof.cases.filter(c=>c.dt===1/60&&c.velocity[0]===0&&c.velocity[1]===8&&c.velocity[2]===0)){
+  const source=data.assets[c.asset].systems.find(s=>s.source.pathId===c.source.pathId)
+  const scalar=v=>({mode:0,scalar:v,minScalar:v})
+  const probe={...source,chain:[],alignment:0,parentProjection:null,shape:{type:12,radius:{value:0},m_Rotation:{x:0,y:0,z:0},m_Position:{x:0,y:0,z:0}},speed:scalar(8),lifetime:scalar(1),looping:false,duration:2,delay:{mode:0,value:0,min:0},bursts:[{time:0,count:1}],rate:0}
+  for(const [i,e] of c.expected.entries()){
+    if(i===59)continue // A lifetime-one particle retires exactly at one second.
+    const sample=sampleObjectEmitter(probe,(i+1)*1000/60,0)[0]
+    assert.ok(Math.abs(sample.y+e.position[1]*100)<.001,'Consumer lifetime limit must receive actual particle lifetime')
+  }
+}
 assert.equal(localParentProof.cases.length,90)
 assert.equal(localSizeProof.cases.length,36)
 assert.equal(localSizeProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
@@ -37,9 +74,9 @@ for(const [name,bound] of Object.entries(localParentProof.models)) {
   assert.deepEqual(asset.systems.map(s=>({source:s.source,chain:s.chain,alignment:s.alignment})),bound.systems)
   for(const s of asset.systems)assert.deepEqual(s.parentProjection,{profile:'native-local-orthographic-v1',proofSha256:sha(read('scripts/fixtures/chibi-local-parent-native.json'))})
 }
-for(const row of [...localParentProof.sourceWindows,...localSizeProof.sourceWindows])assert.equal(sha(Buffer.from(row.bytes,'hex')),row.sha256)
+for(const row of [...localParentProof.sourceWindows,...localSizeProof.sourceWindows,...bloomParentProof.sourceWindows])assert.equal(sha(Buffer.from(row.bytes,'hex')),row.sha256)
 let legacyLocalParentMismatches=0
-for(const c of [...localParentProof.cases,...localSizeProof.cases]) {
+for(const c of [...localParentProof.cases,...localSizeProof.cases,...bloomParentProof.cases]) {
   const matrix=emitterSpatialMatrix(c.chain)
   for(let i=0;i<16;i++)assert.ok(Math.abs(matrix.full[i]-c.expectedFullMatrix[i])<2e-5,'Native full parent matrix')
   const scalar=v=>({mode:0,scalar:v,minScalar:v})
@@ -58,7 +95,7 @@ for(const c of [...localParentProof.cases,...localSizeProof.cases]) {
     assert.ok(Math.abs(sample.y+sample.b*u+sample.d*v+c.expected[i].position[1]*100)<.003,'Local parent native corner Y including local Z')
   }
 }
-assert.equal(legacyLocalParentMismatches,78,'Nonzero local Z exposes the old planar parent loss')
+assert.equal(legacyLocalParentMismatches,102,'Nonzero local Z exposes the old planar parent loss')
 function samplePreviewSystem(system,time,activatedAt,stoppedAt=Infinity) {
   const spatial=system.stretch?.profile===OBJECT_SPATIAL_PROFILE?objectSpatialContext({verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0},{x:0,y:360,scale:1000},'pfofos_live_effect'):null
   return sampleObjectEmitter(system,time,activatedAt,stoppedAt,{spatial})
@@ -323,14 +360,14 @@ const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,106)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,110)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
 assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)
 assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreography binding/)
 const unproven=structuredClone(data)
 delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
 assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),847)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),859)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -489,7 +526,7 @@ for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
   assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
   assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
 }
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,106)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,110)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const r of stretchProof.renderers) {
   const source=rawObjects.find(o=>o.asset===r.asset)
@@ -523,8 +560,8 @@ for(const [name,count] of Object.entries({fx_in_pavetl_crystal_1:15,fx_in_pavetl
 }
 const promotions=JSON.parse(read('scripts/fixtures/chibi-object-emitter-promotions.json'))
 assert.equal(promotions.objectIndexSha256,data.objectIndexSha256)
-assert.equal(Object.keys(promotions.assets).length,37)
-assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),197)
+assert.equal(Object.keys(promotions.assets).length,41)
+assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),209)
 for(const [name,expected] of Object.entries(promotions.assets)) {
   const model=data.assets[name]
   assert.equal(model.systems.length,expected.systems,name)
@@ -657,4 +694,4 @@ if(published) {
   }
 }
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 106 provenance-bound resources / 847 consumed (105 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
+console.log('Object emitters: 110 provenance-bound resources / 859 consumed (105 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
