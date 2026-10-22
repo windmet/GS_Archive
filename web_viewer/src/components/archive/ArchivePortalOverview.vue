@@ -62,9 +62,9 @@
 
       <section v-if="!preferredReference?.actionable" class="overview-panel overview-unit-hub" aria-labelledby="portal-units-title">
         <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length || unitPlaceholderCount || '' }} 个组合</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
-        <div class="overview-unit-matrix"><article v-for="unit in desktopOverview.units || []" :key="unit.id" class="overview-unit-tile" :style="{'--unit-color':unit.color}">
-          <button type="button" class="overview-unit-logo" :aria-label="`打开组合 ${unit.title}`" :data-archive-focus-id="`portal-unit:${unit.id}`" @click="emit('open-result', unit)"><span class="overview-unit-title" aria-hidden="true">{{ unit.title }}</span><img v-if="!failedUnitLogos.has(unit.id)" :src="getUnitLogoUrl(unit.id)" :alt="unit.title" decoding="async" @error="failedUnitLogos.add(unit.id)" /></button>
-          <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :size="28" :ring-width="0" decorative /></button></div>
+        <div class="overview-unit-matrix"><article v-for="(unit, index) in desktopOverview.units || []" ref="unitTiles" :key="unit.id" :data-near-key="unit.id" class="overview-unit-tile" :style="{'--unit-color':unit.color}">
+          <button type="button" class="overview-unit-logo" :aria-label="`打开组合 ${unit.title}`" :data-archive-focus-id="`portal-unit:${unit.id}`" @click="emit('open-result', unit)"><span class="overview-unit-title" aria-hidden="true">{{ unit.title }}</span><img v-if="nearUnits.has(unit.id) && !failedUnitLogos.has(unit.id)" :src="getUnitLogoUrl(unit.id)" :alt="unit.title" :fetchpriority="index < 4 ? 'high' : undefined" decoding="async" @error="failedUnitLogos.add(unit.id)" /></button>
+          <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="nearUnits.has(unit.id) ? idol.id : ''" :size="28" :ring-width="0" fallback-text="" decorative /></button></div>
         </article><article v-for="n in unitPlaceholderCount" :key="`unit-placeholder-${n}`" class="overview-unit-tile is-placeholder" aria-hidden="true"></article></div>
       </section>
       <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
@@ -147,6 +147,7 @@ import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import PortalCardBento from './PortalCardBento.vue'
+import { useNearViewportKeys } from './useNearViewport.js'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
@@ -244,6 +245,11 @@ const heroStyle = computed(() => {
 const unitLogoFailed = ref(false)
 // Unit tiles whose logo failed keep the name in its place instead of a broken-image mark.
 const failedUnitLogos = reactive(new Set())
+// A tile's logo and member avatars load when it nears the viewport: sixteen logos and 49 avatars at
+// once took the first screen's bandwidth on phones (native lazy loading starts 1250–2500 px ahead).
+// The first row's logos are the Portal's largest first-screen images.
+const unitTiles = ref([])
+const nearUnits = useNearViewportKeys(unitTiles)
 watch(unitLogoUrl, () => { unitLogoFailed.value = false })
 function formatCount(value) { return typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN') : '—' }
 function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols: '偶像', stories: '故事' }[domain] || '档案' }

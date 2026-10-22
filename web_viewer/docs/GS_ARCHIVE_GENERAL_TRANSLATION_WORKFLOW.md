@@ -47,6 +47,7 @@ node scripts/general-translation-workflow.mjs review G-chats-20261015-001 --revi
 
 ## 与构建的关系
 
+- 页面不读整份 `card-lines.json`（1.28 MB）：生成器同时把它按原文哈希拆成 `archive-general/card-lines/00–1f.json` 32 片，页面只取所显示台词所在的分片（`src/presentation/CardLineShards.mjs`）。用别的方式改了 `card-lines.json` 后要跑 `node scripts/generate-card-line-shards.mjs`；`verify-card-line-translation` 会在分片过期时失败。分片是 `public/translations` 下的新文件，之后照常重生成 translation release（`generate-translation-release.mjs`）。
 - `generate-archive-general-translations.mjs` 和审计**不会因语料或记忆变化失败**：无效条目跳过并警告（回落原文），orphan 不发布，记忆里有但没发布的条目计入审计 `general.unpublished`。
 - `npm run build:check` / `prebuild` 仍会刷新审计，因为资源页的「翻译与校对进度」读的是 `config/translation-audit/`；但它只汇报状态，不做翻译的严格检查。
 - 严格检查放在翻译相关的提交里跑：`general-translation-workflow.mjs verify` 和 `npm run verify:general-translation-workflow`。
