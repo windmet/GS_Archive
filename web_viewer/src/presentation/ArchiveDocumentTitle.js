@@ -11,7 +11,7 @@ export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_de
 // An idol's 事务所 (/office/<idol>/) and 通信 (/mobile/<idol>/) are named for the idol and the section.
 const IDOL_PLACE_SECTIONS = Object.freeze({ home: 'home', mobile_archive: 'interactions' })
 export const SECTION_TITLES = Object.freeze(Object.fromEntries(Object.entries({ idols: 'idols', unit_catalog: 'units', cards: 'cards',
-  song_catalog: 'songs', event_catalog: 'events', gashas: 'gashas', story_catalog: 'stories', photo_catalog: 'photos', unused_archive: 'unused' })
+  song_catalog: 'songs', event_catalog: 'events', gashas: 'gashas', story_catalog: 'stories', photo_catalog: 'photos', unused_archive: 'unused', score_archive: 'scores' })
   .map(([view, section]) => [view, sectionLabel(section)])))
 
 // The collection catalogue is four sections, /items/, /honors/, /currencies/ and /costumes/.

@@ -26,7 +26,7 @@ export function matchingCandidate(candidatesRoot, release) {
     .find(root => isCandidate(root) && releaseOf(path.join(root, 'bootstrap.inline.json')) === release) || null
 }
 
-function candidateRoot(logger) {
+export function candidateRoot(logger) {
   const root = process.env.SIDEM_READMODEL_CANDIDATE
   if (root) {
     const resolved = path.resolve(root)

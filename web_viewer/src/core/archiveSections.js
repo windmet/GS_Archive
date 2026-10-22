@@ -14,6 +14,8 @@ export const ARCHIVE_SECTIONS = Object.freeze(Object.fromEntries([
   { id: 'units', label: '组合', groupId: 'people' },
   { id: 'cards', label: '卡片', groupId: 'people' },
   { id: 'songs', label: '歌曲', groupId: 'songs' },
+  // The story score (counsel_calm, job, …), the songs scenes play, ambience and sound effects.
+  { id: 'scores', label: '配乐', groupId: 'songs' },
   { id: 'events', label: '活动', groupId: 'history' },
   { id: 'gashas', label: '卡池', groupId: 'history' },
   { id: 'collections', label: '道具', groupId: 'collection' },
@@ -32,7 +34,7 @@ export const ARCHIVE_SECTIONS = Object.freeze(Object.fromEntries([
 export const ARCHIVE_SECTION_GROUPS = Object.freeze([
   { id: 'stories', label: '剧情与通信' },
   { id: 'people', label: '偶像与卡片' },
-  { id: 'songs', label: '歌曲' },
+  { id: 'songs', label: '歌曲与配乐' },
   { id: 'history', label: '活动与卡池' },
   { id: 'collection', label: '图鉴' },
   { id: 'live', label: 'LIVE' },

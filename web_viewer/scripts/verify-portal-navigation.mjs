@@ -10,12 +10,12 @@ import { ARCHIVE_NAVIGATION_GROUPS, buildNavigationGroups } from '../src/core/ar
 // Seven reader destinations; readers never see the build-status section, maintainers get it as an eighth.
 const maintainerGroups = buildNavigationGroups(true)
 const readerGroups = buildNavigationGroups(false)
-assert.deepEqual(readerGroups.map(group => group.label), ['剧情与通信', '偶像与卡片', '歌曲', '活动与卡池', '图鉴', 'LIVE', '摄影工作台'])
-assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 6, 1, 1])
-assert.deepEqual(maintainerGroups.map(group => group.label), ['剧情与通信', '偶像与卡片', '歌曲', '活动与卡池', '图鉴', 'LIVE', '摄影工作台', '资源'])
+assert.deepEqual(readerGroups.map(group => group.label), ['剧情与通信', '偶像与卡片', '歌曲与配乐', '活动与卡池', '图鉴', 'LIVE', '摄影工作台'])
+assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 2, 2, 6, 1, 1])
+assert.deepEqual(maintainerGroups.map(group => group.label), ['剧情与通信', '偶像与卡片', '歌曲与配乐', '活动与卡池', '图鉴', 'LIVE', '摄影工作台', '资源'])
 assert.ok(!readerGroups.some(group => group.items.some(item => item.id === 'resources')))
 assert.ok(readerGroups.every(group => group.items.every(item => item.label !== group.label || group.items.length === 1)), 'a destination never lists a section with its own name')
-assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 6, 1, 1], 'default module export is the reader view')
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 2, 2, 6, 1, 1], 'default module export is the reader view')
 assert.deepEqual(maintainerGroups.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [
@@ -48,7 +48,7 @@ for (const bad of ['https://example.com/', '//example.com/', '?view=player&scena
 assert.equal(readArchiveRoute('http://localhost/?view=portal').view, 'portal')
 assert.equal(buildArchiveUrl('http://localhost/?view=portal&portal_from=x', { view: 'cards' }).searchParams.has('portal_from'), false)
 assert.deepEqual(ARCHIVE_NAVIGATION.map(item=>item.id),
-  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','resources'],
+  ['home','stories','songs','scores','idols','cards','gashas','interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','resources'],
   'desktop taxonomy includes the published event, collection, photo resource, unused voice archive, LIVE and photo studio destinations')
 
 for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
@@ -251,7 +251,7 @@ assert.equal(restoreContext.portalScope.value, '', 'without a favorite the all-a
 assert.equal(ARCHIVE_SECTIONS.stories.label, '剧情')
 assert.equal(ARCHIVE_SECTIONS.home.label, '事务所')
 for (const [view, section] of [['story_catalog', 'stories'], ['idols', 'idols'], ['unit_catalog', 'units'], ['cards', 'cards'], ['song_catalog', 'songs'],
-  ['event_catalog', 'events'], ['gashas', 'gashas'], ['photo_catalog', 'photos'], ['unused_archive', 'unused']]) {
+  ['event_catalog', 'events'], ['gashas', 'gashas'], ['photo_catalog', 'photos'], ['unused_archive', 'unused'], ['score_archive', 'scores']]) {
   const crumbs = buildArchiveBreadcrumbs({ view, category: view === 'idols' ? 'idol' : view === 'cards' ? 'cards' : '' })
   assert.deepEqual(crumbs.map(item => item.label), [ARCHIVE_SECTIONS.portal.label, ARCHIVE_SECTIONS[section].label], `${view} breadcrumb`)
   assert.equal(archiveDocumentTitle(view), `${ARCHIVE_SECTIONS[section].label} · GS Archive`, `${view} browser tab`)
@@ -304,14 +304,15 @@ const heroDirectory = overviewSource.indexOf('<nav v-if="preferredReference?.act
 assert.ok(allDirectory > 0 && allDirectory < overviewSource.indexOf('class="overview-panel overview-featured"'), 'all-archive view: index above the featured section')
 assert.ok(hero > 0 && heroDirectory > hero && heroDirectory < overviewSource.indexOf('class="overview-card-showcase"'), 'favorite view: index right after the hero')
 // Phone layout at every width from 320 to 760, and in a narrowed desktop window: centred, one hero column,
-// the same side margin as the other pages, and a directory that fills its rows when five columns fit.
+// the same side margin as the other pages, and a directory of four columns whose rows are always full.
 const tokenSource = readFileSync(new URL('../src/styles/GS_UI_TOKENS.css', import.meta.url), 'utf8')
 assert.match(tokenSource, /@media \(max-width: 760px\) \{ \[data-archive-scroll-container\] \{ scrollbar-gutter: stable both-edges; \} \}/, 'a classic scrollbar reserves both sides in the phone layout')
 const phoneOverview = overviewSource.slice(overviewSource.lastIndexOf('@media (max-width:760px)'))
 assert.match(phoneOverview, /\.portal-overview-scroll \{ padding:var\(--gs-space-4\) var\(--gs-space-5\) /, 'the portal keeps the 16px side margin of the other pages')
 assert.match(phoneOverview, /\.overview-personal \{ display:flex;align-items:stretch; \}/, 'the hero stays one column at every phone width')
-assert.match(phoneOverview, /@container portal \(min-width:540px\) \{ \.overview-directory \{ grid-template-columns:repeat\(5,minmax\(0,1fr\)\); \} \}/, 'a large phone shows the fifteen sections as three full rows of five')
-assert.equal(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items).length % 5, 0, 'the five-column directory has no partial row')
+assert.match(phoneOverview, /\.overview-directory \{ display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\);/, 'the phone directory has four columns')
+assert.doesNotMatch(phoneOverview, /\.overview-directory \{ grid-template-columns:/, 'no width changes the directory columns')
+assert.equal(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items).length % 4, 0, 'the four-column directory has no partial row')
 console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs; portal lens always in the address; phone 2+1 bar, lazy drawer and hero-first portal passed')
 import { ARCHIVE_SECTIONS } from '../src/core/archiveSections.js'
 import { buildArchiveBreadcrumbs } from '../src/core/archiveRoute.js'
