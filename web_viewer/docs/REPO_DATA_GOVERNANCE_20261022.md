@@ -28,8 +28,9 @@
 | 发布账本 `public/data/publication/`、registry | 跟踪 | 外置数据的版本身份 |
 | `public/data/compiled/` | 只跟踪**冻结的子集** | `.gitignore` 已忽略该目录，新文件进不来；当前 3485 个已跟踪，磁盘上有 4941 个。完整语料由 R2 加账本承载，Git 不是 compiled 的来源 |
 | `public/data/reading/` | 跟踪 | 被审校回执钉住字节，见 `sidem_reading_doc_bytes_frozen` |
-| **新增**图片、音频、视频 | **不进 Git** | 走 R2 / 派生目录，用清单（sha256 + 来源）进 Git 作为身份。参照 `config/derived_story_audio.json` |
-| 已在 Git 的图片 | 保持不动 | 替换时优先改为 R2 引用，而不是提交新的 PNG |
+| 小型原生纹理与界面图（Stage 发射器 / 探照灯 / 整屏纹理、谱面精灵等） | 跟踪，但必须登记 | 沿用既有政策 `notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md`：每个 PNG 都要在 `policies/tracked-binary-assets.v1.json` 中有类别与 `owner_release`，由 `verify-tracked-binary-inventory` 守门。Stage 纹理按内容哈希命名，不会原名重提交，历史不膨胀 |
+| 音频、视频、大尺寸立绘 / 封面 / 剧情图 | **不进 Git** | 走 R2 / 派生目录，清单（sha256 + 来源）进 Git 作为身份，参照 `config/derived_story_audio.json` |
+| 已在 Git 的大图（歌曲封面、剧情图） | 保持不动 | 不删除、不搬走（既有政策的 grandfathered 条款）；需要替换时优先改成 R2 引用，不再原名重提交新的 PNG。歌曲封面 50.9 MiB 的历史负担就是这样产生的 |
 
 ## 本次做的
 
@@ -42,6 +43,6 @@
 
 - 单次全量重编译落盘超过 50 MiB；
 - 干净 clone 或 CI checkout 明显变慢；
-- 二进制媒体又开始进 Git。
+- 不属于既有政策类别的二进制媒体开始进 Git。
 
 前提是已经证明生成产物可以按发布清单锁定版本独立取回。即使到那时，也只把**生成数据**移出去：数据管道、运行时、Schema 和人工翻译留在同一个仓库。
