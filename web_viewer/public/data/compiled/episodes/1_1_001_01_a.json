@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_001_01_a",
+  "text_catalog_id": "1_1_001jup_01_1_1_001_01",
+  "text_contract_version": 1,
   "total_steps": 17,
   "steps": [
     {
@@ -26,7 +28,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -34,11 +41,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 0,
+        "command_end": 0,
+        "raw_type": "text_synopsis",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "はじまりの前の、はじまり",
         "text": "友達との賭けから冗談半分で『新人ヴォーカ\nリストコンテスト』に出場した冬馬。\n見事優勝し、961プロダクションの新人アイ\nドルとなった。そんな冬馬が、黒井社長の\n命令で向かった先にいたのは……。",
         "text_jp": "友達との賭けから冗談半分で『新人ヴォーカ\nリストコンテスト』に出場した冬馬。\n見事優勝し、961プロダクションの新人アイ\nドルとなった。そんな冬馬が、黒井社長の\n命令で向かった先にいたのは……。",
         "text_cn": "",
+        "source_text": "友達との賭けから冗談半分で『新人ヴォーカ\nリストコンテスト』に出場した冬馬。\n見事優勝し、961プロダクションの新人アイ\nドルとなった。そんな冬馬が、黒井社長の\n命令で向かった先にいたのは……。",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000000:synopsis:000",
           "source": {
@@ -79,24 +101,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -109,7 +131,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -117,7 +139,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -129,6 +156,15 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -144,24 +180,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -177,7 +213,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -189,11 +230,26 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 11,
+        "command_end": 11,
+        "raw_type": "text_title",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "第1話",
         "text": "はじまりの前の、はじまり",
         "text_jp": "はじまりの前の、はじまり",
         "text_cn": "",
+        "source_text": "はじまりの前の、はじまり",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000011:title:001",
           "source": {
@@ -219,6 +275,7 @@
           "source_hash": "sha256:7824b3a8948acd2c72636875e79b09adab6d8fca3c20b65cfcfd68e8d3eae4ba"
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -234,24 +291,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": {
           "cue": "step_walk_away_conc_sneaker",
           "delay": 0.5
@@ -259,7 +316,7 @@
         "se_events": [
           {
             "cue": "step_walk_away_conc_sneaker",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "step_walk_away_conc_sneaker",
@@ -279,7 +336,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -291,7 +353,15 @@
           "layer": ""
         }
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -309,24 +379,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -340,13 +410,13 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -360,7 +430,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -371,6 +446,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -390,24 +473,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -421,8 +504,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off"
           }
@@ -436,7 +519,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -448,17 +536,26 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 18,
+        "command_end": 18,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "001tom",
       "dialogue": {
         "speaker": "天ヶ瀬 冬馬",
         "text": "新人ヴォーカリストコンテスト？",
         "text_jp": "新人ヴォーカリストコンテスト？",
         "text_cn": "",
-        "voice": "a1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1000.json",
-          "frames": 157
+        "source_text": "新人ヴォーカリストコンテスト？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000018:dialogue:000",
@@ -471,8 +568,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:8aff83071ced60f9f23ae68b934e5f07628f45f1c7188cb52a1a04d7aab956e5"
+        },
+        "voice": "a1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1000.json",
+          "frames": 157
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -488,24 +592,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -519,8 +623,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off"
           }
@@ -534,7 +638,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -546,12 +655,27 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 21,
+        "command_end": 21,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "冬馬の友人",
         "text": "冬馬、歌上手いし出てみろよ。\n部活もバイトもやってないんだから、ヒマだろ？",
         "text_jp": "冬馬、歌上手いし出てみろよ。\n部活もバイトもやってないんだから、ヒマだろ？",
         "text_cn": "",
+        "source_text": "冬馬、歌上手いし出てみろよ。\n部活もバイトもやってないんだから、ヒマだろ？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "冬馬の友人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000021:dialogue:000",
           "source": {
@@ -565,6 +689,7 @@
           "source_hash": "sha256:deb6fe25b0df0b1b61431d1469fb1401906387c2ffc95c12e825d959306b2f02"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -580,24 +705,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -611,8 +736,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off"
           }
@@ -626,7 +751,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -638,9 +768,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 26,
+        "command_end": 26,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "001tom",
           "value": "face_think",
@@ -649,7 +787,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_anim",
           "chara_id": "001tom",
           "value": "sad"
@@ -661,11 +799,12 @@
         "text": "たしかにヒマだが、\nいきなりコンテストって言われてもな……。",
         "text_jp": "たしかにヒマだが、\nいきなりコンテストって言われてもな……。",
         "text_cn": "",
-        "voice": "a1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1002.json",
-          "frames": 296
+        "source_text": "たしかにヒマだが、\nいきなりコンテストって言われてもな……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000026:dialogue:000",
@@ -678,8 +817,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fc965ba5b3013fa33748e0882ce1ddea6b7390f73b0c1055b59e59e94b7b2a02"
+        },
+        "voice": "a1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1002.json",
+          "frames": 296
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -695,24 +841,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -726,8 +872,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off"
           }
@@ -741,7 +887,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -753,12 +904,27 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "冬馬の友人",
         "text": "優勝すれば、あの『961プロダクション』から\n芸能界デビューできるんだぜ！",
         "text_jp": "優勝すれば、あの『961プロダクション』から\n芸能界デビューできるんだぜ！",
         "text_cn": "",
+        "source_text": "優勝すれば、あの『961プロダクション』から\n芸能界デビューできるんだぜ！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "冬馬の友人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000028:dialogue:000",
           "source": {
@@ -772,6 +938,7 @@
           "source_hash": "sha256:2fd1af448c4987aa1695ea49d6f4adc21486a774f8f9fdd77cdfbe0528e314ed"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -787,24 +954,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -818,8 +985,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off"
           }
@@ -833,7 +1000,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -844,6 +1016,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -868,11 +1048,12 @@
         "text": "961プロって、あの有名な芸能事務所の？\nうーん……。",
         "text_jp": "961プロって、あの有名な芸能事務所の？\nうーん……。",
         "text_cn": "",
-        "voice": "a1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1004.json",
-          "frames": 357
+        "source_text": "961プロって、あの有名な芸能事務所の？\nうーん……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000033:dialogue:000",
@@ -885,8 +1066,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:6f1aacfb35d4f9c320a5680234984d58d2dbeecd1ef205435b30b3d7cba41842"
+        },
+        "voice": "a1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1004.json",
+          "frames": 357
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -902,24 +1090,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -933,8 +1121,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_flag": "off"
@@ -949,7 +1137,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -961,9 +1154,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "001tom",
           "value": "weight"
@@ -975,11 +1176,12 @@
         "text": "パス。\n俺、別に芸能人になりたくねえし。",
         "text_jp": "パス。\n俺、別に芸能人になりたくねえし。",
         "text_cn": "",
-        "voice": "a1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1005.json",
-          "frames": 244
+        "source_text": "パス。\n俺、別に芸能人になりたくねえし。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000038:dialogue:000",
@@ -992,8 +1194,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ac252679fc37003640747e23dab7ec5e08033ebb284e0f287e7f4abd54eb0c36"
+        },
+        "voice": "a1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1005.json",
+          "frames": 244
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1009,24 +1218,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1040,8 +1249,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_flag": "off"
@@ -1056,7 +1265,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1068,12 +1282,27 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 40,
+        "command_end": 40,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "冬馬の友人",
         "text": "なんだよ、自信ないのかよ？",
         "text_jp": "なんだよ、自信ないのかよ？",
         "text_cn": "",
+        "source_text": "なんだよ、自信ないのかよ？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "冬馬の友人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000040:dialogue:000",
           "source": {
@@ -1087,6 +1316,7 @@
           "source_hash": "sha256:8698282ebbaf4492964a65d04e9b8f7ab6dc9896dd234e47cf5bd060c186ceb9"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1102,24 +1332,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1133,8 +1363,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_flag": "off"
@@ -1149,7 +1379,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1161,9 +1396,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "001tom",
           "value": "angry"
@@ -1175,11 +1418,12 @@
         "text": "んなわけねーだろ。\n俺を誰だと思ってんだ？",
         "text_jp": "んなわけねーだろ。\n俺を誰だと思ってんだ？",
         "text_cn": "",
-        "voice": "a1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1007.json",
-          "frames": 253
+        "source_text": "んなわけねーだろ。\n俺を誰だと思ってんだ？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000045:dialogue:000",
@@ -1192,8 +1436,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5173c13f51307490b1d935ad580a131f03b6757c887f3f191a59ff7609bd1f44"
+        },
+        "voice": "a1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1007.json",
+          "frames": 253
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1209,24 +1460,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1240,8 +1491,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_flag": "off"
@@ -1256,7 +1507,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1268,9 +1524,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 49,
+        "command_end": 49,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "001tom",
           "value": "face_default",
@@ -1285,6 +1549,13 @@
         "text": "歌が上手くて、かっこいいクラスメイト！\nお前なら、マジで受かる気がするんだよなぁ。",
         "text_jp": "歌が上手くて、かっこいいクラスメイト！\nお前なら、マジで受かる気がするんだよなぁ。",
         "text_cn": "",
+        "source_text": "歌が上手くて、かっこいいクラスメイト！\nお前なら、マジで受かる気がするんだよなぁ。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "冬馬の友人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000049:dialogue:000",
           "source": {
@@ -1298,6 +1569,7 @@
           "source_hash": "sha256:992071de47145341f19dfa976730c697e33ce24e0de76b0d752a7c94b00a0b9b"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1313,24 +1585,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1344,8 +1616,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_flag": "off"
@@ -1360,7 +1632,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1372,9 +1649,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "001tom",
           "value": "face_think",
@@ -1383,7 +1668,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_face",
           "chara_id": "001tom",
           "value": "face_surprise",
@@ -1398,6 +1683,13 @@
         "text": "なあ、出てみろって。もし優勝したら、\nイベント限定販売のプラモ買ってやるからさ。",
         "text_jp": "なあ、出てみろって。もし優勝したら、\nイベント限定販売のプラモ買ってやるからさ。",
         "text_cn": "",
+        "source_text": "なあ、出てみろって。もし優勝したら、\nイベント限定販売のプラモ買ってやるからさ。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "冬馬の友人"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000053:dialogue:000",
           "source": {
@@ -1426,24 +1718,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1457,8 +1749,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_flag": "off"
@@ -1473,7 +1765,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1485,9 +1782,17 @@
           "layer": ""
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "001tom",
           "value": "face_surprise",
@@ -1496,7 +1801,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "001tom",
           "value": "face_joy",
@@ -1505,7 +1810,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_face",
           "chara_id": "001tom",
           "value": "face_default",
@@ -1514,7 +1819,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_neck_anim",
           "chara_id": "001tom",
           "value": "neck_question"
@@ -1526,11 +1831,12 @@
         "text": "マジか！？　……いいぜ。\nぜってー優勝してやるから、覚悟しとけよ。",
         "text_jp": "マジか！？　……いいぜ。\nぜってー優勝してやるから、覚悟しとけよ。",
         "text_cn": "",
-        "voice": "a1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1010.json",
-          "frames": 526
+        "source_text": "マジか！？　……いいぜ。\nぜってー優勝してやるから、覚悟しとけよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000059:dialogue:000",
@@ -1543,8 +1849,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:cddb448e8137370d7b6727b1d1cd3c097873a58e495df287f79b353a4f69144a"
+        },
+        "voice": "a1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1010.json",
+          "frames": 526
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1560,24 +1873,24 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "city_usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1591,8 +1904,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_flag": "off"
@@ -1607,7 +1920,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1618,6 +1936,14 @@
           "display_id": "mob",
           "layer": ""
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_001jup_01/scenario_1_1_001_01_a.json",
+        "source_part_id": "1_1_001_01_a",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1642,11 +1968,12 @@
         "text": "見てろ。こんなコンテスト、楽勝！　だぜっ！",
         "text_jp": "見てろ。こんなコンテスト、楽勝！　だぜっ！",
         "text_cn": "",
-        "voice": "a1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1011.json",
-          "frames": 298
+        "source_text": "見てろ。こんなコンテスト、楽勝！　だぜっ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_001jup_01_1_1_001_01:1_1_001_01_a:cmd-000065:dialogue:000",
@@ -1659,8 +1986,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:7d592b78495ad3c7532cbcee3bcd03ade49115ec8bc1921128fe8582965c3eec"
+        },
+        "voice": "a1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/001jup/1_1_001_01/1_1_001_01_a/1_1_001_01_a1011.json",
+          "frames": 298
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     }
@@ -1679,6 +2013,10 @@
       "step_count": 17
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_001_01.unity3d",
+    "raw_hash": "sha256:121e0477e9e7518bd81297dda22d87acd0eddcaa7b3983cb575f847b9e0e6467"
+  },
   "aggregate_source": {
     "file": "1_1_001jup_01_1_1_001_01.json",
     "scenario_id": "1_1_001jup_01_1_1_001_01",

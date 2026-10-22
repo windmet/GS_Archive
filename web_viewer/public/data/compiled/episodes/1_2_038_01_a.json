@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_2_038_01_a",
+  "text_catalog_id": "1_2_038tak_01_1_2_038_01",
+  "text_contract_version": 1,
   "total_steps": 15,
   "steps": [
     {
@@ -26,7 +28,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -34,11 +41,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 0,
+        "command_end": 0,
+        "raw_type": "text_synopsis",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "大切な想いを込めて",
         "text": "タケルが猫や猫グッズが好きだと聞いた\nクライアントから、猫グッズのコラボの\nオファーが届いた。そのデザインを考え\n始めたタケルだったが、モチーフに\n悩んでしまい、手が動かなくなっていた…。",
         "text_jp": "タケルが猫や猫グッズが好きだと聞いた\nクライアントから、猫グッズのコラボの\nオファーが届いた。そのデザインを考え\n始めたタケルだったが、モチーフに\n悩んでしまい、手が動かなくなっていた…。",
         "text_cn": "",
+        "source_text": "タケルが猫や猫グッズが好きだと聞いた\nクライアントから、猫グッズのコラボの\nオファーが届いた。そのデザインを考え\n始めたタケルだったが、モチーフに\n悩んでしまい、手が動かなくなっていた…。",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000000:synopsis:000",
           "source": {
@@ -79,24 +101,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -109,7 +131,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -117,7 +139,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -125,6 +152,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 8,
+        "command_end": 8,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.2,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -140,24 +176,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -173,7 +209,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -181,11 +222,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "text_title",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "第1話",
         "text": "大切な想いを込めて",
         "text_jp": "大切な想いを込めて",
         "text_cn": "",
+        "source_text": "大切な想いを込めて",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000010:title:001",
           "source": {
@@ -211,6 +267,7 @@
           "source_hash": "sha256:7824b3a8948acd2c72636875e79b09adab6d8fca3c20b65cfcfd68e8d3eae4ba"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -226,24 +283,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -257,14 +314,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -278,7 +335,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -286,7 +348,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 13,
+        "command_end": 13,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -304,24 +374,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": {
           "cue": "step_walk_come_lino_boot",
           "delay": 1.1
@@ -329,7 +399,7 @@
         "se_events": [
           {
             "cue": "door_ent",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "step_walk_come_lino_boot",
@@ -347,8 +417,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -363,7 +433,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -371,7 +446,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 3,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 3.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -389,24 +472,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -420,8 +503,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -436,7 +519,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -444,11 +532,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "お疲れさまです、タケルさん。\nお待たせしてしまいましたか？",
         "text_jp": "お疲れさまです、タケルさん。\nお待たせしてしまいましたか？",
         "text_cn": "",
+        "source_text": "お疲れさまです、タケルさん。\nお待たせしてしまいましたか？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000017:dialogue:000",
           "source": {
@@ -462,6 +565,7 @@
           "source_hash": "sha256:b03a17dff93f42b5b12c5570892b92c06b41403ea6e633e83a1aa01ee65c8860"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -477,24 +581,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -508,8 +612,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -524,7 +628,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -532,17 +641,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 20,
+        "command_end": 20,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "038tak",
       "dialogue": {
         "speaker": "大河 タケル",
         "text": "いや、平気だ。\nそれで、仕事の話ってなんだ？",
         "text_jp": "いや、平気だ。\nそれで、仕事の話ってなんだ？",
         "text_cn": "",
-        "voice": "a1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1001.json",
-          "frames": 348
+        "source_text": "いや、平気だ。\nそれで、仕事の話ってなんだ？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "038tak",
+          "source_name": "大河 タケル"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000020:dialogue:000",
@@ -555,8 +673,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:9104ba9bb9c965c622698674af9f239509bc70ca87306b6e5d132b9014070229"
+        },
+        "voice": "a1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1001.json",
+          "frames": 348
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -572,24 +697,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -603,8 +728,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -619,13 +744,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -649,6 +787,13 @@
         "text": "実は、タケルさんが猫や猫グッズが好きだという\nことを聞いたクライアントから声がかかりまして。",
         "text_jp": "実は、タケルさんが猫や猫グッズが好きだという\nことを聞いたクライアントから声がかかりまして。",
         "text_cn": "",
+        "source_text": "実は、タケルさんが猫や猫グッズが好きだという\nことを聞いたクライアントから声がかかりまして。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000024:dialogue:000",
           "source": {
@@ -662,6 +807,7 @@
           "source_hash": "sha256:dd506d3f80f551783f7e0b03a86037cab2707708b1332ea23c2af27834cd00f4"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -677,24 +823,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -708,8 +854,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -724,13 +870,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -754,6 +913,13 @@
         "text": "タケルさんと猫グッズのコラボをしたいという\nオファーをいただきました！",
         "text_jp": "タケルさんと猫グッズのコラボをしたいという\nオファーをいただきました！",
         "text_cn": "",
+        "source_text": "タケルさんと猫グッズのコラボをしたいという\nオファーをいただきました！",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000028:dialogue:000",
           "source": {
@@ -767,6 +933,7 @@
           "source_hash": "sha256:a64bf2064a0a5e860ca91457e2052aee860c526a5107cb8661f5c47cc42f1ef0"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -782,24 +949,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -813,8 +980,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -829,13 +996,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -863,11 +1043,12 @@
         "text": "グッズのコラボか。\n俺は何かすることはあるか？",
         "text_jp": "グッズのコラボか。\n俺は何かすることはあるか？",
         "text_cn": "",
-        "voice": "a1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1004.json",
-          "frames": 389
+        "source_text": "グッズのコラボか。\n俺は何かすることはあるか？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "038tak",
+          "source_name": "大河 タケル"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000033:dialogue:000",
@@ -880,8 +1061,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:36a38ac86a89564fa563982d1bb8851b6e5c2b8837f14a6cf6b82962c5e6765a"
+        },
+        "voice": "a1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1004.json",
+          "frames": 389
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -897,24 +1085,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -928,8 +1116,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -944,7 +1132,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -952,11 +1145,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 35,
+        "command_end": 35,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "はい！　どんなグッズを作りたいか、それからその\nグッズにいれるモチーフの案出しをお願いします。",
         "text_jp": "はい！　どんなグッズを作りたいか、それからその\nグッズにいれるモチーフの案出しをお願いします。",
         "text_cn": "",
+        "source_text": "はい！　どんなグッズを作りたいか、それからその\nグッズにいれるモチーフの案出しをお願いします。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000035:dialogue:000",
           "source": {
@@ -970,6 +1178,7 @@
           "source_hash": "sha256:49dbc737408b7509e6801afd64f39aaeb3bfe4b48497ad0ed4f53ddb497c40cd"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -985,24 +1194,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1016,8 +1225,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1032,7 +1241,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1040,11 +1254,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 37,
+        "command_end": 37,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "デザインはプロの方にお願いすることになるので\nイメージを考えていただくだけで大丈夫です。",
         "text_jp": "デザインはプロの方にお願いすることになるので\nイメージを考えていただくだけで大丈夫です。",
         "text_cn": "",
+        "source_text": "デザインはプロの方にお願いすることになるので\nイメージを考えていただくだけで大丈夫です。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000037:dialogue:000",
           "source": {
@@ -1058,6 +1287,7 @@
           "source_hash": "sha256:5b6a26608c5acd74baab9514c4485eda6edacf2520b913f6442e0b2d50e66c86"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1073,24 +1303,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1104,8 +1334,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1120,7 +1350,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1128,9 +1363,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "038tak",
           "value": "face_joy",
@@ -1145,11 +1388,12 @@
         "text": "なるほど。それなら俺でもできそうだな。",
         "text_jp": "なるほど。それなら俺でもできそうだな。",
         "text_cn": "",
-        "voice": "a1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1007.json",
-          "frames": 263
+        "source_text": "なるほど。それなら俺でもできそうだな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "038tak",
+          "source_name": "大河 タケル"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000041:dialogue:000",
@@ -1162,8 +1406,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:e024e7b91b22f115272bd15c54aae86912922cdcb290eccf283b276f889af7da"
+        },
+        "voice": "a1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1007.json",
+          "frames": 263
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1179,24 +1430,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1210,8 +1461,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1226,13 +1477,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1251,11 +1515,12 @@
         "text": "俺が猫を好きだって知って\nもらえてたんだな。嬉しいよ。",
         "text_jp": "俺が猫を好きだって知って\nもらえてたんだな。嬉しいよ。",
         "text_cn": "",
-        "voice": "a1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1008.json",
-          "frames": 317
+        "source_text": "俺が猫を好きだって知って\nもらえてたんだな。嬉しいよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "038tak",
+          "source_name": "大河 タケル"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000045:dialogue:000",
@@ -1268,8 +1533,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:9a47b4ef457b14d044e4dc4cd8e99e92814ad5d80b1f748693b8d5d4688e640d"
+        },
+        "voice": "a1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1008.json",
+          "frames": 317
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1285,24 +1557,24 @@
           "imageId": "bg029_315promtg_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "usual_day",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1316,8 +1588,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1332,13 +1604,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_038tak_01/scenario_1_2_038_01_a.json",
+        "source_part_id": "1_2_038_01_a",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1363,11 +1648,12 @@
         "text": "その仕事、もちろん受けさせてくれ。",
         "text_jp": "その仕事、もちろん受けさせてくれ。",
         "text_cn": "",
-        "voice": "a1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1009.json",
-          "frames": 194
+        "source_text": "その仕事、もちろん受けさせてくれ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "038tak",
+          "source_name": "大河 タケル"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_038tak_01_1_2_038_01:1_2_038_01_a:cmd-000050:dialogue:000",
@@ -1380,8 +1666,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ab61c5ca799424842d24d3ea045ca1d7b52755e01b7b8ebac4c1e65367e21e86"
+        },
+        "voice": "a1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/038tak/1_2_038_01/1_2_038_01_a/1_2_038_01_a1009.json",
+          "frames": 194
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     }
@@ -1400,6 +1693,10 @@
       "step_count": 15
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_2_038_01.unity3d",
+    "raw_hash": "sha256:a36823baed9e2a399b85b518dd1862222eb458e43f6c94e2462b44aa3156739a"
+  },
   "aggregate_source": {
     "file": "1_2_038tak_01_1_2_038_01.json",
     "scenario_id": "1_2_038tak_01_1_2_038_01",

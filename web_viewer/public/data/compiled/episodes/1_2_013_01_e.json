@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_2_013_01_e",
+  "text_catalog_id": "1_2_013kys_01_1_2_013_01",
+  "text_contract_version": 1,
   "total_steps": 16,
   "steps": [
     {
@@ -14,36 +16,37 @@
             "id": "cameraflare",
             "visible": true,
             "action": "start",
-            "delay": 0,
-            "duration": 0
+            "delay": 0.0,
+            "duration": 0.0
           }
         ],
         "bg_profile": {
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -52,7 +55,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -60,7 +63,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -68,6 +76,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -96,21 +113,21 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -121,11 +138,11 @@
         "se_events": [
           {
             "cue": "doorbell_open_common",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "step_walk_come_conc_boot",
-            "delay": 2
+            "delay": 2.0
           },
           {
             "cue": "step_walk_come_conc_sneaker",
@@ -133,7 +150,8 @@
           }
         ],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [],
         "talk_mode": false,
@@ -145,13 +163,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 3.5,
       "auto_advance": true,
@@ -171,28 +202,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -202,14 +234,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -223,13 +255,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -249,28 +294,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -280,8 +326,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -296,7 +342,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -304,9 +355,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_default",
@@ -315,7 +374,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_happy",
@@ -330,11 +389,12 @@
         "text": "ありがとう、監督！　いいプレゼントが決まったよ。\n相談して良かった。",
         "text_jp": "ありがとう、監督！　いいプレゼントが決まったよ。\n相談して良かった。",
         "text_cn": "",
-        "voice": "e1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1000.json",
-          "frames": 327
+        "source_text": "ありがとう、監督！　いいプレゼントが決まったよ。\n相談して良かった。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000022:dialogue:000",
@@ -347,8 +407,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:dc1054f9098160786cf4969f54dd310d03c016b466276489f93a0d304cdf26c9"
+        },
+        "voice": "e1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1000.json",
+          "frames": 327
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -364,28 +431,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -395,8 +463,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -411,7 +479,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -419,9 +492,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 26,
+        "command_end": 26,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_happy",
@@ -436,11 +517,12 @@
         "text": "悠介が欲しいものだし、驚かせることも出来そう。",
         "text_jp": "悠介が欲しいものだし、驚かせることも出来そう。",
         "text_cn": "",
-        "voice": "e1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1001.json",
-          "frames": 226
+        "source_text": "悠介が欲しいものだし、驚かせることも出来そう。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000026:dialogue:000",
@@ -453,8 +535,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c7f4fec4cd85db51eb3b65b448c5b491f90189e4f8ac6735c3859f10c958f8ba"
+        },
+        "voice": "e1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1001.json",
+          "frames": 226
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -470,28 +559,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -501,8 +591,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -517,7 +607,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -525,9 +620,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 32,
+        "command_end": 32,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_think",
@@ -542,11 +645,12 @@
         "text": "とはいえ、プレゼントされるものによっては、\n俺も驚くかもしれないよね。",
         "text_jp": "とはいえ、プレゼントされるものによっては、\n俺も驚くかもしれないよね。",
         "text_cn": "",
-        "voice": "e1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1002.json",
-          "frames": 339
+        "source_text": "とはいえ、プレゼントされるものによっては、\n俺も驚くかもしれないよね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000032:dialogue:000",
@@ -559,8 +663,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:93f2cb180cc5f8e02c1191c9c54e97235a7761b1fd536fbcbad220454426d689"
+        },
+        "voice": "e1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1002.json",
+          "frames": 339
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -576,28 +687,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -607,8 +719,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -623,7 +735,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -631,11 +748,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 35,
+        "command_end": 35,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "勝負の結果が出たら教えてくださいね。",
         "text_jp": "勝負の結果が出たら教えてくださいね。",
         "text_cn": "",
+        "source_text": "勝負の結果が出たら教えてくださいね。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000035:dialogue:000",
           "source": {
@@ -649,6 +781,7 @@
           "source_hash": "sha256:4d7ee384e27639a753a7fbfd23850f95f6a8a47938b2b2a03bd8cf95032a0b47"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -664,28 +797,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -695,8 +829,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -711,7 +845,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -719,9 +858,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 40,
+        "command_end": 40,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_default",
@@ -736,11 +883,12 @@
         "text": "もちろん。もしかしたら、\n俺と悠介から同時に連絡が行くかもよ。",
         "text_jp": "もちろん。もしかしたら、\n俺と悠介から同時に連絡が行くかもよ。",
         "text_cn": "",
-        "voice": "e1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1004.json",
-          "frames": 315
+        "source_text": "もちろん。もしかしたら、\n俺と悠介から同時に連絡が行くかもよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000040:dialogue:000",
@@ -753,8 +901,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5d4b64985f6f391e49c4a7a135b79f69610f5c88ba5b8fd5e95bd32cf5d6f33e"
+        },
+        "voice": "e1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1004.json",
+          "frames": 315
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -770,28 +925,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -801,8 +957,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -817,7 +973,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -825,9 +986,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_happy",
@@ -857,11 +1026,12 @@
         "text": "俺が監督に相談したように、悠介も相談すると\n思うんだ。これは、双子の勘ってやつ。",
         "text_jp": "俺が監督に相談したように、悠介も相談すると\n思うんだ。これは、双子の勘ってやつ。",
         "text_cn": "",
-        "voice": "e1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1005.json",
-          "frames": 390
+        "source_text": "俺が監督に相談したように、悠介も相談すると\n思うんだ。これは、双子の勘ってやつ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000046:dialogue:000",
@@ -874,8 +1044,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:594a641eef1c5f5b43578ae44989b5b1b1f2e013f69d54a59f828300797b0759"
+        },
+        "voice": "e1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1005.json",
+          "frames": 390
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -891,28 +1068,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -922,8 +1100,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -938,7 +1116,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -946,15 +1129,23 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 51,
+        "command_end": 51,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "013kys",
           "value": "wait_loop"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_default",
@@ -969,11 +1160,12 @@
         "text": "っていうか、もしかしてもう相談されてるかな？",
         "text_jp": "っていうか、もしかしてもう相談されてるかな？",
         "text_cn": "",
-        "voice": "e1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1006.json",
-          "frames": 203
+        "source_text": "っていうか、もしかしてもう相談されてるかな？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000051:dialogue:000",
@@ -986,8 +1178,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:929a13bbc818981d3b0f8cca5b1fa09f90101326f9acb03a76d090edb06f461b"
+        },
+        "voice": "e1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1006.json",
+          "frames": 203
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1003,28 +1202,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1034,8 +1234,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1050,7 +1250,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1058,11 +1263,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "それは……",
         "text_jp": "それは……",
         "text_cn": "",
+        "source_text": "それは……",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000053:dialogue:000",
           "source": {
@@ -1076,6 +1296,7 @@
           "source_hash": "sha256:c8014a384a22ba6d1d2fbd5d4e985370a29e15a6510d5b8839622160aba78d41"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1091,28 +1312,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1122,8 +1344,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1138,13 +1360,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 57,
+        "command_end": 57,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1163,11 +1398,12 @@
         "text": "あっ、答えは言わないで！",
         "text_jp": "あっ、答えは言わないで！",
         "text_cn": "",
-        "voice": "e1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1008.json",
-          "frames": 113
+        "source_text": "あっ、答えは言わないで！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000057:dialogue:000",
@@ -1180,8 +1416,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:08616ebfbe05958c29eed6d905031698845ebd2a10815fec6e5afab1f68a7c04"
+        },
+        "voice": "e1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1008.json",
+          "frames": 113
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1197,28 +1440,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1228,8 +1472,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1244,7 +1488,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1252,17 +1501,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 60,
+        "command_end": 60,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "013kys",
       "dialogue": {
         "speaker": "蒼井 享介",
         "text": "それも当日まで楽しみにしときたいから。",
         "text_jp": "それも当日まで楽しみにしときたいから。",
         "text_cn": "",
-        "voice": "e1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1009.json",
-          "frames": 186
+        "source_text": "それも当日まで楽しみにしときたいから。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000060:dialogue:000",
@@ -1275,8 +1533,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:912ec4214d86686db9c73741da5a8ad52c9bc794bd693105fe1de84e5580e3bd"
+        },
+        "voice": "e1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1009.json",
+          "frames": 186
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1292,28 +1557,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1323,8 +1589,8 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1339,13 +1605,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 67,
+        "command_end": 67,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1358,7 +1637,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_happy",
@@ -1367,7 +1646,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_anim",
           "chara_id": "013kys",
           "value": "weight"
@@ -1379,11 +1658,12 @@
         "text": "それじゃ、監督。今日は付き合ってくれて\nありがとう。プレゼントの結果絶対連絡するから！",
         "text_jp": "それじゃ、監督。今日は付き合ってくれて\nありがとう。プレゼントの結果絶対連絡するから！",
         "text_cn": "",
-        "voice": "e1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1010.json",
-          "frames": 407
+        "source_text": "それじゃ、監督。今日は付き合ってくれて\nありがとう。プレゼントの結果絶対連絡するから！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_013kys_01_1_2_013_01:1_2_013_01_e:cmd-000067:dialogue:000",
@@ -1396,8 +1676,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:9705593746a75160134cb3e68b2dff45e8a51a45c18c25961d27fd878c5fe882"
+        },
+        "voice": "e1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/013kys/1_2_013_01/1_2_013_01_e/1_2_013_01_e1010.json",
+          "frames": 407
         }
       },
+      "post_wait": 0.1,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1413,28 +1700,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1444,8 +1732,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1460,7 +1748,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1468,7 +1761,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 70,
+        "command_end": 70,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1484,28 +1785,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_after",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_street_arcade_syoutengai"
+          "cue": "ambi_street_arcade_syoutengai",
+          "cue_name": "ambi_street_arcade_syoutengai"
         },
         "spines": [
           {
@@ -1515,8 +1817,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1528,7 +1830,7 @@
         "screen_fade": {
           "type": "out",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -1536,13 +1838,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_013kys_01/scenario_1_2_013_01_e.json",
+        "source_part_id": "1_2_013_01_e",
+        "command_start": 71,
+        "command_end": 71,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "e"
@@ -1562,6 +1877,10 @@
       "step_count": 16
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_2_013_01.unity3d",
+    "raw_hash": "sha256:4394933e8b7f558c8938261657bf0cf8ef489d21e0f8abf7c5e45aad54518636"
+  },
   "aggregate_source": {
     "file": "1_2_013kys_01_1_2_013_01.json",
     "scenario_id": "1_2_013kys_01_1_2_013_01",

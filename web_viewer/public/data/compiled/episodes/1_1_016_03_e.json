@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_016_03_e",
+  "text_catalog_id": "1_1_016cfi_03_1_1_016_03",
+  "text_contract_version": 1,
   "total_steps": 26,
   "steps": [
     {
@@ -16,22 +18,23 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_rainy_heavy"
+          "cue": "ambi_rainy_heavy",
+          "cue_name": "ambi_rainy_heavy"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 80,
-          "duration": 0,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 80.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
-          "duration": 2,
-          "delay": 0,
+          "duration": 2.0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -39,7 +42,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -47,6 +55,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -64,16 +81,17 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_rainy_heavy"
+          "cue": "ambi_rainy_heavy",
+          "cue_name": "ambi_rainy_heavy"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 80,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 80.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -81,7 +99,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -89,9 +112,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 11,
+        "command_end": 11,
+        "raw_type": "text_time",
+        "confidence": "exact"
+      },
       "duration": 1.2,
       "text_time": {
         "text": "数日後……",
+        "source_text": "数日後……",
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000011:time_caption:000",
           "source": {
@@ -106,6 +138,7 @@
         }
       },
       "auto_advance": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -118,15 +151,15 @@
         "bg_transition": {
           "type": "dissolve",
           "color": "#FFFFFF",
-          "delay": 0,
-          "duration": 2
+          "delay": 0.0,
+          "duration": 2.0
         },
         "bg_effects": [
           {
             "id": "cameraflare",
             "visible": false,
             "action": "end",
-            "delay": 0,
+            "delay": 0.0,
             "duration": 1.25
           }
         ],
@@ -140,19 +173,24 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0,
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
         "bgm_stop_fade": null,
         "environmental_volume": null,
-        "environmental_duck_target": 0.5,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": 1.0,
+        "environmental_ducking_delay": 0.5,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -160,7 +198,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 3,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 3.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -184,10 +230,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -195,7 +241,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -203,9 +254,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 20,
+        "command_end": 20,
+        "raw_type": "text_time",
+        "confidence": "exact"
+      },
       "duration": 1.2,
       "text_time": {
         "text": "祖父母の家",
+        "source_text": "祖父母の家",
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000020:time_caption:000",
           "source": {
@@ -220,6 +280,7 @@
         }
       },
       "auto_advance": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -245,14 +306,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -260,10 +321,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -271,7 +332,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -279,7 +345,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 23,
+        "command_end": 23,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -307,8 +381,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -317,10 +391,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -328,7 +402,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -336,12 +415,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "鋭心の祖母",
         "text": "突然髪を切ってほしいだなんて。本当にいいの？",
         "text_jp": "突然髪を切ってほしいだなんて。本当にいいの？",
         "text_cn": "",
+        "source_text": "突然髪を切ってほしいだなんて。本当にいいの？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "鋭心の祖母"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000024:dialogue:000",
           "source": {
@@ -355,6 +449,7 @@
           "source_hash": "sha256:7fd6ccd1779c68c6dccbd72143dfb472844ea2376add3d2f56534bfc295e0e8e"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -380,8 +475,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -390,10 +485,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -401,7 +496,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -409,17 +509,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 27,
+        "command_end": 27,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "はい。これは、けじめですから。",
         "text_jp": "はい。これは、けじめですから。",
         "text_cn": "",
-        "voice": "e1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1001.json",
-          "frames": 197
+        "source_text": "はい。これは、けじめですから。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000027:dialogue:000",
@@ -432,8 +541,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f5ff77ac1eb03d6ad1b4882b9b7923bc398fd99b07b1a5b871dc6bbb8f79dffc"
+        },
+        "voice": "e1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1001.json",
+          "frames": 197
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -459,8 +575,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -469,10 +585,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -480,7 +596,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -488,7 +609,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 31,
+        "command_end": 31,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -505,12 +634,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "chair_sit",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "chair_sit",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": null,
@@ -522,14 +651,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -537,10 +666,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -548,7 +677,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -556,7 +690,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 34,
+        "command_end": 34,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -575,12 +717,14 @@
         "bgm_volume": 0,
         "se": {
           "cue": "haricut_01",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "haricut_01",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": null,
@@ -588,10 +732,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -599,13 +743,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 36,
+        "command_end": 36,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -626,12 +783,14 @@
         "bgm_volume": 0,
         "se": {
           "cue": "haricut_02",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "haricut_02",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": null,
@@ -639,10 +798,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -650,13 +809,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -677,12 +849,14 @@
         "bgm_volume": 0,
         "se": {
           "cue": "haricut_03",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "haricut_03",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": null,
@@ -690,10 +864,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -701,7 +875,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -709,17 +888,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 40,
+        "command_end": 40,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "……俺に、弟がいたことを知りました。",
         "text_jp": "……俺に、弟がいたことを知りました。",
         "text_cn": "",
-        "voice": "e1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1003.json",
-          "frames": 203
+        "source_text": "……俺に、弟がいたことを知りました。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000040:dialogue:000",
@@ -732,8 +920,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:584ec80b2f2d850c73d16e51cb46b5363744387ff66605c4a20958a31f3c6682"
+        },
+        "voice": "e1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1003.json",
+          "frames": 203
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -755,10 +950,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -766,7 +961,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -774,12 +974,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "鋭心の祖母",
         "text": "お父さんとお母さんに聞いたの？",
         "text_jp": "お父さんとお母さんに聞いたの？",
         "text_cn": "",
+        "source_text": "お父さんとお母さんに聞いたの？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "鋭心の祖母"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000042:dialogue:000",
           "source": {
@@ -793,6 +1008,7 @@
           "source_hash": "sha256:f4e48fe4d2d08d2f7a5a0afcc19eecb3395bd4c4c5bc036e5bfe115eb2e107e8"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -814,10 +1030,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -825,7 +1041,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -833,17 +1054,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 44,
+        "command_end": 44,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "いえ。二人が話しているのを、偶然聞いたんです。",
         "text_jp": "いえ。二人が話しているのを、偶然聞いたんです。",
         "text_cn": "",
-        "voice": "e1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1005.json",
-          "frames": 263
+        "source_text": "いえ。二人が話しているのを、偶然聞いたんです。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000044:dialogue:000",
@@ -856,8 +1086,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:8bd40211173b74de6a38661b61d55d6b1609298c29f96b18fe9b8099f83d2748"
+        },
+        "voice": "e1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1005.json",
+          "frames": 263
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -874,16 +1111,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "haricut_03",
-          "delay": 2.8
+          "delay": 2.8,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "haricut_01",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           },
           {
             "cue": "haricut_03",
-            "delay": 2.8
+            "delay": 2.8,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": null,
@@ -891,10 +1131,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -902,7 +1142,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -910,12 +1155,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "鋭心の祖母",
         "text": "そう。……話すべきかどうか悩んでいるうちに、\n結局あなたを傷つけてしまったのね。",
         "text_jp": "そう。……話すべきかどうか悩んでいるうちに、\n結局あなたを傷つけてしまったのね。",
         "text_cn": "",
+        "source_text": "そう。……話すべきかどうか悩んでいるうちに、\n結局あなたを傷つけてしまったのね。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "鋭心の祖母"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000048:dialogue:000",
           "source": {
@@ -929,6 +1189,7 @@
           "source_hash": "sha256:58e488812e1e087525ada98c0a2ec9e3d8c9f9d8b5d2823534e2f98d584264b0"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -950,10 +1211,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -961,7 +1222,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -969,17 +1235,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "いえ、良かったんです。",
         "text_jp": "いえ、良かったんです。",
         "text_cn": "",
-        "voice": "e1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1007.json",
-          "frames": 130
+        "source_text": "いえ、良かったんです。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000050:dialogue:000",
@@ -992,8 +1267,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5549ad10218b75e31cce5f87edf0620a0f917a283c579f24e69ffc18db5ea7fa"
+        },
+        "voice": "e1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1007.json",
+          "frames": 130
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1015,10 +1297,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1026,7 +1308,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1034,17 +1321,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 52,
+        "command_end": 52,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "おかげで俺は、自分の愚かさに\nようやく気付くことができました。",
         "text_jp": "おかげで俺は、自分の愚かさに\nようやく気付くことができました。",
         "text_cn": "",
-        "voice": "e1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1008.json",
-          "frames": 307
+        "source_text": "おかげで俺は、自分の愚かさに\nようやく気付くことができました。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000052:dialogue:000",
@@ -1057,8 +1353,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d928fbe45ddbe192bdeedcd2a3c0cf45e727b1f9f20ea43ed98fa5b15eefdee0"
+        },
+        "voice": "e1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1008.json",
+          "frames": 307
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1080,10 +1383,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1091,7 +1394,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1099,7 +1407,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 55,
+        "command_end": 55,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1116,12 +1432,14 @@
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_s01",
-          "delay": 0
+          "delay": 0.0,
+          "volume": 0.7
         },
         "se_events": [
           {
             "cue": "cloth_move_s01",
-            "delay": 0
+            "delay": 0.0,
+            "volume": 0.7
           }
         ],
         "environmental": null,
@@ -1129,10 +1447,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1140,13 +1458,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 57,
+        "command_end": 57,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -1176,14 +1507,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1191,10 +1522,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1202,7 +1533,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1210,7 +1546,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 63,
+        "command_end": 63,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1238,8 +1582,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1248,10 +1592,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1259,7 +1603,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1267,9 +1616,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 66,
+        "command_end": 66,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_serious",
@@ -1284,11 +1641,12 @@
         "text": "これからは、自分のした事を償っていきます。\n迷惑をかけた分、みんなのために生きていきます。",
         "text_jp": "これからは、自分のした事を償っていきます。\n迷惑をかけた分、みんなのために生きていきます。",
         "text_cn": "",
-        "voice": "e1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1009.json",
-          "frames": 501
+        "source_text": "これからは、自分のした事を償っていきます。\n迷惑をかけた分、みんなのために生きていきます。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000066:dialogue:000",
@@ -1301,8 +1659,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:16ca1443e452f8a94807308929be04d79faade1d8c7b34eff240151b65f99e47"
+        },
+        "voice": "e1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1009.json",
+          "frames": 501
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1328,8 +1693,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1338,10 +1703,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1349,13 +1714,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 70,
+        "command_end": 70,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1374,6 +1752,13 @@
         "text": "……あなたはいつも真っすぐね。不器用なくらい。\nでも、そんなところが心配なの。",
         "text_jp": "……あなたはいつも真っすぐね。不器用なくらい。\nでも、そんなところが心配なの。",
         "text_cn": "",
+        "source_text": "……あなたはいつも真っすぐね。不器用なくらい。\nでも、そんなところが心配なの。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "鋭心の祖母"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000070:dialogue:000",
           "source": {
@@ -1387,6 +1772,7 @@
           "source_hash": "sha256:6b440b86362f6e201179234e5e7dccd7eb78fc2112fd97d922cb05802da1193a"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1403,12 +1789,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_ss01",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cloth_move_ss01",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": null,
@@ -1420,8 +1806,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1430,10 +1816,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1441,13 +1827,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1466,6 +1865,13 @@
         "text": "鋭心、聞いて。誰にだって間違いはある。間違った\n自分も許してあげないと、辛い事の多い人生になる。",
         "text_jp": "鋭心、聞いて。誰にだって間違いはある。間違った\n自分も許してあげないと、辛い事の多い人生になる。",
         "text_cn": "",
+        "source_text": "鋭心、聞いて。誰にだって間違いはある。間違った\n自分も許してあげないと、辛い事の多い人生になる。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "鋭心の祖母"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000076:dialogue:000",
           "source": {
@@ -1479,6 +1885,7 @@
           "source_hash": "sha256:417825758436e91162b878f7ae9e4e5db7674b0298304967f76d1831458d4b7e"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1504,8 +1911,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1514,10 +1921,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1525,13 +1932,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 81,
+        "command_end": 81,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1559,6 +1979,13 @@
         "text": "私はあなたに、幸せでいてほしい。\nだから、そんなに自分を責めな……",
         "text_jp": "私はあなたに、幸せでいてほしい。\nだから、そんなに自分を責めな……",
         "text_cn": "",
+        "source_text": "私はあなたに、幸せでいてほしい。\nだから、そんなに自分を責めな……",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "鋭心の祖母"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000081:dialogue:000",
           "source": {
@@ -1597,8 +2024,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1607,18 +2034,23 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1626,17 +2058,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 83,
+        "command_end": 83,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "……もう、止めてください。",
         "text_jp": "……もう、止めてください。",
         "text_cn": "",
-        "voice": "e1013.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1013.json",
-          "frames": 130
+        "source_text": "……もう、止めてください。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000083:dialogue:000",
@@ -1649,8 +2090,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d53d4f550abcf284b5c9f31bdd71588f680a5f156c76eda88c13c3d935d2d514"
+        },
+        "voice": "e1013.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1013.json",
+          "frames": 130
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1676,8 +2124,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1686,10 +2134,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 2
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1697,13 +2145,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_03/scenario_1_1_016_03_e.json",
+        "source_part_id": "1_1_016_03_e",
+        "command_start": 87,
+        "command_end": 87,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1722,11 +2183,12 @@
         "text": "お願いです。もう、誰も……\nこんな俺を、守らないでください。",
         "text_jp": "お願いです。もう、誰も……\nこんな俺を、守らないでください。",
         "text_cn": "",
-        "voice": "e1014.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1014.json",
-          "frames": 491
+        "source_text": "お願いです。もう、誰も……\nこんな俺を、守らないでください。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_03_1_1_016_03:1_1_016_03_e:cmd-000087:dialogue:000",
@@ -1739,8 +2201,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3d84e7fb402796ab9f6770c446a634a3faf593101dd0d20be8f8569f9323e49a"
+        },
+        "voice": "e1014.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_03/1_1_016_03_e/1_1_016_03_e1014.json",
+          "frames": 491
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     }
@@ -1759,6 +2228,10 @@
       "step_count": 26
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_016_03.unity3d",
+    "raw_hash": "sha256:45e1695765d3f05eb4bc8d5c282918f8670c96907c811ced6d1685d4a4d239f2"
+  },
   "aggregate_source": {
     "file": "1_1_016cfi_03_1_1_016_03.json",
     "scenario_id": "1_1_016cfi_03_1_1_016_03",

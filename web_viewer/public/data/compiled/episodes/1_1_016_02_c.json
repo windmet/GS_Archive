@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_016_02_c",
+  "text_catalog_id": "1_1_016cfi_02_1_1_016_02",
+  "text_contract_version": 1,
   "total_steps": 14,
   "steps": [
     {
@@ -14,19 +16,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -45,15 +47,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -63,7 +65,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -71,7 +73,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -79,6 +86,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -94,19 +110,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -125,8 +141,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -141,7 +157,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -149,9 +170,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 14,
+        "command_end": 14,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "048mom",
           "value": "face_sad",
@@ -160,7 +189,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "048mom",
           "value": "weight"
@@ -172,11 +201,12 @@
         "text": "……「この子は、何なら出来るんだろう？」",
         "text_jp": "……「この子は、何なら出来るんだろう？」",
         "text_cn": "",
-        "voice": "c1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1000.json",
-          "frames": 198
+        "source_text": "……「この子は、何なら出来るんだろう？」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000014:dialogue:000",
@@ -189,6 +219,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:644110f36f8311f8dd3cef96a9e2f2ff9284c2e7c353fd46ff564df2171a70e6"
+        },
+        "voice": "c1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1000.json",
+          "frames": 198
         }
       },
       "episode_index": 0,
@@ -206,19 +242,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -237,8 +273,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -253,7 +289,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -261,7 +302,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -279,19 +328,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -310,8 +359,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -326,13 +375,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -351,11 +413,12 @@
         "text": "「次はせめて、勉強で一位をとってみせて」……か。",
         "text_jp": "「次はせめて、勉強で一位をとってみせて」……か。",
         "text_cn": "",
-        "voice": "c1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1001.json",
-          "frames": 346
+        "source_text": "「次はせめて、勉強で一位をとってみせて」……か。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000019:dialogue:000",
@@ -368,8 +431,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ee7456c8549d73b12a2892a0f76907fcc4926a2295492e69bdacdf808d005396"
+        },
+        "voice": "c1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1001.json",
+          "frames": 346
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -385,19 +455,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -416,8 +486,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -432,7 +502,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -440,17 +515,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "048mom",
       "dialogue": {
         "speaker": "花園 百々人",
         "text": "……。",
         "text_jp": "……。",
         "text_cn": "",
-        "voice": "c1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1002.json",
-          "frames": 88
+        "source_text": "……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000024:dialogue:000",
@@ -463,8 +547,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:7c61a4cf8d8ec174c1df7839240d1a74a42c1527d0e4fdd3c5b57e25234d0d85"
+        },
+        "voice": "c1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1002.json",
+          "frames": 88
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -480,19 +571,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -511,8 +602,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -527,13 +618,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -552,11 +656,12 @@
         "text": "……僕だって、早く知りたいよ。",
         "text_jp": "……僕だって、早く知りたいよ。",
         "text_cn": "",
-        "voice": "c1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1003.json",
-          "frames": 159
+        "source_text": "……僕だって、早く知りたいよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000028:dialogue:000",
@@ -569,8 +674,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f542ee99e3d623fb2e2b80e5ddfe198463c71f674f158e0375a63e42bef184d2"
+        },
+        "voice": "c1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1003.json",
+          "frames": 159
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -586,19 +698,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -617,8 +729,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -633,13 +745,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 32,
+        "command_end": 32,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -664,11 +789,12 @@
         "text": "お父さんとお母さんが言う通り、\n僕は何なら、上手に出来るの？",
         "text_jp": "お父さんとお母さんが言う通り、\n僕は何なら、上手に出来るの？",
         "text_cn": "",
-        "voice": "c1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1004.json",
-          "frames": 386
+        "source_text": "お父さんとお母さんが言う通り、\n僕は何なら、上手に出来るの？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000032:dialogue:000",
@@ -681,8 +807,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5e20d5e480c54434f3b0b1a962f3ab22cd2a8d9a900005919c99a88881beb79a"
+        },
+        "voice": "c1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1004.json",
+          "frames": 386
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -698,19 +831,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -729,8 +862,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -745,13 +878,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 37,
+        "command_end": 37,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -776,11 +922,12 @@
         "text": "やっぱり僕には……。\nいくら努力したところで、何も……っ。",
         "text_jp": "やっぱり僕には……。\nいくら努力したところで、何も……っ。",
         "text_cn": "",
-        "voice": "c1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1005.json",
-          "frames": 542
+        "source_text": "やっぱり僕には……。\nいくら努力したところで、何も……っ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000037:dialogue:000",
@@ -793,8 +940,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:46e09c6364bc8cfb1eafd198c9cfb2798179794104ae27f824d2da5a5ebd3ac6"
+        },
+        "voice": "c1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1005.json",
+          "frames": 542
         }
       },
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -810,19 +964,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -841,8 +995,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -857,13 +1011,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -882,11 +1049,12 @@
         "text": "……。\n泣いたって、どうにもならない……。",
         "text_jp": "……。\n泣いたって、どうにもならない……。",
         "text_cn": "",
-        "voice": "c1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1006.json",
-          "frames": 384
+        "source_text": "……。\n泣いたって、どうにもならない……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000041:dialogue:000",
@@ -899,8 +1067,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ef4831eb2d5f93e3979b2efe0ae83737ac0ca9efd16127711001eafc476d0cfb"
+        },
+        "voice": "c1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1006.json",
+          "frames": 384
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -916,19 +1091,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -947,8 +1122,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -963,13 +1138,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -988,11 +1176,12 @@
         "text": "勉強しなくちゃ。",
         "text_jp": "勉強しなくちゃ。",
         "text_cn": "",
-        "voice": "c1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1007.json",
-          "frames": 108
+        "source_text": "勉強しなくちゃ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000046:dialogue:000",
@@ -1005,8 +1194,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2e3ec1ea776399480a2dab632481caa4f7f05d835f75952cda69605e838fc41e"
+        },
+        "voice": "c1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1007.json",
+          "frames": 108
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -1022,19 +1218,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -1042,12 +1238,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "pipechair_sit",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "pipechair_sit",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1061,8 +1257,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1077,13 +1273,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.8,
       "episode_index": 0,
@@ -1101,19 +1310,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -1121,12 +1330,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "ballpen_write",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "ballpen_write",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1140,8 +1349,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1156,13 +1365,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 52,
+        "command_end": 52,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 2.5,
       "auto_advance": true,
@@ -1182,19 +1404,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -1213,8 +1435,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1229,13 +1451,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 55,
+        "command_end": 55,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1254,11 +1489,12 @@
         "text": "今度こそ、ちゃんと『出来る子』だって\n証明するんだ……。",
         "text_jp": "今度こそ、ちゃんと『出来る子』だって\n証明するんだ……。",
         "text_cn": "",
-        "voice": "c1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1009.json",
-          "frames": 321
+        "source_text": "今度こそ、ちゃんと『出来る子』だって\n証明するんだ……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_c:cmd-000055:dialogue:000",
@@ -1271,8 +1507,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2c9dab7ed2933dac0a8cb5077c47e6a0abeebdf8f51ec6f5666a302c1f0563ef"
+        },
+        "voice": "c1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_c/1_1_016_02_c1009.json",
+          "frames": 321
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "c"
     },
@@ -1288,19 +1531,19 @@
           "imageId": "bg162_momroom_in_03",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.019999999552965164,
             "y": -0.009999999776482582,
-            "z": 0
+            "z": 0.0
           },
           "colorScale": {
             "x": 0.9599999785423279,
             "y": 0.9800000190734863,
-            "z": 1
+            "z": 1.0
           },
           "colorSaturation": 0.8500000238418579
         },
@@ -1308,12 +1551,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "ballpen_write",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "ballpen_write",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1327,8 +1570,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1340,7 +1583,7 @@
         "screen_fade": {
           "type": "out",
           "duration": 2.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -1348,13 +1591,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_c.json",
+        "source_part_id": "1_1_016_02_c",
+        "command_start": 58,
+        "command_end": 58,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "c"
@@ -1374,6 +1630,10 @@
       "step_count": 14
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_016_02.unity3d",
+    "raw_hash": "sha256:de35133b50209a66dc6035784ad18121b4d70e120ebc21881c2849e4e1cf958b"
+  },
   "aggregate_source": {
     "file": "1_1_016cfi_02_1_1_016_02.json",
     "scenario_id": "1_1_016cfi_02_1_1_016_02",

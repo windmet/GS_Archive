@@ -685,6 +685,9 @@
         "idol_color_transition": { "$ref": "#/$defs/durationTransition" },
         "idol_priority": { "type": "number" },
         "idol_zoom": { "type": "number" },
+        "idol_zoom_x": { "type": "number" },
+        "idol_zoom_y": { "type": "number" },
+        "idol_zoom_transition": { "$ref": "#/$defs/durationTransition" },
         "idol_zoom_y_offset": { "type": "number" },
         "neck_anim": { "type": "string" },
         "neck_anim_stop": { "type": "boolean" },
@@ -820,7 +823,8 @@
             { "type": "number" },
             { "type": "null" }
           ]
-        }
+        },
+        "sheet": { "type": "string", "minLength": 1 }
       },
       "additionalProperties": false
     },

@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_008_01_a",
+  "text_catalog_id": "1_1_008hig_01_1_1_008_01",
+  "text_contract_version": 1,
   "total_steps": 32,
   "steps": [
     {
@@ -26,7 +28,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -34,11 +41,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 0,
+        "command_end": 0,
+        "raw_type": "text_synopsis",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "青春しようぜ！",
         "text": "軽音部の演奏に感動した四季は、\n部室を訪れる。新入部員に喜ぶ隼人と\n夏来だが、騒がしい四季に旬は呆れ顔。\nいっぽう春名には、再び留年の危機が\n迫っていた。",
         "text_jp": "軽音部の演奏に感動した四季は、\n部室を訪れる。新入部員に喜ぶ隼人と\n夏来だが、騒がしい四季に旬は呆れ顔。\nいっぽう春名には、再び留年の危機が\n迫っていた。",
         "text_cn": "",
+        "source_text": "軽音部の演奏に感動した四季は、\n部室を訪れる。新入部員に喜ぶ隼人と\n夏来だが、騒がしい四季に旬は呆れ顔。\nいっぽう春名には、再び留年の危機が\n迫っていた。",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000000:synopsis:000",
           "source": {
@@ -79,24 +101,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -109,7 +131,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -117,7 +139,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -125,6 +152,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 20,
+        "command_end": 20,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -140,24 +176,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -173,7 +209,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -181,11 +222,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "text_title",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "第1話",
         "text": "青春しようぜ！",
         "text_jp": "青春しようぜ！",
         "text_cn": "",
+        "source_text": "青春しようぜ！",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000022:title:001",
           "source": {
@@ -211,6 +267,7 @@
           "source_hash": "sha256:7824b3a8948acd2c72636875e79b09adab6d8fca3c20b65cfcfd68e8d3eae4ba"
         }
       },
+      "post_wait": 0.2,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -226,24 +283,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": {
           "cue": "clap_applause_solo",
           "delay": 2.1
@@ -251,7 +308,7 @@
         "se_events": [
           {
             "cue": "crowd_livehouse",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "clap_applause_solo",
@@ -275,7 +332,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -283,12 +345,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 27,
+        "command_end": 27,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "将棋部",
         "text": "……以上で、将棋部の部活紹介を終わります。",
         "text_jp": "……以上で、将棋部の部活紹介を終わります。",
         "text_cn": "",
+        "source_text": "……以上で、将棋部の部活紹介を終わります。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "将棋部"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000027:dialogue:000",
           "source": {
@@ -302,6 +379,7 @@
           "source_hash": "sha256:380ea8082f6f0bd1ee79292e47d5d9e13a1ae88673f02d8efa017341d6958eec"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -317,24 +395,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -348,14 +426,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -369,7 +447,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -377,13 +460,22 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -399,24 +491,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -430,8 +522,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -446,13 +538,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 36,
+        "command_end": 36,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -472,7 +577,13 @@
         "text": "（ここまで面白そうな部活はなし、と）",
         "text_jp": "（ここまで面白そうな部活はなし、と）",
         "text_cn": "",
-        "voice": "a1001.m4a",
+        "source_text": "（ここまで面白そうな部活はなし、と）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000036:dialogue:000",
           "source": {
@@ -484,8 +595,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:e8eed05c90ea64254b9164cca7617795f082361236e061d6a2c806c4209575ad"
-        }
+        },
+        "voice": "a1001.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -501,24 +614,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -532,8 +645,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -548,13 +661,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 39,
+        "command_end": 39,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "024shk",
       "lipSync": false,
@@ -563,7 +689,13 @@
         "text": "（中学の時は不良ばっかりで、\n部活なんてやる雰囲気じゃなかったから）",
         "text_jp": "（中学の時は不良ばっかりで、\n部活なんてやる雰囲気じゃなかったから）",
         "text_cn": "",
-        "voice": "a1002.m4a",
+        "source_text": "（中学の時は不良ばっかりで、\n部活なんてやる雰囲気じゃなかったから）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000039:dialogue:000",
           "source": {
@@ -575,8 +707,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:cb8322f522a7111f89d67e08cec0cd0c8569f81c49b9e89d4062491e7849e280"
-        }
+        },
+        "voice": "a1002.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -592,24 +726,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -623,8 +757,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -639,13 +773,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "024shk",
       "lipSync": false,
@@ -654,7 +801,13 @@
         "text": "（高校では何かしてみようかなー、\nなんて思ってたけど……）",
         "text_jp": "（高校では何かしてみようかなー、\nなんて思ってたけど……）",
         "text_cn": "",
-        "voice": "a1003.m4a",
+        "source_text": "（高校では何かしてみようかなー、\nなんて思ってたけど……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000042:dialogue:000",
           "source": {
@@ -666,8 +819,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b432e73c8577103dcdbc3ba111136a88e8dba03f556a27a915876f851d01764a"
-        }
+        },
+        "voice": "a1003.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -683,24 +838,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -714,8 +869,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -730,11 +885,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -744,7 +904,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 47,
+        "command_end": 47,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -760,24 +929,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -791,8 +960,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -807,7 +976,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -815,17 +989,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 51,
+        "command_end": 51,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "024shk",
       "dialogue": {
         "speaker": "伊瀬谷 四季",
         "text": "この感じじゃ、無理そうっすねー……。",
         "text_jp": "この感じじゃ、無理そうっすねー……。",
         "text_cn": "",
-        "voice": "a1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1004.json",
-          "frames": 137
+        "source_text": "この感じじゃ、無理そうっすねー……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000051:dialogue:000",
@@ -838,8 +1021,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:91a5c590b8be231cecb93c58fed4cc1f9ca716208f81cbed734d29166d94f860"
+        },
+        "voice": "a1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1004.json",
+          "frames": 137
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -855,24 +1045,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -886,14 +1076,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -907,13 +1097,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -933,32 +1136,32 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": {
           "cue": "crowd_livehouse",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "crowd_livehouse",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -974,7 +1177,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -982,12 +1190,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "司会の生徒",
         "text": "続いては軽音部です。どうぞ！",
         "text_jp": "続いては軽音部です。どうぞ！",
         "text_cn": "",
+        "source_text": "続いては軽音部です。どうぞ！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "司会の生徒"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000056:dialogue:000",
           "source": {
@@ -1001,6 +1224,7 @@
           "source_hash": "sha256:c0e54973167b03c0340566a81b7a4fd5a76c497d10e1d4cb57c464d18a9c7874"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1016,24 +1240,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": {
           "cue": "step_walk_come_lino_sneaker",
           "delay": 0.3
@@ -1041,7 +1265,7 @@
         "se_events": [
           {
             "cue": "step_walk_come_lino_sneaker",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "step_walk_come_lino_sneaker",
@@ -1065,7 +1289,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1073,7 +1302,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 62,
+        "command_end": 62,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1089,24 +1326,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1120,14 +1357,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -1138,14 +1375,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -1156,14 +1393,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1177,7 +1414,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1185,9 +1427,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 66,
+        "command_end": 66,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1203,24 +1454,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1234,8 +1485,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1247,8 +1498,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1260,8 +1511,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1276,13 +1527,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 70,
+        "command_end": 70,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1301,11 +1565,12 @@
         "text": "あーあー……新入生のみなさん、こんにちは！\n入学おめでとう！",
         "text_jp": "あーあー……新入生のみなさん、こんにちは！\n入学おめでとう！",
         "text_cn": "",
-        "voice": "a1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1006.json",
-          "frames": 460
+        "source_text": "あーあー……新入生のみなさん、こんにちは！\n入学おめでとう！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000070:dialogue:000",
@@ -1318,8 +1583,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:8129766995bc0de2bd77d0eef58f1d876c3bcffa572cc4a76f48dac19898ac26"
+        },
+        "voice": "a1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1006.json",
+          "frames": 460
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1335,24 +1607,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1366,8 +1638,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1379,8 +1651,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1392,8 +1664,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1408,7 +1680,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1416,9 +1693,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 73,
+        "command_end": 73,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_anim",
           "chara_id": "020hay",
           "value": "hello"
@@ -1430,11 +1715,12 @@
         "text": "軽音部では、新メンバーを募集中です！\n俺たちと一緒に、青春しようぜ！",
         "text_jp": "軽音部では、新メンバーを募集中です！\n俺たちと一緒に、青春しようぜ！",
         "text_cn": "",
-        "voice": "a1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1007.json",
-          "frames": 429
+        "source_text": "軽音部では、新メンバーを募集中です！\n俺たちと一緒に、青春しようぜ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000073:dialogue:000",
@@ -1447,8 +1733,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b39bccb95f0e6835f95f5fb8c836e23529acc5a1839800074c20e17323ba34e1"
+        },
+        "voice": "a1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1007.json",
+          "frames": 429
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1464,24 +1757,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1495,14 +1788,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -1513,14 +1806,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -1531,14 +1824,14 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1552,13 +1845,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 79,
+        "command_end": 79,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -1576,24 +1882,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1607,14 +1913,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1628,13 +1934,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 83,
+        "command_end": 83,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1654,24 +1973,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1685,8 +2004,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1701,7 +2020,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -1709,15 +2033,24 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 86,
+        "command_end": 86,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1733,24 +2066,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1764,8 +2097,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1780,13 +2113,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 88,
+        "command_end": 88,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "024shk",
       "lipSync": false,
@@ -1795,7 +2141,13 @@
         "text": "（青春……？）",
         "text_jp": "（青春……？）",
         "text_cn": "",
-        "voice": "a1008.m4a",
+        "source_text": "（青春……？）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000088:dialogue:000",
           "source": {
@@ -1807,8 +2159,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:966246a5986160fcc88efa66413389c078ca80467bb41bcb75a9c8db9c1dcbe4"
-        }
+        },
+        "voice": "a1008.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1824,24 +2178,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1855,14 +2209,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1876,11 +2230,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -1890,7 +2249,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 94,
+        "command_end": 94,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1906,24 +2274,24 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "school",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1937,14 +2305,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -1955,14 +2323,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -1973,14 +2341,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1994,7 +2362,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2002,9 +2375,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 103,
+        "command_end": 103,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -2020,21 +2402,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2051,8 +2433,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2064,8 +2446,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2077,8 +2459,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2090,10 +2472,15 @@
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 2,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": 2.0,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2101,15 +2488,23 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 108,
+        "command_end": 108,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "022nat",
           "value": "hello"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "021jun",
           "value": "weight"
@@ -2121,11 +2516,12 @@
         "text": "それでは一曲、聞いてください！",
         "text_jp": "それでは一曲、聞いてください！",
         "text_cn": "",
-        "voice": "a1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1009.json",
-          "frames": 169
+        "source_text": "それでは一曲、聞いてください！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000108:dialogue:000",
@@ -2138,8 +2534,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:4a9f950cc316026c03e65ae76ec95088845855630e0a044cbbe046be57a15f06"
+        },
+        "voice": "a1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1009.json",
+          "frames": 169
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -2155,21 +2558,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2186,14 +2589,14 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2204,14 +2607,14 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2222,14 +2625,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2243,7 +2646,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2251,7 +2659,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 114,
+        "command_end": 114,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -2267,32 +2684,32 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "band_phrase_hig",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "band_phrase_hig",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -2308,7 +2725,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2316,9 +2738,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 117,
+        "command_end": 117,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
       "duration": 5.5,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -2334,21 +2765,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2365,14 +2796,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2386,7 +2817,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2394,7 +2830,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 122,
+        "command_end": 122,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -2412,21 +2856,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2443,8 +2887,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2459,7 +2903,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2467,17 +2916,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 123,
+        "command_end": 123,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "024shk",
       "dialogue": {
         "speaker": "伊瀬谷 四季",
         "text": "えっ……？",
         "text_jp": "えっ……？",
         "text_cn": "",
-        "voice": "a1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1010.json",
-          "frames": 50
+        "source_text": "えっ……？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000123:dialogue:000",
@@ -2490,6 +2948,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:cf60e61f489b37dd95f7f9751d8ac6a8e25672f18cae07033104270129e2354e"
+        },
+        "voice": "a1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1010.json",
+          "frames": 50
         }
       },
       "episode_index": 0,
@@ -2507,21 +2971,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
@@ -2538,8 +3002,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2554,7 +3018,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -2562,11 +3031,19 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 128,
+        "command_end": 128,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -2584,21 +3061,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
@@ -2615,8 +3092,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2631,7 +3108,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -2639,9 +3121,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 132,
+        "command_end": 132,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "024shk",
           "value": "face_joy",
@@ -2650,7 +3140,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "024shk",
           "value": "surprise"
@@ -2663,7 +3153,13 @@
         "text": "（なんだこれ……すっげー……！！）",
         "text_jp": "（なんだこれ……すっげー……！！）",
         "text_cn": "",
-        "voice": "a1011.m4a",
+        "source_text": "（なんだこれ……すっげー……！！）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000132:dialogue:000",
           "source": {
@@ -2675,8 +3171,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c869a8fbeebfc53df5e5a72accb0f44b103e02d41f252f6f75126f2f972712de"
-        }
+        },
+        "voice": "a1011.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -2692,21 +3190,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
@@ -2723,14 +3221,14 @@
             "anim": "surprise",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2744,11 +3242,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -2758,7 +3261,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 138,
+        "command_end": 138,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -2774,21 +3286,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
@@ -2805,14 +3317,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2823,14 +3335,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2841,14 +3353,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2862,13 +3374,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 149,
+        "command_end": 149,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -2888,21 +3413,21 @@
           "imageId": "bg053_hjgymnastichall_in_05",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
@@ -2919,8 +3444,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2932,8 +3457,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2945,8 +3470,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2961,13 +3486,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_01/scenario_1_1_008_01_a.json",
+        "source_part_id": "1_1_008_01_a",
+        "command_start": 157,
+        "command_end": 157,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2977,13 +3515,13 @@
           "value": "weight"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "022nat",
           "value": "weight"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "021jun",
           "value": "weight"
@@ -3016,7 +3554,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_face",
           "chara_id": "020hay",
           "value": "face_joy",
@@ -3031,11 +3569,12 @@
         "text": "俺たち、本気でデビュー目指してます！\nよろしく！",
         "text_jp": "俺たち、本気でデビュー目指してます！\nよろしく！",
         "text_cn": "",
-        "voice": "a1012.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1012.json",
-          "frames": 446
+        "source_text": "俺たち、本気でデビュー目指してます！\nよろしく！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_01_1_1_008_01:1_1_008_01_a:cmd-000157:dialogue:000",
@@ -3048,8 +3587,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:089e699208756dfe6b5682b101c3cfce5f82aedbc333c296c32e3fb3e346fa34"
+        },
+        "voice": "a1012.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_01/1_1_008_01_a/1_1_008_01_a1012.json",
+          "frames": 446
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "a"
     }
@@ -3068,6 +3614,10 @@
       "step_count": 32
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_008_01.unity3d",
+    "raw_hash": "sha256:f8f92b5554a9eac7931f4929216f9ed71cd4ed41d0811c4d1c2426d8333376d0"
+  },
   "aggregate_source": {
     "file": "1_1_008hig_01_1_1_008_01.json",
     "scenario_id": "1_1_008hig_01_1_1_008_01",

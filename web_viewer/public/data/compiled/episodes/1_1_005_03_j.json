@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_005_03_j",
+  "text_catalog_id": "1_1_005w00_03_1_1_005_03",
+  "text_contract_version": 1,
   "total_steps": 25,
   "steps": [
     {
@@ -14,21 +16,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -44,7 +46,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -52,7 +54,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -60,6 +67,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 8,
+        "command_end": 8,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -75,32 +91,34 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "step_run_come_conc_sneaker",
-          "delay": 0
+          "delay": 0.0,
+          "volume": 0.8
         },
         "se_events": [
           {
             "cue": "step_run_come_conc_sneaker",
-            "delay": 0
+            "delay": 0.0,
+            "volume": 0.8
           }
         ],
         "environmental": {
@@ -116,13 +134,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 11,
+        "command_end": 11,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.15,
       "auto_advance": true,
@@ -142,32 +173,34 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "step_walk_come_conc_sneaker",
-          "delay": 0
+          "delay": 0.0,
+          "volume": 0.9
         },
         "se_events": [
           {
             "cue": "step_walk_come_conc_sneaker",
-            "delay": 0
+            "delay": 0.0,
+            "volume": 0.9
           }
         ],
         "environmental": {
@@ -183,13 +216,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 13,
+        "command_end": 13,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -209,21 +255,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -240,14 +286,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -261,7 +307,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -269,9 +320,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -287,21 +347,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -318,8 +378,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -334,7 +394,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -342,9 +407,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_sad",
@@ -359,11 +432,12 @@
         "text": "……何やってるんだろ、俺……。",
         "text_jp": "……何やってるんだろ、俺……。",
         "text_cn": "",
-        "voice": "j1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1001.json",
-          "frames": 187
+        "source_text": "……何やってるんだろ、俺……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000019:dialogue:000",
@@ -376,8 +450,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3a0bbafd57210c11d61d08680d1455cdd64c91645946a59a3aaa160aa9563171"
+        },
+        "voice": "j1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1001.json",
+          "frames": 187
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -393,21 +474,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -424,8 +505,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -440,7 +521,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -448,11 +534,19 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 25,
+        "command_end": 25,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -470,21 +564,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -501,8 +595,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -517,13 +611,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 30,
+        "command_end": 30,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -536,7 +643,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_angry",
@@ -552,7 +659,13 @@
         "text": "（急に怒鳴ったりして、冷静さの欠片もなかった。\nでも、今回は……悠介だって勝手すぎるよ）",
         "text_jp": "（急に怒鳴ったりして、冷静さの欠片もなかった。\nでも、今回は……悠介だって勝手すぎるよ）",
         "text_cn": "",
-        "voice": "j1002.m4a",
+        "source_text": "（急に怒鳴ったりして、冷静さの欠片もなかった。\nでも、今回は……悠介だって勝手すぎるよ）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000030:dialogue:000",
           "source": {
@@ -564,8 +677,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:1401ba9cd2fd62bf98c386f0cacf0fc810787c672dcaf1ccbc80f6aa66e0df5a"
-        }
+        },
+        "voice": "j1002.m4a"
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -581,21 +696,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -612,8 +727,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -628,11 +743,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -642,7 +762,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 35,
+        "command_end": 35,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -658,21 +787,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -689,8 +818,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -705,13 +834,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 40,
+        "command_end": 40,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -730,11 +872,12 @@
         "text": "……。俺が立ち止まってる間に、\nあいつはどんどん先に進んでいく……。",
         "text_jp": "……。俺が立ち止まってる間に、\nあいつはどんどん先に進んでいく……。",
         "text_cn": "",
-        "voice": "j1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1003.json",
-          "frames": 428
+        "source_text": "……。俺が立ち止まってる間に、\nあいつはどんどん先に進んでいく……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000040:dialogue:000",
@@ -747,8 +890,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:58363413f0dcb49efc401122cd4f6476446ee62686aab7579c0840b3bdb6c3dc"
+        },
+        "voice": "j1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1003.json",
+          "frames": 428
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -764,21 +914,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -795,8 +945,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -811,7 +961,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -819,13 +974,22 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -841,21 +1005,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -872,8 +1036,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -888,13 +1052,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 49,
+        "command_end": 49,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -914,7 +1091,13 @@
         "text": "（俺は、悠介がいなくちゃ何もできないのに。\nあいつは、俺のことなんか見向きもしないで……）",
         "text_jp": "（俺は、悠介がいなくちゃ何もできないのに。\nあいつは、俺のことなんか見向きもしないで……）",
         "text_cn": "",
-        "voice": "j1004.m4a",
+        "source_text": "（俺は、悠介がいなくちゃ何もできないのに。\nあいつは、俺のことなんか見向きもしないで……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000049:dialogue:000",
           "source": {
@@ -926,8 +1109,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d469666b965792b74a07b563f6931e189f828761b48f736b01984986ce212e97"
-        }
+        },
+        "voice": "j1004.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -943,21 +1128,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -974,8 +1159,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -990,13 +1175,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1016,7 +1214,13 @@
         "text": "（……ううん。悠介を責めるのは間違ってる。\n悠介の人生は、悠介のものなんだ。それに……）",
         "text_jp": "（……ううん。悠介を責めるのは間違ってる。\n悠介の人生は、悠介のものなんだ。それに……）",
         "text_cn": "",
-        "voice": "j1005.m4a",
+        "source_text": "（……ううん。悠介を責めるのは間違ってる。\n悠介の人生は、悠介のものなんだ。それに……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000054:dialogue:000",
           "source": {
@@ -1028,8 +1232,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b5d6ccf252ad3dbf71c135255c39d7bb244af39379541970623760d479de818e"
-        }
+        },
+        "voice": "j1005.m4a"
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -1045,21 +1251,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -1076,8 +1282,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1092,11 +1298,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -1106,7 +1317,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -1122,32 +1342,32 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
         "se": {
           "cue": "kaisou_short",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "kaisou_short",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1161,8 +1381,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1174,7 +1394,7 @@
         "screen_fade": {
           "type": "out",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -1182,13 +1402,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 62,
+        "command_end": 62,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "j"
@@ -1205,28 +1438,28 @@
           "imageId": "bg050_stadium_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_hotel_euro_lobby"
         },
         "spines": [
           {
@@ -1236,15 +1469,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -1254,7 +1487,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -1262,7 +1495,15 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": {
+          "delay": 0.0,
+          "duration": 0.0
+        },
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1270,6 +1511,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 66,
+        "command_end": 66,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -1285,28 +1535,28 @@
           "imageId": "bg050_stadium_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
@@ -1318,13 +1568,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 68,
+        "command_end": 68,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "013kys",
       "lipSync": false,
@@ -1333,7 +1596,13 @@
         "text": "（俺たちがこんなことになったのは、全部……\n悠介に怪我させた、俺のせいじゃないか）",
         "text_jp": "（俺たちがこんなことになったのは、全部……\n悠介に怪我させた、俺のせいじゃないか）",
         "text_cn": "",
-        "voice": "j1006.m4a",
+        "source_text": "（俺たちがこんなことになったのは、全部……\n悠介に怪我させた、俺のせいじゃないか）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000068:dialogue:000",
           "source": {
@@ -1345,8 +1614,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c95dee345240844d3920375742e7122409c60586cdd6ef2222f5ca659d7f6ec0"
-        }
+        },
+        "voice": "j1006.m4a"
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -1362,28 +1633,28 @@
           "imageId": "bg050_stadium_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
@@ -1395,13 +1666,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 72,
+        "command_end": 72,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1420,11 +1704,12 @@
         "text": "だけど、俺は……。",
         "text_jp": "だけど、俺は……。",
         "text_cn": "",
-        "voice": "j1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1007.json",
-          "frames": 160
+        "source_text": "だけど、俺は……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000072:dialogue:000",
@@ -1437,8 +1722,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c0136fcf3b1eb5a80d308268306e829351171e1f33afcff2fbdeb725f8f85429"
+        },
+        "voice": "j1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1007.json",
+          "frames": 160
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -1454,28 +1746,28 @@
           "imageId": "bg050_stadium_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
@@ -1487,13 +1779,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 75,
+        "command_end": 75,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -1511,36 +1816,36 @@
           "imageId": "bg050_stadium_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
         "se": {
           "cue": "kaisou_short",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "kaisou_short",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
-          "cue": "ambi_gaya_fes_live_studium"
+          "cue": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
@@ -1557,13 +1862,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 77,
+        "command_end": 77,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "j"
@@ -1580,21 +1898,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -1607,16 +1925,16 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -1624,7 +1942,15 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": {
+          "delay": 0.0,
+          "duration": 0.0
+        },
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1632,6 +1958,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 81,
+        "command_end": 81,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -1647,32 +1982,32 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
         "se": {
           "cue": "step_walk_come_conc_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_walk_come_conc_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1682,10 +2017,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1693,13 +2028,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 84,
+        "command_end": 84,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -1719,21 +2067,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_teary",
         "bgm_volume": 0,
@@ -1750,14 +2098,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1765,10 +2113,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1776,13 +2124,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 86,
+        "command_end": 86,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1802,21 +2163,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -1833,8 +2194,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1843,24 +2204,37 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 88,
+        "command_end": 88,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -1880,21 +2254,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -1911,8 +2285,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1921,10 +2295,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1932,13 +2306,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 91,
+        "command_end": 91,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1957,11 +2344,12 @@
         "text": "悠介と一緒じゃないと……嫌だよ。",
         "text_jp": "悠介と一緒じゃないと……嫌だよ。",
         "text_cn": "",
-        "voice": "j1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1008.json",
-          "frames": 242
+        "source_text": "悠介と一緒じゃないと……嫌だよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_005w00_03_1_1_005_03:1_1_005_03_j:cmd-000091:dialogue:000",
@@ -1974,8 +2362,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:28a73f45d423a2650b62f06569f45a1550887d1fe63710e0f4a5eeb550111303"
+        },
+        "voice": "j1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/005w00/1_1_005_03/1_1_005_03_j/1_1_005_03_j1008.json",
+          "frames": 242
         }
       },
+      "post_wait": 1.25,
       "episode_index": 0,
       "episode_part": "j"
     },
@@ -1991,21 +2386,21 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2020,8 +2415,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2030,15 +2425,15 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": {
           "type": "out",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -2046,7 +2441,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2054,6 +2454,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_005w00_03/scenario_1_1_005_03_j.json",
+        "source_part_id": "1_1_005_03_j",
+        "command_start": 94,
+        "command_end": 94,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "j"
     }
@@ -2072,10 +2481,14 @@
       "step_count": 25
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_005_03.unity3d",
+    "raw_hash": "sha256:7d9aabc45b06754084efdfce09f2e175714e72a7fb74922a162bbc24aee0b64f"
+  },
   "aggregate_source": {
     "file": "1_1_005w00_03_1_1_005_03.json",
     "scenario_id": "1_1_005w00_03_1_1_005_03",
-    "start_step_index": 218,
-    "end_step_index": 242
+    "start_step_index": 219,
+    "end_step_index": 243
   }
 }

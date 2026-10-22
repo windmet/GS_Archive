@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_008_03_d",
+  "text_catalog_id": "1_1_008hig_03_1_1_008_03",
+  "text_contract_version": 1,
   "total_steps": 28,
   "steps": [
     {
@@ -14,32 +16,32 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
         "se": {
           "cue": "ballpen_write",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "ballpen_write",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -53,15 +55,16 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
+            "anim_track_time": 5.0,
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           },
           {
@@ -71,15 +74,16 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
+            "anim_track_time": 5.0,
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -87,15 +91,15 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 50,
-          "duration": 0,
-          "delay": 0
+          "offset_x": 0.0,
+          "offset_y": 50.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -103,7 +107,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -111,6 +120,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -126,21 +144,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -151,15 +169,17 @@
         "se_events": [
           {
             "cue": "paper_crumple",
-            "delay": 3
+            "delay": 3.0,
+            "sheet": "se_commu_2022"
           },
           {
             "cue": "paper_trash",
-            "delay": 5.8
+            "delay": 5.8,
+            "sheet": "se_commu_2022"
           },
           {
             "cue": "pipechair_sit",
-            "delay": 4
+            "delay": 4.0
           },
           {
             "cue": "cloth_move_l01",
@@ -177,11 +197,12 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
-            "sweat_flag": "off"
+            "sweat_flag": "off",
+            "anim_track_time": 5.0
           },
           {
             "id": "024shk",
@@ -190,20 +211,21 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
-            "sweat_flag": "off"
+            "sweat_flag": "off",
+            "anim_track_time": 5.0
           }
         ],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": 0,
-          "offset_y": 50,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -211,7 +233,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -219,12 +246,20 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 7,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 7.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "024shk",
           "value": "face_angry",
@@ -233,7 +268,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_neck_anim",
           "chara_id": "024shk",
           "value": "neck_lookup"
@@ -248,7 +283,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "020hay",
           "value": "face_angry",
@@ -257,13 +292,13 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_anim",
           "chara_id": "020hay",
           "value": "wait_loop"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "024shk",
           "value": "face_surprise",
@@ -272,13 +307,13 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_anim",
           "chara_id": "024shk",
           "value": "surprise"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_face",
           "chara_id": "020hay",
           "value": "face_trouble",
@@ -287,7 +322,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_anim",
           "chara_id": "020hay",
           "value": "sad"
@@ -323,21 +358,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -354,14 +389,14 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -372,14 +407,14 @@
             "anim": "surprise",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -388,8 +423,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 150,
-          "offset_y": 0,
+          "offset_x": 150.0,
+          "offset_y": 0.0,
           "duration": 1.5,
           "delay": 0.5
         },
@@ -399,7 +434,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -407,7 +447,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -425,21 +473,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -456,14 +504,15 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 150,
-            "pos_y": 0,
+            "pos_x": 150.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
+            "anim_track_time": 5.0,
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -472,8 +521,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 150,
-          "offset_y": 0,
+          "offset_x": 150.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -482,7 +531,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -490,7 +544,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -508,21 +570,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -539,8 +601,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 150,
-            "pos_y": 0,
+            "pos_x": 150.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -550,8 +612,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 150,
-          "offset_y": 0,
+          "offset_x": 150.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -560,13 +622,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -594,11 +669,12 @@
         "text": "……うーん……\n……だめだ、なんか違う！",
         "text_jp": "……うーん……\n……だめだ、なんか違う！",
         "text_cn": "",
-        "voice": "d1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1000.json",
-          "frames": 309
+        "source_text": "……うーん……\n……だめだ、なんか違う！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000056:dialogue:000",
@@ -611,8 +687,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:890e4ffccbb4703e4c719ac629ac70ce4b89b053030a846ce611e02191e6c1e9"
+        },
+        "voice": "d1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1000.json",
+          "frames": 309
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -628,21 +711,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -659,14 +742,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 150,
-            "pos_y": 0,
+            "pos_x": 150.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -675,8 +758,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 150,
-          "offset_y": 0,
+          "offset_x": 150.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -685,13 +768,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 60,
+        "command_end": 60,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -709,21 +805,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -737,10 +833,10 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": -150,
-          "offset_y": 0,
-          "duration": 2,
-          "delay": 0
+          "offset_x": -150.0,
+          "offset_y": 0.0,
+          "duration": 2.0,
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -748,13 +844,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 62,
+        "command_end": 62,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 2.5,
       "auto_advance": true,
@@ -774,45 +883,60 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
         "se": {
           "cue": "pipechair_sit",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "pipechair_sit",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
           "cue": "ambi_room"
         },
-        "spines": [],
+        "spines": [
+          {
+            "id": "024shk",
+            "model": "024shk_001_00",
+            "face": "face_sad",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -150.0,
+            "pos_y": -80.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "slide_duration": 1.0
+          }
+        ],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": -150,
-          "offset_y": 0,
-          "duration": 2
+          "offset_x": -150.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -820,13 +944,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 68,
+        "command_end": 68,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -846,21 +983,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -877,14 +1014,29 @@
         "environmental": {
           "cue": "ambi_room"
         },
-        "spines": [],
+        "spines": [
+          {
+            "id": "024shk",
+            "model": "024shk_001_00",
+            "face": "face_sad",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -150.0,
+            "pos_y": -80.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "slide_duration": 1.0
+          }
+        ],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": -150,
-          "offset_y": 0,
-          "duration": 2
+          "offset_x": -150.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -892,7 +1044,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -900,9 +1057,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 77,
+        "command_end": 77,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "024shk",
           "value": "wait_loop"
@@ -950,11 +1115,12 @@
         "text": "……うう、書いてある数式が呪文みたいに\n見えてきたっすよ～！　頭が爆発しそうっす！！",
         "text_jp": "……うう、書いてある数式が呪文みたいに\n見えてきたっすよ～！　頭が爆発しそうっす！！",
         "text_cn": "",
-        "voice": "d1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1001.json",
-          "frames": 485
+        "source_text": "……うう、書いてある数式が呪文みたいに\n見えてきたっすよ～！　頭が爆発しそうっす！！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000077:dialogue:000",
@@ -967,8 +1133,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5707bb9d190f36e13132fff5bf9834a85324746f42c43013c808bb0bf7badfc1"
+        },
+        "voice": "d1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1001.json",
+          "frames": 485
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -984,21 +1157,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1015,15 +1188,15 @@
             "anim": "surprise",
             "position": 0,
             "visible": true,
-            "pos_x": -150,
-            "pos_y": -80,
+            "pos_x": -150.0,
+            "pos_y": -80.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "slide_duration": 1,
+            "slide_duration": 1.0,
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1032,9 +1205,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": -150,
-          "offset_y": 0,
-          "duration": 2
+          "offset_x": -150.0,
+          "offset_y": 0.0,
+          "duration": 2.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1042,13 +1215,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 81,
+        "command_end": 81,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -1066,21 +1252,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1093,11 +1279,11 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5,
-          "delay": 0
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1105,7 +1291,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1113,7 +1304,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 83,
+        "command_end": 83,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1131,21 +1330,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1162,14 +1361,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1177,9 +1376,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1188,13 +1387,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 85,
+        "command_end": 85,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -1214,21 +1426,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1245,8 +1457,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1255,9 +1467,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1266,13 +1478,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 89,
+        "command_end": 89,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1291,11 +1516,12 @@
         "text": "ハヤトも、シキも……頑張って……。",
         "text_jp": "ハヤトも、シキも……頑張って……。",
         "text_cn": "",
-        "voice": "d1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1002.json",
-          "frames": 318
+        "source_text": "ハヤトも、シキも……頑張って……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "022nat",
+          "source_name": "榊 夏来"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000089:dialogue:000",
@@ -1308,8 +1534,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:6691d141dc281e43f5204d91132df487204e657f41cf1267c86fd3784e9650bd"
+        },
+        "voice": "d1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1002.json",
+          "frames": 318
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1325,21 +1558,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1356,14 +1589,14 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1371,9 +1604,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1382,13 +1615,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 93,
+        "command_end": 93,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -1406,21 +1652,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1437,14 +1683,14 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1452,9 +1698,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1463,7 +1709,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1471,7 +1722,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 96,
+        "command_end": 96,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1489,21 +1748,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1520,8 +1779,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1530,9 +1789,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1541,7 +1800,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -1549,13 +1813,22 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 100,
+        "command_end": 100,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1571,21 +1844,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1602,8 +1875,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1612,9 +1885,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1623,13 +1896,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 106,
+        "command_end": 106,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1642,7 +1928,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "021jun",
           "value": "face_sad",
@@ -1658,7 +1944,13 @@
         "text": "（ハヤト、寝不足になってまで曲作りしてるのに、\nあまりはかどっていないみたいだ……）",
         "text_jp": "（ハヤト、寝不足になってまで曲作りしてるのに、\nあまりはかどっていないみたいだ……）",
         "text_cn": "",
-        "voice": "d1003.m4a",
+        "source_text": "（ハヤト、寝不足になってまで曲作りしてるのに、\nあまりはかどっていないみたいだ……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "021jun",
+          "source_name": "冬美 旬"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000106:dialogue:000",
           "source": {
@@ -1670,8 +1962,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:7349592bd6449ec2f69d1d7cf74d8eced486b5cd50ddb5462d7e31c78d273376"
-        }
+        },
+        "voice": "d1003.m4a"
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1687,21 +1981,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1718,8 +2012,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1728,9 +2022,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1739,13 +2033,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 109,
+        "command_end": 109,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "021jun",
       "lipSync": false,
@@ -1754,7 +2061,13 @@
         "text": "（四季くんは、テストから逃げるほど苦手な勉強を\n頭から煙を噴きそうになりながらやってる……）",
         "text_jp": "（四季くんは、テストから逃げるほど苦手な勉強を\n頭から煙を噴きそうになりながらやってる……）",
         "text_cn": "",
-        "voice": "d1004.m4a",
+        "source_text": "（四季くんは、テストから逃げるほど苦手な勉強を\n頭から煙を噴きそうになりながらやってる……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "021jun",
+          "source_name": "冬美 旬"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000109:dialogue:000",
           "source": {
@@ -1766,7 +2079,8 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:6143e7a6aae924a46f0e0fdfd521fedfa736637153ca47868181642078f9db1f"
-        }
+        },
+        "voice": "d1004.m4a"
       },
       "episode_index": 0,
       "episode_part": "d"
@@ -1783,21 +2097,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -1814,8 +2128,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1824,9 +2138,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1835,13 +2149,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 111,
+        "command_end": 111,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -1861,21 +2188,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -1892,8 +2219,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1902,18 +2229,23 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1921,7 +2253,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 116,
+        "command_end": 116,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1937,21 +2277,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -1968,8 +2308,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1978,9 +2318,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -1989,13 +2329,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 118,
+        "command_end": 118,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "021jun",
       "lipSync": false,
@@ -2004,7 +2357,13 @@
         "text": "（そんなに頑張る必要があるのかな……）",
         "text_jp": "（そんなに頑張る必要があるのかな……）",
         "text_cn": "",
-        "voice": "d1005.m4a",
+        "source_text": "（そんなに頑張る必要があるのかな……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "021jun",
+          "source_name": "冬美 旬"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000118:dialogue:000",
           "source": {
@@ -2016,7 +2375,8 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c9615063837b7b6b9c030cc2c0d1f624396b4c005e0ec83ffd608b6f7f0486fa"
-        }
+        },
+        "voice": "d1005.m4a"
       },
       "episode_index": 0,
       "episode_part": "d"
@@ -2033,21 +2393,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2064,8 +2424,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2074,9 +2434,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -2085,13 +2445,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 120,
+        "command_end": 120,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -2111,21 +2484,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2142,8 +2515,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2152,9 +2525,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -2163,13 +2536,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 124,
+        "command_end": 124,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2198,7 +2584,13 @@
         "text": "（みんな、なんで部活のために、ここまで……）",
         "text_jp": "（みんな、なんで部活のために、ここまで……）",
         "text_cn": "",
-        "voice": "d1006.m4a",
+        "source_text": "（みんな、なんで部活のために、ここまで……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "021jun",
+          "source_name": "冬美 旬"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000124:dialogue:000",
           "source": {
@@ -2210,8 +2602,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:92f434fffb1cf691c07fa750c6fe859bd9ca9a7e7ea6ea9c620f9cb66f75e8d4"
-        }
+        },
+        "voice": "d1006.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -2227,21 +2621,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2258,8 +2652,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2268,9 +2662,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -2279,11 +2673,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -2293,7 +2692,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 129,
+        "command_end": 129,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -2309,21 +2717,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2340,14 +2748,14 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2355,9 +2763,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -2366,7 +2774,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2374,7 +2787,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 132,
+        "command_end": 132,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -2392,21 +2813,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -2423,14 +2844,14 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2441,15 +2862,16 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "slide_duration": 1,
+            "slide_duration": 1.0,
+            "anim_track_time": 5.0,
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2457,9 +2879,9 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -2468,13 +2890,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 139,
+        "command_end": 139,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -2494,21 +2929,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -2533,8 +2968,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2546,20 +2981,20 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "slide_duration": 1
+            "slide_duration": 1.0
           }
         ],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -2568,13 +3003,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 147,
+        "command_end": 147,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2602,7 +3050,7 @@
           "value": "sad"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_anim",
           "chara_id": "021jun",
           "value": "weight"
@@ -2614,11 +3062,12 @@
         "text": "ジュンっち～、もう1回ここのとこ、\n教えてほしいっす～！",
         "text_jp": "ジュンっち～、もう1回ここのとこ、\n教えてほしいっす～！",
         "text_cn": "",
-        "voice": "d1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1007.json",
-          "frames": 332
+        "source_text": "ジュンっち～、もう1回ここのとこ、\n教えてほしいっす～！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000147:dialogue:000",
@@ -2631,8 +3080,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:afbd2a46dc781fdbc8a01e89d896c74ab0b635abffe8db415cd8b349347a8826"
+        },
+        "voice": "d1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1007.json",
+          "frames": 332
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -2648,21 +3104,21 @@
           "imageId": "bg054_hjclubroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_wonder",
         "bgm_volume": 0,
@@ -2687,8 +3143,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2700,20 +3156,20 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
-            "slide_duration": 1
+            "slide_duration": 1.0
           }
         ],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -2722,13 +3178,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_008hig_03/scenario_1_1_008_03_d.json",
+        "source_part_id": "1_1_008_03_d",
+        "command_start": 159,
+        "command_end": 159,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2792,11 +3261,12 @@
         "text": "はぁ、まったく……仕方ないですね。\nいいですか？　ここは……",
         "text_jp": "はぁ、まったく……仕方ないですね。\nいいですか？　ここは……",
         "text_cn": "",
-        "voice": "d1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1008.json",
-          "frames": 443
+        "source_text": "はぁ、まったく……仕方ないですね。\nいいですか？　ここは……",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "021jun",
+          "source_name": "冬美 旬"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_008hig_03_1_1_008_03:1_1_008_03_d:cmd-000159:dialogue:000",
@@ -2809,8 +3279,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:8b946c7b645112ccd54254e93d2c8157aa6b450e951872e004aa21db7cf67d38"
+        },
+        "voice": "d1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/008hig/1_1_008_03/1_1_008_03_d/1_1_008_03_d1008.json",
+          "frames": 443
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     }
@@ -2829,6 +3306,10 @@
       "step_count": 28
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_008_03.unity3d",
+    "raw_hash": "sha256:8d16fd07c45f3250a779fa1c07845eb79a27c06491e4fb222e41e1312c0fcfb5"
+  },
   "aggregate_source": {
     "file": "1_1_008hig_03_1_1_008_03.json",
     "scenario_id": "1_1_008hig_03_1_1_008_03",

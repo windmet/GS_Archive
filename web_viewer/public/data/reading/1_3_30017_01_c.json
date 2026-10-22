@@ -3,25 +3,25 @@
   "document_id": "1_3_30017_01_c",
   "logical_id": "story-collection:1_3_30017_01",
   "scenario_id": "1_3_30017_01_c",
-  "text_catalog_id": "1_3_30017_01_c",
+  "text_catalog_id": "1_3_30017_01",
   "playback": {
     "file": "episodes/1_3_30017_01_c.json",
     "start_step_index": 0,
-    "end_step_index": 26
+    "end_step_index": 25
   },
   "source": {
     "file": "episodes/1_3_30017_01_c.json",
-    "sha256": "sha256:ed032bad3c302abfce0b8730a0022d0553b0e17e6c03b2de3ecbedefd2cef834",
+    "sha256": "sha256:8cbfd0e75c512f92b39fb3f2aa71798fcd718e8b2d444f1d79ecbac36daa1d1e",
     "schema_version": 1,
     "runtime_contract": null,
-    "raw_hash": null,
+    "raw_hash": "sha256:a6db721359b6e164fe55c35964083c5a7c0fe837e087af688adccf05afb1c7c7",
     "aggregate_source": {
       "file": "1_3_30017_01.json",
       "scenario_id": "1_3_30017_01",
       "start_step_index": 58,
-      "end_step_index": 84
+      "end_step_index": 83
     },
-    "step_count": 27,
+    "step_count": 26,
     "publication": {
       "kind": "catalog-compatibility",
       "aggregate_file": "1_3_30017_01.json"
@@ -71,9 +71,9 @@
         "step_id": 2,
         "step_index": 1,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
@@ -93,9 +93,9 @@
         "source_hash": "sha256:449ebbd4a2268dd348a349ed23efe388f53d7dc5e6f06028449c8df90348c899"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -109,7 +109,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 6
+        "stepId": 5
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -117,13 +117,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-6:text",
-        "step_id": 6,
-        "step_index": 5,
+        "row_id": "1_3_30017_01_c:step-5:text",
+        "step_id": 5,
+        "step_index": 4,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null
     },
@@ -143,9 +143,59 @@
         "source_hash": "sha256:bc3e4a1a6e914649827ed012a8d62aab08a1fcbca671bef5befb1dceeb1c2e8a"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
+        "sourceName": "九十九 一希"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "043kaz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "043kaz",
+        "presence": "unknown",
+        "reason": "medium-policy-unavailable",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 8
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "1_3_30017_01_c:step-8:text",
+        "step_id": 8,
+        "step_index": 7,
+        "source_part_id": "1_3_30017_01_c",
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 50,
+        "command_end": 50
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "…今日一日で全てに触れるのは、難しそうだ。\nやはり筐体の数が多いものが、人気なんだろうな。",
+      "text_ref": {
+        "unit_id": "story-text:v1:1_3_30017_01:1_3_30017_01_c:cmd-000058:dialogue:000",
+        "source": {
+          "scenario_id": "1_3_30017_01",
+          "part_id": "1_3_30017_01_c",
+          "file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+          "command_index": 58,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c906ebc1adf4df413f832e45f3cc7b937fee9cdda06e6241bb0f58e3f664c7bd"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -171,59 +221,9 @@
         "step_id": 9,
         "step_index": 8,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
-      },
-      "option": null
-    },
-    {
-      "kind": "dialogue",
-      "source_text": "…今日一日で全てに触れるのは、難しそうだ。\nやはり筐体の数が多いものが、人気なんだろうな。",
-      "text_ref": {
-        "unit_id": "story-text:v1:1_3_30017_01:1_3_30017_01_c:cmd-000058:dialogue:000",
-        "source": {
-          "scenario_id": "1_3_30017_01",
-          "part_id": "1_3_30017_01_c",
-          "file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
-          "command_index": 58,
-          "field_kind": "dialogue",
-          "field_ordinal": 0
-        },
-        "source_hash": "sha256:c906ebc1adf4df413f832e45f3cc7b937fee9cdda06e6241bb0f58e3f664c7bd"
-      },
-      "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
-        "sourceName": "九十九 一希"
-      },
-      "performance": {
-        "entityType": "idol",
-        "entityId": "043kaz"
-      },
-      "visual": {
-        "entityType": "idol",
-        "entityId": "043kaz",
-        "presence": "unknown",
-        "reason": "medium-policy-unavailable",
-        "source": "stage-snapshot",
-        "snapshot": "entry",
-        "stepId": 10
-      },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
-      "inline_translation": null,
-      "has_voice": true,
-      "anchor": {
-        "row_id": "1_3_30017_01_c:step-10:text",
-        "step_id": 10,
-        "step_index": 9,
-        "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 58,
+        "command_end": 58
       },
       "option": null
     },
@@ -243,9 +243,9 @@
         "source_hash": "sha256:443d4739f2204d3cc58dd4697a14365ecb33d4ce1bd9d1480b4a2acbab25b4f4"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -259,7 +259,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 11
+        "stepId": 10
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -267,13 +267,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-11:text",
-        "step_id": 11,
-        "step_index": 10,
+        "row_id": "1_3_30017_01_c:step-10:text",
+        "step_id": 10,
+        "step_index": 9,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 67,
+        "command_end": 67
       },
       "option": null
     },
@@ -293,9 +293,9 @@
         "source_hash": "sha256:ac8265dbc1e9fa1b265c69dda0c813a5a43f555e161758a9235bc3431800f3f0"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -309,7 +309,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 14
+        "stepId": 13
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -317,13 +317,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-14:text",
-        "step_id": 14,
-        "step_index": 13,
+        "row_id": "1_3_30017_01_c:step-13:text",
+        "step_id": 13,
+        "step_index": 12,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 95,
+        "command_end": 95
       },
       "option": null
     },
@@ -343,9 +343,9 @@
         "source_hash": "sha256:235e943940836696af2d58f1522cdc84c5668986a320dbb17201f296ad342bee"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -359,7 +359,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 15
+        "stepId": 14
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -367,13 +367,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-15:text",
-        "step_id": 15,
-        "step_index": 14,
+        "row_id": "1_3_30017_01_c:step-14:text",
+        "step_id": 14,
+        "step_index": 13,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 103,
+        "command_end": 103
       },
       "option": null
     },
@@ -393,9 +393,9 @@
         "source_hash": "sha256:c8046ba5834e061d4fd9205726086be7f8e462dad0e374e31d1b7387e1eae423"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -409,7 +409,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 16
+        "stepId": 15
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -417,13 +417,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-16:text",
-        "step_id": 16,
-        "step_index": 15,
+        "row_id": "1_3_30017_01_c:step-15:text",
+        "step_id": 15,
+        "step_index": 14,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 115,
+        "command_end": 115
       },
       "option": null
     },
@@ -443,9 +443,9 @@
         "source_hash": "sha256:fdc5dfc81657bbd0810e68aea10160b13495cf4b27596143125c2aff2724a94e"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -459,7 +459,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 23
+        "stepId": 22
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -467,13 +467,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-23:text",
-        "step_id": 23,
-        "step_index": 22,
+        "row_id": "1_3_30017_01_c:step-22:text",
+        "step_id": 22,
+        "step_index": 21,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 147,
+        "command_end": 147
       },
       "option": null
     },
@@ -493,9 +493,9 @@
         "source_hash": "sha256:d3a22fa61878f1311089007968a40f126217c29dcf6c8d927a291819dc6d8b9c"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -509,7 +509,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 24
+        "stepId": 23
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -517,13 +517,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-24:text",
-        "step_id": 24,
-        "step_index": 23,
+        "row_id": "1_3_30017_01_c:step-23:text",
+        "step_id": 23,
+        "step_index": 22,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 153,
+        "command_end": 153
       },
       "option": null
     },
@@ -543,9 +543,9 @@
         "source_hash": "sha256:ea0317cc884f4c078413dd47d44d741b00aa7e585ce5e90074ce466ebc2d7f00"
       },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -559,7 +559,7 @@
         "reason": "medium-policy-unavailable",
         "source": "stage-snapshot",
         "snapshot": "entry",
-        "stepId": 27
+        "stepId": 26
       },
       "diagnostics": [
         "compatibility-stage-evidence"
@@ -567,13 +567,13 @@
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
-        "row_id": "1_3_30017_01_c:step-27:text",
-        "step_id": 27,
-        "step_index": 26,
+        "row_id": "1_3_30017_01_c:step-26:text",
+        "step_id": 26,
+        "step_index": 25,
         "source_part_id": "1_3_30017_01_c",
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_file": "assets/resources/scenariodata/1_3_30017_01/scenario_1_3_30017_01_c.json",
+        "command_start": 184,
+        "command_end": 184
       },
       "option": null
     }

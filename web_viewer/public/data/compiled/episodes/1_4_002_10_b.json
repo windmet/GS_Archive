@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_4_002_10_b",
+  "text_catalog_id": "1_4_002_10",
+  "text_contract_version": 1,
   "total_steps": 35,
   "steps": [
     {
@@ -14,36 +16,38 @@
             "id": "cameraflare",
             "visible": true,
             "action": "start",
-            "delay": 0,
-            "duration": 1
+            "delay": 0.0,
+            "duration": 0.0,
+            "alpha": 1.0
           }
         ],
         "bg_profile": {
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "usual_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -52,7 +56,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -60,7 +64,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -68,6 +77,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 31,
+        "command_end": 31,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -81,35 +99,37 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 1.0
           }
         ],
         "bg_profile": {
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "usual_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -121,7 +141,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -129,9 +154,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "text_time",
+        "confidence": "exact"
+      },
       "duration": 1.2,
       "text_time": {
         "text": "ライブ当日……",
+        "source_text": "ライブ当日……",
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000033:time_caption:000",
           "source": {
@@ -146,6 +180,7 @@
         }
       },
       "auto_advance": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -159,51 +194,55 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 1.0
           }
         ],
         "bg_profile": {
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "usual_night",
         "bgm_volume": 0,
         "se": {
           "cue": "bus_stop",
-          "delay": 3
+          "delay": 3.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bus_int_drive",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "soccer_whistle_caution",
-            "delay": 2
+            "delay": 2.0
           },
           {
             "cue": "bus_stop",
-            "delay": 3
+            "delay": 3.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -215,7 +254,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -223,7 +267,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 8,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 8.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -238,15 +290,16 @@
         "bg_transition": {
           "type": "dissolve",
           "color": "",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 1.5
         },
         "bg_effects": [
           {
             "id": "cameraflare",
             "visible": false,
+            "alpha": 1.0,
             "action": "end",
-            "delay": 0,
+            "delay": 0.0,
             "duration": 1.5
           }
         ],
@@ -254,28 +307,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "usual_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -287,13 +341,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -313,44 +380,46 @@
             "id": "cameraflare",
             "visible": true,
             "action": "start",
-            "delay": 0,
-            "duration": 0.6
+            "delay": 0.0,
+            "duration": 0.0,
+            "alpha": 0.6
           }
         ],
         "bg_profile": {
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": {
           "cue": "step_run_come_conc_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_run_come_conc_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -362,13 +431,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.8,
       "auto_advance": true,
@@ -386,35 +468,37 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": {
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -426,7 +510,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -434,12 +523,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "スタッフ",
         "text": "315プロダクションのバスですよね。\nこちらの駐車場で、少々お待ちいただけますか？",
         "text_jp": "315プロダクションのバスですよね。\nこちらの駐車場で、少々お待ちいただけますか？",
         "text_cn": "",
+        "source_text": "315プロダクションのバスですよね。\nこちらの駐車場で、少々お待ちいただけますか？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "スタッフ"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000046:dialogue:000",
           "source": {
@@ -467,8 +571,9 @@
           {
             "id": "cameraflare",
             "visible": false,
+            "alpha": 0.6,
             "action": "end",
-            "delay": 0,
+            "delay": 0.0,
             "duration": 0.5
           }
         ],
@@ -476,28 +581,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -509,13 +615,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -535,28 +654,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -566,14 +686,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -587,13 +707,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -613,28 +746,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -644,8 +778,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -660,13 +794,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -685,6 +832,13 @@
         "text": "実はまだ、関係者の受け入れ準備が出来ていなくて……\nあと30分、いえ40分は、ここで待機してください！",
         "text_jp": "実はまだ、関係者の受け入れ準備が出来ていなくて……\nあと30分、いえ40分は、ここで待機してください！",
         "text_cn": "",
+        "source_text": "実はまだ、関係者の受け入れ準備が出来ていなくて……\nあと30分、いえ40分は、ここで待機してください！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "スタッフ"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000053:dialogue:000",
           "source": {
@@ -698,6 +852,7 @@
           "source_hash": "sha256:93f8d1c6e60e1c742b789bd5c817bd8aeff93ebf47015817319f9ff7af562a95"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -713,28 +868,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -744,8 +900,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -760,13 +916,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 58,
+        "command_end": 58,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -785,11 +954,12 @@
         "text": "ええっ、そんなぁ！\nどうしましょう、●●●●プロデューサーさん。",
         "text_jp": "ええっ、そんなぁ！\nどうしましょう、●●●●プロデューサーさん。",
         "text_cn": "",
-        "voice": "b1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1003.json",
-          "frames": 308
+        "source_text": "ええっ、そんなぁ！\nどうしましょう、●●●●プロデューサーさん。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "101ken",
+          "source_name": "山村 賢"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000058:dialogue:000",
@@ -802,8 +972,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:52a4b5f777c15f767e5ced778f3b97298d4dcfd56ff81f2fca82527e1e446575"
+        },
+        "voice": "b1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1003.json",
+          "frames": 308
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -819,28 +996,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -850,8 +1028,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -866,7 +1044,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -874,11 +1057,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 61,
+        "command_end": 61,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "困りましたね。\nただでさえ、この先の道は混みやすいのに……。",
         "text_jp": "困りましたね。\nただでさえ、この先の道は混みやすいのに……。",
         "text_cn": "",
+        "source_text": "困りましたね。\nただでさえ、この先の道は混みやすいのに……。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000061:dialogue:000",
           "source": {
@@ -907,28 +1105,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -938,8 +1137,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -951,16 +1150,29 @@
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 63,
+        "command_end": 63,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -980,28 +1192,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1011,8 +1224,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1027,7 +1240,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -1035,13 +1253,22 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 67,
+        "command_end": 67,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1057,36 +1284,39 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "herobelt_light",
-          "delay": 3
+          "delay": 3.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "herobelt_light",
-            "delay": 3
+            "delay": 3.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1096,8 +1326,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1112,13 +1342,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 72,
+        "command_end": 72,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1145,6 +1388,13 @@
         "text": "（ですが……何分待たされようと、問題ありません。\nなぜならこのバスは、おとりですから！）",
         "text_jp": "（ですが……何分待たされようと、問題ありません。\nなぜならこのバスは、おとりですから！）",
         "text_cn": "",
+        "source_text": "（ですが……何分待たされようと、問題ありません。\nなぜならこのバスは、おとりですから！）",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000072:dialogue:000",
           "source": {
@@ -1158,6 +1408,7 @@
           "source_hash": "sha256:4401e0c4d6bb3351b763c91acb1ac42b43a23b28f5643396b5ab250ad37c9937"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1173,28 +1424,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1204,8 +1456,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1217,7 +1469,7 @@
         "screen_fade": null,
         "screen_slide": {
           "type": "in",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -1226,13 +1478,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 74,
+        "command_end": 74,
+        "raw_type": "screen_slidein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -1249,28 +1514,29 @@
           "imageId": "bg002_sky_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1280,14 +1546,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1301,13 +1567,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1327,28 +1606,29 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": "city_usual_day",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
@@ -1357,7 +1637,7 @@
         "screen_fade": null,
         "screen_slide": {
           "type": "out",
-          "delay": 1,
+          "delay": 1.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -1366,11 +1646,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -1379,6 +1664,14 @@
         },
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 80,
+        "command_end": 80,
+        "raw_type": "screen_slideout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -1395,28 +1688,29 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": "city_usual_day",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1426,14 +1720,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1447,13 +1741,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 82,
+        "command_end": 82,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1473,32 +1780,32 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": "city_usual_day",
+        "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "smartphone_tap",
-          "delay": 2
+          "delay": 2.0
         },
         "se_events": [
           {
             "cue": "cellphone_vibrate",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "cloth_move_ss01",
@@ -1506,11 +1813,12 @@
           },
           {
             "cue": "smartphone_tap",
-            "delay": 2
+            "delay": 2.0
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1520,8 +1828,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1536,13 +1844,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 91,
+        "command_end": 91,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 4.2,
       "auto_advance": true,
@@ -1597,28 +1918,29 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1628,8 +1950,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1644,7 +1966,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1652,17 +1979,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 95,
+        "command_end": 95,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "011min",
       "dialogue": {
         "speaker": "渡辺 みのり",
         "text": "……●●●●プロデューサーから連絡だ！　\nやっぱり、315プロのバスは足止めされたみたいだね。",
         "text_jp": "……●●●●プロデューサーから連絡だ！　\nやっぱり、315プロのバスは足止めされたみたいだね。",
         "text_cn": "",
-        "voice": "b1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1006.json",
-          "frames": 468
+        "source_text": "……●●●●プロデューサーから連絡だ！　\nやっぱり、315プロのバスは足止めされたみたいだね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000095:dialogue:000",
@@ -1675,8 +2011,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:284359ff83c10ad0fe01e6ed751c2c53a10db2b1c54c7840739483599bf4c357"
+        },
+        "voice": "b1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1006.json",
+          "frames": 468
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1692,28 +2035,29 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1723,8 +2067,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1739,7 +2083,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1747,9 +2096,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 100,
+        "command_end": 100,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_default",
@@ -1758,7 +2115,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_anim",
           "chara_id": "011min",
           "value": "angry"
@@ -1770,11 +2127,12 @@
         "text": "でも、計画通り、2人が敵の目を欺いてくれてる。\n今のうちに、俺たちはステージに向かおう！",
         "text_jp": "でも、計画通り、2人が敵の目を欺いてくれてる。\n今のうちに、俺たちはステージに向かおう！",
         "text_cn": "",
-        "voice": "b1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1007.json",
-          "frames": 503
+        "source_text": "でも、計画通り、2人が敵の目を欺いてくれてる。\n今のうちに、俺たちはステージに向かおう！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000100:dialogue:000",
@@ -1787,8 +2145,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5e51226af19f219f55bf9d37801ca4a69d8bf38a162d527428ad8892e4a29356"
+        },
+        "voice": "b1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1007.json",
+          "frames": 503
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1804,28 +2169,29 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1835,8 +2201,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1848,7 +2214,7 @@
         "screen_fade": null,
         "screen_slide": {
           "type": "in",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -1857,13 +2223,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 102,
+        "command_end": 102,
+        "raw_type": "screen_slidein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -1880,28 +2259,29 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [
           {
@@ -1911,14 +2291,14 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1926,11 +2306,11 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 95,
-          "duration": 0,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1938,13 +2318,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 105,
+        "command_end": 105,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -1964,50 +2357,55 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_onboard_loop",
-          "delay": 3
+          "delay": 3.0,
+          "volume": 0.3,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_onboard_loop",
-            "delay": 3
+            "delay": 3.0,
+            "volume": 0.3,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 95,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": {
           "type": "out",
-          "delay": 3,
+          "delay": 3.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -2016,13 +2414,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 122,
+        "command_end": 122,
+        "raw_type": "screen_slideout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -2039,38 +2450,39 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 95,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
           "duration": 0.5,
-          "delay": 0
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2078,7 +2490,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2086,9 +2503,18 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 124,
+        "command_end": 124,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -2104,36 +2530,37 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 95,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -2142,7 +2569,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2150,17 +2582,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 126,
+        "command_end": 126,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "044ame",
       "dialogue": {
         "speaker": "葛之葉 雨彦",
         "text": "次は曲がり角だな。\n硲サン、後ろは問題ないかい？",
         "text_jp": "次は曲がり角だな。\n硲サン、後ろは問題ないかい？",
         "text_cn": "",
-        "voice": "b1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1009.json",
-          "frames": 380
+        "source_text": "次は曲がり角だな。\n硲サン、後ろは問題ないかい？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "044ame",
+          "source_name": "葛之葉 雨彦"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000126:dialogue:000",
@@ -2173,8 +2614,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ec3dba1e5f95ebe696c55ae0740e1e9451d8beed28fe1df91325ea937eb0100e"
+        },
+        "voice": "b1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1009.json",
+          "frames": 380
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -2190,36 +2638,37 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 95,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -2228,7 +2677,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2236,17 +2690,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 128,
+        "command_end": 128,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "035mco",
       "dialogue": {
         "speaker": "硲 道夫",
         "text": "うむ、問題ない。\n葛之葉君、素晴らしい安全運転だ！",
         "text_jp": "うむ、問題ない。\n葛之葉君、素晴らしい安全運転だ！",
         "text_cn": "",
-        "voice": "b1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1010.json",
-          "frames": 340
+        "source_text": "うむ、問題ない。\n葛之葉君、素晴らしい安全運転だ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "035mco",
+          "source_name": "硲 道夫"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000128:dialogue:000",
@@ -2259,8 +2722,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:4023c51c6729b87c283c1a97ba972d53cebdd829f2a2cea33d4076c4645ca405"
+        },
+        "voice": "b1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1010.json",
+          "frames": 340
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -2276,42 +2746,43 @@
           "imageId": "bg025_shoppingst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 95,
+          "offset_x": 0.0,
+          "offset_y": 95.0,
           "duration": 0.5
         },
         "screen_fade": null,
         "screen_slide": {
           "type": "in",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -2320,13 +2791,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 130,
+        "command_end": 130,
+        "raw_type": "screen_slidein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -2343,51 +2827,54 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_run_2",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_run_2",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 75,
-          "duration": 0,
-          "delay": 0
+          "offset_x": 0.0,
+          "offset_y": 75.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": {
           "type": "out",
-          "delay": 3,
+          "delay": 3.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -2396,13 +2883,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 135,
+        "command_end": 135,
+        "raw_type": "screen_slideout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -2419,45 +2919,50 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_onboard_loop",
-          "delay": 0
+          "delay": 0.0,
+          "volume": 0.3,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_onboard_loop",
-            "delay": 0
+            "delay": 0.0,
+            "volume": 0.3,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 75,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 75.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2465,7 +2970,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2473,17 +2983,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 137,
+        "command_end": 137,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "016sei",
       "dialogue": {
         "speaker": "信玄 誠司",
         "text": "次郎、大丈夫か？\nそうそう、しっかり掴まっていてくれ！",
         "text_jp": "次郎、大丈夫か？\nそうそう、しっかり掴まっていてくれ！",
         "text_cn": "",
-        "voice": "b1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1011.json",
-          "frames": 322
+        "source_text": "次郎、大丈夫か？\nそうそう、しっかり掴まっていてくれ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000137:dialogue:000",
@@ -2496,8 +3015,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f201e918e077e8e2390f4417bf7b69a9bdddddcf616f3187aca8572829e5098e"
+        },
+        "voice": "b1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1011.json",
+          "frames": 322
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -2513,42 +3039,43 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 75,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 75.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": {
           "type": "in",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -2557,13 +3084,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 139,
+        "command_end": 139,
+        "raw_type": "screen_slidein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -2580,45 +3120,48 @@
           "imageId": "bg012_residence_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": {
           "cue": "bike_harley_run",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_run",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 75,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 75.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": {
@@ -2632,13 +3175,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 143,
+        "command_end": 143,
+        "raw_type": "screen_slideout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "b"
@@ -2655,37 +3211,38 @@
           "imageId": "bg012_residence_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 75,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 75.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2693,7 +3250,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2701,17 +3263,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 144,
+        "command_end": 144,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "016sei",
       "dialogue": {
         "speaker": "信玄 誠司",
         "text": "道は混んでいるし、遠回りしているはずなのに、\nどんどん会場に近づいているぞ！",
         "text_jp": "道は混んでいるし、遠回りしているはずなのに、\nどんどん会場に近づいているぞ！",
         "text_cn": "",
-        "voice": "b1013.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1013.json",
-          "frames": 366
+        "source_text": "道は混んでいるし、遠回りしているはずなのに、\nどんどん会場に近づいているぞ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000144:dialogue:000",
@@ -2724,8 +3295,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:e4d0dcb45720ed9d499cf1ad759f7d7a592259a506405a0df68a5d7225c3f828"
+        },
+        "voice": "b1013.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1013.json",
+          "frames": 366
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -2741,37 +3319,38 @@
           "imageId": "bg012_residence_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 75,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 75.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2779,7 +3358,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2787,17 +3371,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 146,
+        "command_end": 146,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "011min",
       "dialogue": {
         "speaker": "渡辺 みのり",
         "text": "ふふっ。まずは第一関門、突破だね！",
         "text_jp": "ふふっ。まずは第一関門、突破だね！",
         "text_cn": "",
-        "voice": "b1014.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1014.json",
-          "frames": 278
+        "source_text": "ふふっ。まずは第一関門、突破だね！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000146:dialogue:000",
@@ -2810,8 +3403,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:baa0ecd7d5843273708a2fe6c3c1acbc550b66a95bf88f0b0ec0feefcb752cd2"
+        },
+        "voice": "b1014.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1014.json",
+          "frames": 278
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -2827,49 +3427,53 @@
           "imageId": "bg012_residence_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "fight",
         "bgm_volume": 0,
         "se": {
           "cue": "bike_go",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "bike_harley_run_2",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           },
           {
             "cue": "bike_go",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_shop_street_day"
+          "cue": "ambi_shop_street_day",
+          "cue_name": "ambi_shop_street_day"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 0,
-          "offset_y": 75,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 75.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2877,7 +3481,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2885,7 +3494,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 3,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+        "source_part_id": "1_4_002_10_b",
+        "command_start": 151,
+        "command_end": 151,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 3.0,
       "episode_index": 0,
       "episode_part": "b"
     }
@@ -2904,6 +3521,10 @@
       "step_count": 35
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_4_002_10.unity3d",
+    "raw_hash": "sha256:a550e4a501c349bff378e41953e5c77023cfee0e63e34748c45fd70ae1cd0f25"
+  },
   "aggregate_source": {
     "file": "1_4_002_10.json",
     "scenario_id": "1_4_002_10",

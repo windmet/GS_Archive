@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_2_034_01_d",
+  "text_catalog_id": "1_2_034kan_01_1_2_034_01",
+  "text_contract_version": 1,
   "total_steps": 13,
   "steps": [
     {
@@ -20,16 +22,16 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -37,7 +39,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -45,6 +52,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -70,14 +86,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -85,10 +101,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -96,13 +112,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -132,8 +161,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -142,10 +171,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -153,7 +182,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -161,9 +195,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 14,
+        "command_end": 14,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_neck_anim",
           "chara_id": "034kan",
           "value": "neck_question"
@@ -175,11 +217,12 @@
         "text": "●●●●プロデューサーさん、\nかのんがどうしてここにいるってわかったの？",
         "text_jp": "●●●●プロデューサーさん、\nかのんがどうしてここにいるってわかったの？",
         "text_cn": "",
-        "voice": "d1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1000.json",
-          "frames": 278
+        "source_text": "●●●●プロデューサーさん、\nかのんがどうしてここにいるってわかったの？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "034kan",
+          "source_name": "姫野 かのん"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000014:dialogue:000",
@@ -192,8 +235,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:49a9795b0c6f1bea5ca18ab26972934ad523b83c26d3731b25f11ce579e0e5ef"
+        },
+        "voice": "d1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1000.json",
+          "frames": 278
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -219,8 +269,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -229,10 +279,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -240,13 +290,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -261,6 +324,13 @@
         "text": "かのんくんのお母さんから、\nレッスンは何時に終わるかと電話があったからです。",
         "text_jp": "かのんくんのお母さんから、\nレッスンは何時に終わるかと電話があったからです。",
         "text_cn": "",
+        "source_text": "かのんくんのお母さんから、\nレッスンは何時に終わるかと電話があったからです。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000017:dialogue:000",
           "source": {
@@ -274,6 +344,7 @@
           "source_hash": "sha256:d11f184e9b5b567e665e97d502110b699d2a44df8e5a4149c9e522900b9771b6"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -299,8 +370,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -309,10 +380,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -320,7 +391,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -328,11 +404,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "それで隠れるなら、この場所かと思って来たら、\nかのんくんがいたんです。",
         "text_jp": "それで隠れるなら、この場所かと思って来たら、\nかのんくんがいたんです。",
         "text_cn": "",
+        "source_text": "それで隠れるなら、この場所かと思って来たら、\nかのんくんがいたんです。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000019:dialogue:000",
           "source": {
@@ -346,6 +437,7 @@
           "source_hash": "sha256:03bb95acae0df81b2301cead8dba39c42f78167cbf1496c91eba46bd27df9407"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -371,8 +463,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -381,10 +473,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -392,13 +484,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 25,
+        "command_end": 25,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -432,11 +537,12 @@
         "text": "そっか……。●●●●プロデューサーさんは\nかのんの考えてることがわかっちゃうんだね。",
         "text_jp": "そっか……。●●●●プロデューサーさんは\nかのんの考えてることがわかっちゃうんだね。",
         "text_cn": "",
-        "voice": "d1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1003.json",
-          "frames": 421
+        "source_text": "そっか……。●●●●プロデューサーさんは\nかのんの考えてることがわかっちゃうんだね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "034kan",
+          "source_name": "姫野 かのん"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000025:dialogue:000",
@@ -449,8 +555,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:1bd666a25a3dbad8748f31bf482b930fb6256aa780326d2c06a4d5dc5024c78e"
+        },
+        "voice": "d1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1003.json",
+          "frames": 421
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -476,8 +589,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -486,10 +599,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -497,13 +610,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 30,
+        "command_end": 30,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -527,6 +653,13 @@
         "text": "かのんくん……。好きなことに夢中になれるのは、\nとても素敵なことだと思います。",
         "text_jp": "かのんくん……。好きなことに夢中になれるのは、\nとても素敵なことだと思います。",
         "text_cn": "",
+        "source_text": "かのんくん……。好きなことに夢中になれるのは、\nとても素敵なことだと思います。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000030:dialogue:000",
           "source": {
@@ -540,6 +673,7 @@
           "source_hash": "sha256:0e106df84580591187ff3916efe1c3c4467b49f7d4cb63793f9c5c3fd849fced"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -565,8 +699,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -575,24 +709,37 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 34,
+        "command_end": 34,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -610,6 +757,13 @@
         "text": "けれど、嘘をつくのはよくないですよ。",
         "text_jp": "けれど、嘘をつくのはよくないですよ。",
         "text_cn": "",
+        "source_text": "けれど、嘘をつくのはよくないですよ。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000034:dialogue:000",
           "source": {
@@ -623,6 +777,7 @@
           "source_hash": "sha256:eccc02d9ffff94ed66c23ecfff6db21bf62555bd96e1406707baa4f734af62af"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -648,8 +803,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -658,10 +813,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -669,7 +824,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -677,17 +837,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "034kan",
       "dialogue": {
         "speaker": "姫野 かのん",
         "text": "ごめんなさい……。",
         "text_jp": "ごめんなさい……。",
         "text_cn": "",
-        "voice": "d1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1006.json",
-          "frames": 98
+        "source_text": "ごめんなさい……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "034kan",
+          "source_name": "姫野 かのん"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000038:dialogue:000",
@@ -700,8 +869,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d53f099b7344da657842434823722a9a9520afe24337aeaa049306a62ca042d1"
+        },
+        "voice": "d1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1006.json",
+          "frames": 98
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -727,8 +903,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "チーク",
             "sweat_flag": "off"
@@ -737,10 +913,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -748,7 +924,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -756,17 +937,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "034kan",
       "dialogue": {
         "speaker": "姫野 かのん",
         "text": "かのん、とうまくんに早く上手にできるところを\n見てほしかったの。",
         "text_jp": "かのん、とうまくんに早く上手にできるところを\n見てほしかったの。",
         "text_cn": "",
-        "voice": "d1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1007.json",
-          "frames": 325
+        "source_text": "かのん、とうまくんに早く上手にできるところを\n見てほしかったの。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "034kan",
+          "source_name": "姫野 かのん"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000041:dialogue:000",
@@ -779,8 +969,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d1f666cef43dec224e2911529b44021aa6ee85879c8ac6d74b22b9f2b7b7bbab"
+        },
+        "voice": "d1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1007.json",
+          "frames": 325
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -806,8 +1003,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "チーク",
             "sweat_flag": "off"
@@ -816,10 +1013,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -827,13 +1024,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -852,11 +1062,12 @@
         "text": "どうしよう……。かのん、ママにウソついちゃった。\nお家に帰れないよ……。",
         "text_jp": "どうしよう……。かのん、ママにウソついちゃった。\nお家に帰れないよ……。",
         "text_cn": "",
-        "voice": "d1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1008.json",
-          "frames": 638
+        "source_text": "どうしよう……。かのん、ママにウソついちゃった。\nお家に帰れないよ……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "034kan",
+          "source_name": "姫野 かのん"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000046:dialogue:000",
@@ -869,8 +1080,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:75e66b83eae9f6fa628ea52b824e7c5ec96492262114df7beeee3666ce26d624"
+        },
+        "voice": "d1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1008.json",
+          "frames": 638
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -896,8 +1114,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "チーク",
             "sweat_flag": "off"
@@ -906,10 +1124,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -917,13 +1135,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 49,
+        "command_end": 49,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -941,6 +1172,13 @@
         "text": "私もかのんくんのお母さんに、まだレッスン中だと\n嘘をつきました。……一緒に謝りましょうか。",
         "text_jp": "私もかのんくんのお母さんに、まだレッスン中だと\n嘘をつきました。……一緒に謝りましょうか。",
         "text_cn": "",
+        "source_text": "私もかのんくんのお母さんに、まだレッスン中だと\n嘘をつきました。……一緒に謝りましょうか。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000049:dialogue:000",
           "source": {
@@ -954,6 +1192,7 @@
           "source_hash": "sha256:fde35a2599ddf82dca1ee2fbff41d67af9026f9fca0ca1af5b3204c474ec8f97"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -979,8 +1218,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "チーク",
             "sweat_flag": "off"
@@ -989,10 +1228,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": -50,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": -50.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1000,13 +1239,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_034kan_01/scenario_1_2_034_01_d.json",
+        "source_part_id": "1_2_034_01_d",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1040,11 +1292,12 @@
         "text": "うん……。\nかのん、ちゃんとママにごめんなさいする。",
         "text_jp": "うん……。\nかのん、ちゃんとママにごめんなさいする。",
         "text_cn": "",
-        "voice": "d1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1010.json",
-          "frames": 324
+        "source_text": "うん……。\nかのん、ちゃんとママにごめんなさいする。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "034kan",
+          "source_name": "姫野 かのん"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_034kan_01_1_2_034_01:1_2_034_01_d:cmd-000054:dialogue:000",
@@ -1057,8 +1310,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:06beb6a2f8bd79f4587f017f860376605137fb5771bfd195fcd86c354ea6b1f3"
+        },
+        "voice": "d1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/034kan/1_2_034_01/1_2_034_01_d/1_2_034_01_d1010.json",
+          "frames": 324
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     }
@@ -1077,6 +1337,10 @@
       "step_count": 13
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_2_034_01.unity3d",
+    "raw_hash": "sha256:e940f8ee3eb6003a9b10ba5d65136e253533f2fc49deea9ff09acffcef6a20e6"
+  },
   "aggregate_source": {
     "file": "1_2_034kan_01_1_2_034_01.json",
     "scenario_id": "1_2_034kan_01_1_2_034_01",

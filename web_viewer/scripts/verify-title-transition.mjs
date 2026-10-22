@@ -30,7 +30,9 @@ assert.equal(getAutoAdvanceTiming({type:'title'}), null)
 // Run the production viewer handlers against the real cue scheduler and handles.
 // Only the stage drawing methods and navigation destination are test doubles.
 const fixture = JSON.parse(await read('public/data/compiled/episodes/1_4_001_00_a.json'))
-const base = fixture.steps.find(s=>s.type==='title')
+// The recompiled title step carries its native post-title wait; holding it is verify-native-cut-wait-runtime's
+// job, so these title-completion cases run without it.
+const { post_wait: _postWait, pre_wait: _preWait, ...base } = fixture.steps.find(s=>s.type==='title')
 const cue = {...fixture.steps[3].cues[0], cue_id:'title-settlement', duration:30}
 const drain = async () => { for(let i=0;i<20;i++) await Promise.resolve() }
 let frame = 0

@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_2_011_01_a",
+  "text_catalog_id": "1_2_011min_01_1_2_011_01",
+  "text_contract_version": 1,
   "total_steps": 21,
   "steps": [
     {
@@ -26,7 +28,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -34,11 +41,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 0,
+        "command_end": 0,
+        "raw_type": "text_synopsis",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "花とバイク",
         "text": "共演者の誕生日プレゼントにフラワーアレン\nジメントを贈るため、勤めていた花屋で花を\n選ぶ、みのりとプロデューサー。アレンジ\nメントを作りながら、みのりは花屋になった\nばかりのころを思い出す。",
         "text_jp": "共演者の誕生日プレゼントにフラワーアレン\nジメントを贈るため、勤めていた花屋で花を\n選ぶ、みのりとプロデューサー。アレンジ\nメントを作りながら、みのりは花屋になった\nばかりのころを思い出す。",
         "text_cn": "",
+        "source_text": "共演者の誕生日プレゼントにフラワーアレン\nジメントを贈るため、勤めていた花屋で花を\n選ぶ、みのりとプロデューサー。アレンジ\nメントを作りながら、みのりは花屋になった\nばかりのころを思い出す。",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000000:synopsis:000",
           "source": {
@@ -79,24 +101,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -109,7 +131,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -117,7 +139,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -125,6 +152,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 8,
+        "command_end": 8,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.2,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -140,24 +176,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -173,7 +209,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -181,11 +222,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "text_title",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "第1話",
         "text": "花とバイク",
         "text_jp": "花とバイク",
         "text_cn": "",
+        "source_text": "花とバイク",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000010:title:001",
           "source": {
@@ -211,6 +267,7 @@
           "source_hash": "sha256:7824b3a8948acd2c72636875e79b09adab6d8fca3c20b65cfcfd68e8d3eae4ba"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -226,24 +283,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -257,14 +314,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -278,7 +335,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -286,7 +348,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 13,
+        "command_end": 13,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -304,24 +374,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -335,8 +405,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -351,13 +421,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -376,11 +459,12 @@
         "text": "そうだね、今の時期ならアネモネかな……。",
         "text_jp": "そうだね、今の時期ならアネモネかな……。",
         "text_cn": "",
-        "voice": "a1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1000.json",
-          "frames": 287
+        "source_text": "そうだね、今の時期ならアネモネかな……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000017:dialogue:000",
@@ -393,8 +477,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:4642a885dd1b8a29cea9f4eb93f55766755575a7d0f6021aa272020b1b3ec898"
+        },
+        "voice": "a1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1000.json",
+          "frames": 287
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -410,24 +501,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -441,8 +532,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -457,13 +548,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 21,
+        "command_end": 21,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -482,11 +586,12 @@
         "text": "共演者さんは白が好きって●●●●プロデューサーが\n調べてきてくれたから、色は白で統一しようか。",
         "text_jp": "共演者さんは白が好きって●●●●プロデューサーが\n調べてきてくれたから、色は白で統一しようか。",
         "text_cn": "",
-        "voice": "a1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1001.json",
-          "frames": 473
+        "source_text": "共演者さんは白が好きって●●●●プロデューサーが\n調べてきてくれたから、色は白で統一しようか。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000021:dialogue:000",
@@ -499,8 +604,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:6bab9b00566fa98162c048fa297eca9f5f6b5ffc70432dae74c918eaebd9bef6"
+        },
+        "voice": "a1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1001.json",
+          "frames": 473
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -516,24 +628,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -547,8 +659,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -563,13 +675,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -612,11 +737,12 @@
         "text": "花言葉もピッタリだしね！\n白いアネモネの花言葉は『希望』なんだ。",
         "text_jp": "花言葉もピッタリだしね！\n白いアネモネの花言葉は『希望』なんだ。",
         "text_cn": "",
-        "voice": "a1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1002.json",
-          "frames": 474
+        "source_text": "花言葉もピッタリだしね！\n白いアネモネの花言葉は『希望』なんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000028:dialogue:000",
@@ -629,8 +755,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d74c8d8a79bb2766a635878e38d2edef1c92e11458d665fa5f4273e754489a34"
+        },
+        "voice": "a1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1002.json",
+          "frames": 474
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -646,24 +779,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -677,8 +810,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -693,13 +826,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 32,
+        "command_end": 32,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -723,6 +869,13 @@
         "text": "『希望』……。誕生日に贈る\nフラワーアレンジメントにはピッタリですね！",
         "text_jp": "『希望』……。誕生日に贈る\nフラワーアレンジメントにはピッタリですね！",
         "text_cn": "",
+        "source_text": "『希望』……。誕生日に贈る\nフラワーアレンジメントにはピッタリですね！",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000032:dialogue:000",
           "source": {
@@ -736,6 +889,7 @@
           "source_hash": "sha256:45836edec627541a86d492a3bf26bf30fd92f7ee21a510ba7bc074ec1418d512"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -751,24 +905,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -782,8 +936,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -798,7 +952,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -806,9 +965,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_default",
@@ -817,13 +984,13 @@
           "blush_flag": "off"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "011min",
           "value": "weight"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_joy",
@@ -838,11 +1005,12 @@
         "text": "あ、こっちの白いガーベラも使ってみようか。\n同じように『希望』の花言葉を持ってるんだよ。",
         "text_jp": "あ、こっちの白いガーベラも使ってみようか。\n同じように『希望』の花言葉を持ってるんだよ。",
         "text_cn": "",
-        "voice": "a1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1004.json",
-          "frames": 531
+        "source_text": "あ、こっちの白いガーベラも使ってみようか。\n同じように『希望』の花言葉を持ってるんだよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000038:dialogue:000",
@@ -855,8 +1023,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:59c337929524f8826300024f703d6acba7ac40a734285acaf71fcedcef4d78e2"
+        },
+        "voice": "a1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1004.json",
+          "frames": 531
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -872,24 +1047,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -903,8 +1078,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -919,7 +1094,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -927,9 +1107,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_default",
@@ -943,6 +1131,13 @@
         "text": "それでは、贈る花は\n白いアネモネやガーベラをメインに？",
         "text_jp": "それでは、贈る花は\n白いアネモネやガーベラをメインに？",
         "text_cn": "",
+        "source_text": "それでは、贈る花は\n白いアネモネやガーベラをメインに？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000041:dialogue:000",
           "source": {
@@ -956,6 +1151,7 @@
           "source_hash": "sha256:f2fc4be75ab696ef349dcc71219ef405016dcebe1687055da29b75d042387a1f"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -971,24 +1167,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1002,8 +1198,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1018,13 +1214,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1049,7 +1258,7 @@
           "value": "angry"
         },
         {
-          "time": 8,
+          "time": 8.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_happy",
@@ -1064,11 +1273,12 @@
         "text": "うん、そうするよ。……それじゃ、\n花も選び終わったし。ここからは、俺に任せて！",
         "text_jp": "うん、そうするよ。……それじゃ、\n花も選び終わったし。ここからは、俺に任せて！",
         "text_cn": "",
-        "voice": "a1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1006.json",
-          "frames": 575
+        "source_text": "うん、そうするよ。……それじゃ、\n花も選び終わったし。ここからは、俺に任せて！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000048:dialogue:000",
@@ -1081,8 +1291,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fcb42e1414f21a0684c824f6a228ba7a6aa233215c95c86eeedf9dd3e4f0e0f7"
+        },
+        "voice": "a1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1006.json",
+          "frames": 575
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1098,32 +1315,32 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "step_walk_away_lino_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_walk_away_lino_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1137,14 +1354,14 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1158,13 +1375,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "episode_index": 0,
@@ -1182,24 +1412,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1212,7 +1442,7 @@
         "screen_fade": {
           "type": "out",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -1220,7 +1450,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1228,6 +1463,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 55,
+        "command_end": 55,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1243,36 +1487,39 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "scissors_cut",
-          "delay": 1
+          "delay": 1.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "scissors_cut",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           },
           {
             "cue": "scissors_cut",
-            "delay": 1
+            "delay": 1.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
@@ -1288,7 +1535,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1296,7 +1548,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1314,32 +1574,32 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "bouquet_pass",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "bouquet_pass",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1355,7 +1615,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1363,7 +1628,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 61,
+        "command_end": 61,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1381,24 +1654,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1411,7 +1684,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -1419,7 +1692,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1427,6 +1705,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 62,
+        "command_end": 62,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1442,32 +1729,32 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "step_walk_come_lino_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_walk_come_lino_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1483,13 +1770,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -1509,24 +1809,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1540,14 +1840,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1561,7 +1861,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1569,7 +1874,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 69,
+        "command_end": 69,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1587,24 +1900,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1618,8 +1931,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1634,13 +1947,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 74,
+        "command_end": 74,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1665,11 +1991,12 @@
         "text": "ふう、こんな感じかな。\nどう思う？　●●●●プロデューサー。",
         "text_jp": "ふう、こんな感じかな。\nどう思う？　●●●●プロデューサー。",
         "text_cn": "",
-        "voice": "a1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1008.json",
-          "frames": 362
+        "source_text": "ふう、こんな感じかな。\nどう思う？　●●●●プロデューサー。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000074:dialogue:000",
@@ -1682,8 +2009,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:074eae446427cedf5eb0521bd4644cf00d1728b81482c80db8996431157fb3da"
+        },
+        "voice": "a1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1008.json",
+          "frames": 362
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1699,24 +2033,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1730,8 +2064,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1746,7 +2080,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1754,9 +2093,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 78,
+        "command_end": 78,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_joy",
@@ -1765,7 +2112,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "011min",
           "value": "wait_loop"
@@ -1776,6 +2123,13 @@
         "text": "とても素敵だと思います！\nみのりさん、すごいですね……！",
         "text_jp": "とても素敵だと思います！\nみのりさん、すごいですね……！",
         "text_cn": "",
+        "source_text": "とても素敵だと思います！\nみのりさん、すごいですね……！",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000078:dialogue:000",
           "source": {
@@ -1789,6 +2143,7 @@
           "source_hash": "sha256:4694d2dc8a2b6dde84602f8c2b266bdd261ea6f5899bbd9862c9b4b0e016256d"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     },
@@ -1804,24 +2159,24 @@
           "imageId": "bg157_minoriflowershop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1835,8 +2190,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1851,7 +2206,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1859,9 +2219,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_011min_01/scenario_1_2_011_01_a.json",
+        "source_part_id": "1_2_011_01_a",
+        "command_start": 83,
+        "command_end": 83,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_shy",
@@ -1870,7 +2238,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_default",
@@ -1879,7 +2247,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_face",
           "chara_id": "011min",
           "value": "face_trouble",
@@ -1894,11 +2262,12 @@
         "text": "あはは、腕がなまってなくてよかったよ。\n花屋になったばかりの頃は大変だったからね。",
         "text_jp": "あはは、腕がなまってなくてよかったよ。\n花屋になったばかりの頃は大変だったからね。",
         "text_cn": "",
-        "voice": "a1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1010.json",
-          "frames": 556
+        "source_text": "あはは、腕がなまってなくてよかったよ。\n花屋になったばかりの頃は大変だったからね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "011min",
+          "source_name": "渡辺 みのり"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_011min_01_1_2_011_01:1_2_011_01_a:cmd-000083:dialogue:000",
@@ -1911,8 +2280,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a00a42d03987b436735243fc14f2495be83f5462443b70ac4ed1ccdc7a56686e"
+        },
+        "voice": "a1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/011min/1_2_011_01/1_2_011_01_a/1_2_011_01_a1010.json",
+          "frames": 556
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "a"
     }
@@ -1931,6 +2307,10 @@
       "step_count": 21
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_2_011_01.unity3d",
+    "raw_hash": "sha256:24693f6a8d4c17ed7c95518e4ea3fa9e679509001b5f913a3a0759da5848557f"
+  },
   "aggregate_source": {
     "file": "1_2_011min_01_1_2_011_01.json",
     "scenario_id": "1_2_011min_01_1_2_011_01",

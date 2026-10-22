@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_4_002_08_d",
+  "text_catalog_id": "1_4_002_08",
+  "text_contract_version": 1,
   "total_steps": 33,
   "steps": [
     {
@@ -14,36 +16,41 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": {
           "cue": "crowd_medium_zawameki_loop",
-          "delay": 0
+          "delay": 0.0,
+          "volume": 0.7,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "crowd_medium_zawameki_loop",
-            "delay": 0
+            "delay": 0.0,
+            "volume": 0.7,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [],
         "talk_mode": false,
@@ -52,7 +59,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -60,7 +67,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -72,6 +84,15 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -87,28 +108,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [],
         "talk_mode": false,
@@ -120,7 +142,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -132,12 +159,27 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "アイドルA",
         "text": "そんな……このタイミングで中止！？",
         "text_jp": "そんな……このタイミングで中止！？",
         "text_cn": "",
+        "source_text": "そんな……このタイミングで中止！？",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "アイドルA"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000019:dialogue:000",
           "source": {
@@ -151,6 +193,7 @@
           "source_hash": "sha256:62ff1d835a4bae6810a6e0d424d4c54e33e8722a5c905f3f6d7bae9a2678ce91"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -166,28 +209,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [],
         "talk_mode": false,
@@ -199,7 +243,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -211,12 +260,27 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 21,
+        "command_end": 21,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "アイドルB",
         "text": "今日まで頑張ってきたのに、なんで……。",
         "text_jp": "今日まで頑張ってきたのに、なんで……。",
         "text_cn": "",
+        "source_text": "今日まで頑張ってきたのに、なんで……。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "アイドルB"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000021:dialogue:000",
           "source": {
@@ -230,6 +294,7 @@
           "source_hash": "sha256:1f68b2e6d52a8d911c0cc05cfddbe95522170857a3b16e98b2a0fd32c666dad1"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -245,28 +310,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -276,14 +342,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": -50,
+            "pos_x": 200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -294,14 +360,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": -50,
+            "pos_x": -200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -315,7 +381,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -327,7 +398,15 @@
           "layer": "2"
         }
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 26,
+        "command_end": 26,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -343,28 +422,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -374,8 +454,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": -50,
+            "pos_x": 200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -387,8 +467,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": -50,
+            "pos_x": -200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -403,7 +483,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -415,9 +500,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "014hid",
           "value": "face_trouble",
@@ -441,11 +534,12 @@
         "text": "……みんなショックを受けてるな。無理もない。",
         "text_jp": "……みんなショックを受けてるな。無理もない。",
         "text_cn": "",
-        "voice": "d1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1002.json",
-          "frames": 264
+        "source_text": "……みんなショックを受けてるな。無理もない。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000033:dialogue:000",
@@ -458,8 +552,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:0283ea83cb077a2975004b5ca20222ba039515006575a2fc528775d34cfe97d2"
+        },
+        "voice": "d1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1002.json",
+          "frames": 264
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -475,28 +576,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -506,8 +608,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": -50,
+            "pos_x": 200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -519,8 +621,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": -50,
+            "pos_x": -200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -535,7 +637,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -546,6 +653,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 40,
+        "command_end": 40,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -573,11 +688,12 @@
         "text": "俺たち出場者もそうですけど……。\nファンのみんなも、きっと残念ですよね。",
         "text_jp": "俺たち出場者もそうですけど……。\nファンのみんなも、きっと残念ですよね。",
         "text_cn": "",
-        "voice": "d1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1003.json",
-          "frames": 350
+        "source_text": "俺たち出場者もそうですけど……。\nファンのみんなも、きっと残念ですよね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000040:dialogue:000",
@@ -590,8 +706,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c8b666b3b4e3d9f9ff06677e99a4dd683f52f3b2079a99a03cc8a1611e2c4288"
+        },
+        "voice": "d1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1003.json",
+          "frames": 350
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -607,28 +730,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -638,14 +762,14 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": -50,
+            "pos_x": 200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -656,14 +780,14 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": -50,
+            "pos_x": -200.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -677,7 +801,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -688,6 +817,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -705,28 +842,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "mysterious",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -736,14 +874,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": -50,
+            "pos_x": 0.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -757,7 +895,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -768,6 +911,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 47,
+        "command_end": 47,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -787,28 +938,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -818,8 +970,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": -50,
+            "pos_x": 0.0,
+            "pos_y": -50.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -831,10 +983,15 @@
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -846,12 +1003,20 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 51,
+        "command_end": 51,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
       "duration": 2.5,
       "auto_advance": true,
       "hide_dialogue": true,
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "016sei",
           "value": "face_default",
@@ -875,28 +1040,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -906,14 +1072,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": -50,
+            "pos_x": 0.0,
+            "pos_y": -50.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -927,7 +1093,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -938,6 +1109,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -957,46 +1136,47 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_s01",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cloth_move_s01",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1,
-          "delay": 0
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0,
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1004,7 +1184,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1016,7 +1201,15 @@
           "layer": "2"
         }
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1034,28 +1227,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1065,14 +1259,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1081,9 +1275,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1091,7 +1285,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1102,6 +1301,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -1121,28 +1328,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1152,8 +1360,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1163,9 +1371,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1173,7 +1381,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1185,17 +1398,26 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 62,
+        "command_end": 62,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "016sei",
       "dialogue": {
         "speaker": "信玄 誠司",
         "text": "……なあ、みんな！　こういうのはどうだろう？",
         "text_jp": "……なあ、みんな！　こういうのはどうだろう？",
         "text_cn": "",
-        "voice": "d1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1004.json",
-          "frames": 194
+        "source_text": "……なあ、みんな！　こういうのはどうだろう？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000062:dialogue:000",
@@ -1208,8 +1430,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:538fdcc6645ebae7119dcb19a6bef3727ab3f7ff89416b863e2739aa07bea255"
+        },
+        "voice": "d1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1004.json",
+          "frames": 194
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1225,28 +1454,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1256,8 +1486,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1267,9 +1497,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1277,7 +1507,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1288,6 +1523,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 67,
+        "command_end": 67,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1306,11 +1549,12 @@
         "text": "今回の『パワー部門』は中止になってしまったが、\n今日までトレーニングをしてきた自分たちのために。",
         "text_jp": "今回の『パワー部門』は中止になってしまったが、\n今日までトレーニングをしてきた自分たちのために。",
         "text_cn": "",
-        "voice": "d1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1005.json",
-          "frames": 380
+        "source_text": "今回の『パワー部門』は中止になってしまったが、\n今日までトレーニングをしてきた自分たちのために。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000067:dialogue:000",
@@ -1323,8 +1567,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:473972cb012568c2d5f63306a30e4140825c54d7b40fb00ef33e89c1f1284c7f"
+        },
+        "voice": "d1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1005.json",
+          "frames": 380
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1340,28 +1591,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1371,8 +1623,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1382,9 +1634,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1392,7 +1644,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1403,6 +1660,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 72,
+        "command_end": 72,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1421,11 +1686,12 @@
         "text": "何より、明日を楽しみにしているファンのために。",
         "text_jp": "何より、明日を楽しみにしているファンのために。",
         "text_cn": "",
-        "voice": "d1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1006.json",
-          "frames": 222
+        "source_text": "何より、明日を楽しみにしているファンのために。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000072:dialogue:000",
@@ -1438,8 +1704,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:81ef269dddf2f5a15b276add955ce12cf4de69a95062ce835b47e6eb0f28545e"
+        },
+        "voice": "d1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1006.json",
+          "frames": 222
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1455,28 +1728,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1486,8 +1760,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1497,9 +1771,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1507,7 +1781,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1519,9 +1798,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 78,
+        "command_end": 78,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "016sei",
           "value": "face_joy",
@@ -1530,7 +1817,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "016sei",
           "value": "angry"
@@ -1542,11 +1829,12 @@
         "text": "男極リーグとは関係なく、\n自分たちでステージ自体は開催しないか？",
         "text_jp": "男極リーグとは関係なく、\n自分たちでステージ自体は開催しないか？",
         "text_cn": "",
-        "voice": "d1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1007.json",
-          "frames": 347
+        "source_text": "男極リーグとは関係なく、\n自分たちでステージ自体は開催しないか？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000078:dialogue:000",
@@ -1559,8 +1847,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:27a59c90dd46d9215f0733161d56e37efb55f24ea13424253b69aaae957de95d"
+        },
+        "voice": "d1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1007.json",
+          "frames": 347
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1576,28 +1871,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1607,8 +1903,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1618,9 +1914,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1628,7 +1924,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1640,9 +1941,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 82,
+        "command_end": 82,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "016sei",
           "value": "face_default",
@@ -1657,11 +1966,12 @@
         "text": "衣装や小道具がないそうだが、問題ない。",
         "text_jp": "衣装や小道具がないそうだが、問題ない。",
         "text_cn": "",
-        "voice": "d1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1008.json",
-          "frames": 206
+        "source_text": "衣装や小道具がないそうだが、問題ない。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000082:dialogue:000",
@@ -1674,8 +1984,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:53cd822fa3442f9302fa3c229d6f16993442334a17de87f5c52b9cc9b07a0583"
+        },
+        "voice": "d1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1008.json",
+          "frames": 206
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1691,28 +2008,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1722,8 +2040,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1733,9 +2051,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1743,7 +2061,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1754,6 +2077,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 90,
+        "command_end": 90,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1766,7 +2097,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "016sei",
           "value": "face_happy",
@@ -1775,7 +2106,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "016sei",
           "value": "joy"
@@ -1796,11 +2127,12 @@
         "text": "ここにいる全員に、鍛えられた身体がある。\nリハーサル用のトレーニングウェアで十分だ！",
         "text_jp": "ここにいる全員に、鍛えられた身体がある。\nリハーサル用のトレーニングウェアで十分だ！",
         "text_cn": "",
-        "voice": "d1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1009.json",
-          "frames": 443
+        "source_text": "ここにいる全員に、鍛えられた身体がある。\nリハーサル用のトレーニングウェアで十分だ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000090:dialogue:000",
@@ -1813,6 +2145,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:478d3680413882241d2240e67d5d52319941f76f97408d9c257df76163bd5990"
+        },
+        "voice": "d1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1009.json",
+          "frames": 443
         }
       },
       "episode_index": 0,
@@ -1830,36 +2168,39 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": {
           "cue": "crowd_medium_zawameki_loop",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "crowd_medium_zawameki_loop",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1869,8 +2210,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1880,9 +2221,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1890,7 +2231,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1901,6 +2247,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 92,
+        "command_end": 92,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -1920,28 +2274,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -1951,14 +2306,14 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1967,9 +2322,9 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 1
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1977,7 +2332,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1988,6 +2348,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 95,
+        "command_end": 95,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -2005,38 +2373,39 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0,
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2044,7 +2413,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2056,7 +2430,15 @@
           "layer": "2"
         }
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 97,
+        "command_end": 97,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -2074,28 +2456,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -2105,14 +2488,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2123,15 +2506,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_no_back": true,
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2142,14 +2525,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2157,10 +2540,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2168,7 +2551,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2179,6 +2567,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 109,
+        "command_end": 109,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -2198,28 +2594,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -2229,8 +2626,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2242,8 +2639,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -2256,8 +2653,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2266,10 +2663,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2277,7 +2674,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2288,6 +2690,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 114,
+        "command_end": 114,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2330,11 +2740,12 @@
         "text": "そうですよ、ステージが未完成でも、\n歌ったり踊ったりはできますし……！",
         "text_jp": "そうですよ、ステージが未完成でも、\n歌ったり踊ったりはできますし……！",
         "text_cn": "",
-        "voice": "d1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1010.json",
-          "frames": 333
+        "source_text": "そうですよ、ステージが未完成でも、\n歌ったり踊ったりはできますし……！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000114:dialogue:000",
@@ -2347,6 +2758,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:095cb0abb9aa4ef82cea7ddcba8a7c49d8fd8dcc91e8405d880baf1e5a5379fb"
+        },
+        "voice": "d1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1010.json",
+          "frames": 333
         }
       },
       "episode_index": 0,
@@ -2364,28 +2781,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -2395,8 +2813,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2408,8 +2826,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2421,8 +2839,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2431,10 +2849,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2442,7 +2860,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2453,6 +2876,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 116,
+        "command_end": 116,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -2472,28 +2903,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -2503,8 +2935,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2516,8 +2948,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2529,8 +2961,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2539,10 +2971,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2550,7 +2982,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2562,9 +2999,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 129,
+        "command_end": 129,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "014hid",
           "value": "face_default",
@@ -2600,7 +3045,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_anim",
           "chara_id": "014hid",
           "value": "weight"
@@ -2621,11 +3066,12 @@
         "text": "……何とかやれる方法があるかもしれない。\nスタッフさん、このまま行くだけ行ってみないか？",
         "text_jp": "……何とかやれる方法があるかもしれない。\nスタッフさん、このまま行くだけ行ってみないか？",
         "text_cn": "",
-        "voice": "d1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1011.json",
-          "frames": 463
+        "source_text": "……何とかやれる方法があるかもしれない。\nスタッフさん、このまま行くだけ行ってみないか？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000129:dialogue:000",
@@ -2638,8 +3084,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ad56ce5e42f5f6f3f3888d565cfdb2192deef3d852e212e07c847e7652e5fce4"
+        },
+        "voice": "d1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1011.json",
+          "frames": 463
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -2655,28 +3108,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -2686,8 +3140,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2699,8 +3153,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2712,8 +3166,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2722,10 +3176,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2733,7 +3187,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2744,6 +3203,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 136,
+        "command_end": 136,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2783,11 +3250,12 @@
         "text": "俺たちが今日まで頑張ってこられたのは、\nファンの笑顔を見るのが楽しみだったからなんだ。",
         "text_jp": "俺たちが今日まで頑張ってこられたのは、\nファンの笑顔を見るのが楽しみだったからなんだ。",
         "text_cn": "",
-        "voice": "d1012.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1012.json",
-          "frames": 351
+        "source_text": "俺たちが今日まで頑張ってこられたのは、\nファンの笑顔を見るのが楽しみだったからなんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000136:dialogue:000",
@@ -2800,8 +3268,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3a20e8ec92f575334ce51ee9219d2ffd45b4e81f0202b1d2079b0e7123a4d580"
+        },
+        "voice": "d1012.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1012.json",
+          "frames": 351
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -2817,28 +3292,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -2848,8 +3324,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2861,8 +3337,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2874,8 +3350,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2884,10 +3360,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2895,7 +3371,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2906,6 +3387,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 143,
+        "command_end": 143,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2948,11 +3437,12 @@
         "text": "ああ。『パワー部門』の一番はダメでも、\nファンの笑顔はもらって帰りたいな。",
         "text_jp": "ああ。『パワー部門』の一番はダメでも、\nファンの笑顔はもらって帰りたいな。",
         "text_cn": "",
-        "voice": "d1013.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1013.json",
-          "frames": 398
+        "source_text": "ああ。『パワー部門』の一番はダメでも、\nファンの笑顔はもらって帰りたいな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "016sei",
+          "source_name": "信玄 誠司"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000143:dialogue:000",
@@ -2965,8 +3455,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:0ebd8fa4b1d0b7ecf7487e18337ce399b66675f029187afc710349e48453414d"
+        },
+        "voice": "d1013.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_08/1_4_002_08_d/1_4_002_08_d1013.json",
+          "frames": 398
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -2982,28 +3479,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -3013,14 +3511,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -3031,14 +3529,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -3049,14 +3547,14 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -3064,10 +3562,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3075,7 +3573,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3087,7 +3590,15 @@
           "layer": "2"
         }
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 149,
+        "command_end": 149,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -3103,49 +3614,54 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": {
           "cue": "crowd_applause_clap_yayamori",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "male_applause_medium_group",
-            "delay": 0
+            "delay": 0.0,
+            "volume": 0.5,
+            "sheet": "se_commu_2022"
           },
           {
             "cue": "crowd_applause_clap_yayamori",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3153,7 +3669,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3165,12 +3686,27 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 152,
+        "command_end": 152,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "アイドルA",
         "text": "……そうだな。\n俺たちも、ファンの笑顔が見たい！",
         "text_jp": "……そうだな。\n俺たちも、ファンの笑顔が見たい！",
         "text_cn": "",
+        "source_text": "……そうだな。\n俺たちも、ファンの笑顔が見たい！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "アイドルA"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000152:dialogue:000",
           "source": {
@@ -3184,6 +3720,7 @@
           "source_hash": "sha256:8b92aefc227eaf02cbe0ae74a8ce99ef78678eb56c147d989505eafba1de3f3f"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -3199,37 +3736,38 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3237,7 +3775,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3249,12 +3792,27 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 154,
+        "command_end": 154,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "アイドルB",
         "text": "ああ！　ファンの笑顔を見ないと、\n今日までつけてきたパワーの行き場がないぜ！",
         "text_jp": "ああ！　ファンの笑顔を見ないと、\n今日までつけてきたパワーの行き場がないぜ！",
         "text_cn": "",
+        "source_text": "ああ！　ファンの笑顔を見ないと、\n今日までつけてきたパワーの行き場がないぜ！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "アイドルB"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000154:dialogue:000",
           "source": {
@@ -3268,6 +3826,7 @@
           "source_hash": "sha256:d8d712724a2e0ed6fbb4c5470019398b47e0f4eac95c15d32d27c6ac3991ce1a"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -3283,28 +3842,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -3314,14 +3874,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -3332,14 +3892,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -3350,14 +3910,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -3365,10 +3925,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3376,7 +3936,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3387,6 +3952,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 166,
+        "command_end": 166,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.6,
       "episode_index": 0,
@@ -3404,28 +3977,29 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -3435,8 +4009,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -3448,8 +4022,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -3461,8 +4035,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -3471,10 +4045,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3482,7 +4056,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3493,6 +4072,14 @@
           "display_id": "06fra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 169,
+        "command_end": 169,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -3511,6 +4098,13 @@
         "text": "みなさん……。我々も、\nこのまま終わらせたくない気持ちは同じです。",
         "text_jp": "みなさん……。我々も、\nこのまま終わらせたくない気持ちは同じです。",
         "text_cn": "",
+        "source_text": "みなさん……。我々も、\nこのまま終わらせたくない気持ちは同じです。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "男極スタッフ"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000169:dialogue:000",
           "source": {
@@ -3524,6 +4118,7 @@
           "source_hash": "sha256:2ec146703cd6d5370260b0ba55a4f52ee7598ea94bdf4205ebfae5ee0c4632d7"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -3539,36 +4134,39 @@
           "imageId": "bg120_motorcoach_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
         "se": {
           "cue": "male_applause_group",
-          "delay": 3
+          "delay": 3.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "male_applause_group",
-            "delay": 3
+            "delay": 3.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
-          "cue": "ambi_taxi_in"
+          "cue": "ambi_taxi_in",
+          "cue_name": "ambi_taxi_in"
         },
         "spines": [
           {
@@ -3578,8 +4176,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -10,
-            "pos_y": 0,
+            "pos_x": -10.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -3591,8 +4189,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -350,
-            "pos_y": 0,
+            "pos_x": -350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -3604,8 +4202,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 350,
-            "pos_y": 0,
+            "pos_x": 350.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -3614,10 +4212,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 1
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 1.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3625,7 +4223,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -3637,9 +4240,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_08/scenario_1_4_002_08_d.json",
+        "source_part_id": "1_4_002_08_d",
+        "command_start": 179,
+        "command_end": 179,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "015ryu",
           "value": "face_happy",
@@ -3648,7 +4259,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "015ryu",
           "value": "joy"
@@ -3699,6 +4310,13 @@
         "text": "男極とは関係なくても、\nどうにかステージが出来ないか確認してみます！",
         "text_jp": "男極とは関係なくても、\nどうにかステージが出来ないか確認してみます！",
         "text_cn": "",
+        "source_text": "男極とは関係なくても、\nどうにかステージが出来ないか確認してみます！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "男極スタッフ"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_d:cmd-000179:dialogue:000",
           "source": {
@@ -3712,6 +4330,7 @@
           "source_hash": "sha256:619168d085d5bc878e64539f3a9a7133402a81e83cd65da47310867437b4d9a1"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     }
@@ -3730,6 +4349,10 @@
       "step_count": 33
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_4_002_08.unity3d",
+    "raw_hash": "sha256:2d6ef78177ee9491c50846307bd95393888dd4e7e64de98ddbf62cbb4a0bab31"
+  },
   "aggregate_source": {
     "file": "1_4_002_08.json",
     "scenario_id": "1_4_002_08",

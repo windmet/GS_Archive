@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_2_014_01_d",
+  "text_catalog_id": "1_2_014hid_01_1_2_014_01",
+  "text_contract_version": 1,
   "total_steps": 15,
   "steps": [
     {
@@ -14,24 +16,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -45,15 +47,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -63,7 +65,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -71,7 +73,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -79,6 +86,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -94,24 +110,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -125,8 +141,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -141,7 +157,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -149,17 +170,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "014hid",
       "dialogue": {
         "speaker": "握野 英雄",
         "text": "ありがとうございます。",
         "text_jp": "ありがとうございます。",
         "text_cn": "",
-        "voice": "d1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1000.json",
-          "frames": 82
+        "source_text": "ありがとうございます。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000012:dialogue:000",
@@ -172,6 +202,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:1749b2e403ed486913e24bcd3490de927c37efc3a5846c0788bb31b203465499"
+        },
+        "voice": "d1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1000.json",
+          "frames": 82
         }
       },
       "episode_index": 0,
@@ -189,32 +225,32 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "cloth_move_ss01",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cloth_move_ss01",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -228,8 +264,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -244,7 +280,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -252,7 +293,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -270,24 +319,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -301,8 +350,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -317,13 +366,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -345,7 +407,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "014hid",
           "value": "face_swet",
@@ -360,11 +422,12 @@
         "text": "……うおっ、すっげーうまそうだな……！\nこれ、何枚重ねてあるんだ？",
         "text_jp": "……うおっ、すっげーうまそうだな……！\nこれ、何枚重ねてあるんだ？",
         "text_cn": "",
-        "voice": "d1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1001.json",
-          "frames": 412
+        "source_text": "……うおっ、すっげーうまそうだな……！\nこれ、何枚重ねてあるんだ？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000022:dialogue:000",
@@ -377,8 +440,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:56ab9e92246cf711dade426b2c00a75cf1c362f3d5d8ffa133dda088233fc77b"
+        },
+        "voice": "d1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1001.json",
+          "frames": 412
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -394,24 +464,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -425,8 +495,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -441,13 +511,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 26,
+        "command_end": 26,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -465,6 +548,13 @@
         "text": "英雄さん、お先にどうぞ。\n温かいうちに食べてください。",
         "text_jp": "英雄さん、お先にどうぞ。\n温かいうちに食べてください。",
         "text_cn": "",
+        "source_text": "英雄さん、お先にどうぞ。\n温かいうちに食べてください。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000026:dialogue:000",
           "source": {
@@ -478,6 +568,7 @@
           "source_hash": "sha256:fe9b17e1edda40a6f30e10682ad38927a806a5ed6db9cf10ec038d3fb14a44b1"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -493,24 +584,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -524,8 +615,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -540,13 +631,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 31,
+        "command_end": 31,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -565,11 +669,12 @@
         "text": "……わ、悪いな。\nじゃあ、先に食べさせてもらう。",
         "text_jp": "……わ、悪いな。\nじゃあ、先に食べさせてもらう。",
         "text_cn": "",
-        "voice": "d1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1003.json",
-          "frames": 315
+        "source_text": "……わ、悪いな。\nじゃあ、先に食べさせてもらう。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000031:dialogue:000",
@@ -582,8 +687,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:1ccc494c395cd7ff38db2cc04aed429cb973c949202f3b340c0a20053741e20b"
+        },
+        "voice": "d1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1003.json",
+          "frames": 315
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -599,32 +711,32 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "teacup_pick_up",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "teacup_pick_up",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -638,8 +750,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -654,7 +766,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -662,7 +779,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 36,
+        "command_end": 36,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -678,24 +803,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "cloth_move_ss01",
           "delay": 1.2
@@ -717,8 +842,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -733,13 +858,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -782,11 +920,12 @@
         "text": "いただきます！　ん～……美味い！",
         "text_jp": "いただきます！　ん～……美味い！",
         "text_cn": "",
-        "voice": "d1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1004.json",
-          "frames": 471
+        "source_text": "いただきます！　ん～……美味い！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000042:dialogue:000",
@@ -799,8 +938,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5d2d52618b7413815b2167ed1883e6d30c0333d5c94b5d393882d42ec30a565f"
+        },
+        "voice": "d1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1004.json",
+          "frames": 471
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -816,32 +962,32 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "tableware_dish_clanking",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "tableware_dish_clanking",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -855,8 +1001,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "チーク",
             "sweat_flag": "off"
@@ -871,13 +1017,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -895,6 +1054,13 @@
         "text": "本当においしそうに食べますね！\nパンケーキが好きだって気持ちが伝わってきます。",
         "text_jp": "本当においしそうに食べますね！\nパンケーキが好きだって気持ちが伝わってきます。",
         "text_cn": "",
+        "source_text": "本当においしそうに食べますね！\nパンケーキが好きだって気持ちが伝わってきます。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000046:dialogue:000",
           "source": {
@@ -908,6 +1074,7 @@
           "source_hash": "sha256:590af2ec5b4c7f0aec1c4c595966758eabf09b4bcb2e6b715e37fe42bfe68737"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -923,24 +1090,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -954,8 +1121,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -970,13 +1137,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -992,11 +1172,12 @@
         "text": "そ、そうか？　なんか照れるな。",
         "text_jp": "そ、そうか？　なんか照れるな。",
         "text_cn": "",
-        "voice": "d1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1006.json",
-          "frames": 208
+        "source_text": "そ、そうか？　なんか照れるな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000050:dialogue:000",
@@ -1009,8 +1190,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b06772fcc86d4828460a60fdf3101fd383cdc0ae64149c986f1274448310b110"
+        },
+        "voice": "d1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1006.json",
+          "frames": 208
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1026,24 +1214,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1057,8 +1245,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1073,13 +1261,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1104,11 +1305,12 @@
         "text": "あ、●●●●プロデューサー、\nそこのメイプルシロップもらえるか？",
         "text_jp": "あ、●●●●プロデューサー、\nそこのメイプルシロップもらえるか？",
         "text_cn": "",
-        "voice": "d1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1007.json",
-          "frames": 215
+        "source_text": "あ、●●●●プロデューサー、\nそこのメイプルシロップもらえるか？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000056:dialogue:000",
@@ -1121,8 +1323,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:51dcf4f501717270d7190bd94fe1fb3543eda3591744540f63b781c8ca6f56cd"
+        },
+        "voice": "d1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1007.json",
+          "frames": 215
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1138,24 +1347,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": {
           "cue": "cloth_move_ss01",
           "delay": 0.6
@@ -1177,8 +1386,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1193,13 +1402,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 62,
+        "command_end": 62,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1218,7 +1440,7 @@
           "value": "wait_loop"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_neck_anim",
           "chara_id": "014hid",
           "value": "neck_question"
@@ -1229,6 +1451,13 @@
         "text": "ええ、どうぞ。\nメイプルシロップもお好きなんですか？",
         "text_jp": "ええ、どうぞ。\nメイプルシロップもお好きなんですか？",
         "text_cn": "",
+        "source_text": "ええ、どうぞ。\nメイプルシロップもお好きなんですか？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000062:dialogue:000",
           "source": {
@@ -1242,6 +1471,7 @@
           "source_hash": "sha256:7952aa8ffa11fc789b3e00bea53e969eeedbecd2086456580ff9fff9cce0c488"
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1257,24 +1487,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1288,8 +1518,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -1305,7 +1535,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1313,9 +1548,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 68,
+        "command_end": 68,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_neck_stop",
           "chara_id": "014hid",
           "value": ""
@@ -1327,11 +1570,12 @@
         "text": "ああ。俺、この食べ方が好きなんだ。",
         "text_jp": "ああ。俺、この食べ方が好きなんだ。",
         "text_cn": "",
-        "voice": "d1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1009.json",
-          "frames": 206
+        "source_text": "ああ。俺、この食べ方が好きなんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000068:dialogue:000",
@@ -1344,8 +1588,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:48b4c1d32d7bd6cd8c2afa2a40d00217876eea26199c0fe6c37383052e8e35cb"
+        },
+        "voice": "d1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1009.json",
+          "frames": 206
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1361,24 +1612,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1392,8 +1643,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1408,7 +1659,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1416,17 +1672,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 72,
+        "command_end": 72,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "014hid",
       "dialogue": {
         "speaker": "握野 英雄",
         "text": "パンケーキにメイプルシロップを\nたっぷりかけて食べるのがさ。",
         "text_jp": "パンケーキにメイプルシロップを\nたっぷりかけて食べるのがさ。",
         "text_cn": "",
-        "voice": "d1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1010.json",
-          "frames": 242
+        "source_text": "パンケーキにメイプルシロップを\nたっぷりかけて食べるのがさ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000072:dialogue:000",
@@ -1439,8 +1704,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:668cde065a638b6d615371e37608e07589215bb69f327eef580cb6efb706cf83"
+        },
+        "voice": "d1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1010.json",
+          "frames": 242
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1456,24 +1728,24 @@
           "imageId": "bg156_pancakeshop_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
-        "bgm_volume": 0,
+        "bgm": "shop_general",
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -1487,8 +1759,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1503,13 +1775,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_014hid_01/scenario_1_2_014_01_d.json",
+        "source_part_id": "1_2_014_01_d",
+        "command_start": 79,
+        "command_end": 79,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1522,7 +1807,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_neck_anim",
           "chara_id": "014hid",
           "value": "neck_question"
@@ -1543,11 +1828,12 @@
         "text": "このパンケーキ自体もうまいし、プロデューサーも、\n食べたらきっと俺と同じ顔になるぜ！",
         "text_jp": "このパンケーキ自体もうまいし、プロデューサーも、\n食べたらきっと俺と同じ顔になるぜ！",
         "text_cn": "",
-        "voice": "d1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1011.json",
-          "frames": 389
+        "source_text": "このパンケーキ自体もうまいし、プロデューサーも、\n食べたらきっと俺と同じ顔になるぜ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "014hid",
+          "source_name": "握野 英雄"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_014hid_01_1_2_014_01:1_2_014_01_d:cmd-000079:dialogue:000",
@@ -1560,8 +1846,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d8093c0fb5b6bb6e82aafabe532c11d8004ab2b9df3f6fe84a85aee303f2a261"
+        },
+        "voice": "d1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/014hid/1_2_014_01/1_2_014_01_d/1_2_014_01_d1011.json",
+          "frames": 389
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     }
@@ -1580,6 +1873,10 @@
       "step_count": 15
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_2_014_01.unity3d",
+    "raw_hash": "sha256:19fa9482794bcad9f9e9b58a94e0f579e3a4587671bd2e6cec274cc435125060"
+  },
   "aggregate_source": {
     "file": "1_2_014hid_01_1_2_014_01.json",
     "scenario_id": "1_2_014hid_01_1_2_014_01",

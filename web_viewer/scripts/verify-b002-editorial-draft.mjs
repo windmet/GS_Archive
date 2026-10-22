@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { loadStudioIndexes, loadStudioDocument, projectRoot, sha256 } from './lib/ai-studio-source.mjs'
+import { loadSourceSupersessions, reconstructCatalogue, rebindEvidence, verifyCatalogueSupersessions } from './lib/studio-source-supersessions.mjs'
 import { parseStudioResult, renderStudioInput, checkStudioRows } from './lib/ai-studio-markdown.mjs'
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 import { restoreProducerAddressingAfterTranslation, protectProducerAddressingForTranslation } from '../src/localization/story/ProducerAddressing.js'
@@ -53,6 +54,11 @@ const retired = new Map(retirements.map(record => [record.document_id, record]))
 const retiredSeen = new Set()
 // A combined document's units are addressed by its part id (1_2_001_12), whatever its document id.
 const retiredUnitDocument = record => record.document_id.replace(/^1_x_[0-9a-z]+_2_(1_2_\d{3}_12)$/u, '$1')
+// Documents whose source was recompiled after review: the receipt keeps the hashes the reviewer saw,
+// the record binds them to the live ones, and the text units must be identical.
+const supersessions = await loadSourceSupersessions()
+const supersededSeen = new Set()
+const moved = await verifyCatalogueSupersessions(supersessions)
 for (const { dir, documents, units: expectedUnits } of drafts) {
   const root = path.join(projectRoot, 'translation/studio/reviews', dir)
   const receipt = await read(path.join(root, 'receipt.json'))
@@ -134,6 +140,17 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
     }
     assert(entry, `Reviewed document missing without a retirement record: ${doc.document_id}`)
     const live = await loadStudioDocument(entry, indexes)
+    const superseded = supersessions.documents.get(doc.document_id)
+    if (superseded) {
+      assert.equal(superseded.batch, dir, `Supersession batch mismatch: ${doc.document_id}`)
+      assert.deepEqual(superseded.from, { reader_sha256: doc.reader_sha256, compiled_sha256: doc.compiled_sha256,
+        catalogue: doc.evidence.scenario_id }, `Superseded receipt evidence mismatch: ${doc.document_id}`)
+      assert.deepEqual(superseded.to, { reader_sha256: live.readerHash, compiled_sha256: live.compiledHash,
+        catalogue: live.evidence.scenario_id }, `Supersession does not reach the live source: ${doc.document_id}`)
+      assert.deepEqual(rebindEvidence(doc.evidence, superseded.to.catalogue), live.evidence, `Superseded text units changed: ${doc.document_id}`)
+      supersededSeen.add(doc.document_id)
+      continue
+    }
     assert.equal(doc.reader_sha256, live.readerHash)
     assert.equal(doc.compiled_sha256, live.compiledHash)
     assert.deepEqual(doc.evidence, live.evidence)
@@ -157,8 +174,10 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
       units += record.units
       continue
     }
-    const bytes = await fs.readFile(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`))
-    assert.equal(sha256(bytes), file.sha256)
+    const rekeyed = supersessions.catalogues.get(file.scenario_id)
+    const bytes = rekeyed ? await reconstructCatalogue(rekeyed)
+      : await fs.readFile(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`))
+    assert.equal(sha256(bytes), file.sha256, `Reviewed catalogue drift: ${file.scenario_id}`)
     const overlay = JSON.parse(bytes)
     assert(validateStoryTranslationOverlay(overlay, { scenarioId: file.scenario_id, locale: 'zh-CN' }).valid)
     const doc = batch.documents.find(d => d.scenario_id === file.scenario_id)
@@ -177,3 +196,5 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
   console.log(`${dir}: ${documents} documents/catalogues, ${units} rows, source identities, edit replay and protected addresses verified`)
 }
 assert.deepEqual([...retiredSeen].sort(), [...retired.keys()].sort(), 'every retirement record names a reviewed document')
+assert.deepEqual([...supersededSeen].sort(), [...supersessions.documents.keys()].sort(), 'every supersession record names a reviewed document')
+console.log(`Source supersession: ${supersededSeen.size} reviewed documents rebound; ${moved.catalogues} catalogues reproduce byte-for-byte from ${moved.targets} collection catalogues`)

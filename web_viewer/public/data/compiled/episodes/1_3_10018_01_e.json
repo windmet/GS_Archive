@@ -1,6 +1,8 @@
 {
   "scenario_id": "1_3_10018_01_e",
-  "total_steps": 26,
+  "text_catalog_id": "1_3_10018_01",
+  "text_contract_version": 1,
+  "total_steps": 27,
   "steps": [
     {
       "step_id": 1,
@@ -14,23 +16,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -44,7 +46,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -52,7 +54,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -60,6 +67,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 8,
+        "command_end": 8,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -75,23 +91,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -108,7 +124,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -116,9 +137,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "text_time",
+        "confidence": "exact"
+      },
       "duration": 1.2,
       "text_time": {
         "text": "数週間後……",
+        "source_text": "数週間後……",
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000010:time_caption:000",
           "source": {
@@ -133,6 +163,7 @@
         }
       },
       "auto_advance": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -148,32 +179,32 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": {
           "cue": "step_walk_come_conc_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_walk_come_conc_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -189,13 +220,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 13,
+        "command_end": 13,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -215,23 +259,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -246,14 +290,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -267,13 +311,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -293,23 +350,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -324,8 +381,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -340,7 +397,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -348,15 +410,24 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 18,
+        "command_end": 18,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -372,23 +443,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -403,8 +474,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -419,13 +490,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 23,
+        "command_end": 23,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -451,7 +535,13 @@
         "text": "（あれから漣っちとは仕事やレッスンで\n何度か一緒になったけど、全然話せてないっす）",
         "text_jp": "（あれから漣っちとは仕事やレッスンで\n何度か一緒になったけど、全然話せてないっす）",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1001.m4a",
+        "source_text": "（あれから漣っちとは仕事やレッスンで\n何度か一緒になったけど、全然話せてないっす）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000023:dialogue:000",
           "source": {
@@ -463,8 +553,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:13be93f10e1d64bf53bb54ea4e171a1eb6145f79605a4c6751df145df6c95a3d"
-        }
+        },
+        "voice": "1_3_10018_01_t01_e1001.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -480,23 +572,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -511,8 +603,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -527,7 +619,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -535,9 +632,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 31,
+        "command_end": 31,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "024shk",
           "value": "wait_loop"
@@ -552,7 +657,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_face",
           "chara_id": "024shk",
           "value": "face_shy",
@@ -561,7 +666,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_anim",
           "chara_id": "024shk",
           "value": "hello"
@@ -574,7 +679,13 @@
         "text": "（でも、ここで諦めるオレじゃないっすよ。\nそれならオフの日に話せばOKっしょ！）",
         "text_jp": "（でも、ここで諦めるオレじゃないっすよ。\nそれならオフの日に話せばOKっしょ！）",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1002.m4a",
+        "source_text": "（でも、ここで諦めるオレじゃないっすよ。\nそれならオフの日に話せばOKっしょ！）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000031:dialogue:000",
           "source": {
@@ -586,7 +697,8 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a03a403fd5a16c184c85eb7e69e172b681d18cb36fd618a533ed9ce0f7329bf2"
-        }
+        },
+        "voice": "1_3_10018_01_t01_e1002.m4a"
       },
       "episode_index": 0,
       "episode_part": "e"
@@ -603,23 +715,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -634,8 +746,8 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -650,11 +762,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -664,7 +781,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 35,
+        "command_end": 35,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -680,23 +806,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -711,8 +837,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -727,13 +853,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -746,7 +885,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "024shk",
           "value": "joy"
@@ -758,11 +897,12 @@
         "text": "そうと決まれば、男道らーめんに突撃っす☆",
         "text_jp": "そうと決まれば、男道らーめんに突撃っす☆",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1003.json",
-          "frames": 253
+        "source_text": "そうと決まれば、男道らーめんに突撃っす☆",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000041:dialogue:000",
@@ -775,8 +915,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:be06e4266db9f5b4a438a527a696a751227eea63dc5523ff6acb37c188f14868"
+        },
+        "voice": "1_3_10018_01_t01_e1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1003.json",
+          "frames": 253
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -792,32 +939,32 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": {
           "cue": "step_run_away_conc_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_run_away_conc_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -831,14 +978,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -852,7 +999,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -860,7 +1012,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -876,23 +1036,23 @@
           "imageId": "bg004_townst_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -904,7 +1064,7 @@
         "screen_fade": null,
         "screen_slide": {
           "type": "in",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -913,7 +1073,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -921,6 +1086,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 51,
+        "command_end": 51,
+        "raw_type": "screen_slidein",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -936,29 +1110,27 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_street_ura"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": true,
@@ -969,13 +1141,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 55,
+        "command_end": 55,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -995,29 +1180,27 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_street_ura"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": true,
@@ -1025,7 +1208,7 @@
         "screen_fade": null,
         "screen_slide": {
           "type": "out",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.5,
           "direction": "6",
           "color": "#000000"
@@ -1034,13 +1217,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "screen_slideout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "e"
@@ -1057,34 +1253,26 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
-        "se": {
-          "cue": "step_walk_come_conc_boot",
-          "delay": 0
-        },
-        "se_events": [
-          {
-            "cue": "step_walk_come_conc_boot",
-            "delay": 0
-          }
-        ],
+        "se": null,
+        "se_events": [],
         "environmental": {
           "cue": "ambi_street_ura"
         },
@@ -1098,7 +1286,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1106,7 +1299,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1.5,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 58,
+        "command_end": 58,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 0.5,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1124,21 +1325,101 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
+        },
+        "bgm": "city_usual_day",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "step_walk_come_conc_boot",
+          "delay": 0.0
+        },
+        "se_events": [
+          {
+            "cue": "step_walk_come_conc_boot",
+            "delay": 0.0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_street_ura"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": true,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
+        "camera_filter": null,
+        "camera_filter_transition": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 60,
+        "command_end": 60,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 16,
+      "type": "stage",
+      "state": {
+        "bg": "bg015_otokomichi_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg015_otokomichi_out_01",
+          "lightPosition": 2,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -1155,14 +1436,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1176,129 +1457,30 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 62,
+        "command_end": 62,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
-      "episode_index": 0,
-      "episode_part": "e"
-    },
-    {
-      "step_id": 16,
-      "type": "adv",
-      "state": {
-        "bg": "bg015_otokomichi_out_01",
-        "bg_effect": null,
-        "bg_transition": null,
-        "bg_effects": [],
-        "bg_profile": {
-          "imageId": "bg015_otokomichi_out_01",
-          "lightPosition": 2,
-          "lightCoordinate": {
-            "x": 0,
-            "y": 0
-          },
-          "lightAlpha": 1,
-          "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          },
-          "colorSaturation": 1
-        },
-        "bgm": "city_usual_day",
-        "bgm_volume": 0,
-        "se": null,
-        "se_events": [],
-        "environmental": {
-          "cue": "ambi_street_ura"
-        },
-        "spines": [
-          {
-            "id": "024shk",
-            "model": "024shk_003_00",
-            "face": "face_default",
-            "anim": "wait_loop",
-            "position": 0,
-            "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
-            "anim_flag": "目",
-            "blush_flag": "off",
-            "sweat_flag": "off"
-          }
-        ],
-        "talk_mode": false,
-        "phone_mode": true,
-        "camera_zoom": null,
-        "screen_fade": null,
-        "screen_slide": null,
-        "screen_effects": [],
-        "bgm_stop_fade": null,
-        "environmental_volume": null,
-        "environmental_duck_target": null,
-        "camera_filter": null,
-        "bg_color": "#FFFFFF",
-        "bg_dof": null,
-        "bg_color_transition": null,
-        "bg_dof_transition": null,
-        "text_disabled": false,
-        "image_icon": null
-      },
-      "timeline": [
-        {
-          "time": 1,
-          "type": "spine_face",
-          "chara_id": "024shk",
-          "value": "face_happy",
-          "anim_flag": "目",
-          "sweat_flag": "off",
-          "blush_flag": "off"
-        },
-        {
-          "time": 1,
-          "type": "spine_anim",
-          "chara_id": "024shk",
-          "value": "angry"
-        }
-      ],
-      "chara_id": "024shk",
-      "dialogue": {
-        "speaker": "伊瀬谷 四季",
-        "text": "漣っち、よくいるって話っすもんね！",
-        "text_jp": "漣っち、よくいるって話っすもんね！",
-        "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1004.json",
-          "frames": 185
-        },
-        "text_ref": {
-          "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000065:dialogue:000",
-          "source": {
-            "scenario_id": "1_3_10018_01",
-            "part_id": "1_3_10018_01_e",
-            "file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
-            "command_index": 65,
-            "field_kind": "dialogue",
-            "field_ordinal": 0
-          },
-          "source_hash": "sha256:c46da151bd4b095604cbf1e1a283de8f93b41b47cae374ef7d4378458608804a"
-        }
-      },
       "episode_index": 0,
       "episode_part": "e"
     },
@@ -1314,21 +1496,154 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
+        },
+        "bgm": "city_usual_day",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_ura"
+        },
+        "spines": [
+          {
+            "id": "024shk",
+            "model": "024shk_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": true,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
+        "camera_filter": null,
+        "camera_filter_transition": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.0,
+          "type": "spine_face",
+          "chara_id": "024shk",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.0,
+          "type": "spine_anim",
+          "chara_id": "024shk",
+          "value": "angry"
+        }
+      ],
+      "chara_id": "024shk",
+      "dialogue": {
+        "speaker": "伊瀬谷 四季",
+        "text": "漣っち、よくいるって話っすもんね！",
+        "text_jp": "漣っち、よくいるって話っすもんね！",
+        "text_cn": "",
+        "source_text": "漣っち、よくいるって話っすもんね！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000065:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_10018_01",
+            "part_id": "1_3_10018_01_e",
+            "file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+            "command_index": 65,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:c46da151bd4b095604cbf1e1a283de8f93b41b47cae374ef7d4378458608804a"
+        },
+        "voice": "1_3_10018_01_t01_e1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1004.json",
+          "frames": 185
+        }
+      },
+      "post_wait": 0.5,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 18,
+      "type": "adv",
+      "state": {
+        "bg": "bg015_otokomichi_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg015_otokomichi_out_01",
+          "lightPosition": 2,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -1345,8 +1660,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1361,13 +1676,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 73,
+        "command_end": 73,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1407,11 +1735,12 @@
         "text": "って、あれ？　閉まってる？\nえっと……『臨時定休日』？",
         "text_jp": "って、あれ？　閉まってる？\nえっと……『臨時定休日』？",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1005.json",
-          "frames": 492
+        "source_text": "って、あれ？　閉まってる？\nえっと……『臨時定休日』？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000073:dialogue:000",
@@ -1424,13 +1753,20 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d026feb6cfef9061c3c880e5a5e032c22df1db96c1488a84de8dd07f61d2eff0"
+        },
+        "voice": "1_3_10018_01_t01_e1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1005.json",
+          "frames": 492
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 18,
+      "step_id": 19,
       "type": "adv",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -1441,21 +1777,21 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -1472,8 +1808,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1488,13 +1824,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 80,
+        "command_end": 80,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1528,11 +1877,12 @@
         "text": "そ、そんなぁ！　せっかく漣っちと\n話せると思ったのに……。",
         "text_jp": "そ、そんなぁ！　せっかく漣っちと\n話せると思ったのに……。",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1006.json",
-          "frames": 359
+        "source_text": "そ、そんなぁ！　せっかく漣っちと\n話せると思ったのに……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000080:dialogue:000",
@@ -1545,13 +1895,20 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:11fd88fb2cd64b8767c4307ea1beaa483c1f9363ec0fb79ec77a7ddb0cabc705"
+        },
+        "voice": "1_3_10018_01_t01_e1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1006.json",
+          "frames": 359
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 19,
+      "step_id": 20,
       "type": "text_disable",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -1562,21 +1919,21 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -1593,8 +1950,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1609,7 +1966,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -1617,18 +1979,27 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 85,
+        "command_end": 85,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 20,
+      "step_id": 21,
       "type": "adv",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -1639,21 +2010,21 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -1670,8 +2041,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1686,13 +2057,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 93,
+        "command_end": 93,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1705,7 +2089,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "024shk",
           "value": "face_default",
@@ -1736,7 +2120,13 @@
         "text": "（けど、定休日なら仕方ないっすよね。\n明日また来るっす！）",
         "text_jp": "（けど、定休日なら仕方ないっすよね。\n明日また来るっす！）",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1007.m4a",
+        "source_text": "（けど、定休日なら仕方ないっすよね。\n明日また来るっす！）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000093:dialogue:000",
           "source": {
@@ -1748,13 +2138,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:e65f9873948ae85c965e6f94799eaa6ee45a3714583fec73e0d193ef9244a05b"
-        }
+        },
+        "voice": "1_3_10018_01_t01_e1007.m4a"
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 21,
+      "step_id": 22,
       "type": "adv",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -1765,21 +2157,21 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -1796,8 +2188,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1812,13 +2204,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 98,
+        "command_end": 98,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1838,7 +2243,13 @@
         "text": "（時間もできたし、カラオケに行くっすかね～）",
         "text_jp": "（時間もできたし、カラオケに行くっすかね～）",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1008.m4a",
+        "source_text": "（時間もできたし、カラオケに行くっすかね～）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000098:dialogue:000",
           "source": {
@@ -1850,13 +2261,14 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fc3a8ec19b6a1f5ddf39aa4eba2b59be346b45b0de5844d954f115fd2a720651"
-        }
+        },
+        "voice": "1_3_10018_01_t01_e1008.m4a"
       },
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 22,
+      "step_id": 23,
       "type": "text_disable",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -1867,21 +2279,21 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -1898,8 +2310,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1914,11 +2326,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -1928,12 +2345,21 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 102,
+        "command_end": 102,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 23,
+      "step_id": 24,
       "type": "adv",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -1944,32 +2370,32 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": {
           "cue": "cat_call_01",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cat_call_01",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -1983,8 +2409,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1999,7 +2425,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2007,12 +2438,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 105,
+        "command_end": 105,
+        "raw_type": "text_se_off",
+        "confidence": "exact"
+      },
       "lipSync": false,
       "dialogue": {
         "speaker": "",
         "text": "にゃあ～。",
         "text_jp": "にゃあ～。",
         "text_cn": "",
+        "source_text": "にゃあ～。",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000105:dialogue:000",
           "source": {
@@ -2030,7 +2476,7 @@
       "episode_part": "e"
     },
     {
-      "step_id": 24,
+      "step_id": 25,
       "type": "adv",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -2041,21 +2487,21 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -2072,8 +2518,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2088,13 +2534,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 113,
+        "command_end": 113,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2116,7 +2575,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "024shk",
           "value": "face_happy",
@@ -2125,7 +2584,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "024shk",
           "value": "weight"
@@ -2153,11 +2612,12 @@
         "text": "あー！　ネコっちっす！\nおーい……って、足速っ！？",
         "text_jp": "あー！　ネコっちっす！\nおーい……って、足速っ！？",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1010.json",
-          "frames": 297
+        "source_text": "あー！　ネコっちっす！\nおーい……って、足速っ！？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000113:dialogue:000",
@@ -2170,13 +2630,20 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fce0a3433a5adc913b54b2933324f78d042d0a193ea15484fcd9d785d856090c"
+        },
+        "voice": "1_3_10018_01_t01_e1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1010.json",
+          "frames": 297
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 25,
+      "step_id": 26,
       "type": "adv",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -2187,21 +2654,21 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
@@ -2218,8 +2685,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2234,7 +2701,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2242,9 +2714,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 121,
+        "command_end": 121,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "024shk",
           "value": "face_default",
@@ -2274,11 +2754,12 @@
         "text": "この辺りが縄張りなんすかね？\nまたここに来るし、ちゃんと挨拶しなきゃ！",
         "text_jp": "この辺りが縄張りなんすかね？\nまたここに来るし、ちゃんと挨拶しなきゃ！",
         "text_cn": "",
-        "voice": "1_3_10018_01_t01_e1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1011.json",
-          "frames": 364
+        "source_text": "この辺りが縄張りなんすかね？\nまたここに来るし、ちゃんと挨拶しなきゃ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "024shk",
+          "source_name": "伊瀬谷 四季"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10018_01:1_3_10018_01_e:cmd-000121:dialogue:000",
@@ -2291,13 +2772,20 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:1d6e5b4e6d17bbf0ed0d6e7bc68a59de6c5c8f44818a51f7ba308d356224b5f2"
+        },
+        "voice": "1_3_10018_01_t01_e1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10018_01/1_3_10018_01_e/1_3_10018_01_e1011.json",
+          "frames": 364
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "e"
     },
     {
-      "step_id": 26,
+      "step_id": 27,
       "type": "text_disable",
       "state": {
         "bg": "bg015_otokomichi_out_01",
@@ -2308,32 +2796,32 @@
           "imageId": "bg015_otokomichi_out_01",
           "lightPosition": 2,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "city_usual_day",
         "bgm_volume": 0,
         "se": {
           "cue": "step_run_away_conc_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_run_away_conc_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -2347,14 +2835,14 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2368,13 +2856,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10018_01/scenario_1_3_10018_01_e.json",
+        "source_part_id": "1_3_10018_01_e",
+        "command_start": 127,
+        "command_end": 127,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "episode_index": 0,
@@ -2390,15 +2891,19 @@
       "source_scenario_id": "1_3_10018_01_e",
       "start_step_index": 0,
       "start_step_id": 1,
-      "end_step_index": 25,
-      "end_step_id": 26,
-      "step_count": 26
+      "end_step_index": 26,
+      "end_step_id": 27,
+      "step_count": 27
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_3_10018_01.unity3d",
+    "raw_hash": "sha256:549761e1162bb51a83002b48d5f36dd131df806ec9cd64fa51a0ca0fbaf72fc2"
+  },
   "aggregate_source": {
     "file": "1_3_10018_01.json",
     "scenario_id": "1_3_10018_01",
-    "start_step_index": 126,
-    "end_step_index": 151
+    "start_step_index": 128,
+    "end_step_index": 154
   }
 }

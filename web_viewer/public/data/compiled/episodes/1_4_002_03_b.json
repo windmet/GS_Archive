@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_4_002_03_b",
+  "text_catalog_id": "1_4_002_03",
+  "text_contract_version": 1,
   "total_steps": 18,
   "steps": [
     {
@@ -12,7 +14,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -25,7 +27,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -33,7 +35,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -41,6 +48,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -54,7 +70,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -68,14 +84,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -86,14 +102,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -107,13 +123,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -131,7 +160,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -145,8 +174,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -158,8 +187,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -174,7 +203,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -182,9 +216,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 18,
+        "command_end": 18,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "012yus",
           "value": "face_happy",
@@ -199,11 +241,12 @@
         "text": "おっ、そろそろ集合じゃないか？\n行こうぜ、享介！",
         "text_jp": "おっ、そろそろ集合じゃないか？\n行こうぜ、享介！",
         "text_cn": "",
-        "voice": "b1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1000.json",
-          "frames": 288
+        "source_text": "おっ、そろそろ集合じゃないか？\n行こうぜ、享介！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000018:dialogue:000",
@@ -216,8 +259,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5a4d4375f6ae961c0b3b7487bd5f514230d5fa3ce72e17f2c08702099349e3d9"
+        },
+        "voice": "b1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1000.json",
+          "frames": 288
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -231,7 +281,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -245,8 +295,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -258,8 +308,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -274,13 +324,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -293,7 +356,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "012yus",
           "value": "face_default",
@@ -308,11 +371,12 @@
         "text": "あ、先に行ってて。\n俺、●●●●●●●●●●監督に話があるから。",
         "text_jp": "あ、先に行ってて。\n俺、●●●●●●●●●●監督に話があるから。",
         "text_cn": "",
-        "voice": "b1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1001.json",
-          "frames": 237
+        "source_text": "あ、先に行ってて。\n俺、●●●●●●●●●●監督に話があるから。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000024:dialogue:000",
@@ -325,8 +389,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2f3e4e556891f23b1a8bc6d75fb1f2253516c68fa0cb13ff9bf215af238efcf9"
+        },
+        "voice": "b1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1001.json",
+          "frames": 237
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -340,7 +411,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": null,
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -354,8 +425,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -367,8 +438,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -383,7 +454,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -391,9 +467,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 29,
+        "command_end": 29,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "012yus",
           "value": "face_happy",
@@ -402,7 +486,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "012yus",
           "value": "weight"
@@ -420,11 +504,12 @@
         "text": "わかった。そんじゃ、先いってる！",
         "text_jp": "わかった。そんじゃ、先いってる！",
         "text_cn": "",
-        "voice": "b1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1002.json",
-          "frames": 168
+        "source_text": "わかった。そんじゃ、先いってる！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "012yus",
+          "source_name": "蒼井 悠介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000029:dialogue:000",
@@ -437,8 +522,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:26e083116e910310c05a9d23cf3fc119b7a06315b09eab09106e6ad38bcca9a2"
+        },
+        "voice": "b1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1002.json",
+          "frames": 168
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -455,12 +547,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "step_run_away_lino_sneaker",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_run_away_lino_sneaker",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -474,14 +566,14 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": -200,
-            "pos_y": 0,
+            "pos_x": -200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -492,8 +584,8 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -505,10 +597,15 @@
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -516,7 +613,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 35,
+        "command_end": 35,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -544,14 +650,14 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 200,
-            "pos_y": 0,
+            "pos_x": 200.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -565,13 +671,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -603,14 +722,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -624,13 +743,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 43,
+        "command_end": 43,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -662,8 +794,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -678,13 +810,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -716,8 +861,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -732,13 +877,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -757,11 +915,12 @@
         "text": "あのさ。悠介の、足の怪我のことなんだけど……。",
         "text_jp": "あのさ。悠介の、足の怪我のことなんだけど……。",
         "text_cn": "",
-        "voice": "b1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1003.json",
-          "frames": 307
+        "source_text": "あのさ。悠介の、足の怪我のことなんだけど……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000048:dialogue:000",
@@ -774,8 +933,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:aa93fed7e9036183f6d3b58818369085403d645d1545ba7a08283df2a297f392"
+        },
+        "voice": "b1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1003.json",
+          "frames": 307
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -803,8 +969,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -819,7 +985,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -827,11 +998,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "何か気がかりなことがありましたか？",
         "text_jp": "何か気がかりなことがありましたか？",
         "text_cn": "",
+        "source_text": "何か気がかりなことがありましたか？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000050:dialogue:000",
           "source": {
@@ -845,6 +1031,7 @@
           "source_hash": "sha256:01bfef626dd47a74f275452ec80813e7addd9e9b9985595310bb866a8aa7daa0"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -872,8 +1059,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -888,13 +1075,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -913,7 +1113,7 @@
           "value": "wait_loop"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_sad",
@@ -928,11 +1128,12 @@
         "text": "いや、本人は問題ないって言ってる。\nおまえはいつまでも気にしすぎだって。",
         "text_jp": "いや、本人は問題ないって言ってる。\nおまえはいつまでも気にしすぎだって。",
         "text_cn": "",
-        "voice": "b1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1005.json",
-          "frames": 354
+        "source_text": "いや、本人は問題ないって言ってる。\nおまえはいつまでも気にしすぎだって。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000056:dialogue:000",
@@ -945,8 +1146,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:770e33d9065a887f42ee6bd455318f6dd3d4808428a67d9a30d0e28db8aa3650"
+        },
+        "voice": "b1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1005.json",
+          "frames": 354
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -974,8 +1182,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -990,13 +1198,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 61,
+        "command_end": 61,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1021,11 +1242,12 @@
         "text": "たしかに今日までいろいろ特訓してきたけど、\n何事もなかった。でも、悠介のことだからさ。",
         "text_jp": "たしかに今日までいろいろ特訓してきたけど、\n何事もなかった。でも、悠介のことだからさ。",
         "text_cn": "",
-        "voice": "b1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1006.json",
-          "frames": 463
+        "source_text": "たしかに今日までいろいろ特訓してきたけど、\n何事もなかった。でも、悠介のことだからさ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000061:dialogue:000",
@@ -1038,8 +1260,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3c2e2ba3bd37ce6e92f3e98d39dc7ae00c86bb59ed06f815def58c3c6574816f"
+        },
+        "voice": "b1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1006.json",
+          "frames": 463
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1067,8 +1296,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1083,13 +1312,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1108,11 +1350,12 @@
         "text": "本番で無理しないか、心配で……。",
         "text_jp": "本番で無理しないか、心配で……。",
         "text_cn": "",
-        "voice": "b1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1007.json",
-          "frames": 164
+        "source_text": "本番で無理しないか、心配で……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000065:dialogue:000",
@@ -1125,8 +1368,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:32622e80aeabc8680fd58fe1af18cff03642248b1210a1ed3ed96d7ce7372f39"
+        },
+        "voice": "b1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1007.json",
+          "frames": 164
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1154,8 +1404,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1170,7 +1420,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1178,11 +1433,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 68,
+        "command_end": 68,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "そうなった時は、私も止めに入ります。",
         "text_jp": "そうなった時は、私も止めに入ります。",
         "text_cn": "",
+        "source_text": "そうなった時は、私も止めに入ります。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000068:dialogue:000",
           "source": {
@@ -1196,6 +1466,7 @@
           "source_hash": "sha256:3a9d76d01154bcc6646e03c5ade3578e75d96f4bf2d357e81fca64ac50e6cada"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1223,8 +1494,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1239,13 +1510,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 73,
+        "command_end": 73,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1270,11 +1554,12 @@
         "text": "そっか……。サンキュ、監督。",
         "text_jp": "そっか……。サンキュ、監督。",
         "text_cn": "",
-        "voice": "b1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1009.json",
-          "frames": 197
+        "source_text": "そっか……。サンキュ、監督。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000073:dialogue:000",
@@ -1287,8 +1572,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3c445f6f0e5ab194e07fa210c95c5635e6fe60e9bf2ab5f10231d81961b0bef8"
+        },
+        "voice": "b1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1009.json",
+          "frames": 197
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1316,8 +1608,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1332,7 +1624,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1340,17 +1637,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "013kys",
       "dialogue": {
         "speaker": "蒼井 享介",
         "text": "悠介が「出たい」って言ったんだ。\n俺は、あいつの意思を尊重したい。",
         "text_jp": "悠介が「出たい」って言ったんだ。\n俺は、あいつの意思を尊重したい。",
         "text_cn": "",
-        "voice": "b1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1010.json",
-          "frames": 329
+        "source_text": "悠介が「出たい」って言ったんだ。\n俺は、あいつの意思を尊重したい。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000076:dialogue:000",
@@ -1363,8 +1669,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2658c051467a59333d54a876f92b2211d0db105763ad6ba4b7c76c08d5bba7d2"
+        },
+        "voice": "b1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1010.json",
+          "frames": 329
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     },
@@ -1392,8 +1705,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1408,7 +1721,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1416,9 +1734,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_4_002_03/scenario_1_4_002_03_b.json",
+        "source_part_id": "1_4_002_03_b",
+        "command_start": 81,
+        "command_end": 81,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_face",
           "chara_id": "013kys",
           "value": "face_sad",
@@ -1433,11 +1759,12 @@
         "text": "そう決めたはずなのに。もう当日だっていうのに。\n俺、だめだよな……。",
         "text_jp": "そう決めたはずなのに。もう当日だっていうのに。\n俺、だめだよな……。",
         "text_cn": "",
-        "voice": "b1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1011.json",
-          "frames": 504
+        "source_text": "そう決めたはずなのに。もう当日だっていうのに。\n俺、だめだよな……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "013kys",
+          "source_name": "蒼井 享介"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_b:cmd-000081:dialogue:000",
@@ -1450,8 +1777,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c2678b52d866788a0a465978caee9a21dab63939decb7b01e7826cb900c9958d"
+        },
+        "voice": "b1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_03/1_4_002_03_b/1_4_002_03_b1011.json",
+          "frames": 504
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "b"
     }
@@ -1470,6 +1804,10 @@
       "step_count": 18
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_4_002_03.unity3d",
+    "raw_hash": "sha256:e17c8c924b4c6899c1ab8bbdde4cd84fcf8a4d3773006a672496946ef68fea68"
+  },
   "aggregate_source": {
     "file": "1_4_002_03.json",
     "scenario_id": "1_4_002_03",

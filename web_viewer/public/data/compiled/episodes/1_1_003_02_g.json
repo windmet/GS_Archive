@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_003_02_g",
+  "text_catalog_id": "1_1_003alt_02_1_1_003_02",
+  "text_contract_version": 1,
   "total_steps": 13,
   "steps": [
     {
@@ -14,31 +16,32 @@
             "id": "cameraflare",
             "visible": true,
             "action": "start",
-            "delay": 0,
-            "duration": 0.3
+            "delay": 0.0,
+            "duration": 0.0,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -53,15 +56,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -71,7 +74,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -79,7 +82,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -87,6 +95,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -100,30 +117,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -138,8 +156,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -154,7 +172,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -162,9 +185,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 13,
+        "command_end": 13,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "007kei",
           "value": "sad"
@@ -176,11 +207,12 @@
         "text": "今日はどうしたんだい？\n君も、ここへ散歩をしに？",
         "text_jp": "今日はどうしたんだい？\n君も、ここへ散歩をしに？",
         "text_cn": "",
-        "voice": "g1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1000.json",
-          "frames": 371
+        "source_text": "今日はどうしたんだい？\n君も、ここへ散歩をしに？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "007kei",
+          "source_name": "都築 圭"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000013:dialogue:000",
@@ -193,8 +225,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a0950d28b750bb3f0dea9f6a87ba29b90323156e7a97dadbc1477b69dc774a68"
+        },
+        "voice": "g1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1000.json",
+          "frames": 371
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -208,30 +247,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -246,8 +286,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -262,7 +302,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -270,9 +315,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 18,
+        "command_end": 18,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "007kei",
           "value": "face_think",
@@ -281,7 +334,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_neck_anim",
           "chara_id": "007kei",
           "value": "neck_question",
@@ -295,6 +348,13 @@
         "text": "いえ、先日のお返事を聞きたくて、\nあなたを探していたんです。",
         "text_jp": "いえ、先日のお返事を聞きたくて、\nあなたを探していたんです。",
         "text_cn": "",
+        "source_text": "いえ、先日のお返事を聞きたくて、\nあなたを探していたんです。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000018:dialogue:000",
           "source": {
@@ -308,6 +368,7 @@
           "source_hash": "sha256:3a986f39bfc6fbbabab14ca05de48fd0d93f42d074b402351f1126214cd512da"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -321,30 +382,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -359,8 +421,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -375,7 +437,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -383,11 +450,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 21,
+        "command_end": 21,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "連絡が来ないということは、\nそういうことだと思っていたんですが……",
         "text_jp": "連絡が来ないということは、\nそういうことだと思っていたんですが……",
         "text_cn": "",
+        "source_text": "連絡が来ないということは、\nそういうことだと思っていたんですが……",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000021:dialogue:000",
           "source": {
@@ -401,6 +483,7 @@
           "source_hash": "sha256:7f1240ef6bf5355edda2c0889814e6388e50773e2378a689b229366a3675aab5"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -414,30 +497,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -452,8 +536,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -468,13 +552,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 27,
+        "command_end": 27,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -487,7 +584,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_anim",
           "chara_id": "007kei",
           "value": "weight"
@@ -499,11 +596,12 @@
         "text": "返事……？　ああ、そういえば。\nたしか、貰った名刺をポケットに……",
         "text_jp": "返事……？　ああ、そういえば。\nたしか、貰った名刺をポケットに……",
         "text_cn": "",
-        "voice": "g1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1003.json",
-          "frames": 671
+        "source_text": "返事……？　ああ、そういえば。\nたしか、貰った名刺をポケットに……",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "007kei",
+          "source_name": "都築 圭"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000027:dialogue:000",
@@ -516,8 +614,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2cc71ff2b3f67b817ca4bf83f802d1226e1f7e3a19812c7925524aea4de3196f"
+        },
+        "voice": "g1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1003.json",
+          "frames": 671
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -531,39 +636,40 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_ss01",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cloth_move_ss01",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -577,8 +683,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -593,7 +699,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -601,7 +712,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 4,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 32,
+        "command_end": 32,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 4.0,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -615,30 +734,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -653,8 +773,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -669,13 +789,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 35,
+        "command_end": 35,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -694,11 +827,12 @@
         "text": "そうそう、アイドル事務所の\nプロデューサーさんだったね。",
         "text_jp": "そうそう、アイドル事務所の\nプロデューサーさんだったね。",
         "text_cn": "",
-        "voice": "g1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1004.json",
-          "frames": 331
+        "source_text": "そうそう、アイドル事務所の\nプロデューサーさんだったね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "007kei",
+          "source_name": "都築 圭"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000035:dialogue:000",
@@ -711,8 +845,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c61472992c948660617473aa2031057bfd041ae2b94716f3382a9f6013309179"
+        },
+        "voice": "g1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1004.json",
+          "frames": 331
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -726,30 +867,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -764,8 +906,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -780,7 +922,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -788,11 +935,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 37,
+        "command_end": 37,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "まさか、ずっと名刺を持って……！",
         "text_jp": "まさか、ずっと名刺を持って……！",
         "text_cn": "",
+        "source_text": "まさか、ずっと名刺を持って……！",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000037:dialogue:000",
           "source": {
@@ -806,6 +968,7 @@
           "source_hash": "sha256:a75bb2adc56c51e8b3b490b2c2f495f02ff9b5356e7fe7d10ab940245e2075dd"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -819,30 +982,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -857,8 +1021,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -873,13 +1037,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 43,
+        "command_end": 43,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -892,7 +1069,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "007kei",
           "value": "face_default",
@@ -907,11 +1084,12 @@
         "text": "ああ、別に、肌身離さず持ってたわけじゃないんだ。",
         "text_jp": "ああ、別に、肌身離さず持ってたわけじゃないんだ。",
         "text_cn": "",
-        "voice": "g1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1006.json",
-          "frames": 398
+        "source_text": "ああ、別に、肌身離さず持ってたわけじゃないんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "007kei",
+          "source_name": "都築 圭"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000043:dialogue:000",
@@ -924,8 +1102,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:9a21e5ba76f08e67d6628af0f82d4fb0e7cb8e500ddd4bd8ad68eae210b5bad1"
+        },
+        "voice": "g1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1006.json",
+          "frames": 398
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -939,30 +1124,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -977,8 +1163,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -993,13 +1179,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1018,11 +1217,12 @@
         "text": "僕は生活に無頓着だから……\n服だって、貰いものを着ていることが多いし。",
         "text_jp": "僕は生活に無頓着だから……\n服だって、貰いものを着ていることが多いし。",
         "text_cn": "",
-        "voice": "g1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1007.json",
-          "frames": 486
+        "source_text": "僕は生活に無頓着だから……\n服だって、貰いものを着ていることが多いし。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "007kei",
+          "source_name": "都築 圭"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000048:dialogue:000",
@@ -1035,8 +1235,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ee43ca9f8f95d2b1d641bd05cc37d25b72c6efb7775d5f433ec88dd79dd9f8e3"
+        },
+        "voice": "g1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1007.json",
+          "frames": 486
         }
       },
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1050,30 +1257,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -1088,8 +1296,8 @@
             "anim": "surprise",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1104,13 +1312,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1138,11 +1359,12 @@
         "text": "この名刺も多分、入れっぱなしにしていただけだよ。\nごめんね、僕は、そういう適当な人間なんだ。",
         "text_jp": "この名刺も多分、入れっぱなしにしていただけだよ。\nごめんね、僕は、そういう適当な人間なんだ。",
         "text_cn": "",
-        "voice": "g1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1008.json",
-          "frames": 738
+        "source_text": "この名刺も多分、入れっぱなしにしていただけだよ。\nごめんね、僕は、そういう適当な人間なんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "007kei",
+          "source_name": "都築 圭"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000054:dialogue:000",
@@ -1155,8 +1377,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:8aac88df0a658c42b6092443c147a1771e230c8ba422032042d853149f30de96"
+        },
+        "voice": "g1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1008.json",
+          "frames": 738
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1170,30 +1399,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -1208,8 +1438,8 @@
             "anim": "surprise",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1224,7 +1454,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1232,11 +1467,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "いえ、捨てずにいてくださって、\nありがとうございます！",
         "text_jp": "いえ、捨てずにいてくださって、\nありがとうございます！",
         "text_cn": "",
+        "source_text": "いえ、捨てずにいてくださって、\nありがとうございます！",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000056:dialogue:000",
           "source": {
@@ -1250,6 +1500,7 @@
           "source_hash": "sha256:92df488f99239c76e769b5d8daa7c37ef8a694ab82b7af21bf3cdf30cd7c95bd"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     },
@@ -1263,30 +1514,31 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.3
           }
         ],
         "bg_profile": {
           "imageId": "bg011_park_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "park_day",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -1301,8 +1553,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1317,7 +1569,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1325,17 +1582,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_003alt_02/scenario_1_1_003_02_g.json",
+        "source_part_id": "1_1_003_02_g",
+        "command_start": 60,
+        "command_end": 60,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "007kei",
       "dialogue": {
         "speaker": "都築 圭",
         "text": "それで、返事っていうのは……",
         "text_jp": "それで、返事っていうのは……",
         "text_cn": "",
-        "voice": "g1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1010.json",
-          "frames": 218
+        "source_text": "それで、返事っていうのは……",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "007kei",
+          "source_name": "都築 圭"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_003alt_02_1_1_003_02:1_1_003_02_g:cmd-000060:dialogue:000",
@@ -1348,8 +1614,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:1d1deebc3ad4989fecf0e6cd3a6f42c1f6435610dd00d61f2dd68a5e08a5b919"
+        },
+        "voice": "g1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/003alt/1_1_003_02/1_1_003_02_g/1_1_003_02_g1010.json",
+          "frames": 218
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "g"
     }
@@ -1368,6 +1641,10 @@
       "step_count": 13
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_003_02.unity3d",
+    "raw_hash": "sha256:53305e589baa3f5009d6f15348c14d1241275a96a53f062924f3d155f5d45c7f"
+  },
   "aggregate_source": {
     "file": "1_1_003alt_02_1_1_003_02.json",
     "scenario_id": "1_1_003alt_02_1_1_003_02",

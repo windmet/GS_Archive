@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_3_30007_01_i",
+  "text_catalog_id": "1_3_30007_01",
+  "text_contract_version": 1,
   "total_steps": 15,
   "steps": [
     {
@@ -14,21 +16,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -45,15 +47,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           },
           {
@@ -63,15 +65,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           },
           {
@@ -81,15 +83,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -99,7 +101,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -107,7 +109,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -115,6 +122,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -130,21 +146,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -161,8 +177,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -174,8 +190,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -187,8 +203,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -203,13 +219,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 32,
+        "command_end": 32,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -264,11 +293,12 @@
         "text": "……あっ！　しまった！　考えてみたら俺、\nファンにこの姿を見せるの、初めてじゃん！",
         "text_jp": "……あっ！　しまった！　考えてみたら俺、\nファンにこの姿を見せるの、初めてじゃん！",
         "text_cn": "",
-        "voice": "i1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1000.json",
-          "frames": 463
+        "source_text": "……あっ！　しまった！　考えてみたら俺、\nファンにこの姿を見せるの、初めてじゃん！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000032:dialogue:000",
@@ -281,8 +311,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:0ee3a8eed57413ba35bdef9f9971179dabd91446402a344e8fcbe312513ec1f3"
+        },
+        "voice": "i1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1000.json",
+          "frames": 463
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -298,21 +335,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -329,8 +366,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -342,8 +379,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -355,8 +392,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -371,13 +408,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -429,11 +479,12 @@
         "text": "二人とも、俺、変なとこなかった？\nというか、ちゃんと似合ってるよな……？",
         "text_jp": "二人とも、俺、変なとこなかった？\nというか、ちゃんと似合ってるよな……？",
         "text_cn": "",
-        "voice": "i1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1001.json",
-          "frames": 414
+        "source_text": "二人とも、俺、変なとこなかった？\nというか、ちゃんと似合ってるよな……？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000046:dialogue:000",
@@ -446,8 +497,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:63a7ad37322e53c378bf616bfc7618edc1289e449ae7b6cd45e1c3d1d8152b95"
+        },
+        "voice": "i1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1001.json",
+          "frames": 414
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -463,21 +521,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -494,8 +552,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -507,8 +565,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -520,8 +578,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -536,13 +594,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -564,7 +635,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "025suz",
           "value": "face_happy",
@@ -573,7 +644,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_anim",
           "chara_id": "025suz",
           "value": "wait_loop"
@@ -585,11 +656,12 @@
         "text": "秋山。今更な質問だろう、それは。",
         "text_jp": "秋山。今更な質問だろう、それは。",
         "text_cn": "",
-        "voice": "i1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1002.json",
-          "frames": 220
+        "source_text": "秋山。今更な質問だろう、それは。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000053:dialogue:000",
@@ -602,8 +674,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:972c2f91c5092d72bf1de8c024aeba9e28f3a06409dcb1073c3d830eb979f102"
+        },
+        "voice": "i1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1002.json",
+          "frames": 220
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -619,21 +698,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -650,8 +729,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -663,8 +742,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -676,8 +755,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -692,13 +771,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -726,11 +818,12 @@
         "text": "全く。ライブでギターを弾いている時とは、\n大違いだな。",
         "text_jp": "全く。ライブでギターを弾いている時とは、\n大違いだな。",
         "text_cn": "",
-        "voice": "i1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1003.json",
-          "frames": 311
+        "source_text": "全く。ライブでギターを弾いている時とは、\n大違いだな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000059:dialogue:000",
@@ -743,8 +836,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:8c7694af25f9188f96bbd9073676bf3d803a4a9bbf07094fdaa09b298e8d9020"
+        },
+        "voice": "i1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1003.json",
+          "frames": 311
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -760,21 +860,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -791,8 +891,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -804,8 +904,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -817,8 +917,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -833,13 +933,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 69,
+        "command_end": 69,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -897,11 +1010,12 @@
         "text": "えっ！　鋭心、俺たちのライブ見てくれてるの！？\nありがと、メッチャ嬉しいよ！　……じゃなくて！",
         "text_jp": "えっ！　鋭心、俺たちのライブ見てくれてるの！？\nありがと、メッチャ嬉しいよ！　……じゃなくて！",
         "text_cn": "",
-        "voice": "i1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1004.json",
-          "frames": 621
+        "source_text": "えっ！　鋭心、俺たちのライブ見てくれてるの！？\nありがと、メッチャ嬉しいよ！　……じゃなくて！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000069:dialogue:000",
@@ -914,8 +1028,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fa31aa29d3db460babedee2777208ddaa3b8e39bc546f773bdfda169f1ff92fb"
+        },
+        "voice": "i1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1004.json",
+          "frames": 621
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -931,21 +1052,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -962,8 +1083,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -975,8 +1096,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -988,8 +1109,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1004,13 +1125,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1038,11 +1172,12 @@
         "text": "これから本番だよ！？　気になって当然じゃん！\nみんなにカッコいいとこ見せたいし！",
         "text_jp": "これから本番だよ！？　気になって当然じゃん！\nみんなにカッコいいとこ見せたいし！",
         "text_cn": "",
-        "voice": "i1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1005.json",
-          "frames": 419
+        "source_text": "これから本番だよ！？　気になって当然じゃん！\nみんなにカッコいいとこ見せたいし！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000076:dialogue:000",
@@ -1055,8 +1190,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:11df6c111fe7eb97c636a1d163a25788e13127984a817c89344f2e7e7c4684d3"
+        },
+        "voice": "i1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1005.json",
+          "frames": 419
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1072,21 +1214,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -1103,8 +1245,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1116,8 +1258,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1129,8 +1271,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1145,13 +1287,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 81,
+        "command_end": 81,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1176,11 +1331,12 @@
         "text": "大丈夫だぜ、隼人さんよぉっ！\nその恰好も髪型も、バッチリ決まってるぜ！",
         "text_jp": "大丈夫だぜ、隼人さんよぉっ！\nその恰好も髪型も、バッチリ決まってるぜ！",
         "text_cn": "",
-        "voice": "i1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1006.json",
-          "frames": 371
+        "source_text": "大丈夫だぜ、隼人さんよぉっ！\nその恰好も髪型も、バッチリ決まってるぜ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "025suz",
+          "source_name": "紅井 朱雀"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000081:dialogue:000",
@@ -1193,8 +1349,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2e071848654019968e1712564dd6ae18647e60971a55578f3fb1e78cf4425437"
+        },
+        "voice": "i1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1006.json",
+          "frames": 371
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1210,21 +1373,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -1241,8 +1404,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1254,8 +1417,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1267,8 +1430,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1283,13 +1446,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 90,
+        "command_end": 90,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1302,7 +1478,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "025suz",
           "value": "wait_loop"
@@ -1323,7 +1499,7 @@
           "value": "angry"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_face",
           "chara_id": "025suz",
           "value": "face_happy",
@@ -1332,7 +1508,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_anim",
           "chara_id": "025suz",
           "value": "weight"
@@ -1344,11 +1520,12 @@
         "text": "本当？　よかった……。髪型は、\nスザクから借りたヘアワックスのおかげだよ。",
         "text_jp": "本当？　よかった……。髪型は、\nスザクから借りたヘアワックスのおかげだよ。",
         "text_cn": "",
-        "voice": "i1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1007.json",
-          "frames": 516
+        "source_text": "本当？　よかった……。髪型は、\nスザクから借りたヘアワックスのおかげだよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "020hay",
+          "source_name": "秋山 隼人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000090:dialogue:000",
@@ -1361,8 +1538,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ea30a362f1e20893b81445180e1d1102ee08487a5349cb798076dffc48d57bdb"
+        },
+        "voice": "i1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1007.json",
+          "frames": 516
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1378,21 +1562,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -1409,8 +1593,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1422,8 +1606,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1435,8 +1619,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1451,13 +1635,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 98,
+        "command_end": 98,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1485,11 +1682,12 @@
         "text": "前にも、そんな話をしていたな。\nそんなにいいものなのか。",
         "text_jp": "前にも、そんな話をしていたな。\nそんなにいいものなのか。",
         "text_cn": "",
-        "voice": "i1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1008.json",
-          "frames": 283
+        "source_text": "前にも、そんな話をしていたな。\nそんなにいいものなのか。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000098:dialogue:000",
@@ -1502,8 +1700,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:7055fd927699d1d553678cedfb2a1709ff8c4c4fe994d62e6c7eb6506011d77b"
+        },
+        "voice": "i1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1008.json",
+          "frames": 283
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1519,21 +1724,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -1550,8 +1755,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1563,8 +1768,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1576,8 +1781,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1592,7 +1797,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1600,9 +1810,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 107,
+        "command_end": 107,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_anim",
           "chara_id": "025suz",
           "value": "hello"
@@ -1629,11 +1847,12 @@
         "text": "ああ、バッチリ決まるぜ！\n鋭心さんも、よかったら使ってみるか？",
         "text_jp": "ああ、バッチリ決まるぜ！\n鋭心さんも、よかったら使ってみるか？",
         "text_cn": "",
-        "voice": "i1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1009.json",
-          "frames": 327
+        "source_text": "ああ、バッチリ決まるぜ！\n鋭心さんも、よかったら使ってみるか？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "025suz",
+          "source_name": "紅井 朱雀"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000107:dialogue:000",
@@ -1646,8 +1865,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:7ea5f43e1e4db3a25d7b497b2d09df4a3a61df8fa0b427a10331ddd6518b9d39"
+        },
+        "voice": "i1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1009.json",
+          "frames": 327
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1663,32 +1889,32 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_ss01",
-          "delay": 2
+          "delay": 2.0
         },
         "se_events": [
           {
             "cue": "cloth_move_ss01",
-            "delay": 2
+            "delay": 2.0
           }
         ],
         "environmental": {
@@ -1702,8 +1928,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1715,8 +1941,8 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1728,8 +1954,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1744,7 +1970,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1752,9 +1983,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 116,
+        "command_end": 116,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_default",
@@ -1769,7 +2008,7 @@
           "value": "wait_loop"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_joy",
@@ -1784,11 +2023,12 @@
         "text": "では、少し借りる。\n……なるほど、確かに使い心地が良さそうだ。",
         "text_jp": "では、少し借りる。\n……なるほど、確かに使い心地が良さそうだ。",
         "text_cn": "",
-        "voice": "i1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1010.json",
-          "frames": 426
+        "source_text": "では、少し借りる。\n……なるほど、確かに使い心地が良さそうだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000116:dialogue:000",
@@ -1801,8 +2041,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:982699386813aeedd912700363a10e816fdb7ab4fa1474857f94d40c09d61969"
+        },
+        "voice": "i1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1010.json",
+          "frames": 426
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1818,21 +2065,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -1849,8 +2096,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1862,8 +2109,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1875,8 +2122,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1891,13 +2138,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 125,
+        "command_end": 125,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1934,11 +2194,12 @@
         "text": "へへッ、だろ？　なんたってオレの愛用だからな。\nちなみに鋭心さんは、普段どんなの使ってるんだ？",
         "text_jp": "へへッ、だろ？　なんたってオレの愛用だからな。\nちなみに鋭心さんは、普段どんなの使ってるんだ？",
         "text_cn": "",
-        "voice": "i1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1011.json",
-          "frames": 498
+        "source_text": "へへッ、だろ？　なんたってオレの愛用だからな。\nちなみに鋭心さんは、普段どんなの使ってるんだ？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "025suz",
+          "source_name": "紅井 朱雀"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000125:dialogue:000",
@@ -1951,8 +2212,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ed9098e5a45a81b683c11dbaf8ba6830d7351423df71e0d1d85a9486a435138b"
+        },
+        "voice": "i1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1011.json",
+          "frames": 498
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1968,21 +2236,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -1999,8 +2267,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2012,8 +2280,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2025,8 +2293,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2041,13 +2309,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 135,
+        "command_end": 135,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2069,7 +2350,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_anim",
           "chara_id": "025suz",
           "value": "wait_loop",
@@ -2078,7 +2359,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 6,
+          "time": 6.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_think",
@@ -2093,11 +2374,12 @@
         "text": "両親や知人に勧められたものだな。\n俺自身のこだわりは、あまりない……いや。",
         "text_jp": "両親や知人に勧められたものだな。\n俺自身のこだわりは、あまりない……いや。",
         "text_cn": "",
-        "voice": "i1012.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1012.json",
-          "frames": 429
+        "source_text": "両親や知人に勧められたものだな。\n俺自身のこだわりは、あまりない……いや。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000135:dialogue:000",
@@ -2110,8 +2392,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:eacf4aef8fd93efe6a9d8ea8c40b3cc29156fa99f94d528579c0b22af992ee16"
+        },
+        "voice": "i1012.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1012.json",
+          "frames": 429
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -2127,21 +2416,21 @@
           "imageId": "bg032_lessonstudio_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "lesson",
         "bgm_volume": 0,
@@ -2158,8 +2447,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2171,8 +2460,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 330,
-            "pos_y": 0,
+            "pos_x": 330.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2184,8 +2473,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": -300,
-            "pos_y": 0,
+            "pos_x": -300.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2200,13 +2489,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_i.json",
+        "source_part_id": "1_3_30007_01_i",
+        "command_start": 140,
+        "command_end": 140,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2225,11 +2527,12 @@
         "text": "香りが強くなりすぎないよう気をつけてはいるな。\n特に、誰かと食事をする時は。",
         "text_jp": "香りが強くなりすぎないよう気をつけてはいるな。\n特に、誰かと食事をする時は。",
         "text_cn": "",
-        "voice": "i1013.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1013.json",
-          "frames": 378
+        "source_text": "香りが強くなりすぎないよう気をつけてはいるな。\n特に、誰かと食事をする時は。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_i:cmd-000140:dialogue:000",
@@ -2242,8 +2545,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:4c1504e72a03151d4be2be5b29794c7181c8540e81cb1e14e185960fc2e5c58d"
+        },
+        "voice": "i1013.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_i/1_3_30007_01_i1013.json",
+          "frames": 378
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     }
@@ -2262,6 +2572,10 @@
       "step_count": 15
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_3_30007_01.unity3d",
+    "raw_hash": "sha256:30a7abd437fc900438e512dd8572c822503e88a9f530bbc5baabcedab4967bf7"
+  },
   "aggregate_source": {
     "file": "1_3_30007_01.json",
     "scenario_id": "1_3_30007_01",

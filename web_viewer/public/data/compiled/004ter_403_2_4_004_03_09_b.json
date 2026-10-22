@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "compiler_version": "local-raw-text-audit-v1",
+  "compiler_version": "scenario-compiler-python-v2-corpus-20261020",
   "runtime_contract": "story-runtime-v2",
   "scenario_id": "004ter_403_2_4_004_03_09_b",
   "text_catalog_id": "004ter_403_2_4_004_03_09_b",
@@ -42,9 +42,7 @@
         "bgm_volume": 100,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_room"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
@@ -60,14 +58,24 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null,
-        "screen_overlay": null
+        "screen_overlay": {
+          "kind": "fade",
+          "visible": true,
+          "color": "#000000",
+          "alpha": 1
+        }
       },
       "settled_snapshot": {
         "bg": "bg001_315pro_in_01",
@@ -98,9 +106,7 @@
         "bgm_volume": 100,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_room"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
@@ -111,7 +117,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -200,7 +211,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -211,8 +222,13 @@
         "screen_effects": [],
         "bgm_stop_fade": null,
         "environmental_volume": null,
-        "environmental_duck_target": 0.0,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": 0.0,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -252,7 +268,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -264,7 +280,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -290,7 +311,8 @@
       },
       "auto_advance": true,
       "duration": 0.5,
-      "hide_dialogue": true
+      "hide_dialogue": true,
+      "pre_wait": 0.5
     },
     {
       "step_id": 3,
@@ -326,7 +348,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -338,7 +360,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -378,7 +405,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -390,7 +417,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -415,6 +447,7 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -477,7 +510,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -489,7 +522,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -529,7 +567,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -541,7 +579,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -566,6 +609,7 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -628,7 +672,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -640,7 +684,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -680,7 +729,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -692,7 +741,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -790,7 +844,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -802,7 +856,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -842,7 +901,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -854,7 +913,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -879,6 +943,8 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "pre_wait": 0.5,
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -941,7 +1007,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -953,7 +1019,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -993,7 +1064,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1005,7 +1076,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1030,6 +1106,7 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1092,7 +1169,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1104,7 +1181,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1144,7 +1226,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1156,7 +1238,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1236,7 +1323,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1248,7 +1335,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1288,7 +1380,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1300,7 +1392,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1325,6 +1422,8 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "pre_wait": 0.5,
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1387,7 +1486,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1399,7 +1498,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1439,7 +1543,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1451,7 +1555,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1476,6 +1585,7 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1538,7 +1648,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1550,7 +1660,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1590,7 +1705,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1602,7 +1717,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1622,7 +1742,8 @@
           "target": "cloth_move_ss01",
           "payload": {
             "cue": "cloth_move_ss01",
-            "volume": null
+            "volume": null,
+            "sheet": "se_telephone"
           },
           "lifecycle": {
             "persistence": "transient",
@@ -1693,7 +1814,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1705,7 +1826,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1745,7 +1871,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1757,7 +1883,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1777,7 +1908,7 @@
           "target": "smartphone_tap",
           "payload": {
             "cue": "smartphone_tap",
-            "volume": null
+            "volume": 0.7
           },
           "lifecycle": {
             "persistence": "transient",
@@ -1848,7 +1979,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1860,7 +1991,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1900,7 +2036,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -1912,7 +2048,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1937,6 +2078,7 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -1999,7 +2141,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -2011,7 +2153,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2051,7 +2198,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -2063,7 +2210,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2088,6 +2240,7 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "post_wait": 0.5,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -2150,7 +2303,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -2162,7 +2315,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2202,7 +2360,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_shinjuku_traffic_night_t",
-          "volume": 0.0
+          "cue_name": "ambi_shinjuku_traffic_night"
         },
         "spines": [],
         "talk_mode": false,
@@ -2214,7 +2372,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2239,6 +2402,7 @@
         "confidence": "exact"
       },
       "chara_id": "004ter",
+      "post_wait": 1.0,
       "dialogue": {
         "speaker_identity": {
           "kind": "idol",
@@ -2310,7 +2474,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": 0.5,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2359,7 +2528,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2408,7 +2582,7 @@
   ],
   "reading_control_flow": {
     "version": 1,
-    "base_compiled_sha256": "sha256:341b199ac0015ff19ad0363beacbd7ca652d04f9b7d34f129b9bd709500bdd77",
+    "base_compiled_sha256": "sha256:659774a90f9004ff437358f9550a075c64a7b2bef3ff28a7c936e18b298001b9",
     "forks": [
       {
         "choice_index": 4,
@@ -2417,8 +2591,8 @@
         "join_step_id": 6,
         "join_step_type": "call",
         "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_b.json",
-        "raw_sha256": "sha256:6864923932032006fdc525f9cc4e3a5ad481bb86257a86d8311af72b4fb92210",
-        "raw_hash_format": "sha256-raw-file-v1",
+        "raw_sha256": "sha256:3e6a5c9ed0294213b73905fc222741a98ec1d1d038bb7383adfe92001bde055d",
+        "raw_hash_format": "sha256-decoded-command-json-v1",
         "choice_commands": [
           12,
           13

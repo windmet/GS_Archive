@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_3_10013_01_k",
+  "text_catalog_id": "1_3_10013_01",
+  "text_contract_version": 1,
   "total_steps": 47,
   "steps": [
     {
@@ -14,18 +16,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -35,23 +37,22 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0,
-          "delay": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -59,7 +60,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -71,6 +77,15 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -86,18 +101,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -107,8 +122,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -118,14 +132,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -136,14 +150,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -154,14 +168,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -170,9 +184,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -180,7 +194,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -191,6 +210,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -210,18 +237,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -231,8 +258,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -242,8 +268,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -255,8 +281,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -268,8 +294,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -279,9 +305,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -289,7 +315,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -301,17 +332,26 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "dialogue": {
         "speaker": "篤志",
         "text": "「本当にいいんだな？」",
         "text_jp": "「本当にいいんだな？」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1000.json",
-          "frames": 104
+        "source_text": "「本当にいいんだな？」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "篤志"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000024:dialogue:000",
@@ -324,8 +364,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:87a2bb98c2c9d0b96c2647871ca378676622ca9d4c5839b34a5c344744540a1b"
+        },
+        "voice": "1_3_10013_01_t01_k1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1000.json",
+          "frames": 104
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -341,18 +388,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -362,8 +409,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -373,8 +419,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -386,8 +432,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -399,8 +445,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -410,9 +456,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -420,7 +466,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -431,6 +482,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 30,
+        "command_end": 30,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -449,11 +508,12 @@
         "text": "「……そりゃ、元の世界に戻って、\nもう一回面倒事やら不安と向き合うのはヤだよ」",
         "text_jp": "「……そりゃ、元の世界に戻って、\nもう一回面倒事やら不安と向き合うのはヤだよ」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1001.json",
-          "frames": 557
+        "source_text": "「……そりゃ、元の世界に戻って、\nもう一回面倒事やら不安と向き合うのはヤだよ」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "006tsu",
+          "source_name": "優支"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000030:dialogue:000",
@@ -466,8 +526,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f168a76b33f626ee38228570646e89f8ff8803132593b5c1ec2495f4424617dd"
+        },
+        "voice": "1_3_10013_01_t01_k1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1001.json",
+          "frames": 557
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -483,18 +550,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -504,8 +571,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -515,8 +581,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -528,8 +594,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -541,8 +607,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -552,9 +618,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -562,7 +628,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -573,6 +644,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -585,7 +664,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 9,
+          "time": 9.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_joy",
@@ -594,7 +673,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 9,
+          "time": 9.0,
           "type": "spine_face",
           "chara_id": "005kao",
           "value": "face_joy",
@@ -603,7 +682,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 9,
+          "time": 9.0,
           "type": "spine_face",
           "chara_id": "006tsu",
           "value": "face_shy",
@@ -618,11 +697,12 @@
         "text": "「それでも先生と話して、思い出したんだ。\nあの人のようになりたいって思ってたことをさ」",
         "text_jp": "「それでも先生と話して、思い出したんだ。\nあの人のようになりたいって思ってたことをさ」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1002.json",
-          "frames": 644
+        "source_text": "「それでも先生と話して、思い出したんだ。\nあの人のようになりたいって思ってたことをさ」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "006tsu",
+          "source_name": "優支"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000038:dialogue:000",
@@ -635,8 +715,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f90570d3ec137e2ec9dca4ff6ee5ee3faf018f2dfeeb52eb633346be7a020e7e"
+        },
+        "voice": "1_3_10013_01_t01_k1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1002.json",
+          "frames": 644
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -652,18 +739,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -673,8 +760,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -684,8 +770,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -697,8 +783,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -710,8 +796,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -721,9 +807,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -731,7 +817,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -742,6 +833,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 44,
+        "command_end": 44,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -760,11 +859,12 @@
         "text": "「子供の頃の自分に会って、\nその夢を叶えてあげたいと思いました」",
         "text_jp": "「子供の頃の自分に会って、\nその夢を叶えてあげたいと思いました」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1003.json",
-          "frames": 337
+        "source_text": "「子供の頃の自分に会って、\nその夢を叶えてあげたいと思いました」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "聖士"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000044:dialogue:000",
@@ -777,8 +877,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5bb1c2e2a9526fad9b224ccedb5c414e4018b13a4489fbd35b66b5083971c28e"
+        },
+        "voice": "1_3_10013_01_t01_k1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1003.json",
+          "frames": 337
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -794,18 +901,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -815,8 +922,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -826,8 +932,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -839,8 +945,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -852,8 +958,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -863,9 +969,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -873,7 +979,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -884,6 +995,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 51,
+        "command_end": 51,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -929,11 +1048,12 @@
         "text": "「そして、夢を叶えてあげられるのは、\n未来の僕たちしかいない」",
         "text_jp": "「そして、夢を叶えてあげられるのは、\n未来の僕たちしかいない」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1004.json",
-          "frames": 372
+        "source_text": "「そして、夢を叶えてあげられるのは、\n未来の僕たちしかいない」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "聖士"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000051:dialogue:000",
@@ -946,8 +1066,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:da898b8244e0538c5da1e7f391f7a5c194dcb7088b324625e11bf90130013105"
+        },
+        "voice": "1_3_10013_01_t01_k1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1004.json",
+          "frames": 372
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -963,18 +1090,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -984,8 +1111,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -995,8 +1121,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1008,8 +1134,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1021,8 +1147,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1032,9 +1158,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1042,7 +1168,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1054,9 +1185,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "005kao",
           "value": "face_serious",
@@ -1065,7 +1204,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_anim",
           "chara_id": "005kao",
           "value": "hello"
@@ -1077,11 +1216,12 @@
         "text": "「ここで格好悪く、立ち止まっていたくないんです」",
         "text_jp": "「ここで格好悪く、立ち止まっていたくないんです」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1005.json",
-          "frames": 244
+        "source_text": "「ここで格好悪く、立ち止まっていたくないんです」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "聖士"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000056:dialogue:000",
@@ -1094,8 +1234,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:9801b7cd28e5d8072e4900bdb41ce9ba8c36ec6a39e5d73ec3cb30de2d2d0542"
+        },
+        "voice": "1_3_10013_01_t01_k1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1005.json",
+          "frames": 244
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -1111,18 +1258,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -1132,8 +1279,7 @@
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_park_calm_evening",
-          "volume": 0.5
+          "cue": "ambi_street_park_river_night"
         },
         "spines": [
           {
@@ -1143,8 +1289,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1156,8 +1302,8 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1169,8 +1315,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1180,9 +1326,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1190,7 +1336,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1202,9 +1353,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 67,
+        "command_end": 67,
+        "raw_type": "text_se_off",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_default",
@@ -1213,7 +1372,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "005kao",
           "value": "face_joy",
@@ -1222,7 +1381,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "006tsu",
           "value": "face_default",
@@ -1231,7 +1390,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_joy",
@@ -1264,6 +1423,13 @@
         "text": "「……だな。みんなで戻ろう、元の世界に！\nガキの頃の自分に胸を張って、名乗れるように！」",
         "text_jp": "「……だな。みんなで戻ろう、元の世界に！\nガキの頃の自分に胸を張って、名乗れるように！」",
         "text_cn": "",
+        "source_text": "「……だな。みんなで戻ろう、元の世界に！\nガキの頃の自分に胸を張って、名乗れるように！」",
+        "speaker_identity": {
+          "kind": "none",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": ""
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000067:dialogue:000",
           "source": {
@@ -1277,6 +1443,7 @@
           "source_hash": "sha256:570340a6257f6b14a88b93a7195f78a54b745d1a3cd2fead414818fbd9a37ca3"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -1292,18 +1459,18 @@
           "imageId": "bg063_riverground_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
@@ -1321,8 +1488,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1334,8 +1501,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1347,8 +1514,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1358,14 +1525,14 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": {
           "type": "out",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -1373,7 +1540,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1384,6 +1556,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 70,
+        "command_end": 70,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "k"
@@ -1410,8 +1590,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1423,15 +1603,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           },
           {
@@ -1441,15 +1621,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -1457,9 +1637,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1467,7 +1647,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1479,7 +1664,15 @@
           "layer": "2"
         }
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1507,8 +1700,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1518,14 +1711,14 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -1533,7 +1726,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1544,6 +1742,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 77,
+        "command_end": 77,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "k"
@@ -1563,7 +1769,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -1573,8 +1779,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1584,9 +1790,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1594,7 +1800,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1605,6 +1816,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 79,
+        "command_end": 79,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -1625,17 +1844,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "toy_pick_up",
-          "delay": 3
+          "delay": 3.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "toy_pick_up",
-            "delay": 3
+            "delay": 3.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -1645,8 +1866,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1656,9 +1877,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1666,7 +1887,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1677,6 +1903,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 82,
+        "command_end": 82,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1695,11 +1929,12 @@
         "text": "「え？　変身ベルト貸してほしいの？\n別にいいけど……。ちょっとだけだからな！」",
         "text_jp": "「え？　変身ベルト貸してほしいの？\n別にいいけど……。ちょっとだけだからな！」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1006.json",
-          "frames": 623
+        "source_text": "「え？　変身ベルト貸してほしいの？\n別にいいけど……。ちょっとだけだからな！」",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "幼い頃の篤志"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000082:dialogue:000",
@@ -1712,8 +1947,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ecb440ad821da55738a3b13267fbaaaa8da057e07bed07a9fd8b0b9793c7dd4c"
+        },
+        "voice": "1_3_10013_01_t01_k1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1006.json",
+          "frames": 623
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -1730,17 +1972,17 @@
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_metal",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cloth_move_metal",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -1750,8 +1992,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1761,9 +2003,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1771,7 +2013,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1782,6 +2029,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 87,
+        "command_end": 87,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 3.3,
       "episode_index": 0,
@@ -1802,7 +2057,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -1812,8 +2067,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1823,9 +2078,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1833,7 +2088,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1845,7 +2105,15 @@
           "layer": "2"
         }
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 89,
+        "command_end": 89,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -1864,17 +2132,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "toy_pick_up",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "toy_pick_up",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -1884,8 +2154,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1895,9 +2165,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1905,7 +2175,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1916,6 +2191,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 92,
+        "command_end": 92,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -1938,7 +2221,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -1948,8 +2231,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1959,17 +2242,22 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 7.9,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": 7.9,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1980,6 +2268,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 100,
+        "command_end": 100,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2010,7 +2306,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_happy",
@@ -2019,7 +2315,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_anim",
           "chara_id": "004ter",
           "value": "joy"
@@ -2031,11 +2327,12 @@
         "text": "「サンキュ！　お前ら将来、\nカッコいい大人になるぜ。いや、なってみせる！」",
         "text_jp": "「サンキュ！　お前ら将来、\nカッコいい大人になるぜ。いや、なってみせる！」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1008.json",
-          "frames": 497
+        "source_text": "「サンキュ！　お前ら将来、\nカッコいい大人になるぜ。いや、なってみせる！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "篤志"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000100:dialogue:000",
@@ -2048,8 +2345,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:2e3b7c1c28142fc56b22094edaa1bd9ed5c87b94f569e004afdae82c97ae038c"
+        },
+        "voice": "1_3_10013_01_t01_k1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1008.json",
+          "frames": 497
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -2066,17 +2370,17 @@
         "bgm_volume": 0,
         "se": {
           "cue": "group_step_walk_soil",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "group_step_walk_soil",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -2086,8 +2390,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2097,9 +2401,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2107,7 +2411,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2118,6 +2427,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 104,
+        "command_end": 104,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "episode_index": 0,
@@ -2138,7 +2455,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -2148,8 +2465,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2161,14 +2478,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           },
@@ -2179,14 +2496,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -2195,9 +2512,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2205,7 +2522,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2216,6 +2538,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 111,
+        "command_end": 111,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -2238,7 +2568,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -2248,8 +2578,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2261,8 +2591,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2274,8 +2604,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2285,9 +2615,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2295,7 +2625,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2306,6 +2641,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 119,
+        "command_end": 119,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -2348,11 +2691,12 @@
         "text": "「そんじゃ、いくぞ！」",
         "text_jp": "「そんじゃ、いくぞ！」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1009.json",
-          "frames": 147
+        "source_text": "「そんじゃ、いくぞ！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "篤志"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000119:dialogue:000",
@@ -2365,8 +2709,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f1a05ea5294d9fa7dc845e2522030150c65cf9528945d896ed8012d5682d506e"
+        },
+        "voice": "1_3_10013_01_t01_k1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1009.json",
+          "frames": 147
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -2383,12 +2734,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_l01",
-          "delay": 7
+          "delay": 7.0
         },
         "se_events": [
           {
             "cue": "cloth_move_l01",
-            "delay": 0
+            "delay": 0.0
           },
           {
             "cue": "cloth_move_l01",
@@ -2396,12 +2747,12 @@
           },
           {
             "cue": "cloth_move_l01",
-            "delay": 7
+            "delay": 7.0
           }
         ],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -2411,8 +2762,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2424,8 +2775,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2437,8 +2788,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2448,9 +2799,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2458,7 +2809,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2470,9 +2826,17 @@
           "layer": "2"
         }
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 136,
+        "command_end": 136,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_serious",
@@ -2496,7 +2860,7 @@
           "value": "angry"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_default",
@@ -2505,7 +2869,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_face",
           "chara_id": "004ter",
           "value": "face_happy",
@@ -2514,14 +2878,14 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_anim",
           "chara_id": "004ter",
           "value": "joy",
           "no_back": true
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_face",
           "chara_id": "005kao",
           "value": "face_happy",
@@ -2530,13 +2894,13 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_anim",
           "chara_id": "005kao",
           "value": "joy"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_face",
           "chara_id": "006tsu",
           "value": "face_happy",
@@ -2545,7 +2909,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 7,
+          "time": 7.0,
           "type": "spine_anim",
           "chara_id": "006tsu",
           "value": "weight"
@@ -2557,11 +2921,12 @@
         "text": "「装着！　スターチェンジ！　レッド！\n夕暮れにひときわ輝く一番星、参上だぜ！」",
         "text_jp": "「装着！　スターチェンジ！　レッド！\n夕暮れにひときわ輝く一番星、参上だぜ！」",
         "text_cn": "",
-        "voice": "1_3_10013_01_t01_k1010.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1010.json",
-          "frames": 540
+        "source_text": "「装着！　スターチェンジ！　レッド！\n夕暮れにひときわ輝く一番星、参上だぜ！」",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "篤志"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000136:dialogue:000",
@@ -2574,8 +2939,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a18cfd6bc833efe4803d09bdefe0269f35d52f890fcaf8ae8f0a4124cda18bc4"
+        },
+        "voice": "1_3_10013_01_t01_k1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_10013_01/1_3_10013_01_k/1_3_10013_01_k1010.json",
+          "frames": 540
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -2592,17 +2964,19 @@
         "bgm_volume": 0,
         "se": {
           "cue": "herobelt_light",
-          "delay": 0
+          "delay": 0.0,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "herobelt_light",
-            "delay": 0
+            "delay": 0.0,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -2612,8 +2986,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -2626,8 +3000,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2639,8 +3013,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -2650,14 +3024,14 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": {
           "type": "out",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -2665,7 +3039,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2676,6 +3055,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 139,
+        "command_end": 139,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "k"
@@ -2695,7 +3082,7 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_park_calm_evening",
-          "volume": 0
+          "cue_name": "ambi_park_calm_evening"
         },
         "spines": [
           {
@@ -2705,16 +3092,16 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -50,
-            "pos_y": 0,
+            "pos_x": -50.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_no_back": true,
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           },
           {
@@ -2724,15 +3111,15 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": -400,
-            "pos_y": 0,
+            "pos_x": -400.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           },
           {
@@ -2742,15 +3129,15 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 400,
-            "pos_y": 0,
+            "pos_x": 400.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -2758,9 +3145,9 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2768,7 +3155,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -2779,6 +3171,14 @@
           "display_id": "02dra",
           "layer": "2"
         }
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 143,
+        "command_end": 143,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
@@ -2805,15 +3205,15 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 1.3,
-          "offset_x": -300,
-          "offset_y": 80,
-          "duration": 0,
-          "delay": 0
+          "offset_x": -300.0,
+          "offset_y": 80.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
           "duration": 1.5,
-          "delay": 1,
+          "delay": 1.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -2821,13 +3221,18 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": {
-          "delay": 0,
-          "duration": 0
+          "delay": 0.0,
+          "duration": 0.0
         },
         "text_disabled": false,
         "image_icon": {
@@ -2837,6 +3242,15 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 149,
+        "command_end": 149,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -2859,10 +3273,10 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 1.5,
-          "offset_x": 200,
-          "offset_y": 80,
-          "duration": 5,
-          "delay": 0
+          "offset_x": 200.0,
+          "offset_y": 80.0,
+          "duration": 5.0,
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2870,13 +3284,18 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": {
-          "delay": 0,
-          "duration": 5
+          "delay": 0.0,
+          "duration": 5.0
         },
         "text_disabled": false,
         "image_icon": {
@@ -2886,9 +3305,18 @@
         },
         "bg_view_type": "1"
       },
-      "duration": 5,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 153,
+        "command_end": 153,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
+      "duration": 5.0,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -2911,10 +3339,10 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5,
-          "delay": 0
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -2922,12 +3350,17 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 1.5
         },
         "text_disabled": false,
@@ -2938,7 +3371,15 @@
         },
         "bg_view_type": "1"
       },
-      "duration": 7,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 157,
+        "command_end": 157,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 7.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -2963,14 +3404,14 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": {
           "type": "out",
-          "duration": 2,
-          "delay": 0,
+          "duration": 2.0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -2978,9 +3419,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -2990,6 +3436,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 158,
+        "command_end": 158,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "k"
@@ -3013,8 +3467,8 @@
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 1.5
         },
         "screen_fade": null,
@@ -3023,9 +3477,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3036,7 +3495,15 @@
         },
         "bg_view_type": "1"
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 160,
+        "command_end": 160,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -3054,43 +3521,41 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
         },
-        "bgm": "usual_night",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
-        "environmental": {
-          "cue": "ambi_room"
-        },
+        "environmental": null,
         "spines": [],
         "talk_mode": false,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
-          "duration": 2,
-          "delay": 0,
+          "duration": 2.0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -3098,9 +3563,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3110,6 +3580,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 163,
+        "command_end": 163,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "k"
@@ -3126,38 +3604,39 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
         },
-        "bgm": "usual_night",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room",
+          "delay": 0.7
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3165,9 +3644,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3177,6 +3661,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 165,
+        "command_end": 165,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -3196,46 +3688,46 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
         },
-        "bgm": "usual_night",
+        "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "cellphone_vibrate",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cellphone_vibrate",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3243,9 +3735,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3256,7 +3753,15 @@
         },
         "bg_view_type": "1"
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 167,
+        "command_end": 167,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -3274,46 +3779,46 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
         },
-        "bgm": "usual_night",
+        "bgm": null,
         "bgm_volume": 0,
         "se": {
           "cue": "smartphone_tap",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "smartphone_tap",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3321,9 +3826,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3333,6 +3843,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 169,
+        "command_end": 169,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -3352,18 +3870,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -3374,16 +3892,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3391,9 +3909,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3404,12 +3927,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 172,
+        "command_end": 172,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "dialogue": {
         "speaker": "天道 輝",
         "text": "ついにクランクアップしたぜ！",
         "text_jp": "ついにクランクアップしたぜ！",
         "text_cn": "",
+        "source_text": "ついにクランクアップしたぜ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000172:mobile_message:000",
           "source": {
@@ -3423,6 +3961,7 @@
           "source_hash": "sha256:0d15232387261dcfee7bf6e7816c5a6c2e9f555b68acc4a4e8505035bf1bc303"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -3438,18 +3977,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -3460,16 +3999,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3477,9 +4016,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3495,7 +4039,8 @@
           "label": "talk_select1",
           "text": "お疲れさまでした！",
           "detail": "順調に撮影が終わりましたね。\nお疲れさまでした！",
-          "step_id": 36,
+          "source_text": "お疲れさまでした！",
+          "option_id": "choice-option:v1:1_3_10013_01:1_3_10013_01_k:cmd-000174:000",
           "text_ref": {
             "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000174:choice_short:000",
             "source": {
@@ -3508,6 +4053,7 @@
             },
             "source_hash": "sha256:d2a8f4689dca88c29c0faebc842052602c5dea2a431a235b76d50f4a3b54c7f2"
           },
+          "detail_source_text": "順調に撮影が終わりましたね。\nお疲れさまでした！",
           "detail_text_ref": {
             "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000174:choice_detail:000",
             "source": {
@@ -3519,13 +4065,15 @@
               "field_ordinal": 0
             },
             "source_hash": "sha256:174557cdddabc8f3ae1f024596d14b232827d1e3fd69041bca0d29659998ed9b"
-          }
+          },
+          "step_id": 36
         },
         {
           "label": "talk_select2",
           "text": "無事に終わって、\nよかったです。",
           "detail": "長丁場の撮影だったので、\n無事に終わってよかったです。",
-          "step_id": 36,
+          "source_text": "無事に終わって、\nよかったです。",
+          "option_id": "choice-option:v1:1_3_10013_01:1_3_10013_01_k:cmd-000175:001",
           "text_ref": {
             "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000175:choice_short:000",
             "source": {
@@ -3538,6 +4086,7 @@
             },
             "source_hash": "sha256:833bd5c8626af0fe0f9344864c18ae6434ebb1f0a6da7e2a6cbadf0a2ca850cb"
           },
+          "detail_source_text": "長丁場の撮影だったので、\n無事に終わってよかったです。",
           "detail_text_ref": {
             "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000175:choice_detail:000",
             "source": {
@@ -3549,9 +4098,19 @@
               "field_ordinal": 0
             },
             "source_hash": "sha256:bf356eeb6720f6eac001346106339bc4231f3f2917c78c2c774a73dfc29f0e16"
-          }
+          },
+          "step_id": 36
         }
       ],
+      "choice_id": "choice:v1:1_3_10013_01:1_3_10013_01_k:cmd-000174",
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 174,
+        "command_end": 175,
+        "raw_type": "talk_select",
+        "confidence": "exact"
+      },
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -3567,18 +4126,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -3589,16 +4148,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3606,9 +4165,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3619,12 +4183,28 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 179,
+        "command_end": 179,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
+      "pre_wait": 2.0,
       "chara_id": "004ter",
       "dialogue": {
         "speaker": "天道 輝",
         "text": "ああ、プロデューサーも\nお疲れさま！",
         "text_jp": "ああ、プロデューサーも\nお疲れさま！",
         "text_cn": "",
+        "source_text": "ああ、プロデューサーも\nお疲れさま！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000179:mobile_message:000",
           "source": {
@@ -3638,6 +4218,7 @@
           "source_hash": "sha256:91ba810ad2aedccc45eb0970ed8bda2a5b13411d47b6adac6a98ad2d84452002"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -3653,18 +4234,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -3675,16 +4256,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3692,9 +4273,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3705,12 +4291,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 181,
+        "command_end": 181,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "dialogue": {
         "speaker": "天道 輝",
         "text": "それにしても今回の撮影は\n今の自分について、改めて\n考えるいい機会になったぜ。",
         "text_jp": "それにしても今回の撮影は\n今の自分について、改めて\n考えるいい機会になったぜ。",
         "text_cn": "",
+        "source_text": "それにしても今回の撮影は\n今の自分について、改めて\n考えるいい機会になったぜ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000181:mobile_message:000",
           "source": {
@@ -3724,6 +4325,7 @@
           "source_hash": "sha256:1c3bc1feb4f2bbef7d692ccfb0f26c4d23b0a5fc13b4aaaeaafcce8f0183ecc7"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -3739,18 +4341,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -3761,16 +4363,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3778,9 +4380,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3791,12 +4398,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 183,
+        "command_end": 183,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "006tsu",
       "dialogue": {
         "speaker": "柏木 翼",
         "text": "そうですね。\n今回の撮影に参加できて、\n本当によかったです。",
         "text_jp": "そうですね。\n今回の撮影に参加できて、\n本当によかったです。",
         "text_cn": "",
+        "source_text": "そうですね。\n今回の撮影に参加できて、\n本当によかったです。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "006tsu",
+          "source_name": "柏木 翼"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000183:mobile_message:000",
           "source": {
@@ -3810,6 +4432,7 @@
           "source_hash": "sha256:dbc7c2be9e789d5426c916d119c66015cd84f9747629d378e50b281adf05a9bb"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -3825,18 +4448,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -3847,16 +4470,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3864,9 +4487,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3877,12 +4505,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 185,
+        "command_end": 185,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "005kao",
       "dialogue": {
         "speaker": "桜庭 薫",
         "text": "まだドラマの番宣の\n仕事が残っている。\n総括はそれからにしろ。",
         "text_jp": "まだドラマの番宣の\n仕事が残っている。\n総括はそれからにしろ。",
         "text_cn": "",
+        "source_text": "まだドラマの番宣の\n仕事が残っている。\n総括はそれからにしろ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000185:mobile_message:000",
           "source": {
@@ -3896,6 +4539,7 @@
           "source_hash": "sha256:686c5976eb39bb5ce2a98b3234a8b12eda29ba6cb211fc575e8867f028fff634"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -3911,18 +4555,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -3933,16 +4577,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -3950,9 +4594,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -3963,12 +4612,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 187,
+        "command_end": 187,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "006tsu",
       "dialogue": {
         "speaker": "柏木 翼",
         "text": "それじゃ、全て終わったら\nみんなで反省会をしましょう。",
         "text_jp": "それじゃ、全て終わったら\nみんなで反省会をしましょう。",
         "text_cn": "",
+        "source_text": "それじゃ、全て終わったら\nみんなで反省会をしましょう。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "006tsu",
+          "source_name": "柏木 翼"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000187:mobile_message:000",
           "source": {
@@ -3982,6 +4646,7 @@
           "source_hash": "sha256:acc0b5c924adf72704a8f1021d828a5b8d80e8882c86b9be28428c3ee86bc5ff"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -3997,18 +4662,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -4019,16 +4684,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -4036,9 +4701,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -4049,12 +4719,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 189,
+        "command_end": 189,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "005kao",
       "dialogue": {
         "speaker": "桜庭 薫",
         "text": "それならば、構わない。",
         "text_jp": "それならば、構わない。",
         "text_cn": "",
+        "source_text": "それならば、構わない。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000189:mobile_message:000",
           "source": {
@@ -4068,6 +4753,7 @@
           "source_hash": "sha256:e6b58332c08c36b2c4d924ba32d6d13b84793d565b015447dc93350482fdf1ee"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -4083,18 +4769,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -4105,16 +4791,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -4122,9 +4808,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -4135,12 +4826,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 191,
+        "command_end": 191,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "004ter",
       "dialogue": {
         "speaker": "天道 輝",
         "text": "ついでに俺たちだけで\nちょっとした\n打ち上げもしようぜ。",
         "text_jp": "ついでに俺たちだけで\nちょっとした\n打ち上げもしようぜ。",
         "text_cn": "",
+        "source_text": "ついでに俺たちだけで\nちょっとした\n打ち上げもしようぜ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000191:mobile_message:000",
           "source": {
@@ -4154,6 +4860,7 @@
           "source_hash": "sha256:4af7a57e0c3f90f7d5a537151dc39ce919760516198d3480ca18435b6a905c4e"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -4169,18 +4876,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -4191,16 +4898,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -4208,9 +4915,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -4221,12 +4933,27 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 193,
+        "command_end": 193,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
       "chara_id": "005kao",
       "dialogue": {
         "speaker": "桜庭 薫",
         "text": "打ち上げはともかく、\n反省会にはプロデューサーも\n参加してくれ。",
         "text_jp": "打ち上げはともかく、\n反省会にはプロデューサーも\n参加してくれ。",
         "text_cn": "",
+        "source_text": "打ち上げはともかく、\n反省会にはプロデューサーも\n参加してくれ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000193:mobile_message:000",
           "source": {
@@ -4240,6 +4967,7 @@
           "source_hash": "sha256:7955c04e510f18613977c9dcb6a1c956ba113785012b3eede11f70980773ddbb"
         }
       },
+      "post_wait": 2.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -4255,18 +4983,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -4277,16 +5005,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -4294,9 +5022,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -4312,7 +5045,8 @@
           "label": "talk_select3",
           "text": "わかりました",
           "detail": "わかりました。最後まで\n頑張っていきましょう！",
-          "step_id": 45,
+          "source_text": "わかりました",
+          "option_id": "choice-option:v1:1_3_10013_01:1_3_10013_01_k:cmd-000195:000",
           "text_ref": {
             "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000195:choice_short:000",
             "source": {
@@ -4325,6 +5059,7 @@
             },
             "source_hash": "sha256:62a3e713f13c252452c90a0003af6e8df6b7db6b60f36a41f4d1260909358f2e"
           },
+          "detail_source_text": "わかりました。最後まで\n頑張っていきましょう！",
           "detail_text_ref": {
             "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000195:choice_detail:000",
             "source": {
@@ -4336,9 +5071,19 @@
               "field_ordinal": 0
             },
             "source_hash": "sha256:e09bbd18f6a160e35d637384ce8995532d7e77a3f2024788918f8bb6147a149e"
-          }
+          },
+          "step_id": 45
         }
       ],
+      "choice_id": "choice:v1:1_3_10013_01:1_3_10013_01_k:cmd-000195",
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 195,
+        "command_end": 195,
+        "raw_type": "talk_select",
+        "confidence": "exact"
+      },
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -4354,18 +5099,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -4376,16 +5121,16 @@
         "se_events": [],
         "environmental": {
           "cue": "ambi_room",
-          "volume": 0.7
+          "cue_name": "ambi_room"
         },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -4393,9 +5138,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -4406,12 +5156,28 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 198,
+        "command_end": 198,
+        "raw_type": "talk_text",
+        "confidence": "exact"
+      },
+      "pre_wait": 2.0,
       "chara_id": "004ter",
       "dialogue": {
         "speaker": "天道 輝",
         "text": "おう！",
         "text_jp": "おう！",
         "text_cn": "",
+        "source_text": "おう！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "004ter",
+          "source_name": "天道 輝"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_3_10013_01:1_3_10013_01_k:cmd-000198:mobile_message:000",
           "source": {
@@ -4425,6 +5191,7 @@
           "source_hash": "sha256:b5b20dbf03c04583c34840757f14deaaf5b7b782796ba7738947d3d5e6d6cf8f"
         }
       },
+      "post_wait": 3.0,
       "episode_index": 0,
       "episode_part": "k"
     },
@@ -4437,7 +5204,7 @@
         "bg_transition": {
           "type": "dissolve",
           "color": "#FFFFFF",
-          "delay": 0,
+          "delay": 0.0,
           "duration": 1.5
         },
         "bg_effects": [],
@@ -4445,18 +5212,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -4465,15 +5232,18 @@
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
-        "environmental": null,
+        "environmental": {
+          "cue": "ambi_room",
+          "delay": 0.7
+        },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -4481,9 +5251,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -4493,6 +5268,14 @@
           "layer": "2"
         },
         "bg_view_type": "1"
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 205,
+        "command_end": 205,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 3.5,
       "auto_advance": true,
@@ -4512,18 +5295,18 @@
           "imageId": "bg001_315pro_in_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.8999999761581421
@@ -4532,21 +5315,23 @@
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
-        "environmental": null,
+        "environmental": {
+          "cue": "ambi_room"
+        },
         "spines": [],
         "talk_mode": true,
         "phone_mode": true,
         "camera_zoom": {
           "zoom": 0.9,
-          "offset_x": 0,
-          "offset_y": 40,
-          "duration": 2,
-          "delay": 0
+          "offset_x": 0.0,
+          "offset_y": 40.0,
+          "duration": 2.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "out",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#FFFFFF"
         },
         "screen_slide": null,
@@ -4554,9 +5339,14 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
-        "bg_dof": -1,
+        "bg_dof": -1.0,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
@@ -4567,6 +5357,15 @@
         },
         "bg_view_type": "1"
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
+        "source_part_id": "1_3_10013_01_k",
+        "command_start": 207,
+        "command_end": 207,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "k"
     }
@@ -4589,6 +5388,10 @@
       "step_count": 47
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_3_10013_01.unity3d",
+    "raw_hash": "sha256:0b5364dfaafd5a9a906b6fcda4925ddca56fb15475c9b01cf0b5cddbfd9f6dcf"
+  },
   "aggregate_source": {
     "file": "1_3_10013_01.json",
     "scenario_id": "1_3_10013_01",
@@ -4597,7 +5400,7 @@
   },
   "reading_control_flow": {
     "version": 1,
-    "base_compiled_sha256": "sha256:6149459503a4c4448f2e12d062072cb688657f0d1c0125efd755e13a672b7537",
+    "base_compiled_sha256": "sha256:f3205b65ca42461aa25d4589967373cd79352ad06738467431304c2b1d983690",
     "forks": [
       {
         "choice_index": 34,
@@ -4606,8 +5409,8 @@
         "join_step_id": 36,
         "join_step_type": "talk",
         "source_file": "assets/resources/scenariodata/1_3_10013_01/scenario_1_3_10013_01_k.json",
-        "raw_sha256": "sha256:4a0ef854f80647809c7abb152722e36eea4d9ee05c50b279a11b18aab526ed52",
-        "raw_hash_format": "sha256-raw-file-v1",
+        "raw_sha256": "sha256:209a0c31f0d6aece89d5a9845358bf246fb1e4e96241710feb14157d75be3ab0",
+        "raw_hash_format": "sha256-decoded-command-json-v1",
         "choice_commands": [
           174,
           175

@@ -1,6 +1,8 @@
 {
   "scenario_id": "1_1_002_03_h",
-  "total_steps": 24,
+  "text_catalog_id": "1_1_002dra_03_1_1_002_03",
+  "text_contract_version": 1,
+  "total_steps": 25,
   "steps": [
     {
       "step_id": 1,
@@ -14,12 +16,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -44,7 +46,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -52,7 +54,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -60,6 +67,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -75,12 +91,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -95,12 +111,12 @@
         "bgm_volume": 0,
         "se": {
           "cue": "step_run_come_lino_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_run_come_lino_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -116,13 +132,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -142,12 +171,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -162,12 +191,16 @@
         "bgm_volume": 0,
         "se": {
           "cue": "door_ent_hikido_hospital_short",
-          "delay": 1.6
+          "delay": 1.6,
+          "volume": 0.7,
+          "sheet": "se_commu_2022"
         },
         "se_events": [
           {
             "cue": "door_ent_hikido_hospital_short",
-            "delay": 1.6
+            "delay": 1.6,
+            "volume": 0.7,
+            "sheet": "se_commu_2022"
           }
         ],
         "environmental": {
@@ -183,7 +216,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -191,17 +229,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "005kao",
       "dialogue": {
         "speaker": "桜庭 薫",
         "text": "はあっ、はあ……っ姉さん！",
         "text_jp": "はあっ、はあ……っ姉さん！",
         "text_cn": "",
-        "voice": "h1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1001.json",
-          "frames": 232
+        "source_text": "はあっ、はあ……っ姉さん！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000017:dialogue:000",
@@ -214,8 +261,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:fc78ff7f8e0ffefbbab35a9f69277d00f69eada4a6b2fd1da12f510c8c4b5f9f"
+        },
+        "voice": "h1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1001.json",
+          "frames": 232
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -228,20 +282,20 @@
         "bg_transition": {
           "type": "dissolve",
           "color": "",
-          "delay": 0,
-          "duration": 1
+          "delay": 0.0,
+          "duration": 1.0
         },
         "bg_effects": [],
         "bg_profile": {
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -267,7 +321,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": 0.5,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -275,7 +334,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -291,12 +358,84 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
+            "y": -0.05000000074505806,
+            "z": -0.15000000596046448
+          },
+          "colorScale": {
+            "x": 1.149999976158142,
+            "y": 0.949999988079071,
+            "z": 0.75
+          },
+          "colorSaturation": 0.75
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
+        "camera_filter": null,
+        "camera_filter_transition": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 0.8,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "h"
+    },
+    {
+      "step_id": 6,
+      "type": "stage",
+      "state": {
+        "bg": "bg051_sickroom_in_02",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_02",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -311,24 +450,26 @@
         "bgm_volume": 0,
         "se": {
           "cue": "cloth_move_l01",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cloth_move_l01",
-            "delay": 0
+            "delay": 0.0
           }
         ],
-        "environmental": null,
+        "environmental": {
+          "cue": "ambi_room"
+        },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5,
-          "delay": 0
+          "delay": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -336,101 +477,30 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
       "hide_dialogue": true,
-      "episode_index": 0,
-      "episode_part": "h"
-    },
-    {
-      "step_id": 6,
-      "type": "adv",
-      "state": {
-        "bg": "bg051_sickroom_in_02",
-        "bg_effect": null,
-        "bg_transition": null,
-        "bg_effects": [],
-        "bg_profile": {
-          "imageId": "bg002_sky_out_02",
-          "lightPosition": 0,
-          "lightCoordinate": {
-            "x": 0,
-            "y": 0
-          },
-          "lightAlpha": 1,
-          "colorOffSet": {
-            "x": 0,
-            "y": -0.05000000074505806,
-            "z": -0.15000000596046448
-          },
-          "colorScale": {
-            "x": 1.149999976158142,
-            "y": 0.949999988079071,
-            "z": 0.75
-          },
-          "colorSaturation": 0.75
-        },
-        "bgm": "counsel_teary",
-        "bgm_volume": 0,
-        "se": null,
-        "se_events": [],
-        "environmental": null,
-        "spines": [],
-        "talk_mode": false,
-        "phone_mode": false,
-        "camera_zoom": {
-          "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0.5
-        },
-        "screen_fade": null,
-        "screen_slide": null,
-        "screen_effects": [],
-        "bgm_stop_fade": null,
-        "environmental_volume": null,
-        "environmental_duck_target": null,
-        "camera_filter": null,
-        "bg_color": null,
-        "bg_dof": null,
-        "bg_color_transition": null,
-        "bg_dof_transition": null,
-        "text_disabled": false,
-        "image_icon": null
-      },
-      "chara_id": "005kao",
-      "dialogue": {
-        "speaker": "桜庭 薫",
-        "text": "姉さん……僕だよ、薫だよ。\nお願いだから目を開けて……。",
-        "text_jp": "姉さん……僕だよ、薫だよ。\nお願いだから目を開けて……。",
-        "text_cn": "",
-        "voice": "h1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1002.json",
-          "frames": 555
-        },
-        "text_ref": {
-          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000029:dialogue:000",
-          "source": {
-            "scenario_id": "1_1_002dra_03_1_1_002_03",
-            "part_id": "1_1_002_03_h",
-            "file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
-            "command_index": 29,
-            "field_kind": "dialogue",
-            "field_ordinal": 0
-          },
-          "source_hash": "sha256:687aac1aec14559fee9193a00981a94f51c46c7016ae47bedec0fb8ebacc363f"
-        }
-      },
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -446,12 +516,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -466,14 +536,16 @@
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
-        "environmental": null,
+        "environmental": {
+          "cue": "ambi_room"
+        },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -482,7 +554,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -490,17 +567,133 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 29,
+        "command_end": 29,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "chara_id": "005kao",
+      "dialogue": {
+        "speaker": "桜庭 薫",
+        "text": "姉さん……僕だよ、薫だよ。\nお願いだから目を開けて……。",
+        "text_jp": "姉さん……僕だよ、薫だよ。\nお願いだから目を開けて……。",
+        "text_cn": "",
+        "source_text": "姉さん……僕だよ、薫だよ。\nお願いだから目を開けて……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000029:dialogue:000",
+          "source": {
+            "scenario_id": "1_1_002dra_03_1_1_002_03",
+            "part_id": "1_1_002_03_h",
+            "file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+            "command_index": 29,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:687aac1aec14559fee9193a00981a94f51c46c7016ae47bedec0fb8ebacc363f"
+        },
+        "voice": "h1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1002.json",
+          "frames": 555
+        }
+      },
+      "post_wait": 0.5,
+      "episode_index": 0,
+      "episode_part": "h"
+    },
+    {
+      "step_id": 8,
+      "type": "adv",
+      "state": {
+        "bg": "bg051_sickroom_in_02",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_02",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": -0.05000000074505806,
+            "z": -0.15000000596046448
+          },
+          "colorScale": {
+            "x": 1.149999976158142,
+            "y": 0.949999988079071,
+            "z": 0.75
+          },
+          "colorSaturation": 0.75
+        },
+        "bgm": "counsel_teary",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.2,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
+        "camera_filter": null,
+        "camera_filter_transition": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 31,
+        "command_end": 31,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "005kao",
       "dialogue": {
         "speaker": "桜庭 薫",
         "text": "う、うぅっ……姉さん……。",
         "text_jp": "う、うぅっ……姉さん……。",
         "text_cn": "",
-        "voice": "h1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1003.json",
-          "frames": 390
+        "source_text": "う、うぅっ……姉さん……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000031:dialogue:000",
@@ -513,13 +706,20 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c0b6f3e6d7d7ca66cebc76347795925e9d2fcc4543b96b8ac31ba99573e6fc43"
+        },
+        "voice": "h1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1003.json",
+          "frames": 390
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 8,
+      "step_id": 9,
       "type": "text_disable",
       "state": {
         "bg": "bg051_sickroom_in_02",
@@ -530,12 +730,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -556,8 +756,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -566,7 +766,15 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": 1.5,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": {
+          "delay": 0.0,
+          "duration": 2.0
+        },
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -574,75 +782,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
-      "episode_index": 0,
-      "episode_part": "h"
-    },
-    {
-      "step_id": 9,
-      "type": "stage",
-      "state": {
-        "bg": "bg051_sickroom_in_02",
-        "bg_effect": null,
-        "bg_transition": null,
-        "bg_effects": [],
-        "bg_profile": {
-          "imageId": "bg002_sky_out_02",
-          "lightPosition": 0,
-          "lightCoordinate": {
-            "x": 0,
-            "y": 0
-          },
-          "lightAlpha": 1,
-          "colorOffSet": {
-            "x": 0,
-            "y": -0.05000000074505806,
-            "z": -0.15000000596046448
-          },
-          "colorScale": {
-            "x": 1.149999976158142,
-            "y": 0.949999988079071,
-            "z": 0.75
-          },
-          "colorSaturation": 0.75
-        },
-        "bgm": "counsel_teary",
-        "bgm_volume": 0,
-        "se": null,
-        "se_events": [],
-        "environmental": null,
-        "spines": [],
-        "talk_mode": false,
-        "phone_mode": false,
-        "camera_zoom": {
-          "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0.5
-        },
-        "screen_fade": null,
-        "screen_slide": null,
-        "screen_effects": [],
-        "bgm_stop_fade": null,
-        "environmental_volume": null,
-        "environmental_duck_target": null,
-        "camera_filter": "gray",
-        "bg_color": "#AAAAAA",
-        "bg_dof": 0.8,
-        "bg_color_transition": {
-          "delay": 0.1,
-          "duration": 0.4
-        },
-        "bg_dof_transition": {
-          "delay": 0,
-          "duration": 0.4
-        },
-        "text_disabled": false,
-        "image_icon": null
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 36,
+        "command_end": 36,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
-      "duration": 0.2,
-      "auto_advance": true,
-      "hide_dialogue": true,
+      "duration": 2.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -658,12 +806,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -679,32 +827,13 @@
         "se": null,
         "se_events": [],
         "environmental": null,
-        "spines": [
-          {
-            "id": "238sub",
-            "model": "238sub_001_00",
-            "face": "face_default",
-            "anim": "wait_loop",
-            "position": 0,
-            "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
-            "anim_flag": "目",
-            "blush_flag": "off",
-            "sweat_flag": "off",
-            "fade": {
-              "type": "in",
-              "delay": 0,
-              "duration": 0.2
-            }
-          }
-        ],
+        "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -713,23 +842,43 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
-        "bg_color_transition": null,
-        "bg_dof_transition": null,
+        "bg_color_transition": {
+          "delay": 0.1,
+          "duration": 0.4
+        },
+        "bg_dof_transition": {
+          "delay": 0.0,
+          "duration": 0.4
+        },
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 39,
+        "command_end": 39,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
       "step_id": 11,
-      "type": "adv",
+      "type": "stage",
       "state": {
         "bg": "bg051_sickroom_in_02",
         "bg_effect": null,
@@ -739,12 +888,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -768,19 +917,24 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
-            "sweat_flag": "off"
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0.0,
+              "duration": 0.2
+            }
           }
         ],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -789,7 +943,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -797,27 +956,18 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "chara_id": "005kao",
-      "lipSync": false,
-      "dialogue": {
-        "speaker": "桜庭 薫",
-        "text": "（お父さんや、お母さんとは違う。\n姉さんだけは、僕を見離さないでいてくれた）",
-        "text_jp": "（お父さんや、お母さんとは違う。\n姉さんだけは、僕を見離さないでいてくれた）",
-        "text_cn": "",
-        "voice": "h1004.m4a",
-        "text_ref": {
-          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000044:dialogue:000",
-          "source": {
-            "scenario_id": "1_1_002dra_03_1_1_002_03",
-            "part_id": "1_1_002_03_h",
-            "file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
-            "command_index": 44,
-            "field_kind": "dialogue",
-            "field_ordinal": 0
-          },
-          "source_hash": "sha256:9730de01b6a982afa06b999148b15df6e1e1ea5c41d860eaff6edf2c03e7901d"
-        }
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -833,12 +983,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -862,8 +1012,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -873,8 +1023,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -883,7 +1033,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -891,9 +1046,132 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 44,
+        "command_end": 44,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "chara_id": "005kao",
+      "lipSync": false,
+      "dialogue": {
+        "speaker": "桜庭 薫",
+        "text": "（お父さんや、お母さんとは違う。\n姉さんだけは、僕を見離さないでいてくれた）",
+        "text_jp": "（お父さんや、お母さんとは違う。\n姉さんだけは、僕を見離さないでいてくれた）",
+        "text_cn": "",
+        "source_text": "（お父さんや、お母さんとは違う。\n姉さんだけは、僕を見離さないでいてくれた）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000044:dialogue:000",
+          "source": {
+            "scenario_id": "1_1_002dra_03_1_1_002_03",
+            "part_id": "1_1_002_03_h",
+            "file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+            "command_index": 44,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:9730de01b6a982afa06b999148b15df6e1e1ea5c41d860eaff6edf2c03e7901d"
+        },
+        "voice": "h1004.m4a"
+      },
+      "post_wait": 0.5,
+      "episode_index": 0,
+      "episode_part": "h"
+    },
+    {
+      "step_id": 13,
+      "type": "adv",
+      "state": {
+        "bg": "bg051_sickroom_in_02",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_02",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": -0.05000000074505806,
+            "z": -0.15000000596046448
+          },
+          "colorScale": {
+            "x": 1.149999976158142,
+            "y": 0.949999988079071,
+            "z": 0.75
+          },
+          "colorSaturation": 0.75
+        },
+        "bgm": "counsel_teary",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": null,
+        "spines": [
+          {
+            "id": "238sub",
+            "model": "238sub_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.2,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
+        "camera_filter": "gray",
+        "camera_filter_transition": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 47,
+        "command_end": 47,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "238sub",
           "value": "face_default",
@@ -909,7 +1187,13 @@
         "text": "（僕の目を、ちゃんと見てくれたんだ……）",
         "text_jp": "（僕の目を、ちゃんと見てくれたんだ……）",
         "text_cn": "",
-        "voice": "h1005.m4a",
+        "source_text": "（僕の目を、ちゃんと見てくれたんだ……）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000047:dialogue:000",
           "source": {
@@ -921,13 +1205,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:bca3d41539b8425a98e185d28b6b3084a0fc4731944f713697af2825d2d7f1b5"
-        }
+        },
+        "voice": "h1005.m4a"
       },
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 13,
+      "step_id": 14,
       "type": "text_disable",
       "state": {
         "bg": "bg051_sickroom_in_02",
@@ -938,12 +1224,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -967,8 +1253,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -978,14 +1264,14 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": {
           "type": "out",
-          "duration": 3,
-          "delay": 0,
+          "duration": 3.0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -993,7 +1279,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1001,12 +1292,20 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
+      },
       "duration": 0.6,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 14,
+      "step_id": 15,
       "type": "fadein",
       "state": {
         "bg": "bg051_sickroom_in_02",
@@ -1017,12 +1316,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -1046,8 +1345,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1057,8 +1356,8 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": null,
@@ -1067,7 +1366,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": "gray",
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1075,11 +1379,19 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
+      },
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 15,
+      "step_id": 16,
       "type": "stage",
       "state": {
         "bg": "bg051_sickroom_in_02",
@@ -1090,12 +1402,12 @@
           "imageId": "bg002_sky_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
+            "x": 0.0,
             "y": -0.05000000074505806,
             "z": -0.15000000596046448
           },
@@ -1119,14 +1431,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1135,17 +1447,25 @@
         "phone_mode": false,
         "camera_zoom": {
           "zoom": 1.2,
-          "offset_x": 0,
-          "offset_y": 0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
           "duration": 0.5
         },
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": {
+          "delay": 0.0,
+          "duration": 0.0
+        },
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1153,14 +1473,23 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
+      "post_wait": 1.5,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 16,
+      "step_id": 17,
       "type": "fadeout",
       "state": {
         "bg": "bg028_hospital_in_01",
@@ -1171,44 +1500,45 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": "counsel_country",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby",
+          "delay": 0.5
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0,
-          "delay": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0,
+          "delay": 0.0
         },
         "screen_fade": {
           "type": "in",
           "duration": 1.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -1216,7 +1546,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1224,11 +1559,19 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 63,
+        "command_end": 63,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 17,
+      "step_id": 18,
       "type": "stage",
       "state": {
         "bg": "bg028_hospital_in_01",
@@ -1239,38 +1582,38 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1278,13 +1621,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -1293,7 +1649,7 @@
       "episode_part": "h"
     },
     {
-      "step_id": 18,
+      "step_id": 19,
       "type": "text_time",
       "state": {
         "bg": "bg028_hospital_in_01",
@@ -1304,38 +1660,38 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1343,7 +1699,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1351,9 +1712,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 66,
+        "command_end": 66,
+        "raw_type": "text_time",
+        "confidence": "exact"
+      },
       "duration": 1.2,
       "text_time": {
         "text": "数年後……",
+        "source_text": "数年後……",
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000066:time_caption:000",
           "source": {
@@ -1368,11 +1738,12 @@
         }
       },
       "auto_advance": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 19,
+      "step_id": 20,
       "type": "stage",
       "state": {
         "bg": "bg028_hospital_in_01",
@@ -1383,46 +1754,46 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": {
           "cue": "step_walk_come_lino_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_walk_come_lino_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1430,7 +1801,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1438,14 +1814,22 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 2,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 69,
+        "command_end": 69,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 2.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 20,
+      "step_id": 21,
       "type": "adv",
       "state": {
         "bg": "bg028_hospital_in_01",
@@ -1456,38 +1840,38 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby"
         },
         "spines": [],
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1495,7 +1879,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1503,12 +1892,27 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 70,
+        "command_end": 70,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "mob",
       "dialogue": {
         "speaker": "薫の同僚",
         "text": "聞いたぞ、桜庭！　例の手術、\nおまえが成功させたんだろ？　流石だなぁ！",
         "text_jp": "聞いたぞ、桜庭！　例の手術、\nおまえが成功させたんだろ？　流石だなぁ！",
         "text_cn": "",
+        "source_text": "聞いたぞ、桜庭！　例の手術、\nおまえが成功させたんだろ？　流石だなぁ！",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "薫の同僚"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000070:dialogue:000",
           "source": {
@@ -1522,11 +1926,12 @@
           "source_hash": "sha256:0f7d2d9ff005aa60384491137378b99fdc964b047831cc4b8afb5c4ef4d295c7"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
     {
-      "step_id": 21,
+      "step_id": 22,
       "type": "stage",
       "state": {
         "bg": "bg028_hospital_in_01",
@@ -1537,29 +1942,29 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby"
         },
         "spines": [
           {
@@ -1569,14 +1974,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -1584,10 +1989,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1595,118 +2000,31 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 73,
+        "command_end": 73,
+        "raw_type": "cut_end",
+        "confidence": "exact"
       },
       "duration": 0.2,
       "auto_advance": true,
       "hide_dialogue": true,
-      "episode_index": 0,
-      "episode_part": "h"
-    },
-    {
-      "step_id": 22,
-      "type": "adv",
-      "state": {
-        "bg": "bg028_hospital_in_01",
-        "bg_effect": null,
-        "bg_transition": null,
-        "bg_effects": [],
-        "bg_profile": {
-          "imageId": "bg028_hospital_in_01",
-          "lightPosition": 0,
-          "lightCoordinate": {
-            "x": 0,
-            "y": 0
-          },
-          "lightAlpha": 1,
-          "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          },
-          "colorSaturation": 1
-        },
-        "bgm": null,
-        "bgm_volume": 0,
-        "se": null,
-        "se_events": [],
-        "environmental": {
-          "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
-        },
-        "spines": [
-          {
-            "id": "005kao",
-            "model": "005kao_001_00",
-            "face": "face_serious",
-            "anim": "angry",
-            "position": 0,
-            "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
-            "anim_flag": "目",
-            "blush_flag": "off",
-            "sweat_flag": "off"
-          }
-        ],
-        "talk_mode": false,
-        "phone_mode": false,
-        "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
-        },
-        "screen_fade": null,
-        "screen_slide": null,
-        "screen_effects": [],
-        "bgm_stop_fade": null,
-        "environmental_volume": null,
-        "environmental_duck_target": null,
-        "camera_filter": null,
-        "bg_color": "#AAAAAA",
-        "bg_dof": 0.8,
-        "bg_color_transition": null,
-        "bg_dof_transition": null,
-        "text_disabled": false,
-        "image_icon": null
-      },
-      "chara_id": "005kao",
-      "dialogue": {
-        "speaker": "桜庭 薫",
-        "text": "あの程度の処置、できて当然だ。",
-        "text_jp": "あの程度の処置、できて当然だ。",
-        "text_cn": "",
-        "voice": "h1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1008.json",
-          "frames": 188
-        },
-        "text_ref": {
-          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000076:dialogue:000",
-          "source": {
-            "scenario_id": "1_1_002dra_03_1_1_002_03",
-            "part_id": "1_1_002_03_h",
-            "file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
-            "command_index": 76,
-            "field_kind": "dialogue",
-            "field_ordinal": 0
-          },
-          "source_hash": "sha256:e23bd589dafd9be3cc251a3b3c3c0543709989b948ed0a23a421a811c13f5d11"
-        }
-      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1722,40 +2040,40 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby"
         },
         "spines": [
           {
             "id": "005kao",
             "model": "005kao_001_00",
             "face": "face_serious",
-            "anim": "wait_loop",
+            "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1764,10 +2082,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1775,7 +2093,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1783,31 +2106,47 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "005kao",
       "dialogue": {
         "speaker": "桜庭 薫",
-        "text": "君も無駄口を叩いている暇があるなら、\n次の手術に備えたらどうだ？",
-        "text_jp": "君も無駄口を叩いている暇があるなら、\n次の手術に備えたらどうだ？",
+        "text": "あの程度の処置、できて当然だ。",
+        "text_jp": "あの程度の処置、できて当然だ。",
         "text_cn": "",
-        "voice": "h1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1009.json",
-          "frames": 317
+        "source_text": "あの程度の処置、できて当然だ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
         },
         "text_ref": {
-          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000079:dialogue:000",
+          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000076:dialogue:000",
           "source": {
             "scenario_id": "1_1_002dra_03_1_1_002_03",
             "part_id": "1_1_002_03_h",
             "file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
-            "command_index": 79,
+            "command_index": 76,
             "field_kind": "dialogue",
             "field_ordinal": 0
           },
-          "source_hash": "sha256:2ec11324ec608197f479fee3bee2aade754bcda4c8a176678d435209f010cc62"
+          "source_hash": "sha256:e23bd589dafd9be3cc251a3b3c3c0543709989b948ed0a23a421a811c13f5d11"
+        },
+        "voice": "h1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1008.json",
+          "frames": 188
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "h"
     },
@@ -1823,29 +2162,29 @@
           "imageId": "bg028_hospital_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
-        "bgm": null,
+        "bgm": "counsel_country",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
           "cue": "ambi_hotel_euro_lobby",
-          "volume": 0.5
+          "cue_name": "ambi_hotel_euro_lobby"
         },
         "spines": [
           {
@@ -1855,8 +2194,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1865,10 +2204,10 @@
         "talk_mode": false,
         "phone_mode": false,
         "camera_zoom": {
-          "zoom": 1,
-          "offset_x": 0,
-          "offset_y": 0,
-          "duration": 0
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
         },
         "screen_fade": null,
         "screen_slide": null,
@@ -1876,7 +2215,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -1884,9 +2228,139 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 79,
+        "command_end": 79,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "chara_id": "005kao",
+      "dialogue": {
+        "speaker": "桜庭 薫",
+        "text": "君も無駄口を叩いている暇があるなら、\n次の手術に備えたらどうだ？",
+        "text_jp": "君も無駄口を叩いている暇があるなら、\n次の手術に備えたらどうだ？",
+        "text_cn": "",
+        "source_text": "君も無駄口を叩いている暇があるなら、\n次の手術に備えたらどうだ？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "005kao",
+          "source_name": "桜庭 薫"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000079:dialogue:000",
+          "source": {
+            "scenario_id": "1_1_002dra_03_1_1_002_03",
+            "part_id": "1_1_002_03_h",
+            "file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+            "command_index": 79,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:2ec11324ec608197f479fee3bee2aade754bcda4c8a176678d435209f010cc62"
+        },
+        "voice": "h1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/002dra/1_1_002_03/1_1_002_03_h/1_1_002_03_h1009.json",
+          "frames": 317
+        }
+      },
+      "post_wait": 0.5,
+      "episode_index": 0,
+      "episode_part": "h"
+    },
+    {
+      "step_id": 25,
+      "type": "adv",
+      "state": {
+        "bg": "bg028_hospital_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg028_hospital_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "counsel_country",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_hotel_euro_lobby",
+          "cue_name": "ambi_hotel_euro_lobby"
+        },
+        "spines": [
+          {
+            "id": "005kao",
+            "model": "005kao_001_00",
+            "face": "face_serious",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.0,
+          "offset_x": 0.0,
+          "offset_y": 0.0,
+          "duration": 0.0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
+        "camera_filter": null,
+        "camera_filter_transition": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_002dra_03/scenario_1_1_002_03_h.json",
+        "source_part_id": "1_1_002_03_h",
+        "command_start": 82,
+        "command_end": 82,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "005kao",
           "value": "face_serious",
@@ -1901,6 +2375,13 @@
         "text": "はは、相変わらず手厳しいやつだ。\nま、そういう生真面目なところ、尊敬するけどな。",
         "text_jp": "はは、相変わらず手厳しいやつだ。\nま、そういう生真面目なところ、尊敬するけどな。",
         "text_cn": "",
+        "source_text": "はは、相変わらず手厳しいやつだ。\nま、そういう生真面目なところ、尊敬するけどな。",
+        "speaker_identity": {
+          "kind": "named",
+          "entity_type": null,
+          "entity_id": "mob",
+          "source_name": "薫の同僚"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_002dra_03_1_1_002_03:1_1_002_03_h:cmd-000082:dialogue:000",
           "source": {
@@ -1914,6 +2395,7 @@
           "source_hash": "sha256:3273e9e6a2f1d07fae9748cc2e8486e06a944ae9381c927af42d81ecb7cd86c2"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "h"
     }
@@ -1927,15 +2409,19 @@
       "source_scenario_id": "1_1_002_03_h",
       "start_step_index": 0,
       "start_step_id": 1,
-      "end_step_index": 23,
-      "end_step_id": 24,
-      "step_count": 24
+      "end_step_index": 24,
+      "end_step_id": 25,
+      "step_count": 25
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_002_03.unity3d",
+    "raw_hash": "sha256:11b4b9560f8164cf8d157d8ca267133ba8fbdb93f1b10125650284748d96d9a7"
+  },
   "aggregate_source": {
     "file": "1_1_002dra_03_1_1_002_03.json",
     "scenario_id": "1_1_002dra_03_1_1_002_03",
     "start_step_index": 211,
-    "end_step_index": 234
+    "end_step_index": 235
   }
 }

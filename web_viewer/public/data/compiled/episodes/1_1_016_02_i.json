@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_016_02_i",
+  "text_catalog_id": "1_1_016cfi_02_1_1_016_02",
+  "text_contract_version": 1,
   "total_steps": 13,
   "steps": [
     {
@@ -14,28 +16,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -45,15 +47,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -63,7 +65,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -71,7 +73,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -79,6 +86,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -94,28 +110,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -125,8 +141,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -141,13 +157,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -183,6 +212,13 @@
         "text": "それでは後日、事務所で詳細をお話させてください。\n事務所の場所は……。……？",
         "text_jp": "それでは後日、事務所で詳細をお話させてください。\n事務所の場所は……。……？",
         "text_cn": "",
+        "source_text": "それでは後日、事務所で詳細をお話させてください。\n事務所の場所は……。……？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000015:dialogue:000",
           "source": {
@@ -196,6 +232,7 @@
           "source_hash": "sha256:ada746bcf78f1ad52e2092ad2d0e311a1d97c220b3ebbb74bc640f4f2bce7f29"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -211,28 +248,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -242,8 +279,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -258,7 +295,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -266,11 +308,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 17,
+        "command_end": 17,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "どうしました、百々人さん。\nそんなに名刺を見つめられて。",
         "text_jp": "どうしました、百々人さん。\nそんなに名刺を見つめられて。",
         "text_cn": "",
+        "source_text": "どうしました、百々人さん。\nそんなに名刺を見つめられて。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000017:dialogue:000",
           "source": {
@@ -284,6 +341,7 @@
           "source_hash": "sha256:6f1b2e4b9900c01a6223bacc90d1d7c1d89be8d06c76e04844ca63886fc3047b"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -299,28 +357,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -330,8 +388,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -347,7 +405,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -355,9 +418,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 24,
+        "command_end": 24,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_neck_stop",
           "chara_id": "048mom",
           "value": ""
@@ -384,11 +455,12 @@
         "text": "キミの名前……。\n●●●●プロデューサーさんっていうんだ。",
         "text_jp": "キミの名前……。\n●●●●プロデューサーさんっていうんだ。",
         "text_cn": "",
-        "voice": "i1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1002.json",
-          "frames": 267
+        "source_text": "キミの名前……。\n●●●●プロデューサーさんっていうんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000024:dialogue:000",
@@ -401,8 +473,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b88f19c572c1cf2d82a2b9317a261c32bbdbe1b21c79077487cc4398618e4cd2"
+        },
+        "voice": "i1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1002.json",
+          "frames": 267
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -418,28 +497,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -449,8 +528,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -465,7 +544,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -473,11 +557,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 26,
+        "command_end": 26,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "はい！　アイドルのプロデュースをしています。\n改めて、これからよろしくお願いしますね。",
         "text_jp": "はい！　アイドルのプロデュースをしています。\n改めて、これからよろしくお願いしますね。",
         "text_cn": "",
+        "source_text": "はい！　アイドルのプロデュースをしています。\n改めて、これからよろしくお願いしますね。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000026:dialogue:000",
           "source": {
@@ -491,6 +590,7 @@
           "source_hash": "sha256:7782b13e3e8321caa7d270f782ee98212fbfef40edfadec3a80548c9bfd38f52"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -506,28 +606,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -537,8 +637,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -553,13 +653,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 32,
+        "command_end": 32,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -578,11 +691,12 @@
         "text": "んー……。『プロデューサーさん』か……。",
         "text_jp": "んー……。『プロデューサーさん』か……。",
         "text_cn": "",
-        "voice": "i1004.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1004.json",
-          "frames": 331
+        "source_text": "んー……。『プロデューサーさん』か……。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000032:dialogue:000",
@@ -595,8 +709,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:cbea65fbf2526b7a12d69e29e9abed60d289566a00ff35a4d439bb86dbfbae47"
+        },
+        "voice": "i1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1004.json",
+          "frames": 331
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -612,28 +733,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -643,8 +764,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -659,7 +780,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -667,9 +793,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "048mom",
           "value": "face_joy",
@@ -693,11 +827,12 @@
         "text": "僕、もっと別の呼び方がいいな……。\nキミと仲良くなりたいから。",
         "text_jp": "僕、もっと別の呼び方がいいな……。\nキミと仲良くなりたいから。",
         "text_cn": "",
-        "voice": "i1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1005.json",
-          "frames": 390
+        "source_text": "僕、もっと別の呼び方がいいな……。\nキミと仲良くなりたいから。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000038:dialogue:000",
@@ -710,8 +845,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:86f1787673932178edcf02f5eb46a9ac94f4126948610149c07f8db581d346a3"
+        },
+        "voice": "i1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1005.json",
+          "frames": 390
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -727,28 +869,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -758,8 +900,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -775,13 +917,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -824,7 +979,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 11,
+          "time": 11.0,
           "type": "spine_face",
           "chara_id": "048mom",
           "value": "face_joy",
@@ -839,11 +994,12 @@
         "text": "あだ名とか、つけてもいい？\n短くて、呼びやすくて、可愛いのがいいな……あ！",
         "text_jp": "あだ名とか、つけてもいい？\n短くて、呼びやすくて、可愛いのがいいな……あ！",
         "text_cn": "",
-        "voice": "i1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1006.json",
-          "frames": 749
+        "source_text": "あだ名とか、つけてもいい？\n短くて、呼びやすくて、可愛いのがいいな……あ！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000050:dialogue:000",
@@ -856,8 +1012,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:ff8595b8a88be2920ca820f9e163d2b34209236642ad0f737d0bd57230ca1fb8"
+        },
+        "voice": "i1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1006.json",
+          "frames": 749
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -873,28 +1036,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -904,8 +1067,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -920,13 +1083,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 56,
+        "command_end": 56,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -954,11 +1130,12 @@
         "text": "じゃあ、ぴぃちゃん。\n●●●●●●●●●●ぴぃちゃんにしようよ。",
         "text_jp": "じゃあ、ぴぃちゃん。\n●●●●●●●●●●ぴぃちゃんにしようよ。",
         "text_cn": "",
-        "voice": "i1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1007.json",
-          "frames": 259
+        "source_text": "じゃあ、ぴぃちゃん。\n●●●●●●●●●●ぴぃちゃんにしようよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000056:dialogue:000",
@@ -971,8 +1148,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b8e2d662c613cdd6451ab56bf90d6cd3b1c9bdf0d8939440b10e3306d4f6963d"
+        },
+        "voice": "i1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1007.json",
+          "frames": 259
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -988,28 +1172,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1019,8 +1203,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1035,7 +1219,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1043,9 +1232,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "048mom",
           "value": "face_joy",
@@ -1059,6 +1256,13 @@
         "text": "あ、それって、プロデューサーの『P』ですか？",
         "text_jp": "あ、それって、プロデューサーの『P』ですか？",
         "text_cn": "",
+        "source_text": "あ、それって、プロデューサーの『P』ですか？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000059:dialogue:000",
           "source": {
@@ -1072,6 +1276,7 @@
           "source_hash": "sha256:55a76098d7f8db493c3a872b198e4f82576fab59e3ebf0889f0b13359f1921b1"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1087,28 +1292,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1118,8 +1323,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1134,7 +1339,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1142,9 +1352,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "048mom",
           "value": "face_sad",
@@ -1165,11 +1383,12 @@
         "text": "うん。……もしかして、\nもう同じ呼び方してる人がいる？",
         "text_jp": "うん。……もしかして、\nもう同じ呼び方してる人がいる？",
         "text_cn": "",
-        "voice": "i1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1009.json",
-          "frames": 408
+        "source_text": "うん。……もしかして、\nもう同じ呼び方してる人がいる？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000065:dialogue:000",
@@ -1182,8 +1401,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:17b7f8444c7fc4a8873ebddb57d8f8f4fffa6b306da850951c146881422f080a"
+        },
+        "voice": "i1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1009.json",
+          "frames": 408
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1199,28 +1425,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1230,8 +1456,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1246,13 +1472,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 71,
+        "command_end": 71,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1285,6 +1524,13 @@
         "text": "いえ、いませんよ！　百々人さんだけです。",
         "text_jp": "いえ、いませんよ！　百々人さんだけです。",
         "text_cn": "",
+        "source_text": "いえ、いませんよ！　百々人さんだけです。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000071:dialogue:000",
           "source": {
@@ -1298,6 +1544,7 @@
           "source_hash": "sha256:b04d11b8e599eb6c5243ebc16ebd46387a4bd250be3f865b47331f50b1e095b1"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1313,28 +1560,28 @@
           "imageId": "bg016_shibuya_out_02",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": 0.019999999552965164,
-            "y": 0,
+            "y": 0.0,
             "z": -0.05000000074505806
           },
           "colorScale": {
             "x": 1.0499999523162842,
-            "y": 1,
+            "y": 1.0,
             "z": 0.8999999761581421
           },
           "colorSaturation": 0.75
         },
-        "bgm": null,
+        "bgm": "city_downtown_night",
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
         "environmental": {
-          "cue": "ambi_school_classroom_corridor"
+          "cue": "ambi_shinjuku_traffic"
         },
         "spines": [
           {
@@ -1344,8 +1591,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1360,13 +1607,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_016cfi_02/scenario_1_1_016_02_i.json",
+        "source_part_id": "1_1_016_02_i",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1379,7 +1639,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 5,
+          "time": 5.0,
           "type": "spine_anim",
           "chara_id": "048mom",
           "value": "hello"
@@ -1391,11 +1651,12 @@
         "text": "そっか、それならよかった。\nぴぃちゃん。これからよろしくね。",
         "text_jp": "そっか、それならよかった。\nぴぃちゃん。これからよろしくね。",
         "text_cn": "",
-        "voice": "i1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1011.json",
-          "frames": 414
+        "source_text": "そっか、それならよかった。\nぴぃちゃん。これからよろしくね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "048mom",
+          "source_name": "花園 百々人"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_016cfi_02_1_1_016_02:1_1_016_02_i:cmd-000076:dialogue:000",
@@ -1408,8 +1669,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d38ca40292274c60d063047dbce2dd91d69af7670ee98feb30df89d08ef933f2"
+        },
+        "voice": "i1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/016cfi/1_1_016_02/1_1_016_02_i/1_1_016_02_i1011.json",
+          "frames": 414
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     }
@@ -1428,6 +1696,10 @@
       "step_count": 13
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_016_02.unity3d",
+    "raw_hash": "sha256:de35133b50209a66dc6035784ad18121b4d70e120ebc21881c2849e4e1cf958b"
+  },
   "aggregate_source": {
     "file": "1_1_016cfi_02_1_1_016_02.json",
     "scenario_id": "1_1_016cfi_02_1_1_016_02",

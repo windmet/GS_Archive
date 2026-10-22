@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_2_049_01_d",
+  "text_catalog_id": "1_2_049eis_01_1_2_049_01",
+  "text_contract_version": 1,
   "total_steps": 18,
   "steps": [
     {
@@ -12,7 +14,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": "counsel_country",
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -26,15 +28,16 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
+            "anim_track_time": 3.0,
             "fade": {
               "type": "in",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -44,7 +47,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -52,7 +55,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -60,6 +68,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -73,7 +90,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": "counsel_country",
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -87,11 +104,12 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
-            "sweat_flag": "off"
+            "sweat_flag": "off",
+            "anim_track_time": 3.0
           }
         ],
         "talk_mode": false,
@@ -103,7 +121,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -111,17 +134,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "……自分とは違う人間に成り代われるところだな。",
         "text_jp": "……自分とは違う人間に成り代われるところだな。",
         "text_cn": "",
-        "voice": "d1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1000.json",
-          "frames": 221
+        "source_text": "……自分とは違う人間に成り代われるところだな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000012:dialogue:000",
@@ -134,8 +166,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:c3b804a316d0aa691cdf35c8e00ca3749a059b5c68ac188ff90aca5c59a93ee8"
+        },
+        "voice": "d1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1000.json",
+          "frames": 221
         }
       },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -149,7 +188,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": "counsel_country",
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -163,8 +202,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -179,7 +218,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -187,17 +231,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 15,
+        "command_end": 15,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "映画の登場人物になれば、\n今いる環境も問題も意識の外へ出ていく。",
         "text_jp": "映画の登場人物になれば、\n今いる環境も問題も意識の外へ出ていく。",
         "text_cn": "",
-        "voice": "d1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1001.json",
-          "frames": 397
+        "source_text": "映画の登場人物になれば、\n今いる環境も問題も意識の外へ出ていく。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000015:dialogue:000",
@@ -210,8 +263,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b300acadea902bbc05a223526a3c288a5e287ae6328af26674eb6482aaeac5e8"
+        },
+        "voice": "d1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1001.json",
+          "frames": 397
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -225,7 +285,7 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": "counsel_country",
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": null,
         "se_events": [],
         "environmental": {
@@ -239,8 +299,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -255,13 +315,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 20,
+        "command_end": 20,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -280,11 +353,12 @@
         "text": "両親すら、映画の中では赤の他人に変わるからな。\n創作の世界というのは面白い。",
         "text_jp": "両親すら、映画の中では赤の他人に変わるからな。\n創作の世界というのは面白い。",
         "text_cn": "",
-        "voice": "d1002.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1002.json",
-          "frames": 452
+        "source_text": "両親すら、映画の中では赤の他人に変わるからな。\n創作の世界というのは面白い。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000020:dialogue:000",
@@ -297,8 +371,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5ec57a8acd56fa3d4415a73b9d7dbe5f3e91eb47270e3624624622f5a88d1f44"
+        },
+        "voice": "d1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1002.json",
+          "frames": 452
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -312,15 +393,15 @@
         "bg_effects": [],
         "bg_profile": null,
         "bgm": "counsel_country",
-        "bgm_volume": 0,
+        "bgm_volume": 100,
         "se": {
           "cue": "cloth_move_ss01",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "cloth_move_ss01",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -334,8 +415,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -350,7 +431,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -358,9 +444,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 27,
+        "command_end": 27,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_joy",
@@ -375,11 +469,12 @@
         "text": "……よし、準備が出来た。始めよう。",
         "text_jp": "……よし、準備が出来た。始めよう。",
         "text_cn": "",
-        "voice": "d1003.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1003.json",
-          "frames": 206
+        "source_text": "……よし、準備が出来た。始めよう。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000027:dialogue:000",
@@ -392,6 +487,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:64ad721d23ddd5188911214590f3059eb83b101b4e984a63c14da8dc1ce9883b"
+        },
+        "voice": "d1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1003.json",
+          "frames": 206
         }
       },
       "episode_index": 0,
@@ -421,8 +522,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -434,16 +535,29 @@
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 0,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 29,
+        "command_end": 29,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 0.5,
       "auto_advance": true,
@@ -475,8 +589,8 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -487,8 +601,8 @@
         "camera_zoom": null,
         "screen_fade": {
           "type": "out",
-          "duration": 2,
-          "delay": 0,
+          "duration": 2.0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -496,13 +610,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 30,
+        "command_end": 30,
+        "raw_type": "screen_fadein",
+        "confidence": "exact"
       },
       "episode_index": 0,
       "episode_part": "d"
@@ -519,10 +646,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -535,7 +662,7 @@
           },
           "colorSaturation": 0.699999988079071
         },
-        "bgm": "counsel_country",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -550,15 +677,15 @@
             "anim": "weight",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "out",
-              "delay": 0,
-              "duration": 0
+              "delay": 0.0,
+              "duration": 0.0
             }
           }
         ],
@@ -571,7 +698,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -579,7 +711,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -597,10 +737,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -613,7 +753,7 @@
           },
           "colorSaturation": 0.699999988079071
         },
-        "bgm": "counsel_country",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -626,8 +766,8 @@
         "camera_zoom": null,
         "screen_fade": {
           "type": "in",
-          "duration": 1,
-          "delay": 0,
+          "duration": 1.0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -635,7 +775,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -643,6 +788,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 34,
+        "command_end": 34,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -658,10 +812,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -674,7 +828,7 @@
           },
           "colorSaturation": 0.699999988079071
         },
-        "bgm": "counsel_country",
+        "bgm": null,
         "bgm_volume": 0,
         "se": null,
         "se_events": [],
@@ -691,7 +845,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -699,9 +858,18 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 36,
+        "command_end": 36,
+        "raw_type": "text_time",
+        "confidence": "exact"
+      },
       "duration": 1.2,
       "text_time": {
         "text": "数時間後……",
+        "source_text": "数時間後……",
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000036:time_caption:000",
           "source": {
@@ -716,6 +884,7 @@
         }
       },
       "auto_advance": true,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -731,10 +900,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -762,15 +931,15 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "anim_no_back": true,
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -784,7 +953,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -792,7 +966,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -810,10 +992,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -841,8 +1023,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -858,7 +1040,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -866,9 +1053,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 46,
+        "command_end": 46,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_default",
@@ -883,11 +1078,12 @@
         "text": "……もうエンドロールか。\nあっという間だったな。",
         "text_jp": "……もうエンドロールか。\nあっという間だったな。",
         "text_cn": "",
-        "voice": "d1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1005.json",
-          "frames": 248
+        "source_text": "……もうエンドロールか。\nあっという間だったな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000046:dialogue:000",
@@ -900,8 +1096,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5e09ee6b3131593648d01e2f9c214a8ea227a78cbd2e57727a3773766ee32d39"
+        },
+        "voice": "d1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1005.json",
+          "frames": 248
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -917,10 +1120,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -948,8 +1151,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
@@ -965,7 +1168,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -973,11 +1181,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 48,
+        "command_end": 48,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "dialogue": {
         "speaker": "<P>",
         "text": "終盤、何度か前のめりになっていましたね。\nお気に入りのシーンだったんですか？",
         "text_jp": "終盤、何度か前のめりになっていましたね。\nお気に入りのシーンだったんですか？",
         "text_cn": "",
+        "source_text": "終盤、何度か前のめりになっていましたね。\nお気に入りのシーンだったんですか？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000048:dialogue:000",
           "source": {
@@ -991,6 +1214,7 @@
           "source_hash": "sha256:688bf831a23a35a8040af245af61b3e5a8b1fec2ea70ad9aac08c4239b9e0a0e"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1006,10 +1230,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -1037,8 +1261,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1053,7 +1277,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1061,9 +1290,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_joy",
@@ -1078,11 +1315,12 @@
         "text": "……ああ。あの長回しのシーンだな。",
         "text_jp": "……ああ。あの長回しのシーンだな。",
         "text_cn": "",
-        "voice": "d1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1007.json",
-          "frames": 190
+        "source_text": "……ああ。あの長回しのシーンだな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000054:dialogue:000",
@@ -1095,8 +1333,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:55cf08c7d785ef751704740a79448ddec1584ccb68fc6edfe37e6a6c3d7bb2f6"
+        },
+        "voice": "d1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1007.json",
+          "frames": 190
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1112,10 +1357,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -1143,8 +1388,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1159,7 +1404,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1167,17 +1417,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 57,
+        "command_end": 57,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "049eis",
       "dialogue": {
         "speaker": "眉見 鋭心",
         "text": "長くゆったりした会話なのに、\n見ていて緊張感がなかったか？",
         "text_jp": "長くゆったりした会話なのに、\n見ていて緊張感がなかったか？",
         "text_cn": "",
-        "voice": "d1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1008.json",
-          "frames": 269
+        "source_text": "長くゆったりした会話なのに、\n見ていて緊張感がなかったか？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000057:dialogue:000",
@@ -1190,8 +1449,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:3d64d6096d0cee35a11b4e7db1091cae9c69e240d30fc390685367af906c0aa6"
+        },
+        "voice": "d1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1008.json",
+          "frames": 269
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1207,10 +1473,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -1238,8 +1504,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1254,13 +1520,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 61,
+        "command_end": 61,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1279,11 +1558,12 @@
         "text": "映像のリズムと、こちらが受け取る感覚が\n正反対なのが面白い。この監督の特徴だ。",
         "text_jp": "映像のリズムと、こちらが受け取る感覚が\n正反対なのが面白い。この監督の特徴だ。",
         "text_cn": "",
-        "voice": "d1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1009.json",
-          "frames": 431
+        "source_text": "映像のリズムと、こちらが受け取る感覚が\n正反対なのが面白い。この監督の特徴だ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000061:dialogue:000",
@@ -1296,8 +1576,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:088e6b1e1a8758e1791bc2eb6b0191d3fbe86b8635684a325ac51f100bd6e302"
+        },
+        "voice": "d1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1009.json",
+          "frames": 431
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1313,10 +1600,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -1344,8 +1631,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1360,7 +1647,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1368,9 +1660,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_surprise",
@@ -1384,6 +1684,13 @@
         "text": "本当に大ファンなんですね。もしかして、\nオーディションを受けたい本当の理由は……。",
         "text_jp": "本当に大ファンなんですね。もしかして、\nオーディションを受けたい本当の理由は……。",
         "text_cn": "",
+        "source_text": "本当に大ファンなんですね。もしかして、\nオーディションを受けたい本当の理由は……。",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000065:dialogue:000",
           "source": {
@@ -1397,6 +1704,7 @@
           "source_hash": "sha256:e7d49f608fd36cabed35b2a6bd814bd71ecf6b15d8324aa06b7efbf4448b3dd1"
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     },
@@ -1412,10 +1720,10 @@
           "imageId": "bg079_eistheaterroom_in_01",
           "lightPosition": 0,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
             "x": -0.20000000298023224,
             "y": -0.15000000596046448,
@@ -1443,8 +1751,8 @@
             "anim": "sad",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "off",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1459,7 +1767,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1467,9 +1780,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_2_049eis_01/scenario_1_2_049_01_d.json",
+        "source_part_id": "1_2_049_01_d",
+        "command_start": 76,
+        "command_end": 76,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 1,
+          "time": 1.0,
           "type": "spine_face",
           "chara_id": "049eis",
           "value": "face_think",
@@ -1511,11 +1832,12 @@
         "text": "……すまない。過去の約束も嘘ではないが……。\n……こういった動機は、あまりに不純だな。",
         "text_jp": "……すまない。過去の約束も嘘ではないが……。\n……こういった動機は、あまりに不純だな。",
         "text_cn": "",
-        "voice": "d1011.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1011.json",
-          "frames": 609
+        "source_text": "……すまない。過去の約束も嘘ではないが……。\n……こういった動機は、あまりに不純だな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "049eis",
+          "source_name": "眉見 鋭心"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_2_049eis_01_1_2_049_01:1_2_049_01_d:cmd-000076:dialogue:000",
@@ -1528,8 +1850,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:11894f068f6eca47581a95e32f45108e92973e4e296160192ca7a8218b1c2ec6"
+        },
+        "voice": "d1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/049eis/1_2_049_01/1_2_049_01_d/1_2_049_01_d1011.json",
+          "frames": 609
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "d"
     }
@@ -1548,6 +1877,10 @@
       "step_count": 18
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_2_049_01.unity3d",
+    "raw_hash": "sha256:59832defa858aa416403c556a26abf9e8b420f6685e32e699221b7417a2309c8"
+  },
   "aggregate_source": {
     "file": "1_2_049eis_01_1_2_049_01.json",
     "scenario_id": "1_2_049eis_01_1_2_049_01",

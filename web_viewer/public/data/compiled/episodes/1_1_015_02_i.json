@@ -1,5 +1,7 @@
 {
   "scenario_id": "1_1_015_02_i",
+  "text_catalog_id": "1_1_015leg_02_1_1_015_02",
+  "text_contract_version": 1,
   "total_steps": 15,
   "steps": [
     {
@@ -14,29 +16,30 @@
             "id": "cameraflare",
             "visible": true,
             "action": "start",
-            "delay": 0,
-            "duration": 0.6
+            "delay": 0.0,
+            "duration": 0.0,
+            "alpha": 0.6
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -52,7 +55,7 @@
         "screen_fade": {
           "type": "in",
           "duration": 0.5,
-          "delay": 0,
+          "delay": 0.0,
           "color": "#000000"
         },
         "screen_slide": null,
@@ -60,7 +63,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -68,6 +76,15 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 9,
+        "command_end": 9,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "post_wait": 1.0,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -81,39 +98,40 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
         "se": {
           "cue": "step_walk_come_lino_boot",
-          "delay": 0
+          "delay": 0.0
         },
         "se_events": [
           {
             "cue": "step_walk_come_lino_boot",
-            "delay": 0
+            "delay": 0.0
           }
         ],
         "environmental": {
@@ -129,13 +147,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "wait",
+        "confidence": "exact"
       },
       "duration": 1.5,
       "auto_advance": true,
@@ -153,28 +184,29 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -191,14 +223,14 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off",
             "fade": {
               "type": "in",
-              "delay": 0,
+              "delay": 0.0,
               "duration": 0.2
             }
           }
@@ -212,7 +244,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -220,7 +257,15 @@
         "text_disabled": false,
         "image_icon": null
       },
-      "duration": 1,
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 14,
+        "command_end": 14,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
       "auto_advance": true,
       "hide_dialogue": true,
       "episode_index": 0,
@@ -236,28 +281,29 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -274,8 +320,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -290,7 +336,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -298,9 +349,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 2,
+          "time": 2.0,
           "type": "spine_face",
           "chara_id": "046chr",
           "value": "face_default",
@@ -315,11 +374,12 @@
         "text": "大学という陸地で、\n溺れかけていたところ……",
         "text_jp": "大学という陸地で、\n溺れかけていたところ……",
         "text_cn": "",
-        "voice": "i1000.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1000.json",
-          "frames": 236
+        "source_text": "大学という陸地で、\n溺れかけていたところ……",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000016:dialogue:000",
@@ -332,8 +392,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5f249c83fb5064b3db3ca648b19787e0e1ecbb6ac5d0fac64357576b723b47f9"
+        },
+        "voice": "i1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1000.json",
+          "frames": 236
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -347,28 +414,29 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.6
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -385,8 +453,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -401,7 +469,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": null,
         "bg_dof": null,
         "bg_color_transition": null,
@@ -409,17 +482,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "046chr",
       "dialogue": {
         "speaker": "古論 クリス",
         "text": "まさか、こんな機会に巡り会うとは。",
         "text_jp": "まさか、こんな機会に巡り会うとは。",
         "text_cn": "",
-        "voice": "i1001.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1001.json",
-          "frames": 233
+        "source_text": "まさか、こんな機会に巡り会うとは。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000019:dialogue:000",
@@ -432,8 +514,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:5094b2dcb0d211d4a52b49eb77673772931280108aa984c218842adff28a492a"
+        },
+        "voice": "i1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1001.json",
+          "frames": 233
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -448,30 +537,31 @@
           {
             "id": "cameraflare",
             "visible": false,
+            "alpha": 0.6,
             "action": "end",
-            "delay": 0,
-            "duration": 0
+            "delay": 0.0,
+            "duration": 0.0
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -488,8 +578,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -504,7 +594,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": {
@@ -512,13 +607,22 @@
           "duration": 0.4
         },
         "bg_dof_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 25,
+        "command_end": 25,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -534,21 +638,21 @@
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -565,8 +669,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -581,13 +685,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "chara_id": "046chr",
       "lipSync": false,
@@ -596,7 +713,13 @@
         "text": "（正直、アイドルというものが\nどのようなものなのかは分かりませんが）",
         "text_jp": "（正直、アイドルというものが\nどのようなものなのかは分かりませんが）",
         "text_cn": "",
-        "voice": "i1002.m4a",
+        "source_text": "（正直、アイドルというものが\nどのようなものなのかは分かりませんが）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000028:dialogue:000",
           "source": {
@@ -608,8 +731,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:a4812bb57176b68ff71ac9261ccf2964f32050c8e7028e6a25f7197bf24d9b7c"
-        }
+        },
+        "voice": "i1002.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -625,21 +750,21 @@
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -656,8 +781,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -672,7 +797,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
@@ -680,9 +810,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "046chr",
           "value": "face_joy",
@@ -698,7 +836,13 @@
         "text": "（未知の世界に飛び込む楽しさは、\n誰よりも知っているつもりです。……それに）",
         "text_jp": "（未知の世界に飛び込む楽しさは、\n誰よりも知っているつもりです。……それに）",
         "text_cn": "",
-        "voice": "i1003.m4a",
+        "source_text": "（未知の世界に飛び込む楽しさは、\n誰よりも知っているつもりです。……それに）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000033:dialogue:000",
           "source": {
@@ -710,8 +854,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:82bfd9b937345031a8412c112b5232351231dff9c183d5552d000bf29313d90d"
-        }
+        },
+        "voice": "i1003.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -727,21 +873,21 @@
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -758,8 +904,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -774,13 +920,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#AAAAAA",
         "bg_dof": 0.8,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 38,
+        "command_end": 38,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -800,7 +959,13 @@
         "text": "（すでに私の心は、この新たな発見に高鳴っている）",
         "text_jp": "（すでに私の心は、この新たな発見に高鳴っている）",
         "text_cn": "",
-        "voice": "i1004.m4a",
+        "source_text": "（すでに私の心は、この新たな発見に高鳴っている）",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
+        },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000038:dialogue:000",
           "source": {
@@ -812,8 +977,10 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:d023df6a9840d8624cc3bdb21f650cd09865274231feaeee4caddf2a034c8231"
-        }
+        },
+        "voice": "i1004.m4a"
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -829,21 +996,21 @@
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -860,8 +1027,8 @@
             "anim": "angry",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -876,11 +1043,16 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": {
-          "delay": 0,
+          "delay": 0.0,
           "duration": 0.4
         },
         "bg_dof_transition": {
@@ -890,7 +1062,16 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 43,
+        "command_end": 43,
+        "raw_type": "cut_end",
+        "confidence": "exact"
+      },
       "duration": 0.6,
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -906,29 +1087,30 @@
             "id": "cameraflare",
             "visible": true,
             "action": "start",
-            "delay": 0,
-            "duration": 0.8
+            "delay": 0.0,
+            "duration": 0.0,
+            "alpha": 0.8
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -945,8 +1127,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -961,13 +1143,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 50,
+        "command_end": 50,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -986,11 +1181,12 @@
         "text": "何より、学生たちのあの目。\nあれこそ、私がずっと探し求めていたもの。",
         "text_jp": "何より、学生たちのあの目。\nあれこそ、私がずっと探し求めていたもの。",
         "text_cn": "",
-        "voice": "i1005.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1005.json",
-          "frames": 464
+        "source_text": "何より、学生たちのあの目。\nあれこそ、私がずっと探し求めていたもの。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000050:dialogue:000",
@@ -1003,8 +1199,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:95b0502913b981bbceffb5598b5c4236f9f062bc75850fbda4faf73f9ce202bb"
+        },
+        "voice": "i1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1005.json",
+          "frames": 464
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1018,28 +1221,29 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.8
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "counsel_heartful",
         "bgm_volume": 0,
@@ -1056,8 +1260,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1072,13 +1276,26 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1097,11 +1314,12 @@
         "text": "アイドルになれば、きっと私にも、\n私の話にも興味を持ってもらえる。",
         "text_jp": "アイドルになれば、きっと私にも、\n私の話にも興味を持ってもらえる。",
         "text_cn": "",
-        "voice": "i1006.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1006.json",
-          "frames": 405
+        "source_text": "アイドルになれば、きっと私にも、\n私の話にも興味を持ってもらえる。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000053:dialogue:000",
@@ -1114,8 +1332,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:27e7ebb2ae3b67bfc309e44d99728e6f902c29ce7cfbd322e0080c9301dbfff9"
+        },
+        "voice": "i1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1006.json",
+          "frames": 405
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1129,28 +1354,29 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.8
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": null,
         "bgm_volume": 0,
@@ -1167,8 +1393,8 @@
             "anim": "joy",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1180,16 +1406,29 @@
         "screen_fade": null,
         "screen_slide": null,
         "screen_effects": [],
-        "bgm_stop_fade": 2.5,
+        "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": 2.5,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
         "bg_dof_transition": null,
         "text_disabled": false,
         "image_icon": null
+      },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "text",
+        "confidence": "exact"
       },
       "timeline": [
         {
@@ -1208,11 +1447,12 @@
         "text": "海の魅力を、たくさんの人々に伝えられる……！",
         "text_jp": "海の魅力を、たくさんの人々に伝えられる……！",
         "text_cn": "",
-        "voice": "i1007.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1007.json",
-          "frames": 245
+        "source_text": "海の魅力を、たくさんの人々に伝えられる……！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000059:dialogue:000",
@@ -1225,8 +1465,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:de1b71e4822878c4f622c2fc8c29e810c5ad40aeffdfc0e0e11d05d9bf9beaf0"
+        },
+        "voice": "i1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1007.json",
+          "frames": 245
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     },
@@ -1240,28 +1487,29 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.8
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
@@ -1278,8 +1526,8 @@
             "anim": "wait_loop",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1294,7 +1542,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1302,17 +1555,26 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 64,
+        "command_end": 64,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "chara_id": "046chr",
       "dialogue": {
         "speaker": "古論 クリス",
         "text": "こうしてはいられません！",
         "text_jp": "こうしてはいられません！",
         "text_cn": "",
-        "voice": "i1008.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1008.json",
-          "frames": 108
+        "source_text": "こうしてはいられません！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000064:dialogue:000",
@@ -1325,6 +1587,12 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:b9bf5bd181abe69829dc9fd801ff6643a2e59eba438791b4ef7c788754eef61e"
+        },
+        "voice": "i1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1008.json",
+          "frames": 108
         }
       },
       "episode_index": 0,
@@ -1340,28 +1608,29 @@
         "bg_effects": [
           {
             "id": "cameraflare",
-            "visible": true
+            "visible": true,
+            "alpha": 0.8
           }
         ],
         "bg_profile": {
           "imageId": "bg045_riverbed_out_01",
           "lightPosition": 1,
           "lightCoordinate": {
-            "x": 0,
-            "y": 0
+            "x": 0.0,
+            "y": 0.0
           },
-          "lightAlpha": 1,
+          "lightAlpha": 1.0,
           "colorOffSet": {
-            "x": 0,
-            "y": 0,
-            "z": 0
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
           },
           "colorScale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           },
-          "colorSaturation": 1
+          "colorSaturation": 1.0
         },
         "bgm": "event_before",
         "bgm_volume": 0,
@@ -1378,8 +1647,8 @@
             "anim": "hello",
             "position": 0,
             "visible": true,
-            "pos_x": 0,
-            "pos_y": 0,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
             "anim_flag": "目",
             "blush_flag": "off",
             "sweat_flag": "off"
@@ -1394,7 +1663,12 @@
         "bgm_stop_fade": null,
         "environmental_volume": null,
         "environmental_duck_target": null,
+        "bgm_delay": null,
+        "bgm_stop_delay": null,
+        "environmental_stop_delay": null,
+        "environmental_ducking_delay": null,
         "camera_filter": null,
+        "camera_filter_transition": null,
         "bg_color": "#FFFFFF",
         "bg_dof": null,
         "bg_color_transition": null,
@@ -1402,9 +1676,17 @@
         "text_disabled": false,
         "image_icon": null
       },
+      "evidence": {
+        "source_file": "assets/resources/scenariodata/1_1_015leg_02/scenario_1_1_015_02_i.json",
+        "source_part_id": "1_1_015_02_i",
+        "command_start": 69,
+        "command_end": 69,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
       "timeline": [
         {
-          "time": 3,
+          "time": 3.0,
           "type": "spine_face",
           "chara_id": "046chr",
           "value": "face_joy",
@@ -1413,7 +1695,7 @@
           "blush_flag": "off"
         },
         {
-          "time": 4,
+          "time": 4.0,
           "type": "spine_face",
           "chara_id": "046chr",
           "value": "face_happy",
@@ -1428,11 +1710,12 @@
         "text": "さあ、アイドルと言う大海に漕ぎ出しましょう。\n新たな冒険が、私を待っています！",
         "text_jp": "さあ、アイドルと言う大海に漕ぎ出しましょう。\n新たな冒険が、私を待っています！",
         "text_cn": "",
-        "voice": "i1009.m4a",
-        "lip": {
-          "source": "adxlip",
-          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1009.json",
-          "frames": 443
+        "source_text": "さあ、アイドルと言う大海に漕ぎ出しましょう。\n新たな冒険が、私を待っています！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "046chr",
+          "source_name": "古論 クリス"
         },
         "text_ref": {
           "unit_id": "story-text:v1:1_1_015leg_02_1_1_015_02:1_1_015_02_i:cmd-000069:dialogue:000",
@@ -1445,8 +1728,15 @@
             "field_ordinal": 0
           },
           "source_hash": "sha256:f392afb7960e126f8d93a7ae1c13ba1c503a6e18c999461269c3e7a1c83bb2c2"
+        },
+        "voice": "i1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/epi/015leg/1_1_015_02/1_1_015_02_i/1_1_015_02_i1009.json",
+          "frames": 443
         }
       },
+      "post_wait": 0.5,
       "episode_index": 0,
       "episode_part": "i"
     }
@@ -1465,6 +1755,10 @@
       "step_count": 15
     }
   ],
+  "source": {
+    "raw_path": "RAW/asset/scenario_1_1_015_02.unity3d",
+    "raw_hash": "sha256:1323f1ce4bf72484ae348d12823a4f1156f7601ac42d40f28f203bdb24d9042f"
+  },
   "aggregate_source": {
     "file": "1_1_015leg_02_1_1_015_02.json",
     "scenario_id": "1_1_015leg_02_1_1_015_02",
