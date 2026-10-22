@@ -45,14 +45,27 @@ const mergeEntries=(base,add)=>{
   }
   return merged;
 };
+// A failed shard is retried by itself, LINE_SHARD_RETRY_MS apart, and given up after the last; its lines
+// show the source text meanwhile (only the first attempt hides them), and turn Chinese if a retry lands.
+export const LINE_SHARD_RETRY_MS=Object.freeze([1000,4000]);
+const lineAttempts=new Map();
 function loadLineShard(key) {
   if(!lineShards.has(key)) {
+    const attempt=lineAttempts.get(key) || 0;
+    if(attempt > LINE_SHARD_RETRY_MS.length) return Promise.reject(Error(`Card line shard ${key} unavailable`));
+    lineAttempts.set(key,attempt+1);
     const url=`/translations/zh-CN/archive-general/${cardLineShardFile(key)}?rev=${translationRelease.release}`;
-    lineStatus.value={...lineStatus.value,[key]:'loading'};
+    if(!lineStatus.value[key]) lineStatus.value={...lineStatus.value,[key]:'loading'};
     lineShards.set(key,transport.load(url).then(text=>{
       entries.value=mergeEntries(entries.value,validateCardLineShard(JSON.parse(text),key).entries);
       lineStatus.value={...lineStatus.value,[key]:'ready'};
-    }).catch(error=>{transport.invalidate(url);lineShards.delete(key);lineStatus.value={...lineStatus.value,[key]:'failed'};throw error;}));
+    }).catch(error=>{
+      transport.invalidate(url);lineShards.delete(key);lineStatus.value={...lineStatus.value,[key]:'failed'};
+      if(attempt < LINE_SHARD_RETRY_MS.length) setTimeout(()=>{
+        if(lineStatus.value[key] === 'failed' && !lineShards.has(key)) loadLineShard(key).catch(()=>{});
+      },LINE_SHARD_RETRY_MS[attempt]);
+      throw error;
+    }));
   }
   return lineShards.get(key);
 }
