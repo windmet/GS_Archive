@@ -40,3 +40,7 @@ Codex In-app Browser，本地主checkout5213 / PID73812、`rm-release-20261015`�
 手机390×844，document/scrollWidth均390；截图保存在本机`C:/Users/windm/.codex/visualizations/2026/10/19/01a15519-1b92-77f3-a842-31b108360858/`：`torus-pavetl-10s-desktop.png`、`torus-pavetl-10s-mobile.png`。冷重载后定位10秒恢复120；实际舞台内切至VIVA先清空旧对象/粒子为0，随后VIVA ready=true、876粒子，切歌后console error仍为0。
 
 采样窗口ready=true、unsupported/deferred为空，console error=0，不宣称warn=0；页面身份/内容及截图正常，无框架错误覆盖层。这是来源几何与实际消费者验收，不是原生出生RNG、帧时钟、设备、投影/遮挡或原片整场景等价。
+
+## master同步复验
+
+本批提交4c5b0899后，以普通merge 24f4a691同步origin/master bc991170（门户PR #79、#80），无冲突。重新build:check通过（27.22秒）；粒子、route schema、portal navigation回归通过。Browser重新打开Pavé Étoiles，时间轴定位10秒，ready=true / 120对象粒子，console error=0；截图torus-pavetl-master-sync-10s.png。同步构建日志.analysis/torus-master-sync-build-20261022.log；生成审计元数据还原。未PR、上传或部署。
