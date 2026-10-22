@@ -6,6 +6,7 @@ PROMOTIONS=json.loads((ROOT/'scripts/fixtures/chibi-object-emitter-promotions.js
 SPATIAL_CONTEXT=json.loads((ROOT/'scripts/fixtures/chibi-spatial-context-native.json').read_text(encoding='utf8'))
 SPATIAL_CONES=json.loads((ROOT/'scripts/fixtures/chibi-cone-stretch-native.json').read_text(encoding='utf8'))
 LOCAL_PARENTS=json.loads((ROOT/'scripts/fixtures/chibi-local-parent-native.json').read_text(encoding='utf8'))
+LOCAL_SIZES=json.loads((ROOT/'scripts/fixtures/chibi-local-size-native.json').read_text(encoding='utf8'))
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
@@ -73,8 +74,9 @@ def model(p, partial=False, stationary=False, spatial_source=None, parent_source
     if s and s['type'] in [0,2,4,10]:
         w.require(s['radius']['mode']==0 and s['arc']['mode']==0 and s['arc']['spread']==0,'Unsupported animated or stepped shape radius/arc')
     if parent_source:
+        if parent_source['profile']=='native-local-size-orthographic-v1':w.require('SizeModule' not in m,'Nonuniform size envelope excludes lifetime size modules')
         w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==parent_source['source'] and chain==parent_source['chain'],'Local parent source changed')
-        w.require(r['alignment']==2 and r['renderMode']==0 and not i['size3D'] and not i.get('rotation3D') and not c and not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0,'Unsupported spatial local parent profile')
+        w.require(r['alignment']==2 and r['renderMode']==0 and i['size3D']==parent_source.get('size3D',False) and not i.get('rotation3D') and not c and not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0,'Unsupported spatial local parent profile')
     for t in chain if not parent_source else []:
         q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
         w.require(abs(2*(x*z-v*y))<1e-5 and abs(2*(y*z+v*x))<1e-5,'Nonplanar emitter transform')
@@ -118,7 +120,7 @@ def model(p, partial=False, stationary=False, spatial_source=None, parent_source
         velocity={k:w.curve(velocity[k]) for k in ['x','y','z']} if velocity else None,
         limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') or mat['shader']['name']=='Mobile/Particles/Alpha Blended' else 'add')
     if masked and material_tint!=[1,1,1,1]:data['materialTint']=material_tint
-    if parent_source:data['parentProjection']=dict(profile='native-local-orthographic-v1',proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-local-parent-native.json').read_bytes()))
+    if parent_source:data['parentProjection']=dict(profile=parent_source['profile'],proofSha256=parent_source['proofSha256'])
     if distance['scalar']:
         data['distanceRate']=w.curve(distance)
         data['distanceMode']='stationary-object-layer-v1'
@@ -217,7 +219,15 @@ def extract(mode='current', only=None, partial=False):
                 if reasons and not asset_partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
                     spatial_source=SPATIAL_CONES['models'].get(name) if PROMOTIONS.get('previewAssets',{}).get(name,{}).get('spatialProfile') else None
-                    parent_source=next((s for s in LOCAL_PARENTS['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None) if PROMOTIONS.get('assets',{}).get(name,{}).get('parentProfile') else None
+                    parent_source=None
+                    parent_profile=PROMOTIONS.get('assets',{}).get(name,{}).get('parentProfile')
+                    if parent_profile:
+                        w.require(parent_profile in ['native-local-orthographic-v1','native-local-size-orthographic-v1'],'Unknown local parent profile')
+                        nonuniform=parent_profile=='native-local-size-orthographic-v1';proof=LOCAL_SIZES if nonuniform else LOCAL_PARENTS
+                        if nonuniform:w.require(w.sha(choreopath.read_bytes())==proof['choreographySha256'],'Nonuniform local parent camera envelope changed')
+                        parent_source=next((s for s in proof['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
+                        w.require(parent_source is not None,'Missing local parent proof')
+                        parent_source={**parent_source,'profile':parent_profile,'proofSha256':w.sha((ROOT/('scripts/fixtures/chibi-local-size-native.json' if nonuniform else 'scripts/fixtures/chibi-local-parent-native.json')).read_bytes())}
                     system=model(p,asset_partial,bool(distance_proof),spatial_source,parent_source)
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']

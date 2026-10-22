@@ -188,7 +188,7 @@ function noiseMotion(system,id,initial,age,born,options) {
   return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:options.clock.timeAt(born+age)}).position:saved.state.position
 }
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,view={}) {
-  if(system.parentProjection && (system.parentProjection.profile!=='native-local-orthographic-v1' || system.alignment!==2 || system.rotationX || system.sizeY || system.noise || system.stretch))
+  if(system.parentProjection && (!['native-local-orthographic-v1','native-local-size-orthographic-v1'].includes(system.parentProjection.profile) || system.alignment!==2 || system.rotationX || (system.sizeY && system.parentProjection.profile!=='native-local-size-orthographic-v1') || system.noise || system.stretch))
     throw Error('Unsupported local parent projection')
   // Nonzero distance rates are retained. This profile proves the world emitter
   // stays fixed after placement/Play, so native dt*|velocity| contributes zero.

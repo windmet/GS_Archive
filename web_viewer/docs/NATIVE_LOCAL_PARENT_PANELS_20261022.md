@@ -51,7 +51,7 @@ Codex In-app Browser，主 checkout 5213 / PID 58104，`rm-release-20261015`，�
 
 | 资源 | 仍需处理 |
 |---|---|
-| jfhtmk_panel_1 | 同类倾斜父链之外，还有两个非等比粒子尺寸系统。初次 native 探针未正确构造该尺寸输入，未用于准入，也未据此改写原生期望值；继续定位原生输入合同 |
+| jfhtmk_panel_1 | 本批时因非等比尺寸探针未完成而保留；随后已核实真正的原生分派并完成[接入与换行绑定修正](NATIVE_JFHTMK_PANEL_20261022.md) |
 | pavetl_panel | 两个 shape=17 系统；需核对发射形状的原生 worker |
 | pcuslv_bloom_1..4 | Velocity limit 的独立轴/拖曳组合，以及部分非平面 Local 系统 |
 | tktkkt_electric | 寿命颜色模式、无发射模块的容器系统需明确处理 |

@@ -47,7 +47,7 @@ of `HEAD`. It is not the current repository HEAD.
   exact masterdata relations, 77 BackMonitor relations and 5 unresolved.
 
 <!-- authoritative-v2-summary collections=4 standalone=1170 artifacts=1199 -->
-<!-- publication-ledger-summary releases=211 stable_logical_ids=1388 -->
+<!-- publication-ledger-summary releases=212 stable_logical_ids=1390 -->
 
 ## 3. Consumer evidence
 
