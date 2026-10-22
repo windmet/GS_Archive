@@ -11,6 +11,8 @@ export function loadArchiveAssetRoots({ environment = process.env, sources } = {
     lipsync: path.resolve(environment.SIDEM_LIPSYNC_ROOT || sources.legacyPath('scripts', 'lipsyncdata', 'adxlip')),
     audio: path.resolve(environment.SIDEM_AUDIO_ROOT || sources.legacyPath('GS_Res', 'Audio')),
     legacyAudio: path.resolve(environment.SIDEM_LEGACY_AUDIO_ROOT || sources.legacyPath('story_viewer', 'voice_ogg')),
+    // Story cues the legacy library never converted, decoded from RAW by scripts/build-derived-story-audio.mjs.
+    derivedAudio: path.resolve(environment.SIDEM_DERIVED_AUDIO_ROOT || path.join(sources.derivedRoot, 'audio')),
     cardArt: path.resolve(environment.SIDEM_CARD_ART_ROOT || sources.legacyPath('GS_Res', 'ALL_PHOTOS', 'assets', 'resources', 'image', 'image_card')),
     domainImages: path.resolve(environment.SIDEM_DOMAIN_IMAGE_ROOT || sources.legacyPath('GS_Res', 'ALL_PHOTOS', 'assets', 'resources')),
   }
@@ -48,6 +50,7 @@ export function createArchiveAssetResolver(roots = loadArchiveAssetRoots()) {
       const addSe = name => {
         for (const dir of SE_DIRS) candidates.push(path.resolve(roots.audio, dir, name))
         candidates.push(path.resolve(roots.legacyAudio, name))
+        candidates.push(path.resolve(roots.derivedAudio, 'sfx', name))
       }
       if (type === 'se') {
         addSe(fileName)
@@ -57,8 +60,9 @@ export function createArchiveAssetResolver(roots = loadArchiveAssetRoots()) {
         if (type === 'ambient' && fileName.endsWith('_t.ogg')) {
           candidates.push(path.resolve(roots.audio, type, fileName.replace(/_t\.ogg$/, '.ogg')))
         }
+        candidates.push(path.resolve(roots.derivedAudio, type, fileName))
       }
-      return candidates.filter(file => isWithinRoot(roots.audio, file) || isWithinRoot(roots.legacyAudio, file))
+      return candidates.filter(file => [roots.audio, roots.legacyAudio, roots.derivedAudio].some(root => isWithinRoot(root, file)))
     },
     lipsyncPath(urlPath) {
       const file = path.resolve(roots.lipsync, urlPath.replace(/^\/+/, ''))
