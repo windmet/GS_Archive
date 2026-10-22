@@ -12,7 +12,7 @@ export const ROUTE_SCHEMA = Object.freeze({
   collection_catalog: ['entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
   photo_catalog: ['photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type'], gasha_detail: ['gasha', 'parent', 'story_type', 'story_section'],
   song_catalog: ['song_scope'], song_detail: ['song'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
-  experiments: [], live: [], studio: [], about: [], unused_archive: [], archive_status: [], spine_lab: [],
+  experiments: [], live: [], studio: [], about: [], unused_archive: ['voices'], archive_status: [], spine_lab: [],
   story_catalog: ['story_mode', 'story_type', 'event_scope', 'availability', 'sort', 'idol', 'q'],
   external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'idol'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
   seasonal_campaign: ['story_type', 'story_section', 'idol'], work_archive: ['idol', 'story', 'work_mode', 'story_type'],

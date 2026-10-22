@@ -55,6 +55,8 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
   const currentCollectionState = ref({kind:'items',category:'',idol:'',unit:'',attribute:'',page:0})
   const currentPhotoIdol = ref('')
   const currentPhotoEntity = ref('')
+  // 其他语音's shelf (login, live-appeal, …); the page falls back to its first shelf for an unknown id.
+  const currentVoiceShelf = ref('')
   const currentGashaId = ref('')
   const currentGashaCategory = ref('all')
   const currentCardAttribute = ref('all')
@@ -118,6 +120,8 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
       ...(view.value === 'collection_catalog' ? {entity:currentEntityKey.value,collection:currentCollectionState.value} : {}),
       ...(view.value === 'event_catalog' ? {eventBrowse:currentEventBrowseState.value} : {}),
       ...(['photo_catalog','picture_studio'].includes(view.value) ? {photoIdol:currentPhotoIdol.value,photoEntity:currentPhotoEntity.value} : {}),
+      ...((view.value === 'unused_archive' || (view.value === 'player' && returnViewAfterPlayer.value === 'unused_archive')) && currentVoiceShelf.value
+        ? { voiceShelf: currentVoiceShelf.value } : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
@@ -176,6 +180,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
     currentCollectionState,
     currentPhotoIdol,
     currentPhotoEntity,
+    currentVoiceShelf,
     view,
     playerEntryRoute,
     currentPickTarget,

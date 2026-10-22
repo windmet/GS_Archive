@@ -3,8 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 // Writes src/data/unusedVoiceArchive.json: the "other voices" archive — game voices that no idol, card or
-// story page plays. Families with a known in-game use (title calls) come first; the rest are unused or
-// unconfirmed. Yamamura's office lines are listed by the page from officeSystemVoices.json. Each family is
+// story page plays. Yamamura's office lines are listed by the page from officeSystemVoices.json. Each family is
 // enumerated from the converted voice corpus. Only Saito's unreleased HomeStand lines have script text in RAW; the
 // rest are voice-only, so the archive lists the cue and plays the file.
 // Usage: node scripts/build-unused-voice-archive.mjs [voiceDir] [rawScenarioDir]
@@ -21,22 +20,24 @@ for (const command of JSON.parse(fs.readFileSync(path.join(rawDir, '3_x_102sha/s
   if (command.Type === 'text') saitoText.set(command.Values[3], command.Values[1])
 assert.equal(saitoText.size, 15)
 
+// `status` is what the client evidence shows: used (a client reader or masterdata row plays it), unreleased
+// (scripted but referenced nowhere) or unconfirmed. The page shelves families by where they are heard.
 const FAMILIES = [
-  { id: '9_1', label: '登录标题呼号', use: 'title', pattern: /^9_1_(\d{3})_00$/, perSpeaker: 1,
+  { id: '9_1', label: '标题呼号', status: 'used', pattern: /^9_1_(\d{3})_00$/, perSpeaker: 1,
     note: '登录时偶像念出游戏标题「アイドルマスター SideM GROWING STARS」（试听核对）。每人 1 条，平均约 3.7 秒；客户端 IdolController 读取 9_1_ 前缀的语音包，有对应口型数据，没有脚本或文字行。' },
-  { id: '9_9', label: '万代南梦宫呼号', use: 'title', pattern: /^9_9_(\d{3})_00$/, perSpeaker: 1,
+  { id: '9_9', label: '万代南梦宫呼号', status: 'unconfirmed', pattern: /^9_9_(\d{3})_00$/, perSpeaker: 1,
     note: '偶像各自喊「バンダイナムコ」（试听核对），编号末尾为 99。每人 1 条，平均约 0.8 秒，有对应口型数据，没有脚本或文字行；具体播放时机未在客户端核实。' },
-  { id: '2_5', label: 'Live 应援（appeal）', pattern: /^2_5_(\d{3})_00_04_0[1-7]$/, perSpeaker: { default: 7, '102sha': 2 },
+  { id: '2_5', label: 'LIVE 应援', status: 'unconfirmed', pattern: /^2_5_(\d{3})_00_04_0[1-7]$/, perSpeaker: { default: 7, '102sha': 2 },
     note: '原资源整理者归为 appeal。49 位偶像各 7 条，齋藤只有 01 和 07 两条，都没有文字。客户端代码里只直接写了齋藤的 2_5_102_00。' },
-  { id: '3_2', label: 'Live 结算（live_result）', pattern: /^3_2_(\d{3})_0[0-3]$/, perSpeaker: 4,
-    note: '每人 4 条。主数据有 343 行指向 3_2_NNN 脚本，但脚本里只有播放语音的指令，没有文字。' },
-  { id: '3_3', label: '欢呼（cheers）', pattern: /^3_3_(\d{3})_04$/, perSpeaker: 1,
-    note: '每人 1 条，平均约 0.5 秒，没有文字。' },
-  { id: '3_4', label: '3_4 系列（未分类）', pattern: /^3_4_(\d{3})_0[1-5]$/, perSpeaker: 5,
-    note: '原资源整理者未分类。每人 5 条，平均约 1 秒。脚本里只有演出指令，没有文字。' },
-  { id: '3_5', label: '山村 3_5', pattern: /^3_5_(\d{3})_00$/, perSpeaker: 1,
-    note: '山村贤的 1 条语音，没有脚本或文字。' },
-  { id: '3_1_102', label: '齋藤 首页语音（未上线）', pattern: /^3_1_(102)_\d{2}$/, perSpeaker: 21, textKey: cue => cue.slice(-2),
+  { id: '3_2', label: 'LIVE 结算', status: 'used', pattern: /^3_2_(\d{3})_0[0-3]$/, perSpeaker: 4,
+    note: '原资源整理者归为 live_result。每人 4 条。主数据有 343 行指向 3_2_NNN 脚本，但脚本里只有播放语音的指令，没有文字。' },
+  { id: '3_3', label: '欢呼', status: 'unconfirmed', pattern: /^3_3_(\d{3})_04$/, perSpeaker: 1,
+    note: '原资源整理者归为 cheers。每人 1 条，平均约 0.5 秒，没有文字。' },
+  { id: '3_4', label: '摄影姿势语音', status: 'used', pattern: /^3_4_(\d{3})_0[1-5]$/, perSpeaker: 5,
+    note: '摄影功能的姿势语音：主数据 PhotoPoseVoiceData（表 122）以 3_4_NNN 为 cue sheet 指向这些语音。每人 5 条，平均约 1 秒；脚本里只有演出指令，没有文字。' },
+  { id: '3_5', label: '山村 · 其他', status: 'unconfirmed', pattern: /^3_5_(\d{3})_00$/, perSpeaker: 1,
+    note: '山村贤的 1 条语音（3_5_101_00），没有脚本或文字，用途未确认。' },
+  { id: '3_1_102', label: '齋藤 · 首页语音', status: 'unreleased', pattern: /^3_1_(102)_\d{2}$/, perSpeaker: 21, textKey: cue => cue.slice(-2),
     note: '共 21 条，其中 00–14 的 15 条在原始脚本里有文字，15–20 没有。主数据里没有对应行，游戏里也没有用到，判断为未上线内容。' },
 ]
 
@@ -54,5 +55,5 @@ const families = FAMILIES.map(({ pattern, perSpeaker, textKey, ...family }) => {
 assert.deepEqual(families.map(family => family.count), [51, 51, 345, 200, 49, 245, 1, 21])
 
 const target = path.join(root, 'src/data/unusedVoiceArchive.json')
-fs.writeFileSync(target, JSON.stringify({ schema: 'GS-UNUSED-VOICE-ARCHIVE-V1', families }, null, 1) + '\n')
+fs.writeFileSync(target, JSON.stringify({ schema: 'GS-UNUSED-VOICE-ARCHIVE-V2', families }, null, 1) + '\n')
 console.log(JSON.stringify(Object.fromEntries(families.map(family => [family.id, family.count]))))
