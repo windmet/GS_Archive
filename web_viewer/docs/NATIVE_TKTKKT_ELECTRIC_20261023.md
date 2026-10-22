@@ -54,3 +54,15 @@ Codex In-app Browser，本地主checkout5213/PID66512，候选 `rm-release-20261
 初次QA页曾记录一条 `[SongReadModel] Failed to load catalog: Client disposed`，栈来自useSongNavigation/ReadModelClient及App；未修改这条门户链路，也未据此宣称整轮控制台零错误。构建元数据还原后，独立冷页正常载入，11.6秒28粒子、error=0；该页再次reload并定位仍28、error=0。切至VIVA先清空旧对象/0粒子，再ready=true/876粒子，资产仅VIVA面板，最终error=0。保留旧页disposed错误作为观察，不把未重现当成已修复。
 
 采样窗口ready=true、unsupported/deferred为空，页面身份与内容正常，无框架错误覆盖层；不宣称warn=0。截图在 `C:/Users/windm/.codex/visualizations/2026/10/19/01a15519-1b92-77f3-a842-31b108360858/`：`electric-tktkkt-11s-desktop.png`（最终独立冷页）、`electric-tktkkt-11s-mobile.png`。临时页已关闭，视口覆盖已复原。
+
+## master整合复验
+
+舞台功能提交 `3607e8ac` 后，普通merge `83b1f99f` 同步master `f0a8be3a`（#81–#84）。唯一冲突为根.gitattributes：保留master的compiled目录治理规则，同时保留7条舞台证明文件LF规则；7份已提交证明的过滤字节与本地及消费者绑定再次一致。
+
+整合检查发现新卡词分片32文件因Windows autocrlf检出为CRLF，`verify-card-line-translation` 判为stale；补一个窄目录LF规则并恢复精确HEAD字节后，分片check及该校验通过，没有任何译文JSON blob变化。首轮整合门禁166/167，失败仅此项；修复后的完整重跑日志为 `.analysis/electric-master-source-fixed-20261023.log`。
+
+整合 `build:check`：2981 modules/15.98秒，日志 `.analysis/electric-master-build-20261023.log`，不复制public；生成元数据已还原。独立冷页11.6秒仍28电弧粒子、ready=true、unsupported为空、console error=0；手机390×844、scrollWidth390复验正常。图片 `electric-tktkkt-master-sync-11s.png` 与 `electric-tktkkt-master-sync-mobile.png`。卡词新分片真实HTTP返回application/json。
+
+舞台功能提交范围 `63993dd7..3607e8ac` 的Git增长报告：28个新blob，原始17.5MiB、落盘2.3MiB；报告 `.analysis/electric-git-growth-20261023.log`。没有重编译或提交整套媒体/剧情语料。
+
+修复后完整门禁重跑167/167通过。最终回执绑定整合提交的完整40位SHA。
