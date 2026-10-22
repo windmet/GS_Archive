@@ -469,6 +469,7 @@
     <PlayerSessionShell v-if="playerSessionOpen">
     <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" ref="playbackFailure" class="playback-failure" role="alert" tabindex="-1">
       <p v-if="playbackError">演出暂时无法载入，请重试或返回。</p>
+      <p v-else-if="playbackReadiness.reason === 'step-runtime'">当前段落未能准备完成，请重试或返回。</p>
       <p v-else>当前段落的必要{{ playbackReadiness.reason === 'voice-renderable' ? '语音' : '画面' }}未能准备完成，请重试或返回。</p>
       <details v-if="MAINTAINER"><summary>加载详情</summary><p>{{ playbackError || playbackReadiness?.reason }}</p></details>
       <div class="playback-failure-actions">

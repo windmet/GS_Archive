@@ -150,7 +150,30 @@ try {
     runtime.cleanup()
     await flush(); assert.equal(frames.size, 0)
   }
-  console.log('Story stage readiness: actor/background/voice gates, paused mount, stale projection and audio revocation passed')
+  {
+    // A throw after the entry background resolved (here the playable listener,
+    // as AudioManager.stopAmbient did when skipping) must not be reported as a
+    // missing background picture.
+    const events = [], loggedErrors = []
+    const source = { schema_version: 2, steps: [{ step_id: 1, type: 'stage', entry_snapshot: { bg: 'entry-1' }, cues: [] }] }
+    const runtime = useStoryRuntimeCues({
+      compiledData: { value: source }, currentStepIndex: { value: 0 }, audioManager: {},
+      spineStageRef: { value: { manager: { setBackground: () => Promise.resolve({ status: 'completed' }) }, getSceneReadiness: () => ({ status: 'ready' }) } },
+      onReadinessChange: readiness => {
+        events.push(readiness)
+        if (readiness.status === 'playable') throw new Error('listener failed')
+      },
+    })
+    const consoleError = console.error
+    console.error = (...args) => loggedErrors.push(args)
+    try { runtime.handleStepChange(); await flush() } finally { console.error = consoleError }
+    assert.equal(runtime.inspect().readiness.status, 'blocked')
+    assert.equal(events.at(-1).reason, 'step-runtime', 'a post-background failure is not a background failure')
+    assert.equal(events.at(-1).error, 'listener failed')
+    assert.equal(loggedErrors.length, 1, 'the swallowed failure must stay visible in the console')
+    runtime.cleanup()
+  }
+  console.log('Story stage readiness: actor/background/voice gates, paused mount, stale projection, audio revocation and post-background failures passed')
 } finally {
   [globalThis.window, globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame] = saved
 }

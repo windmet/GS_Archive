@@ -131,11 +131,18 @@ export function useStoryRuntimeCues({
           }
           onReady?.(manager)
           publishReadiness('playable')
-        })
-        .catch(error => {
+        }, error => {
           if (expectedGeneration !== generation) return
           stepAudioController = null
           publishReadiness('blocked', { reason: 'background-renderable', ids: snapshot?.bg ? [snapshot.bg] : [], error: error?.message || String(error) })
+        })
+        // A throw after the entry background resolved (cue loading, readiness
+        // listeners) is not a missing picture; report it under its own reason.
+        .catch(error => {
+          if (expectedGeneration !== generation) return
+          stepAudioController = null
+          console.error('[StoryRuntime] step preparation failed:', error)
+          publishReadiness('blocked', { reason: 'step-runtime', ids: [], error: error?.message || String(error) })
         })
     }
     apply()
