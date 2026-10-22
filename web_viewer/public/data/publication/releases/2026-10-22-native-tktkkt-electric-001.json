@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-22-native-tktkkt-electric-001",
+  "created_at": "2026-10-22T08:47:54.765873+00:00",
+  "prepared_from_commit": "63993dd738ce26b2a4287a8dad169e2a6b8a8909",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:07e0faa2a7954f8825653bd9",
+      "stage-object-emitters:49551f60ab5846e295a9c8b5",
+      "stage-object-emitters:efde3136a9e0b781fd9af124"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:07e0faa2a7954f8825653bd9",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_tktkkt_electric.unity3d",
+        "sha256": "8bc986337bb426863acc78522e63ebcc69527c9fbcae68a5ca48a1068c56735c",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "shine",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-2e32b9ab69d02c5d7b285c00dc1981d1:8165143235291980510",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 dac0549d2aa2d43532e1982f527184c89ddb536a463ff9da85a8598af0f0340e; 128x128 RGBA. Source-bound native paired gradient caches, uniform screen size bounds and disabled emission nodes; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/07e0faa2a7954f8825653bd9.png",
+          "url": "/data/stage-object-emitters/07e0faa2a7954f8825653bd9.png",
+          "bytes": 5113,
+          "sha256": "27958154e97d2bf69526f8c87d75806c72ce306b24118c373d0ff329cd7fd448"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Actual native gradient baking and ColorModule216batches/864exactRGBA32outputs, uniform billboard252controlled sourcebound cases.",
+          "All110previous models and123texture descriptors unchanged. Electric17nodes partitioned into14emitters and3sourceproven disabledemission nodes; oneexistingNoisepreviewprofile retained. Native birth RNG/clock/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=tktkkt&stage=tktkkt_live_effect",
+        "tested_at": "2026-10-22T17:37:58.556570+00:00",
+        "tested_commit": "63993dd738ce26b2a4287a8dad169e2a6b8a8909",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD63993dd7 plus scoped changes; main checkout5213 PID66512, rm-release-20261015, full mode, inherited manual3-member cast in slots2/3/4; not original-member acceptance.",
+          "11200ms no electric/0particles;11600ms electric/28particles;12400ms hidden/0;59000ms electric/35;rewind11600ms28. Ready=true, unsupported/deferred empty.",
+          "Actual playback from11600ms;observed50200ms,manual pause at57900ms. Desktop1280x720/mobile390x844 /scrollWidth390. Screenshots electric-tktkkt-11s-desktop.png and electric-tktkkt-11s-mobile.png.",
+          "Initial QA tab logged one SongReadModel Client disposed error. After build metadata restoration, independent cold tab loaded with0errors;11600ms28particles;reload/seek again28 with0errors. Do not describe the whole session as error-free.",
+          "Cold-tab SPA switch to VIVA clears previousobjects/particles0; final VIVA readiness recorded in batch document. Native birth seeds/clock/Noise/device/original scene remain unverified; one Noise preview label retained."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:49551f60ab5846e295a9c8b5",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_tktkkt_electric.unity3d",
+        "sha256": "8bc986337bb426863acc78522e63ebcc69527c9fbcae68a5ca48a1068c56735c",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_tktkkt_electric_1",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-2e32b9ab69d02c5d7b285c00dc1981d1:-1231884785268407565",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 5ca1825e4ff8c14949fa7d41b11809e3cefa92b4c85423277c37326c0cd1a074; 1024x1024 RGBA. Source-bound native paired gradient caches, uniform screen size bounds and disabled emission nodes; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/49551f60ab5846e295a9c8b5.png",
+          "url": "/data/stage-object-emitters/49551f60ab5846e295a9c8b5.png",
+          "bytes": 315713,
+          "sha256": "a2b8a4726edb4a9b85d8ef7b61593aaf5151025e8861ef3c95728153ac3d0244"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Actual native gradient baking and ColorModule216batches/864exactRGBA32outputs, uniform billboard252controlled sourcebound cases.",
+          "All110previous models and123texture descriptors unchanged. Electric17nodes partitioned into14emitters and3sourceproven disabledemission nodes; oneexistingNoisepreviewprofile retained. Native birth RNG/clock/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=tktkkt&stage=tktkkt_live_effect",
+        "tested_at": "2026-10-22T17:37:58.556588+00:00",
+        "tested_commit": "63993dd738ce26b2a4287a8dad169e2a6b8a8909",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD63993dd7 plus scoped changes; main checkout5213 PID66512, rm-release-20261015, full mode, inherited manual3-member cast in slots2/3/4; not original-member acceptance.",
+          "11200ms no electric/0particles;11600ms electric/28particles;12400ms hidden/0;59000ms electric/35;rewind11600ms28. Ready=true, unsupported/deferred empty.",
+          "Actual playback from11600ms;observed50200ms,manual pause at57900ms. Desktop1280x720/mobile390x844 /scrollWidth390. Screenshots electric-tktkkt-11s-desktop.png and electric-tktkkt-11s-mobile.png.",
+          "Initial QA tab logged one SongReadModel Client disposed error. After build metadata restoration, independent cold tab loaded with0errors;11600ms28particles;reload/seek again28 with0errors. Do not describe the whole session as error-free.",
+          "Cold-tab SPA switch to VIVA clears previousobjects/particles0; final VIVA readiness recorded in batch document. Native birth seeds/clock/Noise/device/original scene remain unverified; one Noise preview label retained."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:efde3136a9e0b781fd9af124",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_tktkkt_electric.unity3d",
+        "sha256": "8bc986337bb426863acc78522e63ebcc69527c9fbcae68a5ca48a1068c56735c",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_tktkkt_electric_2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-2e32b9ab69d02c5d7b285c00dc1981d1:-5134103572490557799",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 4698c6660c495764e5fae19cccfc62f5dd99397acc0cbe5ce66cc9319a9eb9de; 1024x1024 RGBA. Source-bound native paired gradient caches, uniform screen size bounds and disabled emission nodes; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/efde3136a9e0b781fd9af124.png",
+          "url": "/data/stage-object-emitters/efde3136a9e0b781fd9af124.png",
+          "bytes": 546544,
+          "sha256": "398faee3b23b0ca6534710bf4fa5668e289008a31cf3b80be4042bbcb852abca"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Actual native gradient baking and ColorModule216batches/864exactRGBA32outputs, uniform billboard252controlled sourcebound cases.",
+          "All110previous models and123texture descriptors unchanged. Electric17nodes partitioned into14emitters and3sourceproven disabledemission nodes; oneexistingNoisepreviewprofile retained. Native birth RNG/clock/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=tktkkt&stage=tktkkt_live_effect",
+        "tested_at": "2026-10-22T17:37:58.556593+00:00",
+        "tested_commit": "63993dd738ce26b2a4287a8dad169e2a6b8a8909",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD63993dd7 plus scoped changes; main checkout5213 PID66512, rm-release-20261015, full mode, inherited manual3-member cast in slots2/3/4; not original-member acceptance.",
+          "11200ms no electric/0particles;11600ms electric/28particles;12400ms hidden/0;59000ms electric/35;rewind11600ms28. Ready=true, unsupported/deferred empty.",
+          "Actual playback from11600ms;observed50200ms,manual pause at57900ms. Desktop1280x720/mobile390x844 /scrollWidth390. Screenshots electric-tktkkt-11s-desktop.png and electric-tktkkt-11s-mobile.png.",
+          "Initial QA tab logged one SongReadModel Client disposed error. After build metadata restoration, independent cold tab loaded with0errors;11600ms28particles;reload/seek again28 with0errors. Do not describe the whole session as error-free.",
+          "Cold-tab SPA switch to VIVA clears previousobjects/particles0; final VIVA readiness recorded in batch document. Native birth seeds/clock/Noise/device/original scene remain unverified; one Noise preview label retained."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}
