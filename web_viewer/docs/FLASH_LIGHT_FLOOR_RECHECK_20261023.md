@@ -21,6 +21,8 @@
 
 ## 追加：Center 台词嘴型状态
 
+**随后纠正**：下面“尚未单独接入”仅指无独立台词音频曲线，不能解释成台词没有嘴型。两首 RAW 在台词时段均有已接入的 `Livechara_mouth_shape_fix`，实际问题是其目标漏做原生角色槽→画面站位转换；本次已修正，见 [后续证据与验收](NATIVE_CENTER_MOUTH_TARGET_20261023.md)。
+
 本次代码检查确认：`useStageOneshotVoice.js` 只负责独立 Audio 元素，未返回嘴型曲线/采样；`ChibiStageViewer.vue:applyCurrentLipSync` 仍只消费歌曲曲线、当前演唱位与 MouthFix。故网页尚未单独接入 Center 台词嘴型，音频接线通过不能当作嘴型通过。
 
 重新阅读本地 `Growing.Live.Unit_serifLiveEffectTypeExecuter` 的带注释反编译：RVA `0x19c6b28` 以 deck 卡拼 cue 后调用 `SoundManager.PlayVoice`，未直接调用嘴型。原版是否通过共享语音回调驱动尚未核定；不能仅凭这一函数断言原版不动嘴，也未新增基于音量的替代实现。此项保留待查。

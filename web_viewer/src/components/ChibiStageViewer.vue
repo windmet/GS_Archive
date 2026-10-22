@@ -3790,7 +3790,8 @@ function applyCurrentLipSync() {
   const events=track?.songCode===song?.songCode && track?.source===song?.source ? track?.events : []
   const fixedPositions=[],rates=[]
   for (const position of activePositions.value) {
-    const fixed=mouthFixAt(events,position,stageTime.value)
+    // GetTargetIdolObj indexes the native idol list, before its screen placement.
+    const fixed=mouthFixAt(events,sourceSlotForStagePosition(position),stageTime.value)
     if(fixed.active) {fixedPositions.push(position);rates.push(`${position}:${fixed.rate.toFixed(4)}`)}
     applyLiveChibiLipSync(
       runtimes.get(position),
