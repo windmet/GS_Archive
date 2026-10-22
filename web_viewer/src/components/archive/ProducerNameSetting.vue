@@ -9,13 +9,11 @@
 <script setup>
 import { computed, useId } from 'vue'
 import { producerName, saveProducerName } from '../../utils/LanguageStore.js'
-import { PRODUCER_NAME_WITH_P_TOKEN } from '../../localization/story/ProducerAddressing.js'
 import { archiveLineText } from './useArchiveNamedText.js'
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
+import { PRODUCER_NAME_SAMPLE } from './producerNameSample.js'
 const inputId = useId()
-// The sample is a real home touch voice (天ヶ瀬冬馬), shown the way the home page shows it.
-const SAMPLE = `${PRODUCER_NAME_WITH_P_TOKEN}、\nいつもありがとな！　この調子で\nトップアイドルを目指すぜ！`
-const preview = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], SAMPLE))
+const preview = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], PRODUCER_NAME_SAMPLE))
 </script>
 <style scoped>
 .producer-setting { display: grid; gap: 9px; padding: 16px; border: 1px solid var(--gs-line); border-radius: 8px; background: var(--gs-mint-wash); color: var(--gs-ink-2); }
