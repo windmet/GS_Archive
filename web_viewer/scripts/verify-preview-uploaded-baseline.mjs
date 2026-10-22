@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { loadPreviewUploadedBaseline } from './lib/preview-uploaded-baseline.mjs'
+import { loadPreviewUploadedBaseline, compiledRevisionFor } from './lib/preview-uploaded-baseline.mjs'
 import { isPreviewDataSnapshotKey, isPreviewGzipCandidate, resolvePreviewObjectKey,
   previewTransformKind } from '../shared/deploy/PreviewAssetTransform.js'
 
@@ -26,13 +26,13 @@ const row = (key, text, source = path.join(fixture, 'not-present', key)) => ({ r
   source_sha256: sha(text) })
 const revision = rows => sha(JSON.stringify(rows.filter(item => isPreviewDataSnapshotKey(item.request_key))
   .map(item => [item.request_key, item.source_sha256])))
-const uploaded = (item, dataRevision) => ({ ...item,
-  object_key: resolvePreviewObjectKey(item.request_key, { gzip: isPreviewGzipCandidate(item.request_key), dataRevision }),
+const uploaded = (item, dataRevision, compiledRevision = '') => ({ ...item,
+  object_key: resolvePreviewObjectKey(item.request_key, { gzip: isPreviewGzipCandidate(item.request_key), dataRevision, compiledRevision }),
   transform: previewTransformKind(item.request_key, { gzip: isPreviewGzipCandidate(item.request_key) }),
   deployed_size: item.source_size, deployed_sha256: sha(`physical:${item.source_sha256}`) })
 
 async function writeOverlay(name, { rows, selected, remote = 'fixture:preview', completedAt = '2026-10-01T12:00:00.000Z',
-  mutateInput, mutateManifest, mutateReceipt, mutateDescriptor, parents }) {
+  mutateInput, mutateManifest, mutateReceipt, mutateDescriptor, parents, compiledSnapshot = false }) {
   const directory = path.join(fixture, name)
   await fs.mkdir(directory)
   const sourceInput = { schema_version: 3, kind: 'current-source-inventory', entries: clone(rows) }
@@ -42,8 +42,10 @@ async function writeOverlay(name, { rows, selected, remote = 'fixture:preview', 
   mutateInput?.(sourceInput)
   const inputRaw = jsonBytes(sourceInput)
   const dataRevision = revision(rows)
+  const compiledRevision = compiledSnapshot ? compiledRevisionFor(rows, item => item.source_sha256) : ''
   const manifest = { schema_version: 3, kind: 'incremental-preview', stage: 'objects', dataRevision,
-    inventory_sha256: sha(inputRaw), entries: selected.map(item => uploaded(item, dataRevision)) }
+    ...(compiledRevision ? { compiledRevision } : {}),
+    inventory_sha256: sha(inputRaw), entries: selected.map(item => uploaded(item, dataRevision, compiledRevision)) }
   manifest.totals = { files: manifest.entries.length, deployed_bytes: manifest.entries.reduce((sum, item) => sum + item.deployed_size, 0) }
   if (parents) manifest.baseline_evidence = parents
   mutateManifest?.(manifest)
@@ -141,6 +143,33 @@ try {
   const older = await writeOverlay('older', { rows: [data, laterImage], selected: [laterImage], completedAt: '2026-09-30T12:00:00.000Z' })
   await assert.rejects(load([validOverlay, older]), /completion order/)
 
+  // Compiled stories pinned to their own snapshot: the manifest's compiled
+  // revision must bind the uploaded hashes and every compiled object key.
+  const story = row('data/compiled/1_1_001_01.json', '{"steps":[]}')
+  const compiledRows = [data, image, story]
+  const compiledOverlay = await writeOverlay('compiled', { rows: compiledRows, selected: [image, story], compiledSnapshot: true })
+  const compiledLoaded = await load([compiledOverlay])
+  const compiledRevision = compiledRevisionFor(compiledRows, item => item.source_sha256)
+  assert.equal(compiledLoaded.evidence.overlays[0].compiledRevision, compiledRevision)
+  assert.equal(compiledLoaded.sources.get(story.request_key), story.source_sha256)
+  assert.equal(uploaded(story, revision(compiledRows), compiledRevision).object_key,
+    `versions/compiled/${compiledRevision}/data/compiled/1_1_001_01.json.gz`)
+  const compiledCases = [
+    ['compiled-revision', { mutateManifest: item => { item.compiledRevision = '0'.repeat(64) } }, /object key violates/],
+    ['compiled-binding', { mutateManifest: item => {
+      item.compiledRevision = '0'.repeat(64)
+      for (const entry of item.entries) entry.object_key = uploaded(entry, item.dataRevision, item.compiledRevision).object_key
+    } }, /bind the compiled revision/],
+    ['compiled-shared-key', { mutateManifest: item => {
+      item.entries.find(entry => entry.request_key === story.request_key).object_key = 'data/compiled/1_1_001_01.json.gz'
+    } }, /object key violates/],
+    ['compiled-bad-revision', { mutateManifest: item => { item.compiledRevision = 'not-a-revision' } }, /compiled revision/],
+  ]
+  for (const [name, changes, reason] of compiledCases) {
+    const descriptor = await writeOverlay(name, { rows: compiledRows, selected: [image, story], compiledSnapshot: true, ...changes })
+    await assert.rejects(load([descriptor]), reason, name)
+  }
+
   // Exercise the actual prepare command, rather than a mirror of its selection
   // expression. Only small plain text/JSON are staged; no image encoders run.
   const dataPath = path.join(fixture, 'catalog.json'), textPath = path.join(fixture, 'icon.txt')
@@ -158,11 +187,11 @@ try {
     Size: item.source_size, Hashes: { sha256: 'deliberately-outdated-physical-hash' } }))
   await put(remoteFile, liveRows)
   let run = 0
-  const prepare = async ({ overlay = '', expectedError, extra = [], encoderUnavailable = false, outputOverride = '' } = {}) => {
+  const prepare = async ({ overlay = '', expectedError, extra = [], encoderUnavailable = false, outputOverride = '', baseline = cliSeed } = {}) => {
     const output = outputOverride || path.join(root, '.deploy', `verify-preview-baseline-${path.basename(fixture)}-${++run}`)
     outputPaths.push(output)
     const argv = ['scripts/prepare-preview-incremental-assets.mjs', '--inventory', inputFile, '--remote', remoteFile,
-      '--baseline', cliSeed, '--out', output, ...extra]
+      '--baseline', baseline, '--out', output, ...extra]
     if (overlay) argv.push('--baseline-overlay', overlay, '--baseline-remote', 'fixture:preview')
     const result = spawnSync(process.execPath, argv, { cwd: root, encoding: 'utf8',
       env: encoderUnavailable ? { ...process.env, PYTHON_PATH: path.join(fixture, 'encoder-must-not-run.exe') } : process.env })
@@ -172,7 +201,7 @@ try {
       await assert.rejects(fs.access(output), { code: 'ENOENT' }, 'Rejection precedes output directory creation')
       return null
     }
-    assert.equal(result.status, 0, result.stderr)
+    assert.equal(result.status, 0, result.stderr || result.stdout || String(result.error))
     return JSON.parse(await fs.readFile(path.join(output, 'manifest.json'), 'utf8'))
   }
   const ordinary = await prepare()
@@ -197,6 +226,23 @@ try {
   const preservedSource = await fs.readFile(textPath)
   await prepare({ overlay: corruptCli, expectedError: /different remote/ })
   assert.deepEqual(await fs.readFile(textPath), preservedSource)
+  // --compiled-snapshot stages compiled stories under their own revision even
+  // when the shared key already holds identical bytes; without it they keep the shared key.
+  const storyPath = path.join(fixture, 'story.json')
+  await fs.writeFile(storyPath, '{"steps":[]}'); await fs.writeFile(dataPath, '{}')
+  const actualStory = row('data/compiled/1_1_001_01.json', '{"steps":[]}', storyPath)
+  const storySeed = await put(path.join(fixture, 'cli-story-seed.json'), { schema_version: 3, kind: 'source-baseline', entries: [actualData, actualText, actualStory] })
+  await put(inputFile, cliInput([actualData, actualText, actualStory]))
+  await put(remoteFile, [actualData, actualText, actualStory].map(item => ({
+    Path: uploaded(item, revision([actualData, actualText, actualStory])).object_key, Size: item.source_size })))
+  const shared = await prepare({ baseline: storySeed })
+  assert.equal(shared.entries.length, 0, 'Without the flag the shared compiled key is reused')
+  assert.equal(shared.compiledRevision, undefined)
+  const pinned = await prepare({ baseline: storySeed, extra: ['--compiled-snapshot'] })
+  const pinnedRevision = compiledRevisionFor([actualStory], item => item.source_sha256)
+  assert.equal(pinned.compiledRevision, pinnedRevision)
+  assert.deepEqual(pinned.entries.map(item => item.object_key), [`versions/compiled/${pinnedRevision}/data/compiled/1_1_001_01.json.gz`])
+  assert.equal(pinned.entries[0].deployed_content_encoding, 'gzip')
   await put(inputFile, cliInput([actualData, actualData]))
   await prepare({ expectedError: /Duplicate source request/ })
   await put(inputFile, cliInput([{ ...actualText, request_key: '../unsafe.txt' }]))
@@ -252,7 +298,7 @@ try {
     historical = { metadataChainPassed: true, uploadedSources: accepted.evidence.overlays[0].uploaded_sources,
       oldBaselineWouldReselect: previouslyReselected.length, originalMediaRead: 0, priorFilesModified: 0 }
   }
-  console.log(JSON.stringify({ passed: true, fixtureCases: rejectionCases.length,
+  console.log(JSON.stringify({ passed: true, fixtureCases: rejectionCases.length + compiledCases.length,
     prepareBehaviorPassed: true, noOverlayCompatible: true, junctionTest, historical }, null, 2))
 } finally {
   for (const output of outputPaths) await removeFixtureDirectory(output, path.join(root, '.deploy'))

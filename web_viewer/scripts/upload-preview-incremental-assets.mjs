@@ -33,7 +33,7 @@ await runPool(manifest.entries,4,async entry=>{
   assert(entry.object_key.split('/').every(part=>part && part!=='.' && part!=='..' && !part.includes('\\')))
   assert(!keys.has(entry.object_key),'Duplicate destination key'); keys.add(entry.object_key)
   assert.equal(entry.object_key,resolvePreviewObjectKey(entry.request_key,
-    {gzip:isPreviewGzipCandidate(entry.request_key),dataRevision:manifest.dataRevision}))
+    {gzip:isPreviewGzipCandidate(entry.request_key),dataRevision:manifest.dataRevision,compiledRevision:manifest.compiledRevision ?? ''}))
   assert.equal(entry.transform,previewTransformKind(entry.request_key,{gzip:isPreviewGzipCandidate(entry.request_key)}))
   const target=path.join(stage,...entry.object_key.split('/')), staged=await hashFile(target)
   assert.equal(staged.sha256,entry.deployed_sha256,`Staged bytes changed: ${entry.object_key}`)
