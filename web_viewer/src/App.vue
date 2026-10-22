@@ -107,6 +107,7 @@
 
       <ArchiveAbout v-if="view === 'about'" />
       <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" :shelf="currentVoiceShelf" @shelf="currentVoiceShelf = $event; syncArchiveRoute({ replace: true })" @preview-office-voice="previewOfficeVoice" />
+      <ArchiveScoreArchive v-if="view === 'score_archive'" :shelf="currentSoundShelf" :load-stories="loadStoryReadModelCatalog" @shelf="currentSoundShelf = $event; syncArchiveRoute({ replace: true })" @open-story="openStoryDetail($event, 'score_archive')" @open-song="openSong" />
       <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" @photo-catalog="openDomainCatalog('photos')" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
@@ -700,6 +701,7 @@ const archiveRouteLoaders = {
   studio: () => import('./components/archive/ArchiveToolLanding.vue'),
   about: () => import('./components/archive/ArchiveAbout.vue'),
   unused_archive: () => import('./components/archive/ArchiveUnusedVoices.vue'),
+  score_archive: () => import('./components/archive/ArchiveScoreArchive.vue'),
   chart_lab: () => import('./components/archive/ArchiveChartLab.vue'),
   picture_studio: () => import('./components/archive/PictureStudio.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
@@ -732,6 +734,7 @@ const ArchivePhotoCatalog = defineArchivePage(archiveRouteLoaders.photo_catalog)
 const ArchiveToolLanding = defineArchivePage(archiveRouteLoaders.live)
 const ArchiveAbout = defineArchivePage(archiveRouteLoaders.about)
 const ArchiveUnusedVoices = defineArchivePage(archiveRouteLoaders.unused_archive)
+const ArchiveScoreArchive = defineArchivePage(archiveRouteLoaders.score_archive)
 const ArchiveChartLab = defineArchivePage(archiveRouteLoaders.chart_lab)
 const PictureStudio = defineArchivePage(archiveRouteLoaders.picture_studio)
 const ArchiveStoryCatalog = defineArchivePage(archiveRouteLoaders.story_catalog)
@@ -825,6 +828,7 @@ const {
   currentPhotoIdol,
   currentPhotoEntity,
   currentVoiceShelf,
+  currentSoundShelf,
   currentGashaId,
   currentGashaCategory,
   currentCardRarity,
@@ -1384,6 +1388,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'studio') return sectionLabel('studio')
   if (view.value === 'about') return sectionLabel('about')
   if (view.value === 'unused_archive') return sectionLabel('unused')
+  if (view.value === 'score_archive') return sectionLabel('scores')
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value.kind)
   if (view.value === 'photo_catalog') return sectionLabel('photos')
@@ -1788,6 +1793,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentPhotoIdol.value = route.photoIdol || ''
     currentPhotoEntity.value = route.photoEntity || ''
     currentVoiceShelf.value = route.voiceShelf || ''
+    currentSoundShelf.value = route.soundShelf || ''
     eventParentView.value = route.parentView || ''
     detailSourceRoute.value = ownsArchiveSource(route.view, route.returnView) ? (route.sourceRoute || '') : ''
     storyCollectionParentView.value = (
@@ -1945,7 +1951,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'units', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','about'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'scores', 'idols', 'units', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -1963,6 +1969,7 @@ function navigateArchiveSection(section) {
   else if (section === 'live' || section === 'studio') { filterQuery.value = ''; commitView(section) }
   else if (section === 'about') { filterQuery.value = ''; commitView('about') }
   else if (section === 'unused') { filterQuery.value = ''; currentVoiceShelf.value = ''; commitView('unused_archive') }
+  else if (section === 'scores') { filterQuery.value = ''; currentSoundShelf.value = ''; commitView('score_archive') }
   else if (section === 'resources') openArchiveStatus()
   else if (['events','collections','honors','currencies','costumes','photos'].includes(section)) openDomainCatalog(section)
 }
@@ -2168,6 +2175,7 @@ function goArchiveBack() {
     collection_catalog:goHome,
     photo_catalog:goHome,
     unused_archive:goHome,
+    score_archive:goHome,
     picture_studio:()=>commitView('studio'),
     idols: goHome,
     idol_detail: goHome,
@@ -2441,7 +2449,7 @@ async function loadScenario(name, returnView = '', options = {}) {
 function isBootstrapRoute(route) {
   if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
-    ['live', 'studio', 'experiments', 'about', 'unused_archive', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'spine_lab', 'chibi_stage'].includes(route.view) ||
+    ['live', 'studio', 'experiments', 'about', 'unused_archive', 'score_archive', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection'].includes(route.returnView)) ||

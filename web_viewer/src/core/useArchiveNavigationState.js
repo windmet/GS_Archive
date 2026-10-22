@@ -57,6 +57,8 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
   const currentPhotoEntity = ref('')
   // 其他语音's shelf (login, live-appeal, …); the page falls back to its first shelf for an unknown id.
   const currentVoiceShelf = ref('')
+  // 配乐's shelf (score, songs, ambient, se); the page falls back to its first shelf for an unknown id.
+  const currentSoundShelf = ref('')
   const currentGashaId = ref('')
   const currentGashaCategory = ref('all')
   const currentCardAttribute = ref('all')
@@ -122,6 +124,8 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
       ...(['photo_catalog','picture_studio'].includes(view.value) ? {photoIdol:currentPhotoIdol.value,photoEntity:currentPhotoEntity.value} : {}),
       ...((view.value === 'unused_archive' || (view.value === 'player' && returnViewAfterPlayer.value === 'unused_archive')) && currentVoiceShelf.value
         ? { voiceShelf: currentVoiceShelf.value } : {}),
+      ...((view.value === 'score_archive' || (view.value === 'player' && returnViewAfterPlayer.value === 'score_archive')) && currentSoundShelf.value
+        ? { soundShelf: currentSoundShelf.value } : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
@@ -181,6 +185,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
     currentPhotoIdol,
     currentPhotoEntity,
     currentVoiceShelf,
+    currentSoundShelf,
     view,
     playerEntryRoute,
     currentPickTarget,

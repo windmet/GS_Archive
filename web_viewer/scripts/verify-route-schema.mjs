@@ -95,6 +95,12 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     assert.equal(readArchiveRoute('http://localhost/unused/?voices=live-result&q=x', { history: false }).voiceShelf, 'live-result')
     state.view.value = 'cards'
     assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).searchParams.has('voices'), false)
+    // 配乐 likewise keeps only its shelf (?sound=).
+    state.currentSoundShelf.value = 'se'; state.view.value = 'score_archive'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=score_archive&sound=se')
+    assert.equal(readArchiveRoute('http://localhost/scores/?sound=se&q=x', { history: false }).soundShelf, 'se')
+    state.view.value = 'cards'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).searchParams.has('sound'), false)
   }
   // A view outside the enforced set is unchanged by pruning.
   assert.ok(buildArchiveUrl('http://localhost/', { view: 'story_catalog', storyType: 'main', query: 'x' }).searchParams.has('story_type'))
