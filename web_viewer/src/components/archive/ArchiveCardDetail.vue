@@ -306,12 +306,11 @@
 
 <script setup>
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
-import { ANY_CARD_LINE, archiveLineText, loadArchiveNames } from './useArchiveNamedText.js'
+import { ANY_CARD_LINE, archiveLineText } from './useArchiveNamedText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import { computed, nextTick, ref, watch } from 'vue'
 
 // Card lines, touch voices and operational voices: the shared spoken-line path (archiveLineText).
-void loadArchiveNames('card-lines').catch(() => {})
 const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
 const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines', [[kind, field]], source))
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))

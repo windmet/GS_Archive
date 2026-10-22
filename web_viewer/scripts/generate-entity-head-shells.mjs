@@ -73,7 +73,10 @@ function withHead(template, tags) {
   const titles = template.match(/<title>[\s\S]*?<\/title>/g) || []
   if (titles.length !== 1) throw new Error(`index.html must have exactly one <title>, found ${titles.length}`)
   if ((template.match(/<\/head>/g) || []).length !== 1) throw new Error('index.html must have exactly one </head>')
-  return template.replace(/[ \t]*<title>[\s\S]*?<\/title>\r?\n?/, '').replace('</head>', `${tags}\n  </head>`)
+  // An entity page never opens on the Portal, so it does not preload the Portal index.
+  return template.replace(/[ \t]*<title>[\s\S]*?<\/title>\r?\n?/, '')
+    .replace(/[ \t]*<link rel="preload" href="\/_catalog\/v\/[a-f0-9]{64}\/portal\/index\.json" as="fetch" crossorigin>\r?\n?/, '')
+    .replace('</head>', `${tags}\n  </head>`)
 }
 
 // idols: bootstrap `idols[]` ({ id, name, kana, unitCode, unitName }); idolNames: { [id]: zh-CN display name };

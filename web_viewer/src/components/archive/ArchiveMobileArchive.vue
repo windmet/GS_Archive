@@ -286,7 +286,6 @@ const callDocumentId = bundle => String(bundle.file || '').replace(/\.json$/u, '
 void loadArchiveNames('chats').catch(() => {})
 const CHAT_KEYS = [['chat-line', 'text'], ['chat-choice', 'text'], ['chat-choice', 'detail']]
 const chatText = source => archiveLineText('chats', CHAT_KEYS, source)
-void loadArchiveNames('card-lines').catch(() => {})
 const callTitleText = bundle => archiveLineText('card-lines', [['call-title', 'title']], callTitle(bundle))
 function callTitle(bundle) {
   return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''

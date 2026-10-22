@@ -21,6 +21,19 @@ export const NON_WAVEFORM_SE_CUES = Object.freeze([
 ])
 const NON_WAVEFORM_SE_CUE_SET = new Set(NON_WAVEFORM_SE_CUES)
 
+// An ambience ducking curve (setValueCurveAtTime) rejects every automation event
+// inside its span with NotSupportedError. Truncate it at `at`, holding the level
+// reached there, before a fade or a new curve starts; skipping steps lands there.
+function holdGainAt(param, at) {
+  if (typeof param.cancelAndHoldAtTime === 'function') {
+    param.cancelAndHoldAtTime(at)
+  } else if (typeof param.cancelScheduledValues === 'function') {
+    const value = param.value
+    param.cancelScheduledValues(at)
+    param.setValueAtTime(value, at)
+  }
+}
+
 export class AudioManager {
   constructor({ audioSession = null, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
     this._audioSession = audioSession || new StoryAudioSession({
@@ -149,6 +162,7 @@ export class AudioManager {
       const oldGain = this._ambientGain
       const oldSource = this._ambientSource
       const oldRelease = this._ambientRelease
+      holdGainAt(oldGain.gain, this._ctx.currentTime)
       oldGain.gain.linearRampToValueAtTime(0, this._ctx.currentTime + fadeTime)
       this._scheduleCleanup(() => {
         try { oldSource.stop() } catch (_) {}
@@ -207,6 +221,7 @@ export class AudioManager {
     const vol = (volume != null && volume !== '') ? parseFloat(volume) : 0.4
     if (!isNaN(vol)) {
       this._currentAmbientVolume = Math.max(0, Math.min(1, vol))
+      holdGainAt(this._ambientGain.gain, this._ctx.currentTime)
       this._ambientGain.gain.linearRampToValueAtTime(
         this._currentAmbientVolume,
         this._ctx.currentTime + 0.3
@@ -228,7 +243,7 @@ export class AudioManager {
     }
     const at = this._ctx.currentTime + Math.max(0, Number(delaySeconds) || 0)
     const gain = this._ambientGain.gain
-    gain.cancelScheduledValues(at)
+    holdGainAt(gain, at)
     gain.setValueCurveAtTime(values, at, Math.max(duration, 0.001))
   }
 
@@ -240,6 +255,7 @@ export class AudioManager {
     const gain = this._ambientGain
     const source = this._ambientSource
     const release = this._ambientRelease
+    holdGainAt(gain.gain, this._ctx.currentTime)
     gain.gain.linearRampToValueAtTime(0, this._ctx.currentTime + fadeTime)
     this._scheduleCleanup(() => {
       try { source.stop() } catch (_) {}

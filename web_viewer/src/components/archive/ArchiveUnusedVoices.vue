@@ -67,7 +67,7 @@ import { Pause, Play } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ARCHIVE from '../../data/unusedVoiceArchive.json'
 import OFFICE_VOICES from '../../data/officeSystemVoices.json'
-import { archiveLineText, loadArchiveNames } from './useArchiveNamedText.js'
+import { archiveLineText } from './useArchiveNamedText.js'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
 // `shelf` is the address's ?voices=; an empty or unknown id opens the first shelf.
 const props = defineProps({ idolName: { type: Function, default: () => '' }, shelf: { type: String, default: '' } })
@@ -107,7 +107,6 @@ const officeLine = line => archiveLineText('card-lines', [['office-voice', 'text
 function preview(cue) { stop(); emit('preview-office-voice', cue) }
 const speakerName = code => props.idolName?.(code, STAFF[code]) || STAFF[code] || code
 const lineText = line => archiveLineText('card-lines', [['unused-voice', 'text']], line.text)
-void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
 function stop() { const el = audio.value; if (el && !el.paused) el.pause(); playing.value = '' }
 function select(id) { if (id === shelf.value.id) return; stop(); failed.value = ''; emit('shelf', id === SHELVES[0].id ? '' : id) }
 async function play(cue) {

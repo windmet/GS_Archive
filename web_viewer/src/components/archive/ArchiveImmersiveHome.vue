@@ -452,7 +452,6 @@ const displayName = idol => props.idolName?.(idol.id, idol.name) || idol.name
 const activeIdolName = computed(() => activeIdol.value ? displayName(activeIdol.value) : '')
 // A card cue is that card's touch voice, the same translated line as on the card page; an idol cue
 // is the idol's general home voice.
-void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
 const cueText = cue => archiveLineText('card-lines', [[cue?.source === 'idol' ? 'home-voice' : 'card-touch', 'text']], cue?.text)
 const cueLine = computed(() => cueText(activeCue.value))
 const cueRows = computed(() => (activeIdol.value?.cues || []).map((cue, index) => ({

@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { candidateRoot } from './lib/archive-bootstrap-plugin.mjs'
+import { NON_WAVEFORM_SE_CUES } from '../src/core/AudioManager.js'
 
 // Writes src/data/storyAudioCatalog.json: every BGM, ambience and SE cue the stories of the story catalogue
 // play, with the stories that play it. Stories are listed once in `files` (the catalogue's ids, each the name
@@ -39,8 +40,8 @@ const SCORE = {
   growingsmiles_energy: 'GROWING SMILES! · 活力', growingsmiles_calm: 'GROWING SMILES! · 平静',
   adv_idol_birthday: '偶像生日', adv_grwsml_nomaster: 'GROWING SMILES! · 剧情版',
 }
-// Cues that are not a track: no_bgm stops the music; ambience 0 clears it.
-const SILENCE = { bgm: new Set(['no_bgm']), ambient: new Set(['0']), se: new Set() }
+// Cues that are not a track: no_bgm stops the music; ambience 0 clears it; the SE volume cues only duck the BGM.
+const SILENCE = { bgm: new Set(['no_bgm']), ambient: new Set(['0']), se: new Set(NON_WAVEFORM_SE_CUES) }
 
 function bgmKind(cue) {
   const song = /^song3_([a-z0-9]+)$/.exec(cue)?.[1]

@@ -31,8 +31,8 @@ function useTitleIndex(lookup, documents = false) {
   const owner = new AbortController()
   const requested = new Set()
   onScopeDispose(() => owner.abort())
-  watch(uiLocale, async locale => {
-    if (locale !== 'zh-CN') return
+  async function loadIndex() {
+    if (uiLocale.value !== 'zh-CN' || owner.signal.aborted) return
     if (indexState.value !== 'ready') indexState.value = 'loading'
     try {
       const parsed = await repository.loadIndex({ signal: owner.signal })
@@ -41,8 +41,14 @@ function useTitleIndex(lookup, documents = false) {
       // Titles are optional; a later consumer can retry a failed request.
       if (error?.name !== 'AbortError') indexState.value = 'failed'
     }
-  },{immediate:true})
+  }
+  // The index is fetched for the first title actually asked for, not when the consumer is set up: a
+  // page may never show one (the all-idols Portal). Requested after that render, which must not write state.
+  let wanted = false
+  const want = () => { if (!wanted) { wanted = true; queueMicrotask(loadIndex) } }
+  watch(uiLocale, () => { if (wanted) loadIndex() })
   const display = (entry, source) => {
+    want()
     const id = entry?.document_id, key = id && readerTitleShardKey(id)
     if (documents && uiLocale.value === 'zh-CN' && !owner.signal.aborted && repository.needsDocument(id) && !requested.has(key)) {
       requested.add(key)
@@ -58,6 +64,7 @@ function useTitleIndex(lookup, documents = false) {
   // True while this title may still change from the source to its translation.
   display.pending = entry => {
     if (uiLocale.value !== 'zh-CN') return false
+    want()
     if (indexState.value !== 'ready') return indexState.value !== 'failed'
     void index.value
     const id = documents ? entry?.document_id : ''

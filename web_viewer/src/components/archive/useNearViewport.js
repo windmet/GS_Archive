@@ -1,4 +1,4 @@
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { onBeforeUnmount, reactive, ref, watch } from 'vue'
 
 // True once `target` comes within `margin` of the viewport, and stays true. Images whose src is bound through it
 // make no request before then. Native loading="lazy" was not enough on the Portal: Chrome starts lazy images
@@ -22,4 +22,19 @@ export function useNearViewport(target, { margin = '200px', eagerMedia = '' } = 
   }, { flush: 'post', immediate: true })
   onBeforeUnmount(stop)
   return near
+}
+
+// The same for a list: `targets` is a v-for template ref array whose elements carry data-near-key. One
+// observer serves the whole list; has(key) stays true once that element has come near.
+export function useNearViewportKeys(targets, { margin = '200px' } = {}) {
+  const near = reactive(new Set())
+  const supported = typeof IntersectionObserver !== 'undefined'
+  let observer = supported ? new IntersectionObserver(entries => {
+    for (const entry of entries) if (entry.isIntersecting) { near.add(entry.target.dataset.nearKey); observer?.unobserve(entry.target) }
+  }, { rootMargin: margin }) : null
+  watch(() => [...(targets.value || [])], elements => {
+    for (const element of elements) if (element && !near.has(element.dataset.nearKey)) observer?.observe(element)
+  }, { flush: 'post', immediate: true })
+  onBeforeUnmount(() => { observer?.disconnect(); observer = null })
+  return { has: key => !supported || near.has(key) }
 }
