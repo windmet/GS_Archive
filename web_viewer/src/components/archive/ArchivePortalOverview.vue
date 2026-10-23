@@ -92,8 +92,10 @@
             <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
           </nav>
           <div class="overview-card-showcase">
-            <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><span class="overview-heading-actions"><button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组<Shuffle :size="15" aria-hidden="true" /></button><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></span></header>
-            <PortalCardBento :cards="collections.cards || []" :counts="desktopOverview.cardCounts" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openDirectory('cards', $event)" />
+            <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }} <small v-if="desktopOverview.cardCounts?.total">{{ formatCount(desktopOverview.cardCounts.total) }}</small></h3>
+              <nav v-if="!preferredReference?.actionable" class="overview-heading-chips overview-card-filters" aria-label="按属性与稀有度探索卡片"><button v-for="attribute in cardFilters.attributes" :key="attribute.id" class="is-attribute" type="button" :disabled="!cardFilters.attributeAvailable" :title="cardFilters.attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color,'--attribute-icon':attribute.icon}" @click="openDirectory('cards',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attribute.count ?? '—' }}</small></button><button v-for="rarity in cardFilters.rarities" :key="rarity.id" type="button" @click="openDirectory('cards',{rarity:rarity.id})">{{ rarity.id }} <small>{{ rarity.count }}</small></button></nav>
+              <span class="overview-heading-actions"><button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组<Shuffle :size="15" aria-hidden="true" /></button><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></span></header>
+            <PortalCardBento :cards="collections.cards || []" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" />
           </div>
       </section>
 
@@ -164,7 +166,7 @@ import { useNearViewportKeys } from './useNearViewport.js'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
-import {portalHubGroups} from '../../presentation/PortalOverviewPanels.js'
+import {portalCardFilters,portalHubGroups} from '../../presentation/PortalOverviewPanels.js'
 import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
@@ -220,6 +222,7 @@ function gatewayCount(gateway){
   return storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)
 }
 // 通信 and 图鉴 entries: names from the one section dictionary, counts only when the scope has them.
+const cardFilters=computed(()=>portalCardFilters(props.desktopOverview.cardCounts,collections.value.cards || []))
 const hubGroups=computed(()=>portalHubGroups(props.desktopOverview.collectionCounts))
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
@@ -362,17 +365,28 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-panel { min-width:0;margin-top:var(--gs-space-section); }
 .overview-section-heading { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-4);margin-bottom:var(--gs-space-4);padding-bottom:var(--gs-space-3);border-bottom:1px solid var(--gs-rule); }
 .overview-section-heading h2, .overview-section-heading h3 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.4; }
-.overview-section-heading h2 > small { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
+.overview-section-heading h2 > small, .overview-section-heading h3 > small { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-section-heading button, .overview-heading-actions { display:flex;flex:none;align-items:center;gap:var(--gs-space-2); }
 .overview-section-heading button { min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
 .overview-heading-actions { gap:var(--gs-space-5); }
+/* Chips inside a heading row: one quiet pill row between the title and its actions, scrolling when it
+   runs out of room. Each chip opens the directory filtered by it. */
+.overview-card-heading { align-items:center; }
+.overview-heading-chips { display:flex;flex:1;gap:var(--gs-space-2);min-width:0;overflow-x:auto;padding:var(--gs-space-1);scrollbar-width:none; }
+.overview-heading-chips::-webkit-scrollbar { display:none; }
+.overview-section-heading .overview-heading-chips button { flex:none;gap:4px;min-height:var(--gs-control-compact);padding:0 var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
+.overview-heading-chips button small { color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-section-heading .overview-heading-chips .is-attribute { color:var(--attribute);font-weight:var(--gs-weight-semibold); }
+.overview-heading-chips .is-attribute::before { content:"";flex:none;width:15px;height:15px;background:var(--attribute-icon) center / contain no-repeat; }
+.overview-heading-chips button:disabled { opacity:.55;cursor:default; }
 .overview-section-heading .overview-shuffle { color:var(--gs-ink-2); }
 
 /* Featured: the 担当 hero beside the featured cards. */
-.overview-featured { display:grid;grid-template-columns:minmax(300px,30%) minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7); }
-.overview-featured.is-all-view { grid-template-columns:minmax(0,1fr); }
+.overview-featured { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7); }
 .overview-unit-hub + .overview-featured { margin-top:var(--gs-space-section); }
 .overview-personal, .overview-card-showcase { min-width:0; }
+/* Until the 担当 banner (batch F) the hero keeps its former width above the full-width gallery. */
+@container portal (min-width:981px) { .overview-featured > .overview-personal { width:min(100%,460px); } }
 .overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
@@ -516,6 +530,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footer-link { min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-mint-ink);font:inherit;text-decoration:underline;text-underline-offset:3px; }
 
 @media (hover:hover) and (pointer:fine) {
+  .overview-heading-chips button:not(:disabled):hover { border-color:var(--gs-selected-line); }
   .overview-icon-button:hover, .overview-lens-trigger:hover { background:var(--gs-mint-wash); }
   .overview-preferred-actions button:hover { background:color-mix(in srgb, var(--gs-surface) 70%, transparent); }
   .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
@@ -528,6 +543,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* Narrow page (the shell's middle tier or a phone): the hero spans the row above the cards. */
 @container portal (max-width:980px) {
+  .overview-card-heading { flex-wrap:wrap;row-gap:var(--gs-space-2); }
+  .overview-card-heading .overview-heading-chips { order:3;flex-basis:100%;margin:0 calc(-1 * var(--gs-space-1)); }
   .overview-featured { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-section); }
   .overview-personal { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:var(--gs-space-3) var(--gs-space-7); }
   .overview-identity { grid-row:1 / span 2; }
