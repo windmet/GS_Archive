@@ -155,7 +155,7 @@
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取歌曲预览…' : '暂无可展示的歌曲预览，可前往目录查阅。' }}</p>
           </section>
         <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
-          <header class="overview-section-heading" :class="{'overview-chip-heading':preferredReference?.actionable}"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><div v-if="preferredReference?.actionable" class="overview-heading-chips overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <header class="overview-section-heading" :class="{'overview-chip-heading':preferredReference?.actionable}"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><div v-if="preferredReference?.actionable" ref="storyChipsRef" class="overview-heading-chips overview-story-tabs" :class="{'has-overflow': storyChipsOverflow}" @scroll="updateStoryChipsOverflow" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small v-if="tab.id !== 'all'">{{ tab.count }}</small></button></div><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in readableMainCollections" :key="chapter.id"><button type="button" @click="emit('open-result', chapter)"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" deferred /><span><strong>{{ chapterLabel(chapter.title) }}</strong><small>{{ chapter.chapterCount }} 节 · {{ chapter.episodeCount }} 话</small><ChevronRight :size="16" /></span></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small v-if="gatewayCount(gateway) !== null" :title="storyGatewayNote(gateway, desktopOverview.gatewayCounts) || undefined">{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}</small></span><ArrowUpRight :size="14" /></button></div></div>
           <div v-else-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" deferred /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span class="overview-story-copy"><small v-if="story.subtitle">{{ storySubtitle(story.subtitle) }}</small><strong :class="{ 'is-title-pending': storyTitle.pending() }">{{ storyTitle(story.id, story.title) }}</strong></span><span v-if="story.cast?.length" class="overview-story-cast" role="img" :aria-label="`登场偶像：${story.cast.map(idol => idol.name).join('、')}`"><ArchiveIdolAvatar v-for="idol in story.cast.slice(0, 3)" :key="idol.id" :idol-code="idol.id" :accent-color="idol.accentColor" :size="24" :ring-width="1" :gap="1" decorative /><small v-if="story.cast.length > 3">+{{ story.cast.length - 3 }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
@@ -167,7 +167,11 @@
               <h3>{{ group.label }}</h3>
               <nav class="overview-hub-links" :aria-label="group.label">
                 <button v-for="entry in group.entries" :key="entry.id" type="button" :data-archive-focus-id="`portal-hub:${group.id}:${entry.id}`" @click="emit('navigate', entry.target)">
-                  <span>{{ entry.label }}</span><small v-if="entry.count !== null">{{ formatCount(entry.count) }}</small><ChevronRight :size="14" aria-hidden="true" />
+                  <span class="overview-hub-card-head">
+                    <component :is="hubEntryIcons[entry.id] || ChevronRight" :size="16" aria-hidden="true" />
+                    <strong>{{ entry.label }}</strong>
+                  </span>
+                  <small v-if="entry.count !== null" class="overview-hub-card-count">{{ formatCount(entry.count) }}</small>
                 </button>
               </nav>
             </div>
@@ -207,7 +211,7 @@
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
 import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Play, Search, Shuffle, Users, X } from '@lucide/vue'
+import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
@@ -301,9 +305,49 @@ function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code)
 function openDirectory(domain, filters = {}) {
   emit('open-directory', { domain, idolCode: props.preferredReference?.actionable ? props.preferredReference.idolCode : '', ...filters })
 }
+const hubEntryIcons = {
+  ...archiveNavigationIcons,
+  personal: MessageCircle,
+  unit: Users,
+  phone: Phone,
+}
+
+const storyChipsRef = ref(null)
+const storyChipsOverflow = ref(false)
+function updateStoryChipsOverflow() {
+  const el = storyChipsRef.value
+  if (!el) {
+    storyChipsOverflow.value = false
+    return
+  }
+  storyChipsOverflow.value = el.scrollWidth > el.clientWidth && (el.scrollLeft + el.clientWidth < el.scrollWidth - 2)
+}
+let storyChipsObserver = null
+onMounted(() => {
+  if (typeof ResizeObserver !== 'undefined') {
+    storyChipsObserver = new ResizeObserver(() => updateStoryChipsOverflow())
+    if (storyChipsRef.value) storyChipsObserver.observe(storyChipsRef.value)
+  }
+  updateStoryChipsOverflow()
+})
+onBeforeUnmount(() => {
+  if (storyChipsObserver) {
+    storyChipsObserver.disconnect()
+    storyChipsObserver = null
+  }
+})
+watch(storyChipsRef, (el, oldEl) => {
+  if (storyChipsObserver) {
+    if (oldEl) storyChipsObserver.unobserve(oldEl)
+    if (el) storyChipsObserver.observe(el)
+  }
+  nextTick(updateStoryChipsOverflow)
+})
+
 const storyTabs = computed(() => [{id:'all',label:'全部',count:props.desktopOverview.storyCounts?.all ?? (collections.value.stories || []).length},
   ...[['main','主线'],['event','活动'],['personal','个人'],['other','其他']].map(([id,label]) => ({id,label,count:props.desktopOverview.storyCounts?.[id] ?? (collections.value.stories || []).filter(row => storyGroup(row) === id).length})).filter(row => row.count)])
 function storyGroup(row) { return ['main','event'].includes(row.domain) ? row.domain : ['idol_story','card_scenarios','work','birthday'].includes(row.domain) ? 'personal' : 'other' }
+watch(storyTabs, () => { nextTick(updateStoryChipsOverflow); });
 watch(() => props.desktopOverview.scopeId, () => { storyTab.value = 'all'; portraitFailed.value = false })
 const cardOffset = ref(0)
 function shuffleCards() { cardOffset.value += 1; emit('expand-cards') }
@@ -438,17 +482,18 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-section-heading h2, .overview-section-heading h3 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.4; }
 .overview-section-heading h2 > small, .overview-section-heading h3 > small { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-section-heading button, .overview-heading-actions { display:flex;flex:none;align-items:center;gap:var(--gs-space-2); }
-.overview-section-heading button { min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
+.overview-section-heading button { flex-shrink:0;white-space:nowrap;min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
 .overview-heading-actions { gap:var(--gs-space-5); }
 /* Chips inside a heading row: one quiet pill row between the title and its actions, scrolling when it
    runs out of room. Each chip opens the directory filtered by it. */
 /* The chip row keeps a focus-ring margin inside its scroller but adds no height: a heading with chips is
    exactly as tall as one without, so the lists under two side-by-side headings start on one line. */
 .overview-heading-chips { display:flex;flex:1;gap:var(--gs-space-2);min-width:0;overflow-x:auto;margin-block:calc(-1 * var(--gs-space-1));padding:var(--gs-space-1);scrollbar-width:none; }
+.overview-heading-chips.has-overflow { -webkit-mask-image:linear-gradient(to right, #000 calc(100% - var(--gs-space-6)), transparent 100%);mask-image:linear-gradient(to right, #000 calc(100% - var(--gs-space-6)), transparent 100%); }
 .overview-heading-chips::-webkit-scrollbar { display:none; }
 .overview-section-heading .overview-heading-chips.overview-story-tabs { margin:calc(-1 * var(--gs-space-1)) 0; }
 /* One pill for every chip: the heading chips share the story tabs' look (below). */
-.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui);white-space:nowrap; }
+.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
 .overview-heading-chips button small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
 .overview-section-heading .overview-heading-chips button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
 .overview-section-heading .overview-heading-chips button[aria-pressed=true] small { color:inherit;opacity:.75; }
@@ -552,10 +597,15 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-hub-groups { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-7); }
 .overview-hub-group { min-width:0; }
 .overview-hub-group > h3 { margin:0 0 var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
-.overview-hub-links { display:flex;flex-wrap:wrap;gap:var(--gs-space-2); }
-.overview-hub-links button { display:inline-flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-normal);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui); }
-.overview-hub-links button small { color:var(--gs-ink-3);font-variant-numeric:tabular-nums; }
-.overview-hub-links button > svg { color:var(--gs-ink-3); }
+.overview-hub-links { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-2); }
+.overview-hub-links button { display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-height:58px;padding:var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink-2);text-align:left;box-sizing:border-box; }
+.overview-hub-links button:hover { border-color:var(--gs-rule);background:var(--gs-surface-raised,var(--gs-surface)); }
+.overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-mint-ink); }
+.overview-hub-links button:hover .overview-hub-card-head > svg { color:var(--gs-mint-ink); }
+.overview-hub-card-head { display:flex;align-items:center;gap:var(--gs-space-2);width:100%;min-width:0; }
+.overview-hub-card-head > svg { flex:none;color:var(--gs-ink-3); }
+.overview-hub-card-head > strong { flex:1;min-width:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.overview-hub-card-count { margin-top:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
 .overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
@@ -730,6 +780,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
   .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button, .overview-hub-links button { min-height:var(--gs-control-touch); }
+  @media (max-width:420px) { .overview-hub-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 }
 @media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }
 </style>
