@@ -71,6 +71,12 @@ assert.equal(resolvePreviewObjectKey('assets/spines/a/comu.atlas'), 'assets/spin
 assert.equal(resolvePreviewObjectKey('assets/songs/jacket_drvalv.png'), 'assets/songs/jacket_drvalv.webp', 'lossy keeps the same physical key')
 assert.equal(previewTransformKind('assets/spines/a/comu.atlas'), COPY_TRANSFORM)
 assert.equal(isPreviewLosslessWebpCandidate('assets/spines/a/texture.webp'), false, 'an existing WebP must not be re-resolved')
+// Portal card-art thumbnails are a derived `.webp` family: their request key is
+// already the physical object, so the stage copies the encoded bytes.
+assert.equal(resolvePreviewObjectKey('assets/card-art/thumb/portrait/image_card_portrait_hide_003hok_ssr02p.webp'),
+  'assets/card-art/thumb/portrait/image_card_portrait_hide_003hok_ssr02p.webp', 'a thumbnail is its own object key')
+assert.equal(previewTransformKind('assets/card-art/thumb/portrait/image_card_portrait_hide_003hok_ssr02p.webp'), COPY_TRANSFORM,
+  'thumbnails are copied, never re-encoded')
 // Idempotence: resolving twice must not produce a different key.
 for (const key of ['assets/spines/a/texture.png', 'assets/brand/logo.png']) {
   assert.equal(resolvePreviewObjectKey(resolvePreviewObjectKey(key)), resolvePreviewObjectKey(key), `Resolution is not idempotent for ${key}`)

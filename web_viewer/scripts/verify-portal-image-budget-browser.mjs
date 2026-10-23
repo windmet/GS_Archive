@@ -1,7 +1,8 @@
 // Portal image budget (docs/GS_ARCHIVE_PORTAL_IMAGE_BUDGET_20261013.md): on a phone the card bento is below the
-// fold, so its card art (≈1.6 MB of 640×800 portraits) must not be requested until the reader scrolls near it; on
-// desktop the bento is on screen and its art loads at once. Story banners and song covers below the fold wait the
-// same way on every width. Checks the requests actually sent, not the markup.
+// fold, so its card art must not be requested until the reader scrolls near it; on desktop the bento is on screen
+// and its art loads at once. Every card-art request must be the derived 480/960-wide lossy WebP thumbnail (batch B),
+// never the full-size 640×800 / 1800×960 PNG. Story banners and song covers below the fold wait the same way on
+// every width. Checks the requests actually sent, not the markup.
 //   node scripts/verify-portal-image-budget-browser.mjs [base] [outDir]
 // Needs a running server (dev, scripts/serve-archive-build.mjs or a preview URL) and a cached Playwright Chromium.
 import { spawn } from 'node:child_process'
@@ -52,6 +53,8 @@ async function session(viewport, run) {
   }
 }
 const cardArt = requests => requests.filter(r => /\/assets\/card-art\//.test(r.url))
+const cardArtThumbs = requests => requests.filter(r => /\/assets\/card-art\/thumb\//.test(r.url))
+const cardArtBytes = requests => requests.reduce((sum, r) => sum + r.bytes, 0)
 const rows = requests => requests.filter(r => /\/assets\/(songs|stories)\//.test(r.url))
 const ROWS = `[...document.querySelectorAll('.overview-song-image img, .overview-main-index img, .overview-story-image img')].map(i => ({ src: i.getAttribute('src'), done: i.complete && i.naturalWidth > 0 }))`
 const imageBytes = requests => requests.filter(r => /\.(png|webp|jpe?g)(\?|$)/.test(r.url)).reduce((sum, r) => sum + r.bytes, 0)
@@ -73,6 +76,10 @@ await session({ width: 390, height: 844, deviceScaleFactor: 3, mobile: true }, a
   const after = cardArt(requests)
   const images = await ev(BENTO)
   check('phone: card art loads once scrolled near', after.length > 0 && images.every(i => i.done), `${after.length} card-art requests (${kib(after.reduce((s, r) => s + r.bytes, 0))}); ${images.filter(i => i.done).length}/${images.length} rendered`)
+  check('phone: card art is the derived WebP thumbnail', after.length === cardArtThumbs(after).length,
+    `${cardArtThumbs(after).length}/${after.length} thumbnail requests`)
+  check('phone: card-art transfer stays inside the thumbnail budget', cardArtBytes(after) <= 400 * 1024,
+    `${kib(cardArtBytes(after))} for ${after.length} pictures (budget 400 KiB)`)
   await shot('phone-after-scroll')
   const rowCount = await ev(`${ROWS}.length`)
   for (let n = 0; n < rowCount; n++) {
@@ -90,6 +97,10 @@ await session({ width: 1350, height: 940, deviceScaleFactor: 1, mobile: false },
   const images = await ev(BENTO)
   const art = cardArt(requests)
   check('desktop: bento is on screen and its art loads without scrolling', top < 940 && art.length > 0 && images.every(i => i.done), `bento top ${top}px; ${art.length} card-art requests; ${images.filter(i => i.done).length}/${images.length} rendered`)
+  check('desktop: card art is the derived WebP thumbnail', art.length === cardArtThumbs(art).length && art.every(r => r.url.endsWith('.webp')),
+    `${cardArtThumbs(art).length}/${art.length} thumbnail requests`)
+  check('desktop: card-art transfer stays inside the thumbnail budget', cardArtBytes(art) <= 300 * 1024,
+    `${kib(cardArtBytes(art))} for ${art.length} pictures (budget 300 KiB)`)
   await shot('desktop')
   check('desktop: no page errors', errors.length === 0, errors.slice(0, 2).join(' | ') || 'none')
 })

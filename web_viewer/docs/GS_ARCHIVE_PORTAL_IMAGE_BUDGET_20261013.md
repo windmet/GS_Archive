@@ -53,10 +53,24 @@
 
 相对最初基准：本地手机首屏传输 3,301 → 1,413 KiB（−57%），LCP 约 10.0 s → 5.6–6.3 s。回归：`verify:source-batch` 128/128；gallery `image-budget-rows`（portal、event、event-list、collection-list、photo-list、card、song）21/21；路径旅程 20/20。
 
+## 第三批：卡面缩略图（2026-10-23，批次 B）
+
+上一节「仍可做」里写的中期项：卡面缩略位用有损变体，桌面主图同样过大，需要动 R2 素材。这一批做了。
+
+- **新 URL 族**：`/assets/card-art/thumb/portrait/…webp`、`/assets/card-art/thumb/landscape/…webp`。竖版 480×600（4:5，DPR 2 下门户竖卡约 239–261 CSS 宽），横版 960×512（15:8，主卡约 490–535 CSS 宽），有损 q80、`alpha_quality=100`、`exact=True`、`method=4`。卡面详情页继续用原始 PNG（`getCardPortraitUrl` / `getCardLandscapeUrl` 不变）。
+- **为什么 method=4**：method=6 在 480 px、带 alpha 的竖版上约 1.8 s/张，字节几乎相同（27.8 → 28.8 KiB），缩略图不需要那个搜索强度。
+- **生成位置**：`shared/portal/CardArtThumbnails.js` 是唯一 URL/尺寸策略；`scripts/lib/card-thumbs.mjs` 用现有 Pillow worker 编码到忽略的 `.analysis/card-art-thumbnails/` 缓存；导出流程把这个缓存作为 `transform: copy` 的 `.webp` 对象放进部署（1,361 个竖版 + 248 个横版 = 1,609 个对象，合计 71.8 MiB，占桶约 0.9%）。dev 服务读同一个缓存，所以本地验收看到的就是将要部署的字节。
+- **读模型**：发布固定的 Portal scope 里烘死了原图 URL。`src/data/PortalRepository.js` 的 `portalDisplayOverview` 在展示层把它们映射成缩略图，并保留 `full` 给详情页/回退；因此本批不需要重新生成读模型，将来重新生成的 scope（已经带缩略图 URL）会原样通过。
+- **实测**（headless Chromium，dev 5217）：
+  - 桌面 1350×940：卡面 3 张，13/13 项验收通过；`verify-portal-image-budget-browser.mjs` 新增两项：所有 card-art 请求必须是缩略图，桌面总计 ≤300 KiB。
+  - 手机 390×844：滚动后 3 张卡面 133 KiB（10-13 同口径为 1,589 KiB），新增 ≤400 KiB 预算。
+  - 首屏卡面传输量相对 10-23 测试站实测的约 4.7 MB 下降一个数量级；原图仍然是 640×800 / 1800×960。
+- **部署顺序**：缩略图对象必须先上传（或与代码同批），否则门户卡面会 404。`--inventory` 会把缩略图一并枚举，增量上传批次会带上它们；上传/绑定仍需用户授权，走 `release/`。
+
 ## 仍可做（未做）
 
 - 首屏 LCP 的组合 logo：原图 402×117、显示 95×34，且是原生 `lazy`（低优先级）。首屏内的几张可去掉 `lazy` 或加 `fetchpriority="high"`；首屏外的 Unit 卡片（连同 49 个偶像头像中的大部分）可用同一 composable 延后。需按 LCP 与请求实测验收。
-- 中期：卡面缩略位用 256–320px 有损变体，桌面主图 1800×960 横版（显示 709×378）同样过大。需要动 R2 素材。
+- 卡面缩略图已随第三批完成；卡池、活动 banner 的缩略仍需单独排期。
 
 ## 线上验收（preview，`9c136d94`）
 

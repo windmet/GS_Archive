@@ -1,3 +1,5 @@
+import { cardArtThumbUrl } from '../../shared/portal/CardArtThumbnails.js'
+
 export function createPortalRepository({bootstrap, client}) {
   return {
     async loadScope(id = 'all', options = {}) {
@@ -13,11 +15,22 @@ export function createPortalRepository({bootstrap, client}) {
   }
 }
 
+// A release-pinned Portal scope bakes full-size card-art URLs into its projection.
+// The Portal draws thumbnails, so the mapping belongs here rather than in every
+// regenerated scope: `full` keeps the pinned URL for the detail page, and a scope
+// that already carries thumbnail URLs passes through unchanged (idempotent).
+function portalCardArt(image) {
+  if (!image || typeof image.url !== 'string') return image
+  const thumb = cardArtThumbUrl(image.url)
+  return thumb ? {...image, url: thumb, full: image.full || image.url} : image
+}
+
 // Names remain optional reactive presentation; the immutable source projection is shared.
 export function portalDisplayOverview(source, {idolName, cardTitle} = {}) {
   if (!source) return {loading:true,collections:{},footprints:[]}
   const name = (id, fallback) => idolName?.(id, fallback) || fallback
   const cards = source.collections.cards.map(row => ({...row,
+    image: portalCardArt(row.image), landscape: portalCardArt(row.landscape),
     title:cardTitle?.(row.title) || row.title,idolName:name(row.idolCode,row.idolName)}))
   const songs = source.collections.songs.map(row => ({...row,
     performers:row.performers.map(person => ({...person,name:name(person.id,person.name)}))}))
