@@ -2,7 +2,7 @@
 
 日期：2026-10-23。输入 `origin/master` / `2bdd3de44582ef3ce79cad1ec8c014f38118a6d9`；分支 `chart/20261023-native-projection`，LF worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023`。先建立台账，未修改运行时代码。范围仅谱面预览及其来源核查；无舞台修改、R2 上传或部署。
 
-当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切。首表保留输入提交的审计状态；长条148×.72宽度、节点判定、Special固定速度和flick仍开放，不把坐标合同通过写成原机渲染完成。
+当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格。首表保留输入提交的审计状态；窗口/按压/已判定节点调度、节点判定、Special固定速度和flick仍开放，不把坐标合同通过写成原机渲染完成。
 
 ## 审计时的消费者与证据等级
 
@@ -119,3 +119,29 @@ IPA实际Sprite/Atlas的packed rect小数参与几何；导出PNG的整数裁切
 验证：来源重读一致；native-note-geometry的旧148宽、PNG整数尺寸、平直矩形实际模块变异全部拒绝；233组native-timing、180组projection、244档track/note-rendering/chart-timing/chart-presentation回归通过；`build:check`通过（21.77秒，无public复制），保留既有背景未解析与大chunk warning。148现在只供待核实的长条148×.72使用，普通头尾和poly展示节点不再读取它。长轨图仍保留其示意布局。
 
 实际Browser仍为本worktree5231/PID67724：桌面1440×900 Café Parade EXPERT tick30000，19个端点，圆形与横条分别截图`note-quad-desktop.png`、`note-quad-skin3-desktop.png`，可见外轨倾斜、紫星、flick贴图。HMR刷新后重新选EXPERT/透视/tick4000，手机尺寸390×844有23端点/3长条，scrollWidth390，截图`note-quad-mobile.png`。`note-quad-skin3-mobile.png`实际在刷新后的长轨页面，不作为横条透视证据。控制台无error/warn。以上仍是桌面Browser手机尺寸模拟，无原机对照。
+
+## 第五批（2026-10-24）：长条绘图平面、网格与UV
+
+输入 `4f68027c`。原生`RhythmGameManager.Init` 0x1afe6c4的初始化片段并不是拿出现端360计算纵横比：它取`GetPosFromLaneScaled(0,-.1)`与`(0,0)`的Y差，float32乘10再除相邻目标点X差176，`SetMetrics`把结果转成double存储，默认`coordinateModifyFactor=12.721426963806152`。临时探针曾以整个画布高度估计此系数，已纠正；那个探针不作验收依据。当前producer直接执行原生Init片段和SetMetrics，target锚点由已绑定的IPA合同提供。
+
+`HoldMesh.GetLaneModifytimePosFromLane`返回`(float32(lane),float32(factor*normalizedTime))`；`GetV3PosFromLaneModifytimePos`再除factor调用原生坐标函数，Z加500并按受控屏幕尺寸夹取。长条radius来自`NoteDrawManager..cctor`的BaseHalfSizeSmall=64，在`HoldMesh.Create`减20得到44；parts中的半宽为float32(radius/laneWidth×1.5×noteDrawScale)，默认半轨宽.375。它不是音符贴图宽的.72。此处是默认设置绑定，不宣称玩家调试设置均为默认值。
+
+新证据`decompiled15/HoldMesh.Continuation.c`补出了旧Ghidra方法体遗漏的0x21d1004续体：CreatePoints循环递减节点索引，先远端再近端，并包含按压、lastTouch及已判定middle的分支。受控探针最初按RAW顺序提供点时会使ClampY上下界颠倒；已改用原生逆序，旧`native-hold-parts-cases.json`仅为失败调查，不能作为期望fixture。
+
+`UpdateFromGameHoldCreatePartsList` 0x21d1610及`UpdateFromGameHoldCreateMesh` 0x21d255c均受控执行，资源/settings/List容器/标量helper/Mesh提交为显式stub，parts、长度归一化、Vector2归一化/长度、位置和mesh主体执行ARM64。36组覆盖直线、斜线、多折点、短条、重复点、分数轨道、正时间过线、三个尺寸设置，共22,650个顶点；`SongTrackNativeHoldGeometry.js`与verifier共用，顶点、UV、三角形索引全部一致，顶点最大误差0。fixture以明确命名的Float32LE/Uint32LE base64存完整数组，不是JS生成的镜像期望值。原生同点判别使用各轴严格小于2的阈值，细分使用变换平面距离和.1，不再用span/32。
+
+主体V为`float32(.25+.5*路径累计长度比例)`，不是tick比例；端帽采用边界V。三皮肤hold_line的200×200 packed rect、Atlas实际尺寸及PNG hash由IPA重读。`CreateMaterial` 0x20b6e88→`UtilOhashi.SetSourceRect` 0x237d1b8把Sprite rect转换成材质texture offset/scale，所以裁切后的PNG可使用局部0–1 UV；不是把整个Atlas当成200像素贴图。相关反编译保存在`decompiled16/17`。
+
+运行时移除最后两个截图几何消费者148和.72。图形消费同一个native mesh：正常使用`ArchiveSongHoldMeshPreview.vue`的轻量WebGL层传入原生x/y、UV、indices，避免密集SVG clip边缘叠色横纹；SVG适配仅在WebGL不可用时作为退路，按需生成。这个Web层没有恢复Unity原shader、GPU深度合成、matForDraw、按压粒子，也没有把当前Web canvas尺寸当成原机分辨率。
+
+**裁切边界仍开放**：预览继续显示当前cursor至各音符读取窗口内的未来部分，再逆序提供给已核实的网格函数；这是Web预览规则，未宣称重建原生按压/lastTouch/已删除middle状态机。边界lane改按分段BPM秒数插值，不能在跨BPM片段继续按tick线性算lane。中间poly节点目前仍由旧展示函数提供；下面的生成与判定只读续查还没有升级它的证据等级。
+
+Producer `scripts/audit-song-track-native-hold-geometry.py`重读绑定ELF/IPA；小型runtime配置含方法窗口hash、默认metrics、Sprite绑定与边界，完整原生数组只进fixture。`verify-song-track-native-hold-geometry.mjs`拒绝旧148×.72宽、32次细分、按节点序号分配UV的实际模块变异；验证共享消费函数及跨BPM裁切lane。244档/732窗口覆盖233,066个fallback贴图三角形，有限性及Uint16索引范围通过。其余native timing/projection/note geometry、note rendering、chart timing/presentation回归通过。
+
+## 中间节点与flick只读续查（尚未接入）
+
+`EventNoteData.GetChildHoldMiddleNotes` 0x1f46e3c确有Skip(1)/Take(polyCount-2)链，`NoteScrObj`先筛VariableHold再调用它。lambda0x1c33724复制父对象，tick加subtick，type=HOLD_MIDDLE(10)、endtype=-1、duration=0、start/end=poly.posx，并设置parentId；后续CalcAbsoluteTime还会按子对象tick计算时刻。此为索引排除端点，不能未经全库核查便等同于当前`0<subtick<duration`过滤。
+
+`CheckHoldMiddle` 0x2429350需要激活/未删除的middle对象、IsOnTarget与IsLaneHolded，成功后以maxEvaluation经技能修正更新分数/生命、删除音符并触发效果。仅知道poly位置不等于恢复了判定、容差或状态。`GetEffectPointInfoByNoteSerialNo` 0x2423f08及`NoteEffectManager` lambda0x20b967c证明flick效果另走效果时钟、lane、PointInfo和scale链；当前静态提示仍未按这条链复现。
+
+第五批验收补记：`build:check`17.44秒通过，仍仅`.analysis/build-check`且无public复制，保留既有背景未解析/大chunk warning。producer再次不带--write重读ELF/IPA/36组结果一致。当前5231/PID67724仍为本worktreeVite。真实应用桌面1440×900：Café Parade EXPERT tick4000有23端点、3条长条、510个canvas顶点，截图`hold-native-desktop.png`；实际播放从2.40推进到14.98秒，主动暂停，未记成全曲长稳。K.now O.nly EXPERT tick123406可见多折点，桌面截图`hold-native-bends-desktop.png`；手机尺寸390×844切横条皮肤后有3长条/1144顶点/4个旧展示middle，scrollWidth390，截图`hold-native-bends-mobile.png`。首次resize截图尚为旧帧，已按实际新viewport重新截图覆盖。冷刷新后长轨图加载，重新选EXPERT/透视及同tick后canvas重新创建并仍为3/1144；返回URL为`/songs/knwonl/`，控制台无error/warn，已恢复viewport。此为桌面Browser模拟手机尺寸，不是真机，也未做原机GPU逐帧对照。WebGL不可用时的SVG退路未做浏览器故障注入验收。

@@ -4,16 +4,17 @@
       <title>{{ title }} · 五轨 · 原始 tick {{ safeCursor }}</title>
       <defs>
         <clipPath :id="`${uid}-lane`"><polygon :points="laneOutline" /></clipPath>
-        <template v-for="hold in scene.holds" :key="hold.id"><clipPath v-for="(mesh, i) in hold.triangles" :id="`${uid}-${hold.id}-${i}`" :key="i"><polygon :points="mesh.points" /></clipPath></template>
+        <template v-if="holdCanvasUnavailable"><template v-for="hold in scene.holds" :key="hold.id"><clipPath v-for="(mesh, i) in hold.triangles" :id="`${uid}-${hold.id}-${i}`" :key="i"><polygon :points="mesh.points" /></clipPath></template></template>
         <clipPath v-for="note in [...scene.glyphs, ...scene.middleNodes]" :id="`${uid}-note-${note.id}`" :key="`note-${note.id}`"><polygon :points="note.image.points" /></clipPath>
       </defs>
       <rect width="1280" height="720" fill="#162b36" />
       <image href="/assets/song-chart-track/live_lane_gradation.png" x="0" y="0" width="1280" height="720" preserveAspectRatio="none" :clip-path="`url(#${uid}-lane)`" />
       <polygon :points="laneOutline" fill="#07151b" opacity=".25" />
       <line v-for="(lane, i) in scene.lanes" :key="i" :data-lane-boundary="i" :x1="lane.topX" :y1="scene.topY" :x2="lane.bottomX" :y2="scene.height" :stroke="i === 0 || i === 5 ? '#91e5e8' : '#a4bac6'" :stroke-width="i === 0 || i === 5 ? 5 : 1.2" :opacity="i === 0 || i === 5 ? .7 : .5" />
-      <g v-for="hold in scene.holds" :key="hold.id" :data-track-hold="hold.id">
+      <foreignObject v-if="!holdCanvasUnavailable" width="1280" height="720"><ArchiveSongHoldMeshPreview :holds="scene.holds" :skin="skin" @unavailable="holdCanvasUnavailable = true" /></foreignObject>
+      <template v-else><g v-for="hold in scene.holds" :key="hold.id" :data-track-hold="hold.id">
         <g v-for="(mesh, i) in hold.triangles" :key="i" :clip-path="`url(#${uid}-${hold.id}-${i})`"><image :href="holdSprite" width="200" height="200" :transform="mesh.matrix" preserveAspectRatio="none" /></g>
-      </g>
+      </g></template>
       <line v-for="link in scene.links" :key="link.id" :data-simultaneous-tick="link.tick" :x1="link.a.x" :x2="link.b.x" :y1="link.a.y" :y2="link.b.y" stroke="#e9faf6" :stroke-width="Math.max(.5, 2 * link.a.scale)" opacity=".8" />
       <g v-for="n in scene.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick" data-native-role="middle" :clip-path="`url(#${uid}-note-${n.id})`"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
       <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" :y="scene.judgeY - 12" width="1280" height="24" preserveAspectRatio="none" />
@@ -33,12 +34,14 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance } from 'vue'
+import { computed, getCurrentInstance, ref } from 'vue'
 import { buildSongTrackGeometry } from '../../presentation/SongTrackPresentation.js'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
+import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
 const props = defineProps({ chart: { type: Object, required: true }, title: { type: String, required: true }, skin: { type: String, default: 'Note1SpriteAtlas' }, cursor: { type: Number, required: true }, span: { type: Number, required: true } })
 const uid = `track-${getCurrentInstance().uid}`
+const holdCanvasUnavailable = ref(false)
 const safeCursor = computed(() => Math.max(0, props.cursor))
 const scene = computed(() => buildSongTrackGeometry(props.chart, safeCursor.value, props.span, props.skin))
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)

@@ -1,15 +1,16 @@
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
 import nativeGeometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
 import nativeNotes from '../../config/song-track-native-note-geometry.v1.json' with { type: 'json' }
+import nativeHolds from '../../config/song-track-native-hold-geometry.v1.json' with { type: 'json' }
 import { noteRendering, songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
 import { buildSongChartTiming } from './SongChartTiming.js'
 import { songTrackNativePoint } from './SongTrackNativeProjection.js'
 import { songTrackNoteReadTime, songTrackNoteTime } from './SongTrackNativeTiming.js'
 import { buildNativeSongNoteQuad } from './SongTrackNativeNoteGeometry.js'
+import { buildNativeSongHoldMesh } from './SongTrackNativeHoldGeometry.js'
 export { songTrackSpanForSpeed } from './SongTrackNativeTiming.js'
 
 export const trackReference = reference
-const estimate = reference.screenshotEstimates
 const laneCount = reference.constants.LaneCount.value
 const round = value => Number(value.toFixed(5))
 
@@ -118,27 +119,32 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000, skin = 'N
     const from = Math.max(n.tick, cursor), to = Math.min(end, windowEnd)
     if (to <= from) continue
     const ticks = new Set([from, to])
-    // Include every native bend before adding perspective tessellation points.
+    // Preview policy: show the future portion inside this note's read window.
+    // Native input/deleted-middle scheduling is separate from this adapter.
     for (const p of points) if (n.tick + p.subtick > from && n.tick + p.subtick < to) ticks.add(n.tick + p.subtick)
-    // A hold within one lane already projects to a straight trapezoid. Avoid
-    // unnecessary internal clip edges there; curved slides need subdivision.
-    if (points.some(p => p.posx !== points[0].posx)) {
-      for (let t = from + (windowEnd - cursor) / 32; t < to; t += (windowEnd - cursor) / 32) ticks.add(t)
-    }
+    const secondsPoints = points.map(p => ({ subtick: toSeconds(n.tick + p.subtick), posx: p.posx }))
     const samples = [...ticks].sort((a, b) => a - b).map(tick => {
-      const lane = laneAt(points, tick - n.tick), p = project(lane, tick, speed)
-      const half = estimate.normalVisibleWidth * estimate.holdWidthRatio * p.scale / 2
-      return { tick, lane, left: { x: p.x - half, y: p.y }, right: { x: p.x + half, y: p.y }, v: (tick - n.tick) / n.duration * 200 }
+      const lane = laneAt(secondsPoints, toSeconds(tick)), p = project(lane, tick, speed)
+      return { tick, lane, fraction: p.fraction }
     })
-    const triangles = []
-    for (let i = 1; i < samples.length; i++) {
-      const a = samples[i - 1], b = samples[i]
-      for (const mesh of [
-        songTextureTriangle([a.left, a.right, b.left], [{ x: 0, y: a.v }, { x: 200, y: a.v }, { x: 0, y: b.v }]),
-        songTextureTriangle([a.right, b.right, b.left], [{ x: 200, y: a.v }, { x: 200, y: b.v }, { x: 0, y: b.v }]),
-      ]) if (mesh) triangles.push(mesh)
-    }
-    holds.push({ id: n.sourceIndex, from, to, samples, triangles })
+    const planePoints = [...samples].reverse().map(p => ({ x: p.lane, y: -p.fraction * nativeHolds.metrics.timeFactor }))
+    const nativeMesh = buildNativeSongHoldMesh(planePoints, nativeGeometry.target, nativeHolds.metrics, nativeNotes.defaultDrawScale)
+    // Most browsers draw this mesh directly. Materialize the SVG fallback only
+    // when needed, instead of rebuilding hundreds of clip matrices per frame.
+    let triangles
+    holds.push({ id: n.sourceIndex, from, to, samples, nativeMesh, get triangles() {
+      if (triangles) return triangles
+      triangles = []
+      for (let i = 0; i < nativeMesh.triangles.length; i += 3) {
+        const indices = nativeMesh.triangles.slice(i, i + 3)
+        const screen = indices.map(index => ({ x: nativeGeometry.viewport.width / 2 + nativeMesh.vertices[index].x,
+          y: nativeGeometry.viewport.height / 2 - nativeMesh.vertices[index].y }))
+        const uv = indices.map(index => ({ x: nativeMesh.uv[index][0] * 200, y: (1 - nativeMesh.uv[index][1]) * 200 }))
+        const mesh = songTextureTriangle(screen, uv)
+        if (mesh) triangles.push(mesh)
+      }
+      return triangles
+    } })
   }
   const { width, height } = nativeGeometry.viewport
   const topY = projectTrackPoint(2, 1).y, judgeY = projectTrackPoint(2, 0).y
