@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { resolvePreviewObjectKey, isPreviewDataSnapshotKey } from '../shared/deploy/PreviewAssetTransform.js'
+import { resolvePreviewObjectKey, isPreviewDataSnapshotKey, isPreviewCompiledSnapshotKey } from '../shared/deploy/PreviewAssetTransform.js'
 import { serveR2Resource } from '../functions/_shared/r2-resource.js'
 
 const revision = 'a'.repeat(64)
@@ -24,4 +24,29 @@ assert.equal(response.status, 200); assert.equal(await response.text(), '{}')
 env.ARCHIVE_ASSETS.head = async k => { requested = k; return null }
 response = await serveR2Resource({ request: new Request(`https://test/${key}`), env, prefix: 'data' })
 assert.equal(response.status, 404); assert.equal(requested, `versions/${revision}/${key}`)
-console.log('Data revision routing verified: opt-in isolation, gzip coexistence, missing snapshot fails closed')
+// Compiled stories: only a deployment that pins ARCHIVE_COMPILED_REVISION leaves the shared corpus.
+const compiled = 'data/compiled/1_1_001_01.json', compiledRevision = 'b'.repeat(64)
+assert.equal(isPreviewCompiledSnapshotKey(compiled), true)
+for (const other of [key, 'data/compiled/a.png', 'data/compiledx/a.json', 'assets/lipsync/a.json', 'data/compiled/../a.json']) {
+  assert.equal(isPreviewCompiledSnapshotKey(other), false, other)
+}
+assert.equal(resolvePreviewObjectKey(compiled, { gzip: true, dataRevision: revision }), `${compiled}.gz`, 'Unpinned deployments keep the shared key')
+assert.equal(resolvePreviewObjectKey(compiled, { gzip: true, dataRevision: revision, compiledRevision }),
+  `versions/compiled/${compiledRevision}/${compiled}.gz`)
+assert.equal(resolvePreviewObjectKey(compiled, { compiledRevision }), `versions/compiled/${compiledRevision}/${compiled}`)
+assert.equal(resolvePreviewObjectKey(key, { dataRevision: revision, compiledRevision }), `versions/${revision}/${key}`, 'Data snapshot keys ignore the compiled revision')
+assert.equal(resolvePreviewObjectKey('assets/voice/a.m4a', { compiledRevision }), 'assets/voice/a.m4a')
+assert.throws(() => resolvePreviewObjectKey(compiled, { compiledRevision: '../unsafe' }), /Invalid compiled snapshot/)
+const gzipHead = k => ({ size: 2, httpMetadata: { contentType: 'application/json', contentEncoding: 'gzip' } })
+for (const [compiledEnv, expected] of [[undefined, `${compiled}.gz`], [compiledRevision, `versions/compiled/${compiledRevision}/${compiled}.gz`]]) {
+  const store = { async head(k) { requested = k; return k === expected ? gzipHead(k) : null }, async get(k) { return { body: '{}' } } }
+  response = await serveR2Resource({ request: new Request(`https://test/${compiled}`, { headers: { 'Accept-Encoding': 'gzip' } }),
+    env: { ARCHIVE_DATA_REVISION: revision, ARCHIVE_GZIP_MODE: 'all', ARCHIVE_COMPILED_REVISION: compiledEnv, ARCHIVE_ASSETS: store }, prefix: 'data' })
+  assert.equal(requested, expected); assert.equal(response.status, 200)
+}
+// A pinned deployment whose compiled snapshot is absent fails closed instead of reading the shared corpus.
+response = await serveR2Resource({ request: new Request(`https://test/${compiled}`, { headers: { 'Accept-Encoding': 'gzip' } }),
+  env: { ARCHIVE_DATA_REVISION: revision, ARCHIVE_GZIP_MODE: 'all', ARCHIVE_COMPILED_REVISION: compiledRevision,
+    ARCHIVE_ASSETS: { async head(k) { requested = k; return k.startsWith('versions/compiled/') ? null : gzipHead(k) } } }, prefix: 'data' })
+assert.equal(response.status, 404); assert.equal(requested, `versions/compiled/${compiledRevision}/${compiled}.gz`)
+console.log('Data revision routing verified: opt-in isolation, gzip coexistence, missing snapshot fails closed; compiled snapshot opt-in')

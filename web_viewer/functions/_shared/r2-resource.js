@@ -69,7 +69,8 @@ export async function serveR2Resource({ request, env, prefix }) {
     })
   }
   const gzip = previewGzipEnabled(env, requestKey)
-  const objectKey = resolvePreviewObjectKey(requestKey, { gzip, dataRevision: env.ARCHIVE_DATA_REVISION })
+  const objectKey = resolvePreviewObjectKey(requestKey, { gzip, dataRevision: env.ARCHIVE_DATA_REVISION,
+    compiledRevision: env.ARCHIVE_COMPILED_REVISION })
   // Cloudflare normalizes the forwarded header; negotiate using the client's
   // original value when the edge provides it (including an empty string).
   const acceptEncoding = request.cf?.clientAcceptEncoding ?? request.headers.get('Accept-Encoding')

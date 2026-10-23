@@ -23,6 +23,7 @@ const receiptResponse=await raw('preview-receipt.json')
 assert.equal(receiptResponse.status,200)
 const deployment=JSON.parse(receiptResponse.body)
 assert.equal(deployment.dataRevision,manifest.dataRevision,'Wrong R2 snapshot in deployed configuration')
+assert.equal(deployment.compiledRevision || '',manifest.compiledRevision || '','Wrong compiled story snapshot in deployed configuration')
 assert.equal(deployment.branch,'gs-architecture-device-test')
 const checks=[]
 for (const prefix of ['assets/domain-images/event/', 'assets/domain-images/image/image_honor/',
@@ -66,6 +67,17 @@ assert.equal(hash(compressed.body),gzip.deployed_sha256)
 assert.equal(hash(gunzipSync(compressed.body)),gzip.source_sha256)
 assert.equal((await raw(gzip.request_key)).status,406)
 checks.push({key:gzip.request_key,check:'Raw gzip and decoded source hashes, identity 406'})
+if (manifest.compiledRevision) {
+  // The deployment must read this batch's compiled snapshot, not the shared keys.
+  const story=manifest.entries.filter(e=>e.object_key.startsWith(`versions/compiled/${manifest.compiledRevision}/`))
+    .sort((a,b)=>a.deployed_size-b.deployed_size)[0]
+  assert(story,'Compiled snapshot batch carries no compiled story')
+  const response=await raw(story.request_key,'GET',{'Accept-Encoding':'gzip'})
+  assert.equal(response.status,200,story.request_key)
+  assert.equal(hash(response.body),story.deployed_sha256,story.request_key)
+  assert.equal(hash(gunzipSync(response.body)),story.source_sha256)
+  checks.push({key:story.request_key,check:'Compiled story served from the pinned compiled snapshot'})
+}
 // The voice64 batch replaced older raw M4As without changing logical URLs.
 // Bind Range checks to the active deployment artifact, not the original export.
 const voices=JSON.parse(await fs.readFile('.deploy/voice64/manifest.json','utf8'))

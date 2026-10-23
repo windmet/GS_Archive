@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
-import { isPreviewDataSnapshotKey, isPreviewGzipCandidate, resolvePreviewObjectKey,
+import { isPreviewDataSnapshotKey, isPreviewCompiledSnapshotKey, isPreviewGzipCandidate, resolvePreviewObjectKey,
   previewTransformKind, LOSSLESS_WEBP_TRANSFORM, LOSSY_WEBP_TRANSFORM } from '../../shared/deploy/PreviewAssetTransform.js'
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
@@ -45,6 +45,19 @@ function dataRevisionFor(input, sources) {
     .map(row => {
       const hash = sources.get(row.request_key)
       validHash(hash, `parent source hash for ${row.request_key}`)
+      return [row.request_key, hash]
+    })))
+}
+
+/**
+ * The compiled-story snapshot revision: same immutable [request_key, hash]
+ * contract as the data revision, over the compiled keys in inventory order.
+ */
+export function compiledRevisionFor(entries, hashOf) {
+  return sha256(JSON.stringify(entries.filter(row => isPreviewCompiledSnapshotKey(row.request_key))
+    .map(row => {
+      const hash = hashOf(row)
+      validHash(hash, `compiled source hash for ${row.request_key}`)
       return [row.request_key, hash]
     })))
 }
@@ -113,6 +126,9 @@ export async function loadPreviewUploadedBaseline({ baselineFile, overlayFiles =
     validHash(manifest.dataRevision, 'uploaded data revision')
     assert.equal(manifest.dataRevision, descriptor.dataRevision, 'Overlay data revision mismatch')
     assert.equal(manifest.inventory_sha256, inputArtifact.sha256, 'Uploaded source inventory hash mismatch')
+    // Historical manifests predate compiled snapshots and keep the shared keys.
+    const compiledRevision = manifest.compiledRevision ?? ''
+    if (compiledRevision) validHash(compiledRevision, 'uploaded compiled revision')
     assert.equal(receipt.mode, '--upload', 'Receipt is not a successful upload')
     const completedAt = validDate(receipt.completed_at, 'upload completion time')
     assert(completedAt > lastCompletedAt, 'Overlays must be supplied in upload completion order')
@@ -139,7 +155,8 @@ export async function loadPreviewUploadedBaseline({ baselineFile, overlayFiles =
       assert.equal(source.source_size, entry.source_size, 'Uploaded source size mismatch')
       assert.equal(source.source_content_type, entry.source_content_type, 'Uploaded source content type mismatch')
       const gzip = isPreviewGzipCandidate(entry.request_key)
-      assert.equal(entry.object_key, resolvePreviewObjectKey(entry.request_key, { gzip, dataRevision: manifest.dataRevision }),
+      assert.equal(entry.object_key, resolvePreviewObjectKey(entry.request_key,
+        { gzip, dataRevision: manifest.dataRevision, compiledRevision }),
         'Uploaded physical object key violates transform policy')
       // Pictures now shipped lossy were uploaded lossless before 2026-10-06 under the same key.
       const policy = previewTransformKind(entry.request_key, { gzip })
@@ -149,11 +166,13 @@ export async function loadPreviewUploadedBaseline({ baselineFile, overlayFiles =
     }
     assert.equal(manifest.totals.deployed_bytes, deployedBytes, 'Uploaded byte total mismatch')
     assert.equal(dataRevisionFor(input, nextSources), manifest.dataRevision, 'Uploaded source hashes do not bind the data revision')
+    if (compiledRevision) assert.equal(compiledRevisionFor(input.entries, row => nextSources.get(row.request_key)),
+      compiledRevision, 'Uploaded source hashes do not bind the compiled revision')
     overlays.push({ descriptor_file: descriptorFile, descriptor_sha256: sha256(descriptorBytes),
       manifest_file: manifestArtifact.file, manifest_sha256: manifestArtifact.sha256,
       receipt_file: receiptArtifact.file, receipt_sha256: receiptArtifact.sha256,
       source_input_file: inputArtifact.file, source_input_sha256: inputArtifact.sha256,
-      remote, dataRevision: manifest.dataRevision, completed_at: receipt.completed_at, uploaded_sources: requests.size })
+      remote, dataRevision: manifest.dataRevision, ...(compiledRevision ? { compiledRevision } : {}), completed_at: receipt.completed_at, uploaded_sources: requests.size })
     sources = nextSources
     lastCompletedAt = completedAt
   }
