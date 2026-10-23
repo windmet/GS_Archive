@@ -45,3 +45,46 @@ for(const particle of source.particles){
   }
 }
 console.log('PASS Smoke edge: 6 source systems, 30 native batches / 120 births, startup control, RNG state and actual JS shape/Euler; no renderer admission')
+
+const motion=JSON.parse(read('scripts/fixtures/chibi-smoke-motion-native.json'))
+assert.equal(motion.binarySha256,proof.binarySha256)
+assert.equal(motion.sourceSha256,sha(sourceBytes))
+assert.equal(motion.edgeSha256,sha(read('scripts/fixtures/chibi-smoke-edge-native.json')))
+assert.deepEqual(motion.speedCache,{serializedNameAddress:'0xee07c7',serializedName:'startSpeed',curveOffset:0x30,modeOffset:0x34,scalarOffset:0x3c})
+for(const window of motion.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+const distanceStart=code.indexOf('function distance('),distanceEnd=code.indexOf('// RotationModule',distanceStart)
+assert.ok(distanceStart>=0&&distanceEnd>distanceStart)
+const distance=vm.runInNewContext(`(${code.slice(distanceStart,distanceEnd).trim()})`)
+assert.equal(motion.cases.length,6)
+assert.deepEqual([...new Set(motion.cases.map(c=>c.speed.scalar))].sort((a,b)=>a-b),[-7,1.5,7])
+let integrationCount=0
+for(const row of motion.cases){
+  const particle=source.particles.find(p=>p.pathId===row.source.pathId)
+  assert.ok(particle)
+  assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+  assert.deepEqual(row.speed,particle.modules.InitialModule.startSpeed)
+  const edge=proof.cases.find(c=>c.source.pathId===row.source.pathId&&JSON.stringify(c.seed)===JSON.stringify(row.edgeSeed))
+  assert.deepEqual(row.initial,edge.expected)
+  for(let lane=0;lane<4;lane++)for(let axis=0;axis<3;axis++){
+    near(row.scaled[lane][axis],row.initial[lane][axis],'speed must preserve birth position')
+    near(row.scaled[lane][axis+3],row.initial[lane][axis+3]*row.speed.scalar,'native signed speed')
+  }
+  if(row.trajectories.length){
+    assert.equal(particle.main.moveWithTransform,1)
+    assert.equal(particle.modules.InitialModule.gravityModifier.scalar,0)
+    for(const key of ['ClampVelocityModule','NoiseModule','VelocityModule'])assert.ok(!particle.modules[key])
+    assert.equal(row.trajectories.length,3)
+  }else assert.ok(particle.modules.ClampVelocityModule,'side limit must not silently disappear')
+  for(const trajectory of row.trajectories){
+    integrationCount++
+    const age=trajectory.dt*trajectory.steps
+    assert.ok(age<particle.modules.InitialModule.startLifetime.scalar)
+    for(let lane=0;lane<4;lane++)for(let axis=0;axis<3;axis++){
+      const expected=row.initial[lane][axis]+row.initial[lane][axis+3]*distance(row.speed.scalar,null,age)
+      assert.ok(Math.abs(expected-trajectory.expected[lane][axis])<1e-5,'actual JS force-free distance vs native integration')
+      near(trajectory.expected[lane][axis+3],row.scaled[lane][axis+3],'force-free velocity')
+    }
+  }
+}
+assert.equal(integrationCount,6)
+console.log('PASS Smoke motion: 6 native signed-speed systems, 2 force-free down systems / 6 trajectories; side gravity/limit remain open')

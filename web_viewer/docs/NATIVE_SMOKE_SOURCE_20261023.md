@@ -57,3 +57,17 @@
 Shape输出仍是单位方向，给分发器传入speed缓冲区不等于执行了初始模块的速度缩放。此次只闭合受控moving-edge出生位置/方向；初始速度、本地模拟、side组重力/限速、实际场景桥接和渲染消费者仍待完成，`Smoke`保持missing。
 
 本次 `npm run verify:source-batch` 为167/167，verifier coverage确认新增检查随object-emitter入口进入CI。fetch后当前分支已包含 `origin/master 8e748036`，无新增master提交待合并；未创建PR或部署。
+
+## 初速度与down组积分补证
+
+输入 HEAD `8290ec28`。只读反编译完整Shape分发器的上层调用：正常发射 `0x6d34f8` 先运行初始模块 `0x70a9cc`，然后Shape，再调用 `0x6d846c` 应用startSpeed。另两条路径 `0x6d77d0/0x6dcc60` 分别经过 `0x70c12c/0x70e3d8`，没有把三条路径混作一个初始化入口。`0x70facc`的序列化映射与 `0x6d846c` 的读取共同确认startSpeed位于InitialModule runtime-cache偏移0x30，mode在0x34、constant scalar在0x3c。
+
+[prepare-chibi-smoke-motion-fixture.py](../scripts/prepare-chibi-smoke-motion-fixture.py) 先无写入重放既有edge探针，再把真实原生出生输出传给 `0x6d846c`。六系统的源速度均为Constant，覆盖+1.5、+7和−7；方向乘速度完全由原生函数完成。保留完整1664-byte速度函数窗口、引擎与两份来源fixture哈希。此探针提供源缓存布局作为受控输入，没有声称运行完整初始模块/种子分配。
+
+两个down系统无重力、Noise、Velocity或ClampVelocity，继续把原生缩放后的速度送入积分核 `0x6d1e9c`：分别12/90步@60Hz、45步@30Hz，6条轨迹、24个粒子终点，均在源3秒寿命内。实际JS私有 `distance` 的直线位移与原生结果误差小于1e−5 Unity单位。local enum、零animated velocity和固定步长是明确的受控输入；不把这个积分核测试提升为移动父节点或整个本地模拟调度器已验证。
+
+结果在 [chibi-smoke-motion-native.json](../scripts/fixtures/chibi-smoke-motion-native.json)，JS验证并入既有 [verify-chibi-smoke-edge.mjs](../scripts/verify-chibi-smoke-edge.mjs)。原生生成及无写入重放、JS目标回归与object-emitter回归通过；不影响前端运行依赖，本批没有构建或Browser渲染声明。重放命令为 `python scripts/prepare-chibi-smoke-motion-fixture.py --native-engine <libunity.so> --unicorn-path <runtime>`，生成fixture追加 `--write`。
+
+side四系统只验证了初速度缩放，其TwoConstants重力和非0/1端点的lifetime限速曲线仍未闭合，不能用down组的直线积分取代。独立Smoke仍缺完整场景/生命周期/UV/材质消费者，保持missing。
+
+本批完整源码门禁167/167通过；最新fixture已无写入重放，stage分支包含fetch后的 `origin/master 8e748036`，无master增量待合并。仅提交本批明确路径，不纳入既有删除/未跟踪文件，未PR或部署。
