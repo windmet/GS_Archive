@@ -14,7 +14,7 @@ function fixture(){
     onMounted:fn=>{mountedPromise=fn()},createPixiApp(){starts.push('app')},initializeLineup(){},
     manifest:ref(null),choreography:ref(null),motionClockData:ref(null),musicIndex:ref(null),nativeOriginalLineups:ref(null),songs:ref([song]),selectedSongId:ref(''),selectedSong:ref(song),
     stageEffectIndex:ref(null),stagelightData:ref(null),characters:ref([]),lineup:ref([]),booting:ref(true),errorText:ref(''),
-    stageVocalEnabled:ref(false),stageReady:ref(false),mouthFixData:ref(null),motionOffsetData:ref(null),
+    stageVocalEnabled:ref(false),stageReady:ref(false),mouthFixData:ref(null),motionOffsetData:ref(null),footSoloData:ref(null),
     backmonitorIndex:ref(null),imageLayerIndex:ref(null),imageObjectIndex:ref(null),stageBackgroundIndex:ref(null),
     resolveSongStageHandoff:()=>null,console:{warn(){},error(...v){errors.push(v)}},
     fetchLiveChibiManifest:()=>start('manifest'),fetchLiveChibiChoreography:()=>start('catalog'),
@@ -23,7 +23,7 @@ function fixture(){
     fetchLiveChibiSongChoreography:()=>start('song'),fetchLiveChibiStageEffectSong:()=>start('lighting'),
     loadCurrentPenlights:()=>start('penlight'),loadCurrentObjectIndex:()=>start('objects'),loadSongLipSync:()=>start('lipsync'),
     loadSongAudio:async()=>{starts.push('audio')},rebuildStage:async()=>{starts.push('actors')},
-    fetchLiveChibiMotionOffset:async()=>null,fetchLiveChibiMouthFix:async()=>null,applyCurrentLipSync(){},requestPausedSuspensionRender(){},
+    fetchLiveChibiMotionOffset:async()=>null,fetchLiveChibiMouthFix:async()=>null,fetchLiveChibiFootSolo:async()=>null,applyStageLighting(){},applyCurrentLipSync(){},requestPausedSuspensionRender(){},
     fetchLiveChibiBackmonitorIndex:async()=>null,fetchLiveChibiImageLayerIndex:async()=>null,fetchLiveChibiImageObjectIndex:async()=>null,fetchLiveChibiStageBackgroundIndex:async()=>null,
     syncBackmonitor:async()=>{},syncImageLayers:async()=>{},syncStageBackground:async()=>{},
   }

@@ -125,6 +125,7 @@
     :data-foot-light-height="currentFootLighting.rgba[3] > 0 ? 1 / currentFootLighting.rcpHeight : 0"
     :data-foot-light-rcp-height="currentFootLighting.rcpHeight"
     :data-foot-light-opacity="currentFootLighting.rgba[3]"
+    :data-foot-solo-state="appliedFootSoloColors"
     :data-body-colors="appliedBodyColors"
     :data-image-colors="appliedImageColors"
     :data-background-component-count="backgroundComponentCount"
@@ -560,6 +561,7 @@ import {
   fetchLiveChibiSongChoreography,
   fetchLiveChibiPenlights,
   fetchLiveChibiMouthFix,
+  fetchLiveChibiFootSolo,
   fetchLiveChibiMotionOffset,
   fetchLiveChibiMotionClock,
   fetchLiveChibiCommandInventory,
@@ -589,7 +591,7 @@ import { createFlatStageLayers, backmonitorDepths } from '../core/chibiFlatStage
 import { createObjectRendererPlanes, syncObjectRendererPlanes, releaseObjectRendererPlanes } from '../core/chibiObjectRendererPlanes.js'
 import { registerNativeParticleMaskRenderer } from '../core/chibiNativeParticleMask.js'
 import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer } from '../core/chibiNativeBodyPaint.js'
-import { footUniformsAt } from '../core/chibiNativeFootColors.js'
+import { footUniformsAt, addressedFootUniformsAt } from '../core/chibiNativeFootColors.js'
 import { releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo, suspensionlightModelForAsset } from '../core/chibiSuspensionlights.js'
@@ -675,6 +677,8 @@ const commandInventoryState = ref('not_requested')
 const lipSyncReady = ref(false)
 const lipSyncFrameCount = ref(0)
 const mouthFixData = shallowRef(null)
+const footSoloData = shallowRef(null)
+const appliedFootSoloColors = ref('')
 const motionOffsetData = shallowRef(null)
 const motionClockData = shallowRef(null)
 const stagelightData = shallowRef(null)
@@ -1027,6 +1031,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   commandInventory: commandInventory.value,
   penlightCommands: penlightResources.value?.commands,
   mouthFix: mouthFixData.value,
+  footSolo: footSoloData.value,
   motionOffset: motionOffsetData.value,
   stagelight: stagelightData.value,
   backmonitor: backmonitorIndex.value,
@@ -1222,6 +1227,7 @@ const currentColorPlanes = frameValue(() => colorLayersAt(selectedSong.value?.wh
 const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
 const currentFootLighting = frameValue(() => footUniformsAt(selectedSong.value?.characterLightEvents,stageTime.value))
+const currentAddressedFootLighting = frameValue(() => addressedFootUniformsAt(selectedSong.value,footSoloData.value,stageTime.value))
 const currentBodyColors = frameValue(() => bodyUniformsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
 const currentImageColors = frameValue(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
 const appliedBodyColors = ref('')
@@ -1338,6 +1344,13 @@ onMounted(async () => {
       applyCurrentLipSync();requestPausedSuspensionRender()
     }).catch(error=>{
       if(!stageDisposed)console.warn('[ChibiStage] mouth fix input unavailable',error)
+    })
+    void fetchLiveChibiFootSolo(manifest.value.choreography.index,optionalOptions).then(value=>{
+      if(stageDisposed)return
+      footSoloData.value=value
+      applyStageLighting();requestPausedSuspensionRender()
+    }).catch(error=>{
+      if(!stageDisposed)console.warn('[ChibiStage] solo foot input unavailable',error)
     })
     const install=(target,value,sync)=> {
       if(stageDisposed || !value)return
@@ -2204,7 +2217,7 @@ function applyStageLighting() {
       runtime.spine.tint = 0xffffff
       syncNativeBodyColor(PIXI,runtime,null,false)
     }
-    if (!playing.value || inspectorOpen.value) appliedBodyColors.value = ''
+    if (!playing.value || inspectorOpen.value) {appliedBodyColors.value = '';appliedFootSoloColors.value = ''}
     return
   }
   const screen = currentWholeScreenColor.value
@@ -2217,15 +2230,19 @@ function applyStageLighting() {
   // Foot_Color uses the authored local cutoff, including intentionally huge
   // full-height commands. Native material applies Body then Foot per part.
   const foot = currentFootLighting.value
+  const addressedFoot = currentAddressedFootLighting.value
   for (const [position, runtime] of runtimes) {
     // Environment dimming belongs to SpotlightBackground's composited plane.
     // Applying it to Spine as well doubled the wash and bypassed Pin masks.
     runtime.spine.tint = 0xffffff
-    syncNativeBodyColor(PIXI,runtime,currentBodyColors.value.get(position),true,foot)
+    syncNativeBodyColor(PIXI,runtime,currentBodyColors.value.get(position),true,addressedFoot.get(position) || foot)
   }
   if (!playing.value || inspectorOpen.value) appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
     .map(([position, runtime]) =>
     `${position}:rgba(${(currentBodyColors.value.get(position) || [1,1,1,0]).map(v=>v.toFixed(3)).join(',')})`).join(',')
+  if (!playing.value || inspectorOpen.value) appliedFootSoloColors.value = [...addressedFoot]
+    .filter(([position])=>activePositions.value.includes(position))
+    .map(([position,state])=>`${position}:rgba(${state.rgba.map(v=>v.toFixed(3)).join(',')})/${state.rcpHeight.toFixed(6)}`).join(',')
 }
 
 function syncSpotlightBackground() {
