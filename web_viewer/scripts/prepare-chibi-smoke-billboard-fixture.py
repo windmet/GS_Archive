@@ -56,9 +56,22 @@ assert view_controls[0]['expected']!=view_controls[1]['expected']!=view_controls
 assert view_controls[1]['expected']==cases[1]['expected'],'Identity camera must agree in the two controlled alignments'
 assert abs(math.dist(cases[0]['expected'][0]['position'],cases[0]['expected'][1]['position'])-20)<1e-5
 assert abs(math.dist(cases[0]['expected'][0]['position'],cases[0]['expected'][3]['position'])-3.3)<1e-5
+consumer_controls=[]
+for particle in source['particles']:
+    initial=particle['modules']['InitialModule'];size=initial['startSize']['scalar']
+    size_vector=[initial[k]['scalar'] for k in ['startSize','startSizeY','startSizeZ']] if initial['size3D'] else None
+    uniform_size=None if initial['size3D'] else size
+    bounds=[particle['rendererBounds'][key] for key in ['m_MinParticleSize','m_MaxParticleSize']]
+    roll=0
+    for angle in [0,.7,-.7]:
+        for height in [.2,7.2]:
+            frame=dict(source={key:particle[key] for key in ['serializedFile','pathId','parameterTreeSha256']},angle=angle,viewHeight=height)
+            frame['expected']=vertices([0,0,angle],False,particle['transformChain'],1,frame,
+                position=[0,0,0],particleSize=size_vector,sizeBounds=bounds,viewHeight=height)
+            consumer_controls.append(frame)
 vertices.__globals__['execute']=original_execute;uc.hook_del(hook)
 proof=dict(schemaVersion=1,binarySha256=n['native']['identity'],sourceSha256=hashlib.sha256(source_path.read_bytes()).hexdigest(),
-    functions=['0x6cf028','0x6c505c','0x815a1c','0x81e2e0'],cases=cases,viewControls=view_controls,
+    functions=['0x6cf028','0x6c505c','0x815a1c','0x81e2e0'],cases=cases,viewControls=view_controls,consumerControls=consumer_controls,
     boundary='Controlled camera matrices, source TRS/size/rotation endpoints and alignment1. Native hierarchy/context and the source uniform/nonuniform quad branches execute; only free(NULL) adapts ABI. No local-simulation position update, moving edge births, runtime container/stage/camera bridge, size/color life, RNG, UV sheet or render admission.')
 target=root/'scripts/fixtures/chibi-smoke-billboard-native.json'
 if args.write:target.write_text(json.dumps(proof,separators=(',',':'))+'\n',encoding='utf8',newline='\n')

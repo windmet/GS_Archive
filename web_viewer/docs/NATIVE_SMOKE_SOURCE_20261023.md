@@ -103,3 +103,28 @@ side四系统只验证了初速度缩放，其TwoConstants重力和非0/1端点�
 本批完整源码门禁167/167通过。fetch发现master已前进至 `6048cb13`（门户#87–#92等21个提交）；先提交UV证据，再按分支策略普通merge同步，合并后的构建与回归另记。
 
 同步已完成：UV提交 `703180ed`，普通merge提交 `d73d493a`，包含 `origin/master 6048cb13`。合并后 `build:check` 16.23s通过（无public拷贝），本地 `verify:source-batch` 再次167/167通过，verifier coverage为472脚本（上游新增1个外部Browser检查归local-only）。生成审计元数据恢复merge HEAD；未宣称执行该外部Browser验收。既有5213仍由PID62484的主checkout Vite服务，无新端口或部署；无关删除/未跟踪文件保持原样。
+
+
+## 本轮收口：来源参数 Smoke 预览已接入
+
+输入 HEAD `9775ffe0`，本节取代上文历史批次的“Smoke missing”结论。历史来源 fixture 的 `source_audited_consumer_missing` 标记保留，以维持既有字节哈希证据；当前消费状态以生成数据、绑定与 `stageCommandCoverage.js` 为准：`Smoke` 为 **partial / 来源参数预览**，不宣称原机等价。
+
+[prepare-chibi-smoke.py](../scripts/prepare-chibi-smoke.py) 从既有 RAW/Unity 来源重新抽取并比对，发布 2 组、6 系统、2 曲的 5 条命令及 2 张无损 PNG，总计 122,487 bytes（数据、绑定、纹理）。数据合同为 `source-linked-smoke-preview-v1`；loader 校验 payload SHA、编排索引和来源身份。源 down 寿命实际为 TwoConstants 2.5–3 秒，上文受控轨迹的 3 秒是上界；side 的约 7% 旋转方向随机概率也保留，Web 使用自己的确定性抽样，不冒充原机随机序列。
+
+[场景消费者](../src/core/chibiSmokeRenderer.js) 按需加载资源，Show 选择组并设置深度，重复 Show 不重启正在发射的同组；Erase 停止新发射并保留存活尾烟，不虚构淡出。退场、换曲、卸载和异步过期结果均释放资源。倒序 seek 从指令历史重建 epoch，包含负时间 Show；实际 RAW 只使用组 1，组 2 保留来源及受控测试，未宣称它有实际歌曲 Browser 验收。Value2/102 未被解释成新增视觉参数。
+
+运动消费使用已核对的源出生形状、有符号初速度、down 直线运动、side 重力→限速→位置积分、颜色/尺寸/UV。新增 Smoke world billboard 专用垂直基向量修正，其他通用粒子分支维持既有行为；6 系统 × 3 旋转角 × 2 viewHeight 共 36 个新增原生四边形角点对照，覆盖非等比尺寸与屏幕尺寸夹取，既有 42 个几何及相机用例继续保留。消费采用确定性 Web 种子与 60Hz 时钟，静态共同舞台比例用于重力坐标换算；原机出生/退休时钟、短间隔 Stop→Play 恢复语义、完整移动父链和场景投影仍待后续核实。
+
+本轮验收使用主 checkout 的 5213 Vite（PID 64608），候选 `rm-release-20261015` / release `2430ef3db583a07878f1967b45e039eb326212cda386b063f6c4f9f8d8a772c3`。这是 dev 服务验收，不是生产 bundle 或设备验收。实测如下：
+
+| Browser 旅程 | 实测 |
+|---|---|
+| STARLIGHT CELEBRATE!，1280×720 | 3000ms 为 4 粒子；7100ms 已停止发射仍有 7 粒子；10000ms 为 0；倒退 3000ms 恢复 4 |
+| 同一 Viewer 切换 Tone's Destiny，390×844 | 18500ms 为 8 粒子尾烟，22000ms 为 0，121500ms 重启后为 4；倒退 0ms 为 6 |
+| Tone's Destiny 最终冷加载，390×844 | `ready` / 组 1 / 6 粒子，页面宽度与 scrollWidth 均 390；无 console error |
+
+截图位于 `C:/Users/windm/.codex/visualizations/2026/10/19/01a15519-1b92-77f3-a842-31b108360858/`：`smoke-strclb-3000-desktop.png`、`smoke-strclb-7100-tail.png`、`smoke-tnsdst-18500-mobile.png`、`smoke-tnsdst-cold-mobile.png`。启动时仍观察到既有 Pixi Spine tint/update warning，不写成零警告。编队为本轮手动配置，未重新核实原曲成员站位。
+
+`prepare-chibi-smoke.py` 无写入再生成一致；billboard 原生 fixture 无写入重放一致；Smoke、object-emitter 与 stage-command 目标回归通过。`build:check` 23.60s 通过，输出仅 `.analysis/build-check`，不复制 public；完整源码门禁结果见 [PR 收口记录](STAGE_PR_CLOSEOUT_20261023.md)。fake PIXI 测试只验证真实资源分配/消费者边界，不能替代 GPU、过滤器、材质字节、原片逐帧或真机验收。
+
+按用户要求在此收口，不继续扩展调查。新 JSON/PNG 未上传 R2、未部署；PR 由用户后续提出。后续缺口集中到收口记录。

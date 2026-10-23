@@ -6,6 +6,7 @@ import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleLifetimeLimitDistance } from './chibiParticleLimit.js'
 import { samplePackedColorPair } from './chibiParticleColorPair.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
+import {assertSmokeSystem,smokeMotionAt,SMOKE_BINDING} from './chibiSmokeMotion.js'
 export function sampleObjectCurve(c,t,r) {
   if(c.mode===3)return c.minScalar+(c.scalar-c.minScalar)*r
   if(c.mode===2){const min=sampleParticleCurve({...c,keys:c.minKeys},t);return min+(sampleParticleCurve(c,t)-min)*r}
@@ -199,6 +200,8 @@ function noiseMotion(system,id,initial,age,born,options) {
   return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:options.clock.timeAt(born+age)}).position:saved.state.position
 }
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,view={}) {
+  const smoke=Boolean(system.smokeBinding)
+  if(smoke)assertSmokeSystem(system)
   if(system.shape?.type===17 && system.shapeBinding?.profile!=='native-random-torus-v1')throw Error('Unbound torus source')
   if(system.parentProjection && (!['native-local-orthographic-v1','native-local-size-orthographic-v1'].includes(system.parentProjection.profile) || system.alignment!==2 || system.rotationX || (system.sizeY && system.parentProjection.profile!=='native-local-size-orthographic-v1') || system.noise || system.stretch))
     throw Error('Unsupported local parent projection')
@@ -236,9 +239,13 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       let p=shape?euler(emitted.position,shape.m_Rotation):emitted.position
       const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction
       const birthSpeed=sample(system.speed,birthPhase,rnd(4))
-      const d=system.noise?0:system.limit?.curve?sampleLifetimeLimitDistance(birthSpeed,system.limit,age,life):distance(birthSpeed,system.limit,age)
+      const d=system.noise||smoke?0:system.limit?.curve?sampleLifetimeLimitDistance(birthSpeed,system.limit,age,life):distance(birthSpeed,system.limit,age)
       const g=(system.gravity?sample(system.gravity,birthPhase,rnd(19)):0)*-9.81
-      if(system.noise) {
+      if(smoke) {
+        p=smokeMotionAt(system,id,{position:{x:p.x+(shape?.m_Position.x||0),y:p.y+(shape?.m_Position.y||0),z:p.z+(shape?.m_Position.z||0)},
+          velocity:{x:v.x*birthSpeed,y:v.y*birthSpeed,z:v.z*birthSpeed}},
+          {x:0,y:g/SMOKE_BINDING.stageScaleXY,z:0},age,life)
+      } else if(system.noise) {
         const speed=sample(system.speed,birthPhase,rnd(4)),det=matrix.a*matrix.d-matrix.b*matrix.c
         if(Math.abs(det)<1e-12)throw Error('Singular noise emitter gravity plane')
         const initial={position:{x:p.x+(shape?.m_Position.x||0),y:p.y+(shape?.m_Position.y||0),z:p.z+(shape?.m_Position.z||0)},velocity:{x:v.x*speed,y:v.y*speed,z:v.z*speed}}
@@ -249,16 +256,21 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
         p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.x,age,life,rnd(14)):0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.y,age,life,rnd(15)):0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.z,age,life,rnd(16)):0)}
       }
       let size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
-      if(system.rendererBounds){
+      let sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
+      if(smoke) {
+        const maximum=(view.height??7.2)*system.rendererBounds.max*100,largest=Math.max(size,sizeY)
+        if(largest>maximum){const ratio=maximum/largest;size*=ratio;sizeY*=ratio}
+      } else if(system.rendererBounds){
         const bounds=system.rendererBounds,height=view.height??7.2
         const scale=bounds.profile==='native-scaled-uniform-screen-size-v1'?Math.abs(renderBasis.scaleX):1
         if(!['native-uniform-screen-size-v1','native-scaled-uniform-screen-size-v1'].includes(bounds.profile)||bounds.min!==0||bounds.max!==1||system.sizeY||system.rotationX||system.stretch||!(height>0)||!(scale>0))throw Error('Unsupported uniform renderer bounds')
         size=Math.min(size,height*100/scale)
+        sizeY=size
       }
-      const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
       // Particle angles are clockwise in Unity's billboard builder. Convert
       // them separately from emitter Transform rotations, which stay unchanged.
-      const rz=-(sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)))
+      const rotationSign=smoke&&rnd(24)<=system.randomizeRotationDirection?-1:1
+      const rz=-(sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)))*rotationSign
       let A,B,C,D
       if(system.rotationX){
         // rotation3D: Unity Euler order Z, then X, then Y; project world axes onto the screen plane.
@@ -271,6 +283,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       } else {
         const c=Math.cos(rz),s=Math.sin(rz)
         A=renderBasis.a*c+renderBasis.c*s;B=-(renderBasis.b*c+renderBasis.d*s);C=renderBasis.a*s-renderBasis.c*c;D=-(renderBasis.b*s-renderBasis.d*c)
+        if(smoke)D=renderBasis.d*c // World alignment keeps the native +Y quad axis before the PNG/screen conversion.
       }
       const mix=system.colorMode===2&&system.colorMin?rnd(12):null
       const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):mix===null?system.color:Object.fromEntries(['r','g','b','a'].map(k=>[k,system.colorMin[k]+(system.color[k]-system.colorMin[k])*mix])),over=system.colorOverLife
@@ -278,7 +291,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       const color=pairColor?(pairColor[0]<<16)|(pairColor[1]<<8)|pairColor[2]:['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
       // World gravity (Unity default -9.81 y) after the emitter matrix; screen y is negated.
-      const wx=matrix.a*p.x+matrix.c*p.y+(matrix.zx||0)*p.z+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+(matrix.zy||0)*p.z+matrix.ty+(system.noise?0:0.5*g*age*age)
+      const wx=matrix.a*p.x+matrix.c*p.y+(matrix.zx||0)*p.z+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+(matrix.zy||0)*p.z+matrix.ty+(system.noise||smoke?0:0.5*g*age*age)
       let geometry={x:wx*100,y:-wy*100,a:A*size,b:B*size,c:C*sizeY,d:D*sizeY}
       if(system.stretch) {
         const fp=Math.fround,speed=fp(sample(system.speed,birthPhase,rnd(4)))

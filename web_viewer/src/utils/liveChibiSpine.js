@@ -30,6 +30,8 @@ import { validateStageCommandInventory } from '../core/stageCommandCoverage.js'
 import { validatePenlightData } from '../core/chibiPenlights.js'
 import { NATIVE_MOUTH_CLOSED_RATE, validateMouthFixData } from '../core/chibiMouthFix.js'
 import { validateFootSoloData } from '../core/chibiNativeFootColors.js'
+import {validateSmokeData} from '../core/chibiSmoke.js'
+import {SMOKE_BINDING} from '../core/chibiSmokeMotion.js'
 import { validateMotionOffsetData } from '../core/chibiMotionOffset.js'
 import { validateMotionClock } from '../core/chibiMotionClock.js'
 import { validateOriginalLineups } from '../core/chibiOriginalLineups.js'
@@ -148,6 +150,16 @@ export async function fetchLiveChibiFootSolo(file,{signal,binding}={}) {
   const hash=binding ? validateChoreographyBinding(binding,file).sha256 : await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return validateFootSoloData(text.data,hash)
+}
+export async function fetchLiveChibiSmoke(file,{signal,binding}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-smoke.json',{signal}),
+    binding?null:indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=binding?validateChoreographyBinding(binding,file).sha256:await choreographyText.hash()
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  if(await text.hash()!==SMOKE_BINDING.dataSha256)throw Error('Smoke payload identity mismatch')
+  return validateSmokeData(text.data,hash)
 }
 export async function fetchLiveChibiMotionOffset(file,{signal,binding}={}) {
   const [text,choreographyText]=await Promise.all([

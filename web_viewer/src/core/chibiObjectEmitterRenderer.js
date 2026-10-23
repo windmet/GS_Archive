@@ -37,10 +37,10 @@ export async function loadObjectEmitters(PIXI,model,loadTexture) {
   }
 }
 
-export function updateObjectEmitters(PIXI,runtime,time,activatedAt,stoppedAt,cameraRotation,viewHeight=7.2,spatial=null) {
+export function updateObjectEmitters(PIXI,runtime,time,activatedAt,stoppedAt,cameraRotation,viewHeight=7.2,spatial=null,sampleEmitter=sampleObjectEmitter) {
   let count=0
   for(const {system,frames,sprites,w,h} of runtime.nativeEmitters) {
-    const samples=sampleObjectEmitter(system,time,activatedAt,stoppedAt,{rotation:cameraRotation,height:viewHeight,spatial})
+    const samples=sampleEmitter(system,time,activatedAt,stoppedAt,{rotation:cameraRotation,height:viewHeight,spatial})
     for(let i=0;i<sprites.length;i++) {
       const sprite=sprites[i],s=samples[i];sprite.visible=Boolean(s && s.alpha>0)
       if(!s)continue
