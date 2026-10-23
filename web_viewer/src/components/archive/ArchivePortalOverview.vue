@@ -110,23 +110,15 @@
                   <ArrowUpRight :size="14" class="overview-stat-arrow" aria-hidden="true" />
                 </span>
               </div>
-              <div v-if="tile.value && tile.parts?.length" class="overview-stat-bar" aria-hidden="true">
-                <span
+              <div v-if="tile.parts?.length" class="overview-stat-bricks" :style="{ gridTemplateColumns: `repeat(${tile.parts.length}, minmax(0, 1fr))` }" aria-hidden="true">
+                <div
                   v-for="part in tile.parts"
                   :key="part.id"
-                  class="overview-stat-segment"
-                  :style="{ flexGrow: part.count }"
-                ></span>
-              </div>
-              <div v-if="tile.parts?.length" class="overview-stat-chips" aria-hidden="true">
-                <span
-                  v-for="part in tile.parts"
-                  :key="part.id"
-                  class="overview-stat-chip"
+                  class="overview-stat-brick"
                 >
-                  <span class="overview-stat-dot"></span>
-                  <span class="overview-stat-chip-label">{{ part.label }} {{ part.count }}</span>
-                </span>
+                  <strong class="overview-stat-brick-value">{{ formatCount(part.count) }}</strong>
+                  <span class="overview-stat-brick-label">{{ part.label }}</span>
+                </div>
               </div>
             </button>
           </div>
@@ -503,7 +495,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-section-heading .overview-shuffle { color:var(--gs-ink-2); }
 
 /* Featured: the 担当 hero beside the featured cards. */
-.overview-featured { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7); }
+.overview-featured { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7);--idol-soft-bg:color-mix(in srgb,var(--hero-wash,var(--gs-mint-wash)) 75%,var(--gs-surface));--idol-ink:var(--hero-ink,var(--gs-mint-ink)); }
 .overview-unit-hub + .overview-featured { margin-top:var(--gs-space-section); }
 .overview-personal, .overview-card-showcase { min-width:0; }
 /* The 担当 banner on wide pages: the hero card and its four tiles share the page's one 50:50 axis (the same
@@ -511,7 +503,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-personal-stats { display:none; }
 @container portal (min-width:981px) {
   .overview-footprint.is-preferred-footprint { display:none; }
-  .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
+  .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);margin-top:var(--gs-space-4); }
   .overview-featured:not(.is-all-view) > .overview-card-showcase { grid-column:1 / -1; }
   .overview-featured:not(.is-all-view) .overview-identity { flex:1;height:auto;min-height:228px; }
   .overview-personal-stats { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:var(--gs-space-3); }
@@ -519,25 +511,21 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
   .overview-content-grid:not(.is-global-grid) .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 }
-.overview-stat { display:flex;flex-direction:column;justify-content:space-between;gap:var(--gs-space-3);min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer; }
+.overview-stat { display:flex;flex-direction:column;justify-content:space-between;gap:var(--gs-space-3);min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer;transition:border-color var(--gs-motion-fast); }
 .overview-stat:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
+.overview-stat:hover { border-color:var(--gs-rule); }
+.overview-stat:hover .overview-stat-arrow { color:var(--idol-ink,var(--gs-mint-ink)); }
 .overview-stat-header { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-2);min-width:0; }
-.overview-stat-title { display:inline-flex;align-items:center;gap:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
-.overview-stat-title svg { flex:none;color:var(--gs-ink-3); }
-.overview-stat-figure { display:inline-flex;align-items:baseline;gap:var(--gs-space-2);white-space:nowrap; }
-.overview-stat strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-section);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums;line-height:1.2; }
-.overview-stat-total { color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
-.overview-stat-arrow { flex:none;color:var(--gs-ink-3);margin-left:2px; }
-.overview-stat:hover .overview-stat-arrow { color:var(--gs-mint-ink); }
-.overview-stat-bar { display:flex;height:6px;border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--gs-line) 80%,transparent);overflow:hidden;gap:1px; }
-.overview-stat-segment { display:block;height:100%;min-width:2px; }
-.overview-stat-chips { display:flex;flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-3);min-width:0; }
-.overview-stat-chip { display:inline-flex;align-items:center;gap:5px;color:var(--gs-ink-2);font-size:var(--gs-text-meta);line-height:1.2; }
-.overview-stat-dot { display:inline-block;width:6px;height:6px;border-radius:50%;flex:none; }
-.overview-stat-segment:nth-child(1), .overview-stat-chip:nth-child(1) .overview-stat-dot { background:var(--hero-ink,var(--gs-mint-ink)); }
-.overview-stat-segment:nth-child(2), .overview-stat-chip:nth-child(2) .overview-stat-dot { background:color-mix(in srgb,var(--hero-ink,var(--gs-mint-ink)) 68%,var(--hero-light,var(--gs-mint))); }
-.overview-stat-segment:nth-child(3), .overview-stat-chip:nth-child(3) .overview-stat-dot { background:color-mix(in srgb,var(--hero-ink,var(--gs-mint-ink)) 40%,var(--hero-light,var(--gs-mint))); }
-.overview-stat-segment:nth-child(4), .overview-stat-chip:nth-child(4) .overview-stat-dot { background:color-mix(in srgb,var(--hero-ink,var(--gs-mint-ink)) 18%,var(--hero-light,var(--gs-mint))); }
+.overview-stat-title { display:inline-flex;align-items:center;gap:var(--gs-space-2);color:var(--gs-ink-2);font-size:15px;font-weight:600; }
+.overview-stat-title svg { flex:none;color:var(--idol-ink,var(--gs-mint-ink)); }
+.overview-stat-figure { display:inline-flex;align-items:baseline;gap:2px;white-space:nowrap; }
+.overview-stat-figure strong { font-family:var(--gs-font-stage);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;color:var(--gs-ink); }
+.overview-stat-total { margin-left:4px;color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:13px;font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-stat-arrow { flex:none;color:var(--gs-ink-3);margin-left:4px;align-self:center; }
+.overview-stat-bricks { display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;width:100%;margin-top:var(--gs-space-3); }
+.overview-stat-brick { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--idol-soft-bg);border-radius:var(--gs-radius-control);padding:8px 6px;text-align:center;min-width:0; }
+.overview-stat-brick-value { font-size:16px;font-weight:700;color:var(--gs-ink,#1e293b);font-variant-numeric:tabular-nums;line-height:1.2; }
+.overview-stat-brick-label { font-size:12px;color:var(--gs-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2; }
 .overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
