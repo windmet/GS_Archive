@@ -1,3 +1,4 @@
+import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
 import nativeGeometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
 import nativeNotes from '../../config/song-track-native-note-geometry.v1.json' with { type: 'json' }
@@ -114,7 +115,7 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000, skin = 'N
     if (end < cursor || n.tick > windowEnd) continue
     const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
     glyph(n, n.tick, points[0].posx, n.type, 'head')
-    if (!n.duration) continue
+    if (!nativeSongNoteIsHold(n) || !n.duration) continue
     glyph(n, end, points.at(-1).posx, n.endtype || 'END_NORMAL', 'tail')
     const from = Math.max(n.tick, cursor), to = Math.min(end, windowEnd)
     if (to <= from) continue

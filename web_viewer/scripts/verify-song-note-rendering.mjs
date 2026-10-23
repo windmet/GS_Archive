@@ -38,7 +38,7 @@ for (const song of Object.values(catalog.songs)) for (const difficulty of song.g
   const chart = JSON.parse(readFileSync(new URL(difficulty.chart.url.replace('/data/', ''), root)))
   const long = buildSongChartGeometry(chart)
   const notes = songNoteEndpoints(chart)
-  assert.equal(notes.length, chart.notes.length + chart.notes.filter(n => n.duration > 0).length)
+  assert.equal(notes.length, chart.notes.length + chart.notes.filter(n => ['HOLD', 'VARIABLE_HOLD', 'LARGE_HOLD', 'LARGE_VARIABLE_HOLD'].includes(n.type) && n.duration > 0).length)
   assert.equal(long.notes.length, chart.notes.length)
   assert.equal(long.middleNodes.length, songHoldMiddleNodes(chart).length)
   assert.equal(long.notes.filter(n => n.role === 'p_skill').length, chart.notes.filter(n => n.type.startsWith('LARGE')).length)

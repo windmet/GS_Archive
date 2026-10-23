@@ -256,7 +256,7 @@ def run(args):
     spec = dict(schemaVersion=1, source=source, skins=skins, roleNoteTypes=role_types,
                 defaultDrawScale=default_scale,
                 boundaries=dict(vertices='native quad math at controlled normalized time',
-                    timing='ordinary note timing recovered separately; Special fixed-speed override pending',
+                    timing='common lead and per-note speed including Special verified separately; saved player preferences and arbitrary reflection not replayed',
                     renderer='SVG bitmap/canvas adapter; original shaders, depth compositing and particles pending'))
     fixture = dict(schemaVersion=1, source=source, target=plane['target'],
         execution='Unicorn ARM64; native vertex/coordinate/normalization/scale bodies; resource, settings, scalar helper and Mesh submission stubs',

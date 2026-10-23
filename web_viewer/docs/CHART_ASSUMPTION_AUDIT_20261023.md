@@ -2,7 +2,7 @@
 
 日期：2026-10-23。输入 `origin/master` / `2bdd3de44582ef3ce79cad1ec8c014f38118a6d9`；分支 `chart/20261023-native-projection`，LF worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023`。先建立台账，未修改运行时代码。范围仅谱面预览及其来源核查；无舞台修改、R2 上传或部署。
 
-当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格，第六批已接原生middle生成并核实判定核心谓词。首表保留输入提交的审计状态；完整窗口/按压/已判定节点调度、Special固定速度和flick效果呈现仍开放，不把坐标合同通过写成原机渲染完成。
+当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格，第六批已接原生middle生成并核实判定核心谓词，第七批核实Special共用读取时长并修正非hold的伪尾点。首表保留输入提交的审计状态；完整窗口/按压/已判定节点调度、flick连线与效果呈现仍开放，不把坐标合同通过写成原机渲染完成。
 
 ## 审计时的消费者与证据等级
 
@@ -165,3 +165,20 @@ Producer `scripts/audit-song-track-native-hold-geometry.py`重读绑定ELF/IPA�
 验证：两个producer不带--write重放一致；72组生成与range/time/touch回执检查、244档2285个共享消费节点通过。233组native timing、180组projection、1080组note quad、36组hold mesh、732窗口及chart timing/presentation回归通过。最终`build:check`23.73秒通过，仍无public复制，保留既有背景未解析/大chunk warning。
 
 第六批Browser：最终源码在本worktree5231/PID67724，K.now O.nly EXPERT tick123406。桌面1440×900和手机尺寸390×844均有4个native生成middle，DOM tick依次124080/124320/124560/124680，canvas仍1144顶点，手机scrollWidth390；截图`middle-native-desktop.png`、`middle-native-mobile.png`。谱面信息已显示原生内部索引生成与不执行游戏判定的边界。长轨图可切换并加载EXPERT Combo603的实际谱面区域；返回`/songs/knwonl/`，控制台无error/warn，已恢复viewport。没有把这次Browser检查称为触点判定/真机验收。
+
+
+## 第七批（2026-10-24）：Special共用时长与非hold伪尾点
+
+输入 `9caf7bcd`。`SequencePlayer.ISequenceListener.OnReset` 0x1b02384 经 `RhythmGameManager.get_leadTime` → `LiveSettingsData.GetReadTime`，把同一个读取时长交给 `NoteManager.SetDelayLeadTime` / `CalcAbsoluteTime`。后者对正track的对象赋leadTime，没有Special分支。`NoteInfo.GetNoteTime` 0x1edcc28直接转发 `EventNoteData.GetNoteTime` 0x1f471cc，SMALL与SPECIAL均为 `(current-hit)/(lead/floatSpeed)`。producer实际执行reset、GetReadTime、SetDelayLeadTime和两层时间函数；CalcAbsoluteTime迭代/时刻计算交接、clock/settings服务为明确stub，未伪称完整集合循环执行。
+
+`FixSpNoteSpeedButton.get_isOn` 0x2059fe8只读调试偏好，默认true。键literal为FixSpNoteSpeedButton；静态直接调用者仅debug label/OnClick，common lead调用链没有读取它。回执 `special-key-references.txt`、`special-speed-callers.txt`、`common-lead-callers.txt`，反编译 `decompiled24/25`。因此不再把“Special固定速度”当成已存在但待恢复的游戏规则，也不凭按钮名称添加3.5秒override。边界：没有重放任意反射、原玩家保存偏好、完整Special演出调度。
+
+`scripts/audit-song-track-native-special-timing.py`保存ELF及12个方法窗口hash，重放3个设置的reset交接与72组typed时间结果，11种enum的IsAnyHold/IsAnyHoldOrFlick在ARM64执行。244档Special原始speed均1且track>0；运行时共享时钟在1/5/11三个设置消费正确，强行固定3.5秒的实际模块变异失败。
+
+此检查发现旧预览错误：非hold只要duration>0就多画一个尾点和长条。原生 `OnNewNote` 0x2426874依IsAnyHoldOrFlick决定NoteMesh/HoldMesh；`HoldMesh.Create` 0x21cf2c4进一步区分IsAnyHold与IsAnyFlick。只有HOLD/VARIABLE_HOLD/LARGE_HOLD/LARGE_VARIABLE_HOLD生成hold首尾；flick分支只创建一个childBeginNote，并根据独立nextFlickNote指针建连线，不以RAW duration生成尾点。反编译保存在 `decompiled27` 与 `decompiled/Growing.Live.HoldMesh.c`。类型谓词实执行，OnNewNote和Create是方法体/分支审阅，不声称Unity对象池完整执行。
+
+新增共享 `SongTrackNativeNoteTypes.js` 供长轨/端点/透视消费。保留全部RAW duration与原始maxTick；只移除伪尾点和普通hold主体。244档中非hold正duration共275个：SMALL228、LARGE7、FLICK_RIGHT16、FLICK_UP13、FLICK_LEFT9、SPECIAL2。真hold尾点现为11195。旧duration类型判断的实际模块变异失败；所有275个对象分别验证长轨held/bodyTriangles、端点及透视glyph/mesh不再生成伪hold。原生nextFlickNote连线仍未接入，不能把此次移除伪条说成flick连线还原。
+
+note-geometry配置的Special边界与producer同步更新，middle fixture的enum合同文件hash随之重新生成；原生middle输出无变化。三个producer重读一致，全部native timing/projection/quad/hold/middle回归通过；244档/732窗口、11195尾点与chart timing/presentation通过。判定回执由middle verifier消费，没有单独的native-judgement verifier；一次批量命令尝试不存在的文件后已纠正，未将该错误记作通过。最终build:check通过（25.11秒、2994模块），无public复制；既有背景未解析/大chunk warning保留。
+
+真实Browser仍为本worktree5231/PID67724。はるかぜバトン HARD Lv16 / tick79752，source758为tick80640、duration480的Special：桌面1440×900只显示一个head、没有伪尾点；配速11时距hit一秒的它不可见，配速1时可见，恢复5。手机尺寸390×844同样只有head、scrollWidth390，截图 `special-native-desktop.png` / `special-native-mobile.png`；长轨图可切换并加载HARD Combo383。返回 `/songs/hrkzbn/` 正确加载标题/难度表，URL清理，控制台error/warn为空；已恢复viewport。为桌面Browser手机尺寸模拟，无真机/原机逐帧等价声明。

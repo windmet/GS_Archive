@@ -1,3 +1,4 @@
+import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
 import rendering from '../../config/song-note-rendering.v1.json' with { type: 'json' }
 import { nativeSongHoldMiddlePoints } from './SongTrackNativeMiddleNodes.js'
 export const noteRendering = rendering
@@ -12,7 +13,7 @@ export function songNoteEndpoints(chart) {
   return chart.notes.flatMap(n => {
     const points = n.poly?.length ? n.poly : [{ posx: n.start }, { posx: n.end }]
     const head = { id: `${n.sourceIndex}-head`, sourceIndex: n.sourceIndex, endpoint: 'head', tick: n.tick, lane: points[0].posx, role: songNoteRole(n.type) }
-    return n.duration ? [head, { id: `${n.sourceIndex}-tail`, sourceIndex: n.sourceIndex, endpoint: 'tail', tick: n.tick + n.duration, lane: points.at(-1).posx, role: songNoteRole(n.endtype || 'END_NORMAL') }] : [head]
+    return nativeSongNoteIsHold(n) && n.duration > 0 ? [head, { id: `${n.sourceIndex}-tail`, sourceIndex: n.sourceIndex, endpoint: 'tail', tick: n.tick + n.duration, lane: points.at(-1).posx, role: songNoteRole(n.endtype || 'END_NORMAL') }] : [head]
   }).sort((a, b) => a.tick - b.tick || a.lane - b.lane)
 }
 // Native generated children remain separate from the original RAW objects.
