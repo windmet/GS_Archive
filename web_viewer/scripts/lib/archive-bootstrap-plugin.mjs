@@ -2,6 +2,7 @@ import fs, { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadArchiveSources } from './archive-sources.mjs'
+import { portalPreloadLink } from './portal-preload.mjs'
 
 const checkedInBootstrap = fileURLToPath(new URL('../../readmodels/bootstrap.inline.json', import.meta.url))
 
@@ -72,12 +73,11 @@ export function archiveBootstrapPlugin() {
         throw new Error('Cannot insert archive bootstrap into HTML')
       }
       const inline = JSON.stringify(boot).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
-      // The Portal (the first visit's landing page) reads its index before it knows which scope file to
-      // load; preloading the index overlaps that round trip with the entry script's download. The URL is
-      // release-pinned, and the read-model client's fetch (cors, same-origin credentials) matches the preload.
+      // The Portal index preload (scripts/lib/portal-preload.mjs). The URL is release-pinned, and the
+      // read-model client's fetch (cors, same-origin credentials) matches the preload.
       const portal = boot.domains?.portal?.url
       if (!new RegExp(`^/_catalog/v/${boot.release}/portal/index\\.json$`).test(portal || '')) throw new Error('Archive bootstrap lacks the pinned portal index')
-      return html.replace('</head>', `<script type="application/json" id="archive-bootstrap">${inline}</script>\n<link rel="preload" href="${portal}" as="fetch" crossorigin>\n</head>`)
+      return html.replace('</head>', `<script type="application/json" id="archive-bootstrap">${inline}</script>\n${portalPreloadLink(portal)}\n</head>`)
     },
   }
 }

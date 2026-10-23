@@ -19,6 +19,7 @@ import { ARCHIVE_SECTION_PATHS } from '../src/core/archiveRoute.js'
 import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
 import { eventKindLabels, historicalDate } from '../src/presentation/DomainPresentation.mjs'
+import { PORTAL_PRELOAD } from './lib/portal-preload.mjs'
 
 export const DEFAULT_ORIGIN = 'https://gs-archive-preview.pages.dev'
 const SITE = 'GS Archive'
@@ -73,9 +74,9 @@ function withHead(template, tags) {
   const titles = template.match(/<title>[\s\S]*?<\/title>/g) || []
   if (titles.length !== 1) throw new Error(`index.html must have exactly one <title>, found ${titles.length}`)
   if ((template.match(/<\/head>/g) || []).length !== 1) throw new Error('index.html must have exactly one </head>')
-  // An entity page never opens on the Portal, so it does not preload the Portal index.
+  // An entity page never opens on the Portal, so it preloads none of the Portal's files.
   return template.replace(/[ \t]*<title>[\s\S]*?<\/title>\r?\n?/, '')
-    .replace(/[ \t]*<link rel="preload" href="\/_catalog\/v\/[a-f0-9]{64}\/portal\/index\.json" as="fetch" crossorigin>\r?\n?/, '')
+    .replace(PORTAL_PRELOAD, '')
     .replace('</head>', `${tags}\n  </head>`)
 }
 
