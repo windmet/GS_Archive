@@ -112,11 +112,13 @@ function release(worker) {
   idle.push(worker)
 }
 
-export async function encodeLosslessWebp({ source, target, lossy = false }) {
+export async function encodeLosslessWebp({ source, target, lossy = false, width = null, quality = null, method = null }) {
   const worker = await acquire()
   const id = nextJobId++
   try {
-    const result = await worker.encode({ id, source, target, lossy })
+    // `width`/`quality`/`method` are only used by the lossy thumbnail path; the
+    // historical lossless pass sends none of them and keeps its exact parameters.
+    const result = await worker.encode({ id, source, target, lossy, width, quality, method })
     return { width: result.width, height: result.height, alphaClearedPixels: result.alphaClearedPixels }
   } finally {
     release(worker)

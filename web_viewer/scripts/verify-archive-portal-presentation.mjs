@@ -5,7 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { archiveGeneralText } from '../src/presentation/ArchiveGeneralTextCore.mjs'
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
-import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortraitUrl } from '../src/utils/CardAssetResolver.js'
+import { getCardIconUrl, getCardLandscapeUrl, getCardLandscapeThumbUrl, getCardLargeImageUrl, getCardPortraitUrl, getCardPortraitThumbUrl } from '../src/utils/CardAssetResolver.js'
 import { eventResources, storyEventResources } from '../src/data/eventResourceGraph.js'
 import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOMAINS,
   portalSearchPageDescriptors, validatePortalSearchRows, portalIdolPortrait, portalEventRole } from '../src/presentation/ArchivePortalPresentation.js'
@@ -133,12 +133,16 @@ function check(dataset) {
       assert.equal(source.asset_status[`${awakened ? 'awakened' : 'normal'}_${kind}`], true,
         'selected card image is backed by the exact source capability')
       const resolver = { icon: getCardIconUrl, portrait: getCardPortraitUrl, large: getCardLargeImageUrl, landscape: getCardLandscapeUrl }[kind]
-      assert.equal(card.image.url, resolver(card.id, awakened), 'image URL retains actual card identity and variant')
+      assert.equal(card.image.full, resolver(card.id, awakened), 'full image URL retains actual card identity and variant')
+      const thumbResolver = { portrait: getCardPortraitThumbUrl, landscape: getCardLandscapeThumbUrl }[kind]
+      assert.equal(card.image.url, thumbResolver ? thumbResolver(card.id, awakened) : resolver(card.id, awakened),
+        'portal card art uses the derived thumbnail where one exists and the original otherwise')
       if (actual) {
-        const physicalPath = card.image.url.startsWith('/assets/card-art/')
-          ? createArchiveAssetResolver().cardArtPath(card.image.url.slice('/assets/card-art/'.length))
-          : path.join(viewer, 'public', card.image.url.slice(1))
+        const physicalPath = card.image.full.startsWith('/assets/card-art/')
+          ? createArchiveAssetResolver().cardArtPath(card.image.full.slice('/assets/card-art/'.length))
+          : path.join(viewer, 'public', card.image.full.slice(1))
         assert.ok(physicalPath && existsSync(physicalPath), 'local image coverage follows the actual resource mount; it is not HTTP or Browser acceptance')
+        if (thumbResolver) assert.ok(card.image.url.startsWith('/assets/card-art/thumb/'), 'the Portal never downloads the full-size card art')
       }
     }
   }
@@ -296,7 +300,8 @@ function check(dataset) {
   card.asset_status = { normal_portrait: true, awakened_portrait: false, awakened_icon: false }
   const normalImage = buildPortalDesktopOverview({ ...options, cards: [card] }).cards[0].image
   assert.equal(normalImage.variant, 'base'); assert.equal(normalImage.kind, 'card_portrait')
-  assert.ok(normalImage.url.includes(`image_card_portrait_hide_${card.resource_id}.png`))
+  assert.ok(normalImage.url.includes(`image_card_portrait_hide_${card.resource_id}.webp`), 'the Portal draws the derived thumbnail')
+  assert.ok(normalImage.full.includes(`image_card_portrait_hide_${card.resource_id}.png`), 'the detail page keeps the original PNG')
   card.asset_status = { normal_portrait: false, awakened_icon: 'true' }
   assert.equal(buildPortalDesktopOverview({ ...options, cards: [card] }).cards[0].image, null, 'unknown/false/string capability never guesses an image')
   delete card.asset_status
