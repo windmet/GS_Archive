@@ -182,3 +182,24 @@ Producer `scripts/audit-song-track-native-hold-geometry.py`重读绑定ELF/IPA�
 note-geometry配置的Special边界与producer同步更新，middle fixture的enum合同文件hash随之重新生成；原生middle输出无变化。三个producer重读一致，全部native timing/projection/quad/hold/middle回归通过；244档/732窗口、11195尾点与chart timing/presentation通过。判定回执由middle verifier消费，没有单独的native-judgement verifier；一次批量命令尝试不存在的文件后已纠正，未将该错误记作通过。最终build:check通过（25.11秒、2994模块），无public复制；既有背景未解析/大chunk warning保留。
 
 真实Browser仍为本worktree5231/PID67724。はるかぜバトン HARD Lv16 / tick79752，source758为tick80640、duration480的Special：桌面1440×900只显示一个head、没有伪尾点；配速11时距hit一秒的它不可见，配速1时可见，恢复5。手机尺寸390×844同样只有head、scrollWidth390，截图 `special-native-desktop.png` / `special-native-mobile.png`；长轨图可切换并加载HARD Combo383。返回 `/songs/hrkzbn/` 正确加载标题/难度表，URL清理，控制台error/warn为空；已恢复viewport。为桌面Browser手机尺寸模拟，无真机/原机逐帧等价声明。
+
+
+## 第八批（2026-10-24）：flick效果根节点与默认prefab证据（未接入画面）
+
+输入 `6010ed82`。新增可重放 `scripts/audit-song-track-native-effects.py` 与独立fixture，绑定同一ELF、Android metadata、IPA data.unity3d；12个方法窗口hash、162组PointInfo/Transform输出。方法体执行的是 `GetEffectPointInfoByNoteSerialNo` 0x2423f08、`NoteInfo.get_noteEffectLanePos` / `GetEffectTime`、原生hold-end getter及类型层级检查、EventNoteData时间数学、坐标与缩放、`NoteEffectManager.<LateUpdate>b__13_6` 0x20b967c、`LiveSettingsData.get_noteScale`。Unity查找、clock、泛型Last、Vector3.one、dictionary与Transform提交为显式服务；基础probe继承的服务也完整列入fixture。162组覆盖9种type、3种float32 speed、6个时刻、80/100/120尺寸设置；不是Unity粒子/GPU模拟。
+
+原生效果位置并非贴图裁切后的宽度偏移：先按noteEffectLanePos与GetEffectTime求GetPosFromLane的PointInfo，再由LateUpdate写效果GameObject根的localPosition与localScale。普通flick取start lane / head clock；普通hold取end lane，VariableHold取最后poly.posx；hold的效果时间取HoldMesh.endAbsTime，不能按头点时刻计算。fixture中head=10秒、tail=12秒、start=.25、end=3.75，刻意分开首尾以暴露错误时钟/轨道来源。
+
+关键ARM64分支在0x2424000–0x242401c：hold的effectTime < -1时，返回scale=0；否则为PointInfo.scale × GetNoteScaleRateByNoteTime(effectTime)。旧Ghidra C输出只显示跳过一次函数调用，遗漏了返回S3清零，不应据那份C签名猜成保留scale。完整指令存 `.analysis/chart-native/effect-root-instructions.txt`，相关反编译仍在 `decompiled14/15/18`。普通非hold在过早/过晚受控时间可以给出负scale或出界位置，fixture保留这些原生输出，不把调用结果擅自夹成UI可见窗口；原生调度是另一个层次。
+
+LateUpdate的正常模式写position=原生PointInfo.xyz，scale=PointInfo.scale × Vector3.one × noteSize/100；受控services捕获实际setter参数。lightweight分支还乘独立静态比例，本批固定正常模式，未宣称恢复该比例或原玩家模式。时钟输入由stub提供，效果出现/销毁、prewarm相位与输入状态机没有被模拟。
+
+**默认资源修正依据**：执行 `NoteFlickEffectDebug.get_noteEffectIndex` 0x20b8b9c，PlayerPrefs.GetInt的默认参数是2；BuildPrefabDict的metadata字面量为 `NoteEffectPrefabSet_{0}`。IPA资源106543名称为NoteEffectPrefabSet_2，其外部MonoScript确为Growing.Live.NoteEffectPrefabSet。Android metadata字段顺序 `_flickUpEffectPrefab` / `_flickLeftEffectPrefab` / `_flickRightEffectPrefab` 与92字节serialized对象的最后3个PPtr交叉校验；原生 `GetPrefabDict` 0x20b8c9c实际执行，捕获type3→37834、type2→37832、type4→37830的写入。不是仅凭文件名挑第2套，也没有把默认值当成保存偏好的实测。
+
+第2套每个方向有blur、white outline、colored fill三层粒子，共9层。fixture保存每层ParticleSystem、Transform链、Renderer、Material对象hash与初始/UV/速度/发射/颜色/Shape/Size/Rotation配置；两个实际纹理630/876的对象和RGBA像素hash、尺寸一并绑定。所有层looping/prewarm/playOnAwake为true、autoRandomSeed为true、VelocityModule启用；不能把其发射器原点直接冒充某一帧所有粒子的中心。
+
+序列化链的方向容器偏移：up=(0,60,0)，left=(-73,0,0)，right=(73,0,0)；容器scale=(180,180,1)，arrow child scale=(.5,.5,.5)，child position为0。up初始size=1.2000000476837158，side=1；outline/fill纹理为1024×1024的630、blur为876，均与旧第1套素材不同。这里只列作者设置，不把简单180×.5×size乘积升级成已恢复Unity ParticleSystem scalingMode/Renderer/GPU投影。
+
+当前 `ArchiveSongNoteGlyph.vue` 仍消费第1套静态mask及`.65/.28/.57/1.12`估计，证据等级**仍为估计**；本批只准备证据，没有改运行时或谎称第2套已展示。后续接线必须同时处理根节点scale、正确默认素材、prefab内部布局，并明确区分静态发射器指示与带速度/prewarm/随机出生偏移的原机粒子。不能只换一个偏移值后把整条效果称为原生。
+
+验证：producer重新不带--write执行，ELF/IPA/metadata、162组输出与9层serialized记录全部一致。最初重放比较因UnityPy材质tuple与JSON数组类型差异报drift，已在序列化边界统一为JSON形态后重读通过，未改原生数值或放宽容差。反编译/指令保存于.analysis；本批没有前端接线或渲染变更，按构建政策不重复Vite/Browser，不把上一批截图当成新效果验收。
