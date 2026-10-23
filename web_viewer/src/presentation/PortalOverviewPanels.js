@@ -1,4 +1,5 @@
 import { sectionLabel } from '../core/archiveSections.js'
+import { SONG_LINEUP_TAXONOMY } from './SongPresentation.js'
 
 // The Portal's two cross-link blocks: 通信 (personal chats, unit rooms, phone calls) and 图鉴
 // (items, honors, currencies, costumes, photography, other voices). They carry a count only when
@@ -59,8 +60,8 @@ export function portalPreferredStatTiles({ cardCounts, storyCounts, songCounts, 
       meta: joined([['main', '主线'], ['event', '活动'], ['personal', '个人'], ['other', '其他']]
         .filter(([key]) => count(storyCounts?.[key]) !== null).map(([key, label]) => `${label} ${storyCounts[key]}`)) },
     { id: 'songs', label: '参与歌曲', action: 'songs', value: count(songCounts?.all),
-      meta: joined([['configurable_formation', '代表曲'], ['fixed_unit', '组合曲'], ['fixed_special_lineup', '特别编成']]
-        .filter(([key]) => count(songCounts?.[key]) !== null).map(([key, label]) => `${label} ${songCounts[key]}`)) },
+      meta: joined(SONG_LINEUP_TAXONOMY.filter(entry => entry.id !== 'all')
+        .filter(entry => count(songCounts?.[entry.id]) !== null).map(entry => `${entry.label} ${songCounts[entry.id]}`)) },
     { id: 'communication', label: '通信', action: 'mobile',
       value: chats !== null && phones !== null ? chats + phones : null,
       meta: joined([chats !== null && `个人聊天 ${chats}`, phones !== null && `电话 ${phones}`]) },

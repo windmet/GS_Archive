@@ -189,6 +189,7 @@ import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/A
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import {portalCardFilters,portalHubGroups,portalPreferredStatTiles} from '../../presentation/PortalOverviewPanels.js'
 import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { classifySongLineup } from '../../presentation/SongPresentation.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
 
@@ -274,8 +275,8 @@ watch(() => props.desktopOverview.scopeId, () => { storyTab.value = 'all'; portr
 const cardOffset = ref(0)
 function shuffleCards() { cardOffset.value += 1; emit('expand-cards') }
 const songCategory = ref('configurable_formation')
-const songCategories = computed(() => [['configurable_formation','代表曲 · 自由编成'],['fixed_unit','组合曲'],['fixed_special_lineup','特别编成'],['all','全部歌曲']].map(([id,label]) => ({id,label,count:props.desktopOverview.songCounts?.[id] ?? (collections.value.songs || []).filter(row => id==='all' || row.performanceKind === id).length})))
-const songs = computed(() => props.preferredReference?.actionable ? props.desktopOverview.songs || [] : (collections.value.songs || []).filter(row => songCategory.value==='all' || row.performanceKind === songCategory.value).slice(0,songCategory.value==='configurable_formation' ? 5 : 4))
+const songCategories = computed(() => [['configurable_formation','代表曲'],['fixed_unit','组合曲'],['fixed_special_lineup','特别编成'],['all','全部歌曲']].map(([id,label]) => ({id,label,count:props.desktopOverview.songCounts?.[id] ?? (collections.value.songs || []).filter(row => id==='all' || classifySongLineup(row) === id).length})))
+const songs = computed(() => props.preferredReference?.actionable ? props.desktopOverview.songs || [] : (collections.value.songs || []).filter(row => songCategory.value==='all' || classifySongLineup(row) === songCategory.value).slice(0,songCategory.value==='configurable_formation' ? 5 : 4))
 const stories = computed(() => (collections.value.stories || []).filter(row => storyTab.value === 'all' || storyGroup(row) === storyTab.value).slice(0, 4))
 const events = computed(() => collections.value.events || props.desktopOverview.events || [])
 const query = computed(() => props.globalSearch.query || '')
