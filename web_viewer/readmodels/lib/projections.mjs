@@ -202,7 +202,8 @@ export async function writeReadModels(root, release, product, provenance = {}) {
   const summaries = {};
   for (const preferredIdol of [null,...bootstrap.idols]) {
     const id = preferredIdol?.id || 'all';
-    const overview = portalProjection({bootstrap,rows:domainRows,product,preferredIdol,collectionCounts});
+    // Site-wide totals belong to the all-idols scope only; the 担当 lens does not show the block.
+    const overview = portalProjection({bootstrap,rows:domainRows,product,preferredIdol,collectionCounts:preferredIdol ? null : collectionCounts});
     summaries[id] = await writer.emit(`portal/scopes/${id}.json`, 'portal.scope',
       {id,overview}, {maxRaw:preferredIdol ? 32*1024 : 64*1024});
   }
