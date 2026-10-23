@@ -43,3 +43,17 @@
 `python scripts/prepare-chibi-smoke-billboard-fixture.py --native-engine <libunity.so> --unicorn-path <runtime>` 重放受控原生几何；初始化追加 `--write`。本机两个命令均执行通过。
 
 待闭合：moving-edge初始位置/速度、本地模拟的粒子位置更新、运行时container/舞台比例/实际镜头桥接、生命周期与UV/材质消费。原生RNG、逐帧与设备证据仍不具备。本批没有放宽现有采样器guard或增加一个只显示“已接入”的空消费者。
+
+## 移动边缘出生补证
+
+输入 HEAD `91f61d32`。进一步调用完整Shape分发器 `0x855d64` 时，发现此前受控环境未执行静态初始化，BSS `0x126fed0/0x126fee0` 为零，源中的−90°旋转退化为单位矩阵。只读追踪WRITE引用定位到 `_INIT_184 0x1c3d68`，由原生入口初始化其SIMD常量；没有在Python里代填猜测的旋转矩阵或跳过Shape计算。
+
+[prepare-chibi-smoke-edge-fixture.py](../scripts/prepare-chibi-smoke-edge-fixture.py) 先保留未初始化的失败对照，再实际运行该initializer，记录 `0x126fe50…0x126ff10` 的前后字节。6个源系统各5组受控种子，共30批/120个粒子，完整经过分发器、random-edge worker `0x860774` 与方向归一化 `0x8611d8`。保留原始位置/方向、原生矩阵、输出位置/方向以及RNG最终状态，结果绑定源fixture和引擎SHA。每批确认为一次四通道xorshift128抽样；这只是受控输入，不是原机种子/时钟还原。
+
+新增 [chibi-smoke-edge-native.json](../scripts/fixtures/chibi-smoke-edge-native.json) 与 [verify-chibi-smoke-edge.mjs](../scripts/verify-chibi-smoke-edge.mjs)。回归直接执行现有 `sampleEmitterShape` 和从同一源码提取的私有 `euler`，没有复制另一套旋转实现。120个原生位置/单位方向、随机状态及源绑定对照通过，已纳入既有object-emitter验证入口。组1的−90°把原始+Y方向变成+X；源两组均与当前JS的Z→X→Y旋转一致，因此本批不改网页方向公式。
+
+重放命令：`python scripts/prepare-chibi-smoke-edge-fixture.py --native-engine <libunity.so> --unicorn-path <runtime>`；初始化fixture追加 `--write`。JS对照：`node scripts/verify-chibi-smoke-edge.mjs`。无写入原生重放、来源审计均通过。仅新增独立工具/fixture/回归，不影响前端运行依赖，不跑Vite或新增Browser结论。
+
+Shape输出仍是单位方向，给分发器传入speed缓冲区不等于执行了初始模块的速度缩放。此次只闭合受控moving-edge出生位置/方向；初始速度、本地模拟、side组重力/限速、实际场景桥接和渲染消费者仍待完成，`Smoke`保持missing。
+
+本次 `npm run verify:source-batch` 为167/167，verifier coverage确认新增检查随object-emitter入口进入CI。fetch后当前分支已包含 `origin/master 8e748036`，无新增master提交待合并；未创建PR或部署。
