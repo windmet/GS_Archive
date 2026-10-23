@@ -1951,6 +1951,9 @@ function clearCatalogIdol() {
 }
 
 function navigateArchiveSection(section) {
+  // The Portal's 通信 block names the tab as well as the section; every other caller passes the id alone.
+  const mobileMode = typeof section === 'object' && section ? section.mobileMode : ''
+  if (typeof section === 'object' && section) section = section.section
   if (section !== 'gashas') gashaReadModelStatus.value = ''
   if (section === 'portal') {
     loading.value = false
@@ -1967,7 +1970,8 @@ function navigateArchiveSection(section) {
   else if (section === 'units') openUnitCatalog()
   else if (section === 'cards') openPrimaryCards(preferredArchiveIdol.value?.id || '')
   else if (section === 'interactions') {
-    if (preferredArchiveIdol.value) openMobileArchive({ idolCode: preferredArchiveIdol.value.id, mode: 'personal', fromSection: true })
+    if (preferredArchiveIdol.value) openMobileArchive({ idolCode: preferredArchiveIdol.value.id,
+      mode: ['personal', 'unit', 'phone', 'random'].includes(mobileMode) ? mobileMode : 'personal', fromSection: true })
     else openIdolPicker('mobile')
   }
   else if (section === 'gashas') openGashaCatalog()
@@ -2312,7 +2316,7 @@ async function openPortalResult(result) {
       if (target.gateway === 'idol_story') return openIdolStoryArchive()
       if (target.gateway === 'work') return openWorkArchive()
       if (target.gateway === 'seasonal_campaign') return openSeasonalCampaign()
-      if (['birthday','extra'].includes(target.gateway)) {
+      if (['birthday','extra','event','unit_story'].includes(target.gateway)) {
         captureDetailSource()
         return openStoryCatalog({domain:target.gateway})
       }
