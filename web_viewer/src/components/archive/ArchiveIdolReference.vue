@@ -15,7 +15,7 @@
       :fallback-text="reference?.actionable ? reference.displayName.slice(0, 1) : '?'" decorative @error="advanceImage" />
     <span class="idol-reference-copy">
       <strong>{{ reference?.displayName || '姓名待确认' }}</strong>
-      <small v-if="reference?.unitName">{{ reference.unitName }}</small>
+      <small v-if="reference?.subtitle || reference?.unitName">{{ reference?.subtitle || reference?.unitName }}</small>
     </span>
     <ChevronRight v-if="reference?.actionable" class="idol-reference-arrow" :size="18" aria-hidden="true" />
   </component>

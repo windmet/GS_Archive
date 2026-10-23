@@ -29,7 +29,7 @@
             @click="setLineup(cat.id)"
           >
             {{ cat.label }}
-            <span>{{ catalog ? lineupCount(cat.id) : '—' }}</span>
+            <span>{{ catalog ? filterCount(cat.id) : '—' }}</span>
           </button>
         </div>
         <span class="song-filter-divider" aria-hidden="true"></span>
@@ -42,7 +42,7 @@
             @click="setTech(tag.id)"
           >
             {{ tag.label }}
-            <span>{{ catalog ? techCount(tag.id) : '—' }}</span>
+            <span>{{ catalog ? filterCount(tag.id) : '—' }}</span>
           </button>
         </div>
       </div>
@@ -96,7 +96,28 @@ import { Search } from '@lucide/vue'
 
 import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
 import { songMatchesIdol } from '../../presentation/CatalogIdolScope.js'
-import { SONG_LINEUP_TAXONOMY, classifySongLineup } from '../../presentation/SongPresentation.js'
+import { SONG_LINEUP_TAXONOMY as SHARED_SONG_LINEUP_TAXONOMY, classifySongLineup as sharedClassifySongLineup } from '../../presentation/SongPresentation.js'
+
+const SONG_LINEUP_TAXONOMY = typeof SHARED_SONG_LINEUP_TAXONOMY !== 'undefined' ? SHARED_SONG_LINEUP_TAXONOMY : [
+  { id: 'all', label: '全部' },
+  { id: 'configurable_formation', label: '代表曲' },
+  { id: 'fixed_unit', label: '组合曲' },
+  { id: 'fixed_special_lineup', label: '特别编成' },
+]
+
+function classifySongLineup(song) {
+  if (typeof sharedClassifySongLineup === 'function') return sharedClassifySongLineup(song)
+  const scope = song?.performance_mapping?.performer_scope
+  if (scope === 'configurable_formation') return 'configurable_formation'
+  if (scope === 'fixed_unit') return 'fixed_unit'
+  if (scope === 'fixed_special_lineup' || scope === 'unspecified_special') return 'fixed_special_lineup'
+  return 'fixed_special_lineup'
+}
+
+const activeFilter = computed({
+  get: () => props.scope || 'all',
+  set: (val) => emit('update:scope', val),
+})
 
 const props = defineProps({
   scopeIdol: { type: Object, default: null },
@@ -208,12 +229,11 @@ function songCreditsSingleLine(credits) {
   return String(credits || '').replace(/\r?\n+/g, ' · ').trim()
 }
 
-function lineupCount(id) {
+function filterCount(id) {
   if (id === 'all') return songs.value.length
-  return songs.value.filter(song => classifySongLineup(song) === id).length
-}
-
-function techCount(id) {
+  if (LINEUP_IDS.has(id)) {
+    return songs.value.filter(song => classifySongLineup(song) === id).length
+  }
   if (id === 'movie') return songs.value.filter(song => hasMovie(song, '3dmv')).length
   if (id === 'mvlive') return songs.value.filter(song => hasMovie(song, 'mvlive')).length
   if (id === 'layered') return songs.value.filter(song => song.audio_form === 'layered').length
