@@ -456,7 +456,7 @@
       </template>
     </ArchiveShell>
     <ArchiveOnboarding
-      v-if="view === 'portal' && !userPreferences.onboardingComplete && archivePickerIdols.length"
+      v-if="onboardingVisible"
       :idols="archivePickerIdols"
       :home-idol-ids="validArchiveHomeIdols"
       :idol-name="idolDisplayName"
@@ -576,6 +576,7 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
+import { PRODUCER_NAME_SAMPLE } from './components/archive/producerNameSample.js'
 import {loadArchiveNames,loadArchiveLines,archiveNamedText,archiveNamesSettled,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
@@ -1048,6 +1049,9 @@ const {
   captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
   loadHomeSupplements: loadStoryCostumes,
 })
+const onboardingVisible = computed(() => view.value === 'portal' && !userPreferences.value.onboardingComplete && archivePickerIdols.value.length > 0)
+// The sheet's main line (producerNameSample.js) is requested with the decision to show the sheet.
+watch(onboardingVisible, visible => { if (visible) loadArchiveLines([PRODUCER_NAME_SAMPLE]).catch(() => {}) }, { immediate: true })
 
 const {
   openPrimaryIdol, openIdolReadModel, openIdolDirectory, selectPrimaryIdol,

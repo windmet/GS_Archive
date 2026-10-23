@@ -6,6 +6,7 @@ import { assert, parseArgs, createOutput, listFiles, safeRead, sha256 } from '..
 import { verifyArtifacts } from '../readmodels/tools/verify_artifacts.mjs'
 import { readBuildAudit } from './lib/archive-build-audit.mjs'
 import { copyPreviewTranslations } from './lib/preview-translations.mjs'
+import { withPortalScopePreload } from './lib/portal-preload.mjs'
 import { SEASONAL_READING_PATH } from '../functions/data/[[path]].js'
 import { DEFAULT_ORIGIN, loadEntitySources, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
 
@@ -50,6 +51,9 @@ const copy = async (source, file, destination) => {
 for (const file of codeFiles) await copy(bundle, file, dist)
 for (const file of modelFiles) await copy(path.join(models, 'pages'), file, dist)
 await copyPreviewTranslations(root, dist)
+// The all-idols Portal scope is preloaded beside the Portal index; its URL is in this candidate's index.
+const portalIndex = JSON.parse(await fs.readFile(path.join(dist, ...boot.domains.portal.url.slice(1).split('/')), 'utf8'))
+await fs.writeFile(path.join(dist, 'index.html'), withPortalScopePreload(await fs.readFile(path.join(dist, 'index.html'), 'utf8'), boot, portalIndex))
 // Idol, unit, card, song and event head shells (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_L2_20261013.md): rendered from this package's
 // final index.html, which already carries the inline bootstrap, so they boot exactly like the root page.
 const entitySources = loadEntitySources(root)

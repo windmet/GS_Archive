@@ -11,6 +11,7 @@ import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntit
 import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { archiveBootstrapPlugin } from './lib/archive-bootstrap-plugin.mjs'
+import { portalPreloadLink, withPortalScopePreload } from './lib/portal-preload.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const template = `<!DOCTYPE html>
@@ -188,8 +189,18 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   const page = plugin.transformIndexHtml(template.replace(/<link rel="preload"[^>]*>\n/, ''))
   const portal = JSON.parse(readFileSync(path.join(root, 'readmodels/bootstrap.inline.json'), 'utf8')).domains.portal.url
   assert.equal(count(page, new RegExp(`<link rel="preload" href="${portal}" as="fetch" crossorigin>`, 'g')), 1, 'the page preloads the pinned Portal index')
-  const shells = renderEntityHeadShells({ template: page, idols: [{ id: '001tom', name: '天ヶ瀬 冬馬', unitCode: '01jup', unitName: 'Jupiter' }] })
-  assert.ok(shells.every(shell => !shell.html.includes('rel="preload"') && shell.html.includes('id="archive-bootstrap"')))
+  // The preview package adds the all-idols scope from the candidate's Portal index, right after it.
+  const boot = JSON.parse(readFileSync(path.join(root, 'readmodels/bootstrap.inline.json'), 'utf8'))
+  const scopeUrl = `/_catalog/v/${boot.release}/portal/scopes/all.json`
+  const portalIndex = { release: boot.release, data: { scopes: { all: { kind: 'portal.scope', url: scopeUrl } } } }
+  const packaged = withPortalScopePreload(page, boot, portalIndex)
+  assert.ok(packaged.includes(`${portalPreloadLink(portal)}\n${portalPreloadLink(scopeUrl)}`), 'the package preloads the all-idols scope beside the index')
+  for (const bad of [{ ...portalIndex, release: 'f'.repeat(64) }, { ...portalIndex, data: { scopes: {} } },
+    { ...portalIndex, data: { scopes: { all: { kind: 'portal.scope', url: '/_catalog/v/' + 'f'.repeat(64) + '/portal/scopes/all.json' } } } }])
+    assert.throws(() => withPortalScopePreload(page, boot, bad), /pinned all-idols scope/)
+  assert.throws(() => withPortalScopePreload(packaged, boot, portalIndex), /exactly the Portal index/, 'never added twice')
+  const shells = renderEntityHeadShells({ template: packaged, idols: [{ id: '001tom', name: '天ヶ瀬 冬馬', unitCode: '01jup', unitName: 'Jupiter' }] })
+  assert.ok(shells.every(shell => !shell.html.includes('rel="preload"') && shell.html.includes('id="archive-bootstrap"')), 'entity pages preload none of the Portal files')
 }
 
 // Real sources: every bootstrap idol has a zh-CN display name, so no title silently falls back to Japanese.
