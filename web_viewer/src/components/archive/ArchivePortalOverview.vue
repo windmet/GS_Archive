@@ -82,17 +82,25 @@
             </header>
             <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">去{{ sectionLabel('home') }}<small v-if="homeVoiceLabel" class="overview-home-voices">{{ homeVoiceLabel }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
             <nav v-if="preferredReference?.actionable" class="overview-preferred-actions" aria-label="当前偶像快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', {action: action.id, idolCode: preferredReference.idolCode})"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
-            <!-- Quiet settings for this hero, as one caption line under the shortcuts. -->
+            <!-- Quiet settings for this hero: one caption line under the shortcuts, or on wide pages the hero's top-right corner. -->
             <p class="overview-personal-meta">
               <button v-if="preferredReference?.actionable && preferredReference.idolCode !== savedIdolCode" class="overview-save-idol" type="button" @click="emit('save-preferred', preferredReference.idolCode)">设为我的担当</button>
               <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
             </p>
           </div>
+          <!-- The banner's right half: four summary tiles, every number already in the scope (no extra request). -->
+          <div v-if="preferredReference?.actionable" class="overview-personal-stats" aria-label="担当数据">
+            <button v-for="tile in statTiles" :key="tile.id" class="overview-stat" type="button" :data-archive-focus-id="`portal-stat:${tile.id}`" @click="openStatTile(tile)">
+              <span class="overview-stat-label">{{ tile.label }}</span>
+              <strong>{{ formatCount(tile.value) }}</strong>
+              <small v-if="tile.meta">{{ tile.meta }}</small>
+            </button>
+          </div>
           <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
             <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
           </nav>
           <div class="overview-card-showcase">
-            <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }} <small v-if="desktopOverview.cardCounts?.total">{{ formatCount(desktopOverview.cardCounts.total) }}</small></h3>
+            <header class="overview-section-heading overview-card-heading overview-chip-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }} <small v-if="desktopOverview.cardCounts?.total">{{ formatCount(desktopOverview.cardCounts.total) }}</small></h3>
               <nav v-if="!preferredReference?.actionable" class="overview-heading-chips overview-card-filters" aria-label="按属性与稀有度探索卡片"><button v-for="attribute in cardFilters.attributes" :key="attribute.id" class="is-attribute" type="button" :disabled="!cardFilters.attributeAvailable" :title="cardFilters.attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color,'--attribute-icon':attribute.icon}" @click="openDirectory('cards',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attribute.count ?? '—' }}</small></button><button v-for="rarity in cardFilters.rarities" :key="rarity.id" type="button" @click="openDirectory('cards',{rarity:rarity.id})">{{ rarity.id }} <small>{{ rarity.count }}</small></button></nav>
               <span class="overview-heading-actions"><button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组<Shuffle :size="15" aria-hidden="true" /></button><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></span></header>
             <PortalCardBento :cards="collections.cards || []" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" />
@@ -113,8 +121,7 @@
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取歌曲预览…' : '暂无可展示的歌曲预览，可前往目录查阅。' }}</p>
           </section>
         <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
-          <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
-          <div v-if="preferredReference?.actionable" class="overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div>
+          <header class="overview-section-heading" :class="{'overview-chip-heading':preferredReference?.actionable}"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><div v-if="preferredReference?.actionable" class="overview-heading-chips overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in readableMainCollections" :key="chapter.id"><button type="button" @click="emit('open-result', chapter)"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" deferred /><span><strong>{{ chapterLabel(chapter.title) }}</strong><small>{{ chapter.chapterCount }} 节 · {{ chapter.episodeCount }} 话</small><ChevronRight :size="16" /></span></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small v-if="gatewayCount(gateway) !== null" :title="storyGatewayNote(gateway, desktopOverview.gatewayCounts) || undefined">{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}</small></span><ArrowUpRight :size="14" /></button></div></div>
           <div v-else-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" deferred /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span class="overview-story-copy"><small v-if="story.subtitle">{{ storySubtitle(story.subtitle) }}</small><strong :class="{ 'is-title-pending': storyTitle.pending() }">{{ storyTitle(story.id, story.title) }}</strong></span><span v-if="story.cast?.length" class="overview-story-cast" role="img" :aria-label="`登场偶像：${story.cast.map(idol => idol.name).join('、')}`"><ArchiveIdolAvatar v-for="idol in story.cast.slice(0, 3)" :key="idol.id" :idol-code="idol.id" :accent-color="idol.accentColor" :size="24" :ring-width="1" :gap="1" decorative /><small v-if="story.cast.length > 3">+{{ story.cast.length - 3 }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
@@ -166,7 +173,7 @@ import { useNearViewportKeys } from './useNearViewport.js'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
-import {portalCardFilters,portalHubGroups} from '../../presentation/PortalOverviewPanels.js'
+import {portalCardFilters,portalHubGroups,portalPreferredStatTiles} from '../../presentation/PortalOverviewPanels.js'
 import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
@@ -224,6 +231,11 @@ function gatewayCount(gateway){
 // 通信 and 图鉴 entries: names from the one section dictionary, counts only when the scope has them.
 const cardFilters=computed(()=>portalCardFilters(props.desktopOverview.cardCounts,collections.value.cards || []))
 const hubGroups=computed(()=>portalHubGroups(props.desktopOverview.collectionCounts))
+const statTiles=computed(()=>props.preferredReference?.actionable ? portalPreferredStatTiles(props.desktopOverview) : [])
+function openStatTile(tile){
+  if(tile.action==='mobile') return emit('open-preferred',{action:'mobile',idolCode:props.preferredReference?.idolCode})
+  openDirectory(tile.action)
+}
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
@@ -371,13 +383,18 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-heading-actions { gap:var(--gs-space-5); }
 /* Chips inside a heading row: one quiet pill row between the title and its actions, scrolling when it
    runs out of room. Each chip opens the directory filtered by it. */
-.overview-card-heading { align-items:center; }
-.overview-heading-chips { display:flex;flex:1;gap:var(--gs-space-2);min-width:0;overflow-x:auto;padding:var(--gs-space-1);scrollbar-width:none; }
+/* The chip row keeps a focus-ring margin inside its scroller but adds no height: a heading with chips is
+   exactly as tall as one without, so the lists under two side-by-side headings start on one line. */
+.overview-heading-chips { display:flex;flex:1;gap:var(--gs-space-2);min-width:0;overflow-x:auto;margin-block:calc(-1 * var(--gs-space-1));padding:var(--gs-space-1);scrollbar-width:none; }
 .overview-heading-chips::-webkit-scrollbar { display:none; }
-.overview-section-heading .overview-heading-chips button { flex:none;gap:4px;min-height:var(--gs-control-compact);padding:0 var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
-.overview-heading-chips button small { color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-section-heading .overview-heading-chips.overview-story-tabs { margin:calc(-1 * var(--gs-space-1)) 0; }
+/* One pill for every chip: the heading chips share the story tabs' look (below). */
+.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui);white-space:nowrap; }
+.overview-heading-chips button small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-section-heading .overview-heading-chips button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
+.overview-section-heading .overview-heading-chips button[aria-pressed=true] small { color:inherit;opacity:.75; }
 .overview-section-heading .overview-heading-chips .is-attribute { color:var(--attribute);font-weight:var(--gs-weight-semibold); }
-.overview-heading-chips .is-attribute::before { content:"";flex:none;width:15px;height:15px;background:var(--attribute-icon) center / contain no-repeat; }
+.overview-heading-chips .is-attribute::before { content:"";flex:none;width:15px;height:15px;margin-right:4px;background:var(--attribute-icon) center / contain no-repeat; }
 .overview-heading-chips button:disabled { opacity:.55;cursor:default; }
 .overview-section-heading .overview-shuffle { color:var(--gs-ink-2); }
 
@@ -385,8 +402,23 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-featured { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7); }
 .overview-unit-hub + .overview-featured { margin-top:var(--gs-space-section); }
 .overview-personal, .overview-card-showcase { min-width:0; }
-/* Until the 担当 banner (batch F) the hero keeps its former width above the full-width gallery. */
-@container portal (min-width:981px) { .overview-featured > .overview-personal { width:min(100%,460px); } }
+/* The 担当 banner on wide pages: the hero card and its four tiles share the page's one 50:50 axis (the same
+   column gap as the lists below), stretched to one height; the gallery then takes the full row. */
+.overview-personal-stats { display:none; }
+@container portal (min-width:981px) {
+  .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
+  .overview-featured:not(.is-all-view) > .overview-card-showcase { grid-column:1 / -1; }
+  .overview-featured:not(.is-all-view) .overview-identity { flex:1;height:auto;min-height:228px; }
+  .overview-personal-stats { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:var(--gs-space-3); }
+  /* The hero's quiet settings sit on the same line as 去事务所, at the other corner, clear of the face. */
+  .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
+  .overview-content-grid:not(.is-global-grid) .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
+}
+.overview-stat { display:grid;align-content:center;gap:2px;min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer; }
+.overview-stat:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
+.overview-stat-label { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-stat strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-section);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums;line-height:1.2; }
+.overview-stat small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
@@ -531,6 +563,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 @media (hover:hover) and (pointer:fine) {
   .overview-heading-chips button:not(:disabled):hover { border-color:var(--gs-selected-line); }
+  .overview-stat:hover { border-color:var(--gs-selected-line); }
+  .overview-stat:hover strong { color:var(--gs-mint-ink); }
   .overview-icon-button:hover, .overview-lens-trigger:hover { background:var(--gs-mint-wash); }
   .overview-preferred-actions button:hover { background:color-mix(in srgb, var(--gs-surface) 70%, transparent); }
   .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
@@ -543,8 +577,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* Narrow page (the shell's middle tier or a phone): the hero spans the row above the cards. */
 @container portal (max-width:980px) {
-  .overview-card-heading { flex-wrap:wrap;row-gap:var(--gs-space-2); }
-  .overview-card-heading .overview-heading-chips { order:3;flex-basis:100%;margin:0 calc(-1 * var(--gs-space-1)); }
+  .overview-chip-heading { flex-wrap:wrap;row-gap:var(--gs-space-2); }
+  .overview-chip-heading .overview-heading-chips { order:3;flex-basis:100%;margin:0 calc(-1 * var(--gs-space-1)); }
   .overview-featured { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-section); }
   .overview-personal { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:var(--gs-space-3) var(--gs-space-7); }
   .overview-identity { grid-row:1 / span 2; }
