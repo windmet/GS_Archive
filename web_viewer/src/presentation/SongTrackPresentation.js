@@ -1,23 +1,22 @@
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
+import nativeGeometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
 import { songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
 import { buildSongChartTiming } from './SongChartTiming.js'
+import { songTrackNativePoint } from './SongTrackNativeProjection.js'
 export { songTrackSpanForSpeed } from './SongTrackNativeTiming.js'
 
 export const trackReference = reference
 const estimate = reference.screenshotEstimates
 const laneCount = reference.constants.LaneCount.value
-const nearWidth = reference.constants.TargetLaneWidth.value
-const farWidth = reference.constants.TopLaneWidth.value
 const round = value => Number(value.toFixed(5))
 
-// Native constants establish five lanes and the two widths. This interpolation
-// is a screenshot reconstruction, not the unrecovered Unity camera matrix.
+// Adapt the native centered, positive-Y-up canvas coordinates to our SVG plane.
+// This does not reproduce Unity's complete note/hold meshes or GPU pipeline.
 export function projectTrackPoint(lane, fraction) {
-  const depth = (1 - fraction) / (1 + (estimate.depthRatio - 1) * fraction)
-  const width = farWidth + (nearWidth - farWidth) * depth
-  return { x: estimate.centerX + (lane - 2) * width / laneCount,
-    y: estimate.topY + (estimate.judgeY - estimate.topY) * depth,
-    scale: width / nearWidth }
+  const point = songTrackNativePoint(lane, fraction, nativeGeometry.target)
+  return { x: nativeGeometry.viewport.width / 2 + point.x,
+    y: nativeGeometry.viewport.height / 2 - point.y,
+    z: point.z, scale: point.scale }
 }
 
 export function laneAt(points, subtick) {
@@ -103,16 +102,18 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
     }
     holds.push({ id: n.sourceIndex, from, to, samples, triangles })
   }
-  const bottomWidth = farWidth + (nearWidth - farWidth) * (720 - estimate.topY) / (estimate.judgeY - estimate.topY)
-  return { width: 1280, height: 720, cursor, span, holds,
+  const { width, height } = nativeGeometry.viewport
+  const topY = projectTrackPoint(2, 1).y, judgeY = projectTrackPoint(2, 0).y
+  return { width, height, topY, judgeY, cursor, span, holds,
     middleNodes: songHoldMiddleNodes(chart).filter(n => n.tick >= cursor && n.tick <= cursor + span).map(n => {
       const p = project(n.lane, n.tick)
       return { ...n, x: p.x, y: p.y, width: estimate.normalVisibleWidth * p.scale }
     }),
     links: songSimultaneousLinks(chart).filter(l => l.tick >= cursor && l.tick <= cursor + span).map(l => ({ ...l, a: project(l.from, l.tick), b: project(l.to, l.tick) })),
     glyphs: glyphs.sort((a, b) => b.tick - a.tick),
-    lanes: Array.from({ length: laneCount + 1 }, (_, i) => ({
-      topX: estimate.centerX + (i - laneCount / 2) * farWidth / laneCount,
-      bottomX: estimate.centerX + (i - laneCount / 2) * bottomWidth / laneCount })),
+    lanes: Array.from({ length: laneCount + 1 }, (_, i) => {
+      const top = projectTrackPoint(i - .5, 1), judge = projectTrackPoint(i - .5, 0)
+      return { topX: top.x, bottomX: top.x + (judge.x - top.x) * (height - topY) / (judgeY - topY) }
+    }),
     judges: Array.from({ length: laneCount }, (_, i) => projectTrackPoint(i, 0)) }
 }

@@ -9,14 +9,14 @@
       <rect width="1280" height="720" fill="#162b36" />
       <image href="/assets/song-chart-track/live_lane_gradation.png" x="0" y="0" width="1280" height="720" preserveAspectRatio="none" :clip-path="`url(#${uid}-lane)`" />
       <polygon :points="laneOutline" fill="#07151b" opacity=".25" />
-      <line v-for="(lane, i) in scene.lanes" :key="i" :data-lane-boundary="i" :x1="lane.topX" y1="8" :x2="lane.bottomX" y2="720" :stroke="i === 0 || i === 5 ? '#91e5e8' : '#a4bac6'" :stroke-width="i === 0 || i === 5 ? 5 : 1.2" :opacity="i === 0 || i === 5 ? .7 : .5" />
+      <line v-for="(lane, i) in scene.lanes" :key="i" :data-lane-boundary="i" :x1="lane.topX" :y1="scene.topY" :x2="lane.bottomX" :y2="scene.height" :stroke="i === 0 || i === 5 ? '#91e5e8' : '#a4bac6'" :stroke-width="i === 0 || i === 5 ? 5 : 1.2" :opacity="i === 0 || i === 5 ? .7 : .5" />
       <g v-for="hold in scene.holds" :key="hold.id" :data-track-hold="hold.id">
         <g v-for="(mesh, i) in hold.triangles" :key="i" :clip-path="`url(#${uid}-${hold.id}-${i})`"><image :href="holdSprite" width="200" height="200" :transform="mesh.matrix" preserveAspectRatio="none" /></g>
       </g>
       <line v-for="link in scene.links" :key="link.tick" :data-simultaneous-tick="link.tick" :x1="link.a.x" :x2="link.b.x" :y1="link.a.y" :y2="link.b.y" stroke="#e9faf6" :stroke-width="Math.max(.5, 2 * link.a.scale)" opacity=".8" />
       <g v-for="n in scene.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick"><ArchiveSongNoteGlyph role="middle" :skin="skin" :x="n.x" :y="n.y" :width="n.width" /></g>
-      <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" y="558" width="1280" height="24" preserveAspectRatio="none" />
-      <image href="/assets/song-chart-track/live_target_line.png" x="0" y="560" width="1280" height="20" preserveAspectRatio="none" />
+      <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" :y="scene.judgeY - 12" width="1280" height="24" preserveAspectRatio="none" />
+      <image href="/assets/song-chart-track/live_target_line.png" x="0" :y="scene.judgeY - 10" width="1280" height="20" preserveAspectRatio="none" />
       <g v-for="(p, i) in scene.judges" :key="i" :data-judge-lane="i">
         <!-- The glow is a soft wide ring, not an SVG blur: the track redraws 30 times a second and a
              filter is re-rasterised on every one of them, which is what made iOS stutter. -->
@@ -42,7 +42,7 @@ const scene = computed(() => buildSongTrackGeometry(props.chart, safeCursor.valu
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)
 const laneOutline = computed(() => {
   const a = scene.value.lanes[0], b = scene.value.lanes[5]
-  return `${a.topX},8 ${b.topX},8 ${b.bottomX},720 ${a.bottomX},720`
+  return `${a.topX},${scene.value.topY} ${b.topX},${scene.value.topY} ${b.bottomX},${scene.value.height} ${a.bottomX},${scene.value.height}`
 })
 </script>
 

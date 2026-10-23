@@ -39,4 +39,4 @@ for (const glyph of scene.glyphs) {
   assert.notEqual(glyph.y, projectTrackPoint(2, glyph.tick / span).y, 'old tick fraction must differ')
 }
 assert.equal(songTrackSpanForSpeed(11, timing, 1920), 960)
-console.log('Native track timing: 101 ARM64 cases; old estimate mutation rejected; 3 BPMs and cross-tempo geometry passed. Projection remains estimated.')
+console.log('Native track timing: 101 ARM64 cases; old estimate mutation rejected; 3 BPMs and cross-tempo geometry passed. Full mesh/GPU equivalence remains open.')

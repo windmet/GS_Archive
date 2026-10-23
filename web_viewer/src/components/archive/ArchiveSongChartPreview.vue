@@ -33,7 +33,7 @@
           <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
         </footer>
       </template>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长采用原作速度设置；相机、位置曲线、逐音符速度、Special 及特效仍为复刻估计。</p></div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长与轨道坐标已有原生依据；音符尺寸、长条、逐音符速度、Special 及特效仍为复刻估计。</p></div>
     </template>
   </section>
 </template>
