@@ -18,3 +18,18 @@ export function portalTimeline(events) {
   choices.push(sorted.at(-1))
   return [...new Map(choices.map(row=>[row.id,row])).values()].sort((a,b)=>a.releaseAt-b.releaseAt).map(row => ({...row, timelineDate: new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date(row.releaseAt*1000)).replaceAll('-','.'), seriesLabel: String(row.title || '').match(/GROWING (?:SIGN@L|SELECTION)/)?.[0] || row.subtitle.split(' · ')[0]}))
 }
+
+export function portalCardCaption(card, { global = false } = {}) {
+  if (!card) return { eyebrow: null, title: '' }
+  const rarity = card.rarity || ''
+  if (global) {
+    return {
+      eyebrow: [rarity, card.idolName].filter(Boolean).join(' · '),
+      title: card.title || '',
+    }
+  }
+  return {
+    eyebrow: null,
+    title: [rarity, card.title].filter(Boolean).join(' · '),
+  }
+}

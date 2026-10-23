@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {buildPortalDesktopOverview,portalIdolPortrait} from '../src/presentation/ArchivePortalPresentation.js'
-import {portalDailyCard,portalTimeline} from '../src/presentation/PortalBento.js'
+import {portalDailyCard,portalTimeline,portalCardCaption} from '../src/presentation/PortalBento.js'
 import {portalDisplayOverview} from '../src/data/PortalRepository.js'
 import {storyGateways,storyGatewayCount} from '../src/presentation/StoryGateways.js'
 import {cardArtThumbKey,cardArtThumbSourceKey,cardArtThumbSpec,CARD_ART_THUMB_QUALITY,CARD_ART_THUMB_SIZES} from '../shared/portal/CardArtThumbnails.js'
@@ -144,4 +144,21 @@ const remapped=portalDisplayOverview({...baked,collections:{...baked.collections
 assert.equal(remapped.collections.cards[0].image.url,displayed.collections.cards[0].image.url,'mapping an already-thumbnailed row is stable')
 const noArt=portalDisplayOverview({...baked,collections:{...baked.collections,cards:[{...baked.collections.cards[0],image:null,landscape:null}]}},{})
 assert.equal(noArt.collections.cards[0].image,null,'cards without art stay null')
-console.log('PASS Bento: 49 source-bound single portraits; 826 exact detail attributes; 826 Portal thumbnails with full-size fallbacks; pinned-scope thumbnail mapping; landscape capabilities, stale-release rejection, 16 source colors, daily stability, 7 gateway counts, 通信/图鉴 links, 担当 tiles and source timeline boundaries')
+// Vertical portrait captions carry rarity and card title (plus idol name in global view).
+const sampleCards = [
+  { id: 'c1', rarity: 'SR', idolName: '柏木翼', title: '引人沉沦的眼神' },
+  { id: 'c2', rarity: 'SSR', idolName: '御手洗翔太', title: '满溢的感激之情' },
+  { id: 'c3', rarity: 'R', idolName: '天道辉', title: '热血沸腾' },
+]
+for (const card of sampleCards) {
+  const pref = portalCardCaption(card, { global: false })
+  assert.equal(pref.eyebrow, null, 'preferred vertical caption has no eyebrow')
+  assert.ok(pref.title.includes(card.rarity), `preferred caption title must contain rarity ${card.rarity}`)
+  assert.ok(pref.title.includes(card.title), `preferred caption title must contain card title ${card.title}`)
+
+  const glob = portalCardCaption(card, { global: true })
+  assert.ok(glob.eyebrow.includes(card.rarity), `global caption eyebrow must contain rarity ${card.rarity}`)
+  assert.ok(glob.eyebrow.includes(card.idolName), `global caption eyebrow must contain idolName ${card.idolName}`)
+  assert.ok(glob.title.includes(card.title), `global caption title must contain card title ${card.title}`)
+}
+

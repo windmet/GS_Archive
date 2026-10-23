@@ -4,14 +4,14 @@
       <picture><source v-if="lead.image?.url" media="(max-width:760px)" :srcset="near ? artUrl(lead.image) : undefined" /><img :src="near ? artUrl(lead.landscape || lead.image) : undefined" :alt="lead.title" decoding="async" @error="artFailed" /></picture>
       <span class="bento-caption"><small>{{ lead.rarity }} · {{ lead.idolName }}</small><strong>{{ lead.title }}</strong><ArrowUpRight :size="16" /></span>
     </button>
-    <button v-for="card in shownPortraits" :key="card.id" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${card.id}`" :aria-label="`打开卡片 ${card.title}`" @click="emit('open',card)"><img :src="near ? artUrl(card.image) : undefined" alt="" decoding="async" @error="artFailed" /><span class="bento-tile-caption">{{ global ? card.idolName : card.title }}</span></button>
+    <button v-for="card in shownPortraits" :key="card.id" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${card.id}`" :aria-label="`打开卡片 ${card.title}`" @click="emit('open',card)"><img :src="near ? artUrl(card.image) : undefined" alt="" decoding="async" @error="artFailed" /><span class="bento-tile-caption"><small v-if="cardCaption(card).eyebrow">{{ cardCaption(card).eyebrow }}</small><strong>{{ cardCaption(card).title }}</strong></span></button>
   </div>
   <p v-else class="bento-empty">暂无可展示的卡面。</p>
 </template>
 <script setup>
 import {computed,onBeforeUnmount,reactive,ref,watch} from 'vue'
 import {ArrowUpRight} from '@lucide/vue'
-import {portalDailyCard} from '../../presentation/PortalBento.js'
+import {portalDailyCard,portalCardCaption} from '../../presentation/PortalBento.js'
 import {useNearViewport} from './useNearViewport.js'
 const props=defineProps({cards:{type:Array,default:()=>[]},global:Boolean,offset:{type:Number,default:0}})
 const emit=defineEmits(['open'])
@@ -19,6 +19,7 @@ const emit=defineEmits(['open'])
 // gallery is on the first screen and may be the LCP, so it loads at once.
 const root=ref(null)
 const near=useNearViewport(root,{eagerMedia:'(min-width:761px)'})
+const cardCaption=card=>portalCardCaption(card,{global:props.global})
 const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date())
 // One landscape lead (the only art with a 15:8 picture) and three portraits. The 担当 lens shows its
 // first cards; the all-idol lens draws by date, and 换一组 moves the offset so all four change together.
@@ -74,9 +75,10 @@ function artFailed(event){
 .bento-caption { display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px var(--gs-space-3);padding:var(--gs-space-7) var(--gs-space-5) var(--gs-space-4); }
 .bento-caption small { grid-column:1 / -1;font-size:var(--gs-text-meta); }
 .bento-caption strong { font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.4; }
-/* Portraits carry one line: the card title when every card is one idol's, the idol's name in the
-   all-archive view. Rarity is marked on the lead only. */
-.bento-tile-caption { overflow:hidden;padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);text-overflow:ellipsis;white-space:nowrap; }
+/* Portraits carry rarity and title, plus the idol's name in the global view. */
+.bento-tile-caption { display:flex;flex-direction:column;justify-content:flex-end;gap:2px;overflow:hidden;padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);text-align:left; }
+.bento-tile-caption small { font-size:var(--gs-text-meta);color:inherit;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2; }
+.bento-tile-caption strong { font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3; }
 .bento-empty { color:var(--gs-ink-3); }
 
 @media (hover:hover) and (pointer:fine) {
