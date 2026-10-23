@@ -1,0 +1,155 @@
+# 交接：担当视图的桌面对齐与批次调整（2026-10-23 下午）
+
+本文**补充并部分取代** [GS_ARCHIVE_HANDOFF_20261023_PORTAL_REVIEW.md](GS_ARCHIVE_HANDOFF_20261023_PORTAL_REVIEW.md)（下称「上一版交接」）。工作区规则、worktree、提交、门禁、截图脚本都按上一版第 0 节执行，这里不再重复。批次 D 和 E.1–E.3 的内容不变；**C 批和 E.4 的定案以本文为准**。
+
+本文写于 master = `92dc37c6`（#87 上一版交接已合入）。外部审阅 v7（担当视角桌面对齐）已经和代码、截图核对完，用户已选定方案，**不要重新评估**。
+
+## 1. 各批次当前状态
+
+| 批次 | 状态 | 位置 |
+|---|---|---|
+| A 侧栏 | 已合并（#86） | — |
+| B 卡面缩略图 | PR #88 待用户合并；**缩略图已传 R2**（10-23，见第 8 节） | `portal/20261023-card-thumbs`，worktree `card-thumb-20261023`，提交 `23831ddf` |
+| C 卡面画廊 | PR #91 待用户合并（门禁 116/116） | `portal/20261023-card-gallery`，worktree `card-gallery-20261023`；分支里合并了 B、E |
+| D 315 岁时记 | 未开始，按上一版第 4 节做 | — |
+| E 门户补齐 | PR #90 待用户合并（E.1–E.3，已验收并补修，见第 7 节）；E.4 移到 F | worktree `portal-gaps-20261023`，分支 `portal/20261023-portal-gaps` |
+| F 担当横幅（新增） | PR #92 待用户合并 | `portal/20261023-preferred-banner`，worktree `preferred-banner-20261023`；从 C 分支切出 |
+
+顺序：B → C → E（E.1–E.3）→ F → D。**合并顺序**：#88 → #90 → #91 → #92（C 分支里已经合并了 B、E，F 是从 C 切出来的，按这个顺序合并不会有冲突）。下一批是 D。D 和 F 互不依赖；如果 D 卡在读模型授权上，可以先做 F。
+
+## 2. 问题是什么（v7 审阅，已核实）
+
+截图地址：`?view=portal&portal_scope=006tsu`（柏木翼），桌面宽屏。现在的担当视图有 4 处错位：
+
+1. **上下两行的中线不在同一位置**：第一行 `.overview-featured` 是 `minmax(300px,30%) 1fr`，第二行 `.overview-content-grid` 是 `repeat(2,1fr)`，所以两行的中间缝隙一个在约 30% 处、一个在 50% 处。
+2. **第一行顶边不齐**：左边人物卡直接从顶部开始，右边先有「精选卡片」标题行，再放卡面。
+3. **第一行底边不齐**：左边是人物卡、5 个快捷入口、一行悬空的「设为我的担当 · 未设置制作人」；右边是卡面，下面接 `bento-note`（小图一行）和 `bento-directory`（「20 张卡片」）。左右没有任何一条底边对得上。
+4. **第二行两个列表的起点不一样高**：「出场故事」的分类胶囊（`.overview-story-tabs`）单独占一行，所以左边第 1 首歌对着的是右边的胶囊。
+
+另外截图里还能看到第 5 处：**担当视图的活动足迹**是 `.overview-event-grid` 三等分，只有 2 场活动，右边三分之一是空的，分隔线也不在 50%。
+
+## 3. 修改 C 批：画廊在两种视图里都通栏
+
+上一版第 3 节的「1 横 + 3 竖等高画廊」写法（`flex: <宽高比> 1 0` + `aspect-ratio`、窄宽度降级成 1 横 + 2 竖、筛选胶囊移进标题栏、「换一组」4 张一起换、用 B 批的缩略图、变异测试）**全部保留**，只改一处范围：
+
+- **担当视图的画廊也改成通栏**，和全站视图（`.overview-featured.is-all-view`）用同一个布局。原因：如果画廊仍然放在右侧约 70% 宽的列里，1920 宽的屏幕上四张图只有约 230px 高；通栏后约 350px 高。两种视图共用一套布局，C 批也只需要处理一种情况。
+- 所以 C 批要把担当视图的人物卡从 `.overview-featured` 里拿出来，单独成一行放在画廊上面（F 批会把这一行做成横幅）。C 批先保持人物卡现在的样子，**不用调左右对齐**，F 批再统一处理。
+- `bento-note`、`bento-directory` 按上一版删掉，卡片总数放进标题后面的 `<small>`。
+
+## 4. 新增 F 批：担当横幅和全页 50:50 中轴
+
+分支 `portal/<日期>-preferred-banner`，在 C 和 E 都合并之后从最新 `origin/master` 开。只改 `ArchivePortalOverview.vue`（以及 E 批新增的 `src/presentation/PortalOverviewPanels.js`），**桌面端（portal 容器宽度 >980px）才生效，手机和 ≤980 的布局不变**。
+
+### 4.1 第一行：横幅（左人物卡 | 右 2×2 磁贴）
+
+```
+资料馆 / (头像) 柏木翼 >                                      [搜索全站档案…][搜索]
+20/826 卡片   3/60 相关歌曲   41/1,394 出场故事   2/59 活动足迹      ← 统计行不变
+┌──────────────────────────────┐ ┌─────────────┬─────────────┐
+│ 偶像档案      设为我的担当 · 制作人 ↗ │ │ 卡片 20     │ 出场剧情 41  │
+│ DRAMATIC STARS 柏木翼  (立绘)  │ │ SSR 7·SR…   │ 主线 7·活动…│
+│ [去事务所 通用 21·卡面 56 句 >] ├─────────────┼─────────────┤
+├──────────────────────────────┤ │ 参与歌曲 3  │ 通信 N       │
+│ 资料 个人剧情 卡片 工作 通信  │ │ 代表曲…     │ 个人聊天…   │
+└──────────────────────────────┘ └─────────────┴─────────────┘
+              ← 两边顶边、底边都对齐，中间缝隙在 50% →
+精选卡片 20   [属性][稀有度]                                         查看全部 >
+[ 1 横 + 3 竖等高画廊，通栏（C 批） ]
+相关歌曲 3            查看全部 >   出场故事 41 [全部][主线][活动][个人][其他] 查看全部 >
+[第 1 首歌]                        [第 1 篇故事]      ← 两边第一行同一高度
+活动足迹 2                                                          查看全部 >
+[活动 1（左半）]                   [活动 2（右半）]
+```
+
+- 横幅容器：`display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:stretch; column-gap` 和 `.overview-content-grid` **用同一个变量**（现在是 `--gs-space-8`），这样各行中间的缝隙在同一个 x 坐标上。
+- **左半边**：人物卡（`.overview-identity`）、「去事务所」、5 个快捷入口（`.overview-preferred-actions`）合成一张卡片，用 `display:flex; flex-direction:column`，让人物卡区域 `flex:1` 把多出来的高度吃掉，快捷入口贴在卡片底部。
+- **「设为我的担当 · 未设置制作人 ↗」**（`.overview-personal-meta`）在桌面端移到人物卡里面，和「偶像档案」（`.overview-eyebrow`）放在同一行、靠右。这一行不再单独挂在卡片下面。手机端保持现在的位置。
+- **右半边**：E.4 的 4 块磁贴（`portalPreferredStatTiles`：卡片 / 出场剧情 / 参与歌曲 / 通信）放成 2×2，`grid-template-rows:1fr 1fr`，拉伸到和左边等高。磁贴的数据和点击行为沿用 E 批写好的 `PortalOverviewPanels.js`（E 批没提交的代码在 `portal-gaps-20261023` worktree 里，E 批合并时**不要带上 E.4**，见第 5 节）。
+- **人物卡变宽之后要检查立绘**：人物卡宽度会从约 460px 变成约 760px（1920 宽时）。`.overview-identity-copy` 固定 170px 宽，立绘的位置由 `idolVisualFocus.json` 和 `--hero-*` 变量决定。要在 1366 和 1920 宽下，至少用 3 个立绘构图不同的偶像（例如 006tsu、003hok，再挑一个立绘偏左的）截图，确认立绘没有露出截断的边缘（参考记忆 sidem_portrait_figure_anchor）。如果太宽导致构图变差，可以给立绘槽设一个 `max-width`，让多出的宽度留给底色和签名。
+- 上一版第 6 节「首屏 KPI 数据磁贴」被否决，那是指**全站视图**的首屏。担当视图的 4 块磁贴是 E.4 已经确认的方案，而且每块都带分类明细、可以点击，和统计行不重复。
+
+### 4.2 第二行：分类胶囊放进标题行
+
+- 桌面端把 `.overview-story-tabs` 移到「出场故事 41」和「查看全部」之间（标题栏 `display:flex; align-items:center`，胶囊组 `flex:1; min-width:0`，放不下时横向滚动）。做法和 C 批把卡片属性、稀有度胶囊移进 `.overview-card-heading` 一样，**两处共用同一套标题栏胶囊样式**，不要写两份。
+- 手机端（≤760）胶囊保持单独一行横向滚动。
+- 歌曲只有 3 首、故事有 4 篇时，左栏底部会空一块，可以接受，**不补内容**。
+
+### 4.3 活动足迹：担当视图改成 2 列
+
+- 担当视图的 `.overview-event-grid` 改成 `repeat(2,minmax(0,1fr))`，列间距和上面各行相同，这样中间的缝隙也在 50%。全站视图的这个区块会被 D 批换掉，不用管。
+
+### 4.4 验收
+
+- 新增或扩展一个浏览器 verifier（可以放进 `verify-portal-bento.mjs`，或者新建 `verify-portal-preferred-alignment-browser.mjs`），在 1366×768 和 1920×1080 下量：
+  1. 横幅左右两块的 `top` 和 `bottom` 是否相等；
+  2. 横幅、第二行（歌曲 | 故事）、活动足迹三行的中间缝隙 x 坐标是否相同；
+  3. 第二行左边第 1 首歌和右边第 1 篇故事的 `top` 是否相等；
+  4. 画廊四张图的高度是否相等（C 批的检查，复用即可）。
+  
+  误差都要 ≤1px。
+- **变异测试**（记忆 sidem_verifier_must_be_mutation_tested）：分别把横幅改回 30%/70%、把胶囊放回单独一行、把活动足迹改回 3 列，确认 verifier 每次都会失败。
+- 1024 宽（内容区约 800px，走 ≤980 的单列布局）和手机 390 宽下各截一张图，确认没有变化。
+- 回归测试：`verify-portal-bento.mjs`、`verify-archive-portal-presentation.mjs`、`verify-portal-loading-layout.mjs`、`verify-portal-navigation.mjs`、旅程测试（P37 是环境基线，见上一版第 0 节）；最后跑 `gate:source` 116/116。
+
+## 5. 给 E 批会话的说明
+
+- `portal-gaps-20261023` 里已经写好的 E.4 代码（`.overview-featured-right`、`.overview-personal-stats`、`.overview-stat`，以及 `PortalOverviewPanels.js` 里的 `portalPreferredStatTiles`）把磁贴放在精选卡片**下面**，会让右栏更高，与本文冲突。
+- E 批这次**只提交 E.1–E.3**：活动剧情 / 组合前传入口、故事和歌曲在桌面并成两栏、通信与图鉴入口块。
+- `portalPreferredStatTiles` 本身（数据和文案）可以保留在 `PortalOverviewPanels.js` 里一起提交，供 F 批使用；但模板里不要渲染它，`.overview-featured-right` 这层包装也不要加。也可以整段留给 F 批，两种做法都可以，在 PR 描述里写清楚。
+
+## 6. 已否决（本轮）
+
+| 提议 | 原因 |
+|---|---|
+| 路线 A：保持人物卡和精选卡片并排，全页改 42:58 | C 批的画廊在担当视图里只有约 230px 高；E.4 磁贴没地方放；活动足迹的三等分也对不上 42% |
+| 「精选卡片」第 3 张缩成 48×48 的列表项（现在的 `bento-note`） | C 批已经删掉 |
+| 用补内容填满歌曲列表下面的空白 | 两边列表长度本来就不同，顶部对齐就够了 |
+
+## 7. 10-23 验收记录（B、E 两个 PR）
+
+### PR #90（E.1–E.3）：已补修，直接推到同一分支
+
+原提交 `4e82e628` 的入口、跳转、数量数据都核对过（道具取 `items` 域 535 条，不是 `collections` 的 80 条章节目录，是对的）。验收时发现 4 处问题，已在同一分支追加一个提交修好：
+
+1. **「通信与图鉴」块在担当视图里也显示**，但数量是全站的，点「个人聊天」打开的也是已保存担当，不是当前偶像。担当视图已经有 5 个快捷入口（含「通信」），所以这个块**只在全站视图显示**（`v-if="!preferredReference?.actionable"`）。
+2. **50 个偶像 scope 都写入了全站的 `collectionCounts`**，只在 `all` scope 写入（`projections.mjs`）。
+3. **≤980 容器和手机上全站视图的顺序变了**：原来的 `.is-global-grid .overview-stories { grid-row:1 }` 被删了，歌曲跑到了故事前面；1024 宽时歌曲列表也从两列变成了一列。这违反了上一版交接的「手机不变」。两条规则已放回 `@container portal (max-width:980px)` 里，≤640 时歌曲列表仍然是一列。桌面两栏保持「歌曲左、故事右」，和担当视图一致。
+4. **故事入口变成半宽后，生日剧情那一行的说明折成了两行**（「181 篇 · 其中 29 篇与个人剧情共享」）。现在行内只显示数量，说明放进 `title` 提示。
+
+复验：`build:check`，`verify-portal-bento`（rm-release-20261015），`verify-portal-projections`，`verify-archive-portal-presentation`，`verify-portal-loading-layout`，`verify-portal-navigation`，`verify-external-story-resource-ui`，`readmodels test:source` 58/58，`gate:source` 结果见 PR 评论。浏览器在 1920、1440、1024、390 宽下量过：全站两栏左右各 584px（1920）、573px（1440）；1024 和手机上故事排在歌曲前，1024 宽时歌曲列表是两列；担当视图不再显示这个块；各入口的数量都是一行。
+
+**留给后面批次的小问题（这次没改）**
+- 全站视图没有设置担当时，点「组合聊天」「电话通信」会先弹偶像选择器，选完后进入的是个人聊天，`mobileMode` 没有传过去（`App.vue` 的 `openIdolPicker('mobile')`）。以后有人碰到偶像选择器时顺手把 mode 带上。
+- 全站视图「歌曲与舞台」的分类胶囊单独占一行，所以第一首歌比右边的故事入口低一行。半宽面板（约 573px）放不下标题、4 个胶囊和「查看全部」，所以 F 批只把**担当视图**的故事胶囊移进标题行；全站视图这一处可以接受。
+
+### PR #88（B 卡面缩略图）：部署顺序有硬约束
+
+- 门户的卡面 URL 全部换成了 `/assets/card-art/thumb/…webp`。展示层虽然带了 `full` 字段（原图 URL），但**组件里没有任何地方用它**，图片加载失败时不会回退到原图。
+- 所以：**任何包含 #88 的部署（测试分支或正式站）都必须先把 1,609 个缩略图对象传到 R2**，否则门户的卡面全部 404。按规则，上传前先问用户，走 `release/` 分支。
+- C 批要重写 `PortalCardBento.vue`，**顺手加上加载失败的回退**：`<img>` 的 `@error` 在 `src !== full` 时换成 `full`；横卡的 `--card-art` 背景用的也是缩略图，一起处理。verifier 里加一条：缩略图 404 时显示原图。
+
+## 8. 10-23 进展：缩略图上传、C、F
+
+### R2 缩略图（用户 10-23 授权）
+
+- 1,609 个对象（71.8 MiB），上传到 `sidem-archive-preview` 的 `assets/card-art/thumb/{portrait,landscape}/*.webp`。`rclone check` 结果是 0 differences；`https://preview.gs-archive.com/assets/card-art/thumb/...webp` 返回 200 `image/webp`。
+- 暂存目录、清单和回执在主 checkout 的 `web_viewer/.deploy/card-thumbs-20261023/`（`manifest.json`、`upload-receipt.json`、`upload.log`），**清理时不要删**（参考记忆 sidem_r2_overlay_chain_reset）。这批对象没有走 exporter 的 overlay 链；#88 合并后下一次 export 会用同一份缓存、同样的键再暂存一次，字节相同，重传只是覆盖。
+- 唯一一张不是 960×512 的：`image_card_landscape_041ryo_ssr01p` 源图是 1798×960，缩出来是 960×513，属于正常情况（`object-fit:cover`）。
+
+### C（PR #91）
+
+- `PortalCardBento.vue` 重写：一排 1 张横卡加 3 张竖卡，按「宽高比 flex」写法等高；卡面区宽度 ≤900px 时**只渲染** 2 张竖卡（用 `ResizeObserver` 判断。用 CSS 隐藏的话图片照样会下载），手机保持原来的布局。
+- 胶囊放进标题栏（`portalCardFilters`）；担当视图不显示胶囊，只显示总数。
+- 缩略图 `@error` 时回退到 `full`（原图）。
+- `verify-portal-image-budget-browser` 新增等高**加比例**检查。注意：只查等高是空的，flex 行会把所有子项拉成一样高，所以必须同时查每张图保持了原图比例。另外加了 1024 宽只发 3 个请求、屏蔽缩略图后回退两项检查。
+
+### F（PR #92）
+
+- 横幅、两栏列表、活动足迹的中间缝隙在同一个 x 坐标；标题栏胶囊统一成故事分类的样式，并且**不增加标题栏高度**（负的上下外边距；标题栏统一用 baseline 对齐）。这两点都是实测出来的：之前一个差 2.6px，一个差 1.4px。
+- **与第 4.1 节不同的一处**：「设为我的担当 · 制作人」没有放在「偶像档案」那一行的右边，那个位置会压在立绘的脸上。现在放在人物卡底部右侧，和「去事务所」同一行。
+- 新 verifier：`scripts/verify-portal-preferred-alignment-browser.mjs [base] [outDir]`，11 项，已做变异测试。
+- ≤980 和手机的布局没有变；故事分类胶囊在窄屏时仍然单独一行（现在位于标题栏内部，标题栏底边线的上方）。
+
+### 预览端口（本机）
+
+- 5223：C 分支（`card-gallery-20261023`）；5225：F 分支（`preferred-banner-20261023`）。都是后台 dev 服务，最长 2 小时后会被关掉，需要时在对应 worktree 的 `web_viewer` 里重新起。
