@@ -68,10 +68,25 @@ export function isPreviewDataSnapshotKey(key) {
     && key.endsWith('.json') && !key.split('/').some(part => !part || part === '.' || part === '..' || part.includes('\\'))
 }
 
-export function resolvePreviewObjectKey(requestKey, { gzip = false, dataRevision = '' } = {}) {
+// Compiled stories sit outside the data snapshot, so every deployment used to share one
+// `data/compiled/` corpus and an upload rewrote the stories an older live deployment reads.
+// A deployment that pins ARCHIVE_COMPILED_REVISION reads its own immutable copy instead;
+// one without it (and every historical manifest) keeps the shared keys.
+export const PREVIEW_COMPILED_SNAPSHOT_PREFIX = 'versions/compiled/'
+
+export function isPreviewCompiledSnapshotKey(key) {
+  return typeof key === 'string' && key.startsWith('data/compiled/') && key.endsWith('.json')
+    && !key.split('/').some(part => !part || part === '.' || part === '..' || part.includes('\\'))
+}
+
+export function resolvePreviewObjectKey(requestKey, { gzip = false, dataRevision = '', compiledRevision = '' } = {}) {
   if (dataRevision && isPreviewDataSnapshotKey(requestKey)) {
     if (!/^[a-f0-9]{64}$/.test(dataRevision)) throw new Error('Invalid data snapshot revision')
     return `versions/${dataRevision}/${requestKey}`
+  }
+  if (compiledRevision && isPreviewCompiledSnapshotKey(requestKey)) {
+    if (!/^[a-f0-9]{64}$/.test(compiledRevision)) throw new Error('Invalid compiled snapshot revision')
+    return `${PREVIEW_COMPILED_SNAPSHOT_PREFIX}${compiledRevision}/${gzip ? `${requestKey}.gz` : requestKey}`
   }
   if (gzip && isPreviewGzipCandidate(requestKey)) return `${requestKey}.gz`
   return isPreviewLosslessWebpCandidate(requestKey)

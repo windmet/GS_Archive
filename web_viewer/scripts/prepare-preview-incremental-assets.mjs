@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {hashFile} from './lib/preview-source-baseline.mjs'
 import {loadStageShardClosure,requiresStageShardValidation,assertStageShardInventory} from './lib/stage-shard-inventory.mjs'
-import {loadPreviewUploadedBaseline} from './lib/preview-uploaded-baseline.mjs'
+import {loadPreviewUploadedBaseline,compiledRevisionFor} from './lib/preview-uploaded-baseline.mjs'
 import {encodeStructuredGzip} from './lib/structured-gzip.mjs'
 import {encodeLosslessWebp, runPool, shutdownEncoderPool} from './lib/lossless-webp.mjs'
 import {isPreviewDataSnapshotKey, isPreviewGzipCandidate, resolvePreviewObjectKey,
@@ -19,7 +19,7 @@ const option=name=>args.includes(name)?args[args.indexOf(name)+1]:''
 const options=name=>args.flatMap((arg,index)=>arg===name?[args[index+1]]:[])
 assert(option('--inventory') && option('--remote') && option('--out'),
   'Use --inventory <source inventory> --remote <live lsjson> --out <new .deploy directory> '
-  + '[--baseline <source baseline>] [--baseline-overlay <descriptor> ... --baseline-remote <remote:bucket>]')
+  + '[--baseline <source baseline>] [--baseline-overlay <descriptor> ... --baseline-remote <remote:bucket>] [--compiled-snapshot]')
 const read=async file=>JSON.parse((await fs.readFile(file,'utf8')).replace(/^\uFEFF/,''))
 const inventory=await read(option('--inventory')), remote=await read(option('--remote'))
 assert.equal(inventory.kind,'current-source-inventory')
@@ -67,19 +67,22 @@ if(stageClosure)await assertStageShardInventory(inventory.entries,stageClosure)
 const dataRevision=createHash('sha256').update(JSON.stringify(inventory.entries
   .filter(entry=>isPreviewDataSnapshotKey(entry.request_key))
   .map(entry=>[entry.request_key,entry.source_sha256]))).digest('hex')
+// Opt-in: stage compiled stories under their own immutable revision, so the
+// upload leaves the shared data/compiled keys an older deployment reads untouched.
+const compiledRevision=args.includes('--compiled-snapshot')?compiledRevisionFor(inventory.entries,entry=>entry.source_sha256):''
 // One-off rollout of the lossy picture transform: those objects already sit in the bucket under the
 // same key with an unchanged source, so the new/changed rule alone would never re-encode them.
 const reencodeLossy=args.includes('--reencode-lossy')
 const selected=[]
 for (const entry of inventory.entries) {
   const gzip=isPreviewGzipCandidate(entry.request_key)
-  const objectKey=resolvePreviewObjectKey(entry.request_key,{gzip,dataRevision})
+  const objectKey=resolvePreviewObjectKey(entry.request_key,{gzip,dataRevision,compiledRevision})
   if (!remoteKeys.has(objectKey) || oldSources.get(entry.request_key)!==entry.source_sha256
     || (reencodeLossy && previewTransformKind(entry.request_key,{gzip})===LOSSY_WEBP_TRANSFORM)) {
     selected.push({...entry,object_key:objectKey,transform:previewTransformKind(entry.request_key,{gzip})})
   }
 }
-console.log(JSON.stringify({selected:selected.length,dataRevision,missing:inventory.missing.length}))
+console.log(JSON.stringify({selected:selected.length,dataRevision,...(compiledRevision?{compiledRevision}:{}),missing:inventory.missing.length}))
 const stage=path.join(output,'objects')
 let staged=0
 try {
@@ -95,7 +98,8 @@ try {
       const source=await fs.readFile(entry.source)
       assert.equal(createHash('sha256').update(source).digest('hex'),entry.source_sha256,'Source drift before staging')
       if (isPreviewGzipCandidate(entry.request_key)) {
-        const encoded=encodeStructuredGzip(entry,source)
+        const encoded=encodeStructuredGzip(entry,source,{compiledRevision})
+        assert.equal(encoded.entry.object_key,entry.object_key,'gzip staging key differs from the selected object key')
         await fs.writeFile(target,encoded.encoded,{flag:'wx'})
         Object.assign(entry,encoded.entry)
       } else {
@@ -114,7 +118,7 @@ const manifest={schema_version:3,kind:'incremental-preview',created_at:new Date(
   inventory_sha256:(await hashFile(option('--inventory'))).sha256,
   remote_inventory_sha256:(await hashFile(option('--remote'))).sha256,
   remote_inventory_created_at:(await fs.stat(option('--remote'))).mtime.toISOString(),
-  dataRevision,baseline_evidence:baselineEvidence,stage:'objects',missing:inventory.missing,entries:selected,
+  dataRevision,...(compiledRevision?{compiledRevision}:{}),baseline_evidence:baselineEvidence,stage:'objects',missing:inventory.missing,entries:selected,
   totals:{files:selected.length,source_bytes:selected.reduce((sum,e)=>sum+e.source_size,0),
     deployed_bytes:selected.reduce((sum,e)=>sum+e.deployed_size,0),
     targetBytes,netDelta,positiveDelta,projectedBytes,conservativePeakBytes,

@@ -13,9 +13,12 @@ import { DEFAULT_ORIGIN, loadEntitySources, renderEntityHeadShells } from './gen
 // Deliberately separate from final assemble_pages: this package is for device
 // review on a fixed non-production branch. It never grants final acceptance.
 const root = fileURLToPath(new URL('..', import.meta.url))
-const a = parseArgs(process.argv.slice(2), ['--models', '--out', '--data-revision', '--origin'])
+const a = parseArgs(process.argv.slice(2), ['--models', '--out', '--data-revision', '--compiled-revision', '--origin'])
 assert(a['--models'] && a['--out'] && /^[a-f0-9]{64}$/.test(a['--data-revision'] || ''),
-  'Usage: --models <verified candidate> --out <new package directory> --data-revision <existing R2 snapshot> [--origin https://<site host>]')
+  'Usage: --models <verified candidate> --out <new package directory> --data-revision <existing R2 snapshot> [--compiled-revision <uploaded compiled snapshot>] [--origin https://<site host>]')
+// Without it the deployment reads the shared data/compiled keys (every deployment before 2026-10-22).
+assert(a['--compiled-revision'] === undefined || /^[a-f0-9]{64}$/.test(a['--compiled-revision']), 'Invalid --compiled-revision')
+const compiledRevision = a['--compiled-revision'] || ''
 // The site the shells' canonical and og:url/og:image point at; a preview on its own host passes that host.
 const shellOrigin = (a['--origin'] || DEFAULT_ORIGIN).replace(/\/$/, '')
 assert(/^https:\/\/[a-z0-9.-]+$/.test(shellOrigin), '--origin must be an https origin without a path')
@@ -95,7 +98,7 @@ for (const directory of ['functions', 'shared/deploy']) for (const file of await
 }
 const receipt = { purpose: 'device-review-preview', productionApproved: false,
   branch: 'gs-architecture-device-test', sourceRevision: budget.sourceRevision, sourceDigest: budget.sourceDigest,
-  release: boot.release, dataRevision: a['--data-revision'], initialJsGzipEstimate: budget.initialJsGzipEstimate,
+  release: boot.release, dataRevision: a['--data-revision'], compiledRevision, initialJsGzipEstimate: budget.initialJsGzipEstimate,
   workBackfillRelease: workRelease,
   seasonalReadingRelease: 'seasonal-reading-v1', seasonalReadingCount: seasonalEntries.length, entityHeadShells: entityShells.length, entityHeadShellOrigin: shellOrigin,
   allPublicRoutesMigrated: acceptance.allPublicRoutesMigrated, deviceReviewAccepted: acceptance.deviceReviewAccepted,
@@ -120,6 +123,7 @@ ${shellSections.map(section => `/${section}/*
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',
   vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_DATA_REVISION: a['--data-revision'],
+    ...(compiledRevision ? { ARCHIVE_COMPILED_REVISION: compiledRevision } : {}),
     ARCHIVE_WORK_BACKFILL_RELEASE: workRelease, ARCHIVE_SEASONAL_READING_RELEASE: 'seasonal-reading-v1' },
   r2_buckets: [{binding: 'ARCHIVE_ASSETS', bucket_name: 'sidem-archive-preview'}] }, null, 2))
 for (const file of await listFiles(dist)) {

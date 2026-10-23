@@ -140,8 +140,21 @@
           </div>
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
-          <header class="overview-section-heading"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : '运营轨迹 · 315 的回忆录' }} <small>{{ collectionCount('events') }}</small></h2><button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
-          <div v-if="!preferredReference?.actionable" class="overview-timeline" tabindex="0" aria-label="运营时间画卷，可横向滚动"><article v-for="(event,index) in timeline" :key="event.id"><small class="timeline-date">{{ event.timelineDate }}</small><span class="timeline-dot" aria-hidden="true"></span><button type="button" @click="emit('open-result',event)"><img :src="event.image.url" alt="" loading="lazy" /><small>{{ event.seriesLabel }}</small><strong>{{ event.title }}</strong><ArrowUpRight :size="15" /></button></article></div>
+          <header class="overview-section-heading" :class="{'overview-chip-heading':almanacMonth}"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : almanacMonth ? `315 岁时记 · ${almanacMonthNumber} 月` : '运营轨迹 · 315 的回忆录' }} <small v-if="!almanacMonth">{{ collectionCount('events') }}</small></h2>
+            <div v-if="almanacMonth" ref="almanacChips" class="overview-heading-chips overview-story-tabs" role="group" aria-label="选择月份"><button v-for="month in ALMANAC_MONTHS" :key="month" type="button" :aria-pressed="almanacMonthNumber === month" @click="almanacMonthNumber = month">{{ month }}月</button></div>
+            <button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <!-- 315 岁时记: the month's birthdays beside every event that opened in that month, reprints included. -->
+          <div v-if="almanacMonth" class="overview-almanac">
+            <div class="overview-almanac-column"><h3>{{ almanacMonthNumber }} 月生日偶像 <small>{{ almanacMonth.birthdays.length }}</small></h3>
+              <ul v-if="almanacMonth.birthdays.length" class="overview-birthdays"><li v-for="birthday in almanacMonth.birthdays" :key="birthday.idolCode"><button type="button" :data-archive-focus-id="`portal-birthday:${birthday.idolCode}`" @click="emit('open-result',{target:birthdayCollectionTarget(birthday.idolCode)})"><ArchiveIdolAvatar :idol-code="birthday.idolCode" :accent-color="idols.find(row => row.id === birthday.idolCode)?.color" :size="40" :ring-width="2" decorative /><span class="overview-birthday-copy"><strong>{{ almanacIdolName(birthday.idolCode) }}</strong><small>{{ birthday.month }}月{{ birthday.day }}日</small></span><span class="overview-birthday-action">生日剧情<ChevronRight :size="14" aria-hidden="true" /></span></button></li></ul>
+              <p v-else class="overview-empty">这个月没有偶像过生日。</p>
+            </div>
+            <div class="overview-almanac-column"><h3>历年 {{ almanacMonthNumber }} 月活动 <small>{{ almanacMonth.events.length }}</small></h3>
+              <div v-if="almanacMonth.events.length" class="overview-event-grid"><article v-for="event in almanacMonth.events" :key="event.id" class="overview-event"><DomainMediaPreview class="overview-event-image" :binding="event.image" :name="event.title" deferred /><button type="button" :data-archive-focus-id="`portal-almanac-event:${event.id}`" @click="emit('open-result',{target:almanacEventTarget(event.id)})"><span><strong>{{ event.title }}</strong><small>{{ [event.kind, almanacEventDate(event.releaseAt), event.isReprint ? '复刻' : ''].filter(Boolean).join(' · ') }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
+              <p v-else class="overview-empty">这个月还没有开过活动。</p>
+            </div>
+          </div>
+          <div v-else-if="!preferredReference?.actionable" class="overview-timeline" tabindex="0" aria-label="运营时间画卷，可横向滚动"><article v-for="(event,index) in timeline" :key="event.id"><small class="timeline-date">{{ event.timelineDate }}</small><span class="timeline-dot" aria-hidden="true"></span><button type="button" @click="emit('open-result',event)"><img :src="event.image.url" alt="" loading="lazy" /><small>{{ event.seriesLabel }}</small><strong>{{ event.title }}</strong><ArrowUpRight :size="15" /></button></article></div>
           <div v-else-if="events.length" class="overview-event-grid"><article v-for="event in events" :key="event.id" class="overview-event"><DomainMediaPreview v-if="event.image?.url" class="overview-event-image" :binding="event.image" :name="event.title" deferred /><button type="button" :disabled="!event.target" :data-archive-focus-id="`portal-event:${event.id}`" @click="emit('open-result', event)"><span><strong>{{ event.title }}</strong><small v-if="event.subtitle">{{ event.subtitle }}</small><small v-if="event.relationLabel" class="overview-relation">{{ event.relationLabel }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取活动预览…' : '暂无可展示的活动记录，可前往目录查阅。' }}</p>
         </section>
@@ -159,7 +172,7 @@
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
-import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
@@ -171,6 +184,7 @@ import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import PortalCardBento from './PortalCardBento.vue'
 import { useNearViewportKeys } from './useNearViewport.js'
 import {portalTimeline} from '../../presentation/PortalBento.js'
+import {ALMANAC_MONTHS,almanacEventDate,almanacEventTarget,birthdayCollectionTarget,currentJapanMonth,portalAlmanacMonth} from '../../presentation/PortalAlmanac.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import {portalCardFilters,portalHubGroups,portalPreferredStatTiles} from '../../presentation/PortalOverviewPanels.js'
@@ -236,6 +250,17 @@ function openStatTile(tile){
   if(tile.action==='mobile') return emit('open-preferred',{action:'mobile',idolCode:props.preferredReference?.idolCode})
   openDirectory(tile.action)
 }
+// 315 岁时记 opens on this month in Japan time; a scope without it keeps the timeline.
+const almanacMonthNumber=ref(currentJapanMonth())
+const almanacMonth=computed(()=>props.preferredReference?.actionable ? null : portalAlmanacMonth(props.desktopOverview.almanac,almanacMonthNumber.value))
+// A narrow heading scrolls its chip row; keep the chosen month in view without moving the page.
+const almanacChips=ref(null)
+watch([almanacChips,almanacMonthNumber],async([row])=>{
+  await nextTick()
+  const chip=row?.querySelector('[aria-pressed="true"]')
+  if(chip) row.scrollLeft+=chip.getBoundingClientRect().left-row.getBoundingClientRect().left-(row.clientWidth-chip.offsetWidth)/2
+},{flush:'post'})
+const almanacIdolName=code=>props.idolName(code,props.idols.find(row=>row.id===code)?.name) || props.idols.find(row=>row.id===code)?.name || code
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
@@ -540,7 +565,22 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-story-gateways strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap; }
 .overview-story-gateways small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 
-/* Global events: a horizontal timeline of banners. */
+/* 315 岁时记: birthdays and events of one month on the page's 50:50 axis; the events reuse the event rows. */
+.overview-almanac { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
+.overview-almanac-column { min-width:0; }
+.overview-almanac-column > h3 { margin:0 0 var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-almanac-column > h3 small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
+.overview-almanac .overview-event-grid { grid-template-columns:minmax(0,1fr); }
+.overview-birthdays { display:grid;margin:0;padding:0;list-style:none; }
+.overview-birthdays li { border-bottom:1px solid var(--gs-line); }
+.overview-birthdays button { display:flex;align-items:center;gap:var(--gs-space-4);width:100%;min-height:72px;padding:var(--gs-space-3) 0;border:0;background:none;color:inherit;text-align:left;cursor:pointer; }
+.overview-birthday-copy { display:grid;flex:1;gap:2px;min-width:0; }
+.overview-birthdays strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-birthdays small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
+.overview-birthday-action { display:inline-flex;flex:none;align-items:center;gap:2px;color:var(--gs-mint-ink);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.overview-birthdays button:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
+
+/* Global events: a horizontal timeline of banners (scopes built before the almanac). */
 .overview-timeline { display:flex;gap:var(--gs-space-5);overflow-x:auto;padding:var(--gs-space-1) 0 var(--gs-space-4);scroll-snap-type:x proximity;scrollbar-width:thin; }
 .overview-timeline article { position:relative;flex:1 0 210px;max-width:300px;min-width:0;scroll-snap-align:start; }
 .overview-timeline article::before { content:'';position:absolute;top:33px;right:calc(-1 * var(--gs-space-5));left:0;height:1px;background:var(--gs-line); }
@@ -563,6 +603,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 @media (hover:hover) and (pointer:fine) {
   .overview-heading-chips button:not(:disabled):hover { border-color:var(--gs-selected-line); }
+  .overview-birthdays button:hover strong { color:var(--gs-mint-ink); }
   .overview-stat:hover { border-color:var(--gs-selected-line); }
   .overview-stat:hover strong { color:var(--gs-mint-ink); }
   .overview-icon-button:hover, .overview-lens-trigger:hover { background:var(--gs-mint-wash); }
@@ -577,6 +618,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* Narrow page (the shell's middle tier or a phone): the hero spans the row above the cards. */
 @container portal (max-width:980px) {
+  .overview-almanac { grid-template-columns:minmax(0,1fr);row-gap:var(--gs-space-6); }
   .overview-chip-heading { flex-wrap:wrap;row-gap:var(--gs-space-2); }
   .overview-chip-heading .overview-heading-chips { order:3;flex-basis:100%;margin:0 calc(-1 * var(--gs-space-1)); }
   .overview-featured { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-section); }
