@@ -14,6 +14,7 @@ import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity,samp
 import {objectSpatialContext,spatialEmitterQuads,OBJECT_SPATIAL_PROFILE,OBJECT_SPATIAL_BINDING} from '../src/core/chibiObjectSpatialContext.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
+const published=process.argv.includes('--published-assets')
 const colorPairProof=JSON.parse(read('scripts/fixtures/chibi-color-pair-native.json'))
 const uniformSizeProof=JSON.parse(read('scripts/fixtures/chibi-uniform-size-native.json'))
 const electric=data.assets.fx_in_tktkkt_electric,electricBound=colorPairProof.models.fx_in_tktkkt_electric
@@ -50,10 +51,13 @@ const localSizeProof=JSON.parse(read('scripts/fixtures/chibi-local-size-native.j
 const bloomParentProof=JSON.parse(read('scripts/fixtures/chibi-bloom-parent-native.json'))
 const limitCurveProof=JSON.parse(read('scripts/fixtures/chibi-limit-curve-native.json'))
 assert.equal(bloomParentProof.cases.length,36)
-assert.equal(limitCurveProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
-const limitSong=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs.find(s=>s.id==='pcuslv_live_effect')
-assert.equal(limitCurveProof.nonbindingSizeEnvelope.minViewHeight,10000/Math.max(...limitSong.cameraEvents.map(e=>e.zoom||1000)))
-assert.equal(limitCurveProof.nonbindingSizeEnvelope.maxObjectScale,Math.max(...limitSong.objectLayerEvents.filter(e=>e.asset.includes('pcuslv_bloom')&&!e.hide).map(e=>e.scale))/1000)
+assert.equal(limitCurveProof.choreographySha256,data.choreographyIndexSha256)
+if(published){
+  assert.equal(limitCurveProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
+  const limitSong=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs.find(s=>s.id==='pcuslv_live_effect')
+  assert.equal(limitCurveProof.nonbindingSizeEnvelope.minViewHeight,10000/Math.max(...limitSong.cameraEvents.map(e=>e.zoom||1000)))
+  assert.equal(limitCurveProof.nonbindingSizeEnvelope.maxObjectScale,Math.max(...limitSong.objectLayerEvents.filter(e=>e.asset.includes('pcuslv_bloom')&&!e.hide).map(e=>e.scale))/1000)
+}
 for(const [name,bound] of Object.entries(limitCurveProof.models)){
   assert.equal(data.assets[name].bundleSha256,bound.bundleSha256)
   for(const [i,s] of data.assets[name].systems.entries()){
@@ -85,12 +89,15 @@ for(const c of limitCurveProof.cases.filter(c=>c.dt===1/60&&c.velocity[0]===0&&c
 }
 assert.equal(localParentProof.cases.length,90)
 assert.equal(localSizeProof.cases.length,36)
-assert.equal(localSizeProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
-const sizeSong=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs.find(s=>s.id===localSizeProof.nonbindingSizeEnvelope.arrangement)
+assert.equal(localSizeProof.choreographySha256,data.choreographyIndexSha256)
 const sizeEnvelope=localSizeProof.nonbindingSizeEnvelope
-assert.equal(sizeEnvelope.maxZoom,Math.max(...sizeSong.cameraEvents.map(e=>e.zoom||1000)))
 assert.equal(sizeEnvelope.minViewHeight,10000/sizeEnvelope.maxZoom)
-assert.equal(sizeEnvelope.maxObjectScale,Math.max(...sizeSong.objectLayerEvents.filter(e=>e.asset==='fx_in_jfhtmk_panel_1'&&!e.hide).map(e=>e.scale))/1000)
+if(published){
+  assert.equal(localSizeProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
+  const sizeSong=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs.find(s=>s.id===sizeEnvelope.arrangement)
+  assert.equal(sizeEnvelope.maxZoom,Math.max(...sizeSong.cameraEvents.map(e=>e.zoom||1000)))
+  assert.equal(sizeEnvelope.maxObjectScale,Math.max(...sizeSong.objectLayerEvents.filter(e=>e.asset==='fx_in_jfhtmk_panel_1'&&!e.hide).map(e=>e.scale))/1000)
+}
 assert.ok(sizeEnvelope.maxSourceSize*sizeEnvelope.stageScaleUpperBound*sizeEnvelope.maxObjectScale<50*sizeEnvelope.minViewHeight)
 for(const [name,bound] of Object.entries(localSizeProof.models)) {
   const asset=data.assets[name]
@@ -391,7 +398,7 @@ assert.ok(Math.abs(cone.position.x-2*Math.sqrt(.5005))<1e-12,'Cone area fraction
 assert.ok(cone.direction.x>0&&cone.direction.z>0);assert.ok(Math.abs(Math.hypot(...Object.values(cone.direction))-1)<1e-12)
 assert.ok(Math.abs(cone.direction.x/cone.direction.z-Math.sqrt(.5005))<1e-12,'Cone initial direction uses radius fraction and angle')
 assert.deepEqual(sampleEmitterShape({...shape,type:12},fixed).direction,{x:0,y:1,z:0})
-const published=process.argv.includes('--published-assets')
+if(!published)console.log('Source-only envelope checks use tracked proof bindings; actual choreography envelope checks require --published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
@@ -623,7 +630,7 @@ function previewRetirementMs(system) {
 }
 function previewActivationMs(system) {
   assert.ok([0,3].includes(system.delay.mode),'Preview activation requires a bounded start delay')
-  return Math.max(system.delay.value,system.delay.min)*1000+(system.looping?500:Math.min(...system.bursts.map(b=>b.time))*1000+Math.min(system.lifetime.scalar,system.lifetime.minScalar)*500)
+  return Math.max(system.delay.value,system.delay.min)*1000+(system.rate>0?500:Math.min(...system.bursts.map(b=>b.time))*1000+Math.min(system.lifetime.scalar,system.lifetime.minScalar)*500)
 }
 assert.equal(Object.keys(promotions.previewAssets).length,23)
 for(const [name,expected] of Object.entries(promotions.previewAssets)) {
@@ -682,7 +689,7 @@ if(published) {
       }
     }
   }
-  assert.equal(windows,189,'All23 preview assets actual show/restart commands across every referencing arrangement')
+  assert.equal(windows,191,'All23 preview assets actual show/restart commands across every referencing arrangement')
   for(const name of ['fx_in_mainha_panel_1','fx_in_mainha_panel_2']) {
     const model=data.assets[name],events=songs.find(s=>s.id==='mainha_live_effect').objectLayerEvents.filter(e=>e.asset===name)
     assert.equal(events.length,1);assert.equal(events[0].time,-2000);assert.equal(events[0].hide,false)

@@ -50,3 +50,15 @@
 接通 Bloom、电弧、火焰及独立 Smoke 的来源参数消费者，修正倾斜父链/面板几何、Center 台词的中心槽位映射和 GO FOR IT!! 单人脚光；复核 FLASH LIGHT 逐瓣叠色现有实现。Smoke 支持 Show、停止尾烟、重启、负时间历史和倒退 seek，加载校验来源及数据哈希，仍明确标记为来源参数预览。
 
 相关原生受控回归、代码构建和桌面/手机 Browser 旅程通过，完整源码门禁 167/167 通过。保留 Noise/Stretch、Underlight、原机随机/时钟与完整设备视觉覆盖等后续项；本 PR 不包含 R2 上传或部署。
+
+
+## PR #95 后续执行记录
+
+用户随后授权创建 PR 并以 merge commit 合入。舞台分支先普通 merge 最新 master `2bdd3de4`（#93/#94），合并提交 `2346aa0d`；合并后 `build:check` 16.85s、本地源码门禁 167/167 通过。此前“不代建 PR”的文字是原收口时边界，后续以本节及 PR 状态为准。
+
+首轮 CI 暴露 object-emitter verifier 在 source-only 模式无条件读取未跟踪的 `public/assets/live-chibi/choreography/index.json`，本地语料掩盖了依赖。修正为始终校验跟踪 proof 与数据的编排哈希、原生几何/尺寸上界数学；真实编排的 envelope 重算放回已有 `--published-assets` 模式。该模式继续在本地实际语料上运行，不把 source-only 成功写成发布语料验收。前端运行逻辑未变，无需重复构建或 Browser 旅程。
+
+
+补跑实际语料模式还发现旧检查把所有循环发射器固定采样在 +500ms，可能恰好错过纯 burst 的短寿命电弧。改为连续发射仍采 +500ms，纯 burst 采首 burst 加最短寿命的一半；同步实际 23 资源引用窗口断言为 191。只修 verifier，不改发射器运行表现。
+
+修正后 object-emitter 无语料读取模式与 `--published-assets` 实际语料模式均通过；所有 191 个来源 show/restart 窗口均完成检查。
