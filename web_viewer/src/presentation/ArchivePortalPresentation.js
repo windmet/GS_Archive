@@ -1,6 +1,6 @@
 import { STORY_KINDS, storyKindAliases } from '../core/archiveSections.js'
 import { songMatchesIdol, storyMatchesIdol, idolEventIds, eventMatchesIdol, cardAttribute } from './CatalogIdolScope.js'
-import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortraitUrl } from '../utils/CardAssetResolver.js'
+import { getCardIconUrl, getCardLandscapeUrl, getCardLandscapeThumbUrl, getCardLargeImageUrl, getCardPortraitUrl, getCardPortraitThumbUrl } from '../utils/CardAssetResolver.js'
 import { getCharaIconUrl } from '../utils/AssetResolver.js'
 import { eventKindLabels, historicalDate } from './DomainPresentation.mjs'
 
@@ -113,19 +113,34 @@ export function validatePortalSearchRows(domain, rows, bootstrap, { expectedCoun
   return rows
 }
 
+// The Portal draws card art at thumbnail size while the card detail page keeps the
+// original PNG. `url` is therefore the thumbnail where one exists and `full` keeps
+// the full-resolution URL for the detail page, fallbacks and verifiers.
 function cardImage(row, thumbnail = false) {
   const state = row.asset_status
   if (!state || typeof state !== 'object') return null
   const types = thumbnail ? ['icon', 'portrait', 'large', 'landscape'] : ['portrait', 'large', 'landscape', 'icon']
   const resolvers = { icon: getCardIconUrl, portrait: getCardPortraitUrl, large: getCardLargeImageUrl, landscape: getCardLandscapeUrl }
+  const thumbResolvers = { portrait: getCardPortraitThumbUrl, landscape: getCardLandscapeThumbUrl }
   for (const kind of types) {
     for (const variant of row.single_state === true ? ['base', 'p'] : ['p', 'base']) {
       if (state[`${variant === 'p' ? 'awakened' : 'normal'}_${kind}`] !== true) continue
       const url = resolvers[kind](row.resource_id, variant === 'p')
-      if (safeAssetUrl(url)) return { url, kind: `card_${kind}`, variant, status: 'available' }
+      if (!safeAssetUrl(url)) continue
+      const thumb = thumbResolvers[kind]?.(row.resource_id, variant === 'p')
+      return { url: safeAssetUrl(thumb) ? thumb : url, full: url, kind: `card_${kind}`, variant, status: 'available' }
     }
   }
   return null
+}
+
+function cardLandscape(row) {
+  const status = row.asset_status
+  if (!['awakened_landscape', 'normal_landscape'].some(key => status?.[key] === true)) return null
+  const awakened = status.awakened_landscape === true
+  const url = getCardLandscapeUrl(row.resource_id, awakened)
+  const thumb = getCardLandscapeThumbUrl(row.resource_id, awakened)
+  return { url: safeAssetUrl(thumb) ? thumb : url, full: url, kind: 'card_landscape', variant: awakened ? 'p' : 'base', status: 'available' }
 }
 
 function songImage(row) {
@@ -256,7 +271,7 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
   const collections = {
     cards: previewCards.map(row => ({ id: row.resource_id, title: sourceText(cardTitle, text(row.title) || text(row.title_full)),
       idolName: idolDisplay(row.character_id, directory, idolName), idolCode: row.character_id, unitCode: text(directory.get(row.character_id)?.unitCode), unitName: text(directory.get(row.character_id)?.unitName), rarity: text(row.rarity), image: cardImage(row),
-      landscape: ['awakened_landscape','normal_landscape'].some(key=>row.asset_status?.[key]===true) ? {url:getCardLandscapeUrl(row.resource_id,row.asset_status?.awakened_landscape===true),kind:'card_landscape',variant:row.asset_status?.awakened_landscape===true?'p':'base',status:'available'} : null,
+      landscape: cardLandscape(row),
       attribute: cardAttribute(row, cardFacets, bootstrap.release),
       target: cardTarget(row) })),
     songs: previewSongs.map(row => ({ id: row.song_code, title: sourceText(songTitle, text(row.title)),

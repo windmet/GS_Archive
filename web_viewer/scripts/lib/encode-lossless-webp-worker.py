@@ -18,8 +18,14 @@ from pathlib import Path
 from PIL import Image
 
 
-def encode(src, dst, lossy=False):
+def encode(src, dst, lossy=False, width=None, quality=None, method=None):
     im = Image.open(src).convert("RGBA")
+    # Thumbnails are the only resized output: downscale to a fixed width and
+    # never upscale a smaller source. Dimensions of lossless conversions keep
+    # their historical contract of never being resampled.
+    if width and int(width) < im.width:
+        height = max(1, round(im.height * int(width) / im.width))
+        im = im.resize((int(width), height), Image.LANCZOS)
     pixels = bytearray(im.tobytes())
 
     cleared = 0
@@ -34,11 +40,12 @@ def encode(src, dst, lossy=False):
     clean = Image.frombytes("RGBA", im.size, bytes(pixels))
     Path(dst).parent.mkdir(parents=True, exist_ok=True)
     if lossy:
-        # Lossy colour at q90; an opaque picture drops the alpha plane, any other keeps it
+        # Lossy colour at q90 by default; an opaque picture drops the alpha plane, any other keeps it
         # lossless with `exact` so transparent pixels stay zeroed.
         opaque = clean.getextrema()[3][0] == 255
         (clean.convert("RGB") if opaque else clean).save(
-            dst, "WEBP", quality=90, alpha_quality=100, method=6, exact=True,
+            dst, "WEBP", quality=int(quality or 90), alpha_quality=100,
+            method=int(method or 6), exact=True,
         )
         return {"width": im.size[0], "height": im.size[1], "alphaClearedPixels": cleared, "opaque": opaque}
     clean.save(
@@ -61,7 +68,14 @@ def main():
         if job.get("op") == "shutdown":
             return
         try:
-            result = encode(job["source"], job["target"], job.get("lossy", False))
+            result = encode(
+                job["source"],
+                job["target"],
+                job.get("lossy", False),
+                job.get("width"),
+                job.get("quality"),
+                job.get("method"),
+            )
             result["id"] = job["id"]
             result["ok"] = True
         except Exception as exc:  # noqa: BLE001 - reported to the Node caller

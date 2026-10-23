@@ -1,123 +1,94 @@
 <template>
-  <div v-if="lead" ref="root" class="card-bento" :class="{'is-global':global}">
-    <button class="bento-lead" type="button" :data-archive-focus-id="`portal-card-art:${lead.id}`" :style="{'--card-art':`url(${(lead.landscape || lead.image).url})`}" :aria-label="`打开卡片 ${lead.title}`" @click="emit('open',lead)">
-      <picture><source v-if="lead.image?.url" media="(max-width:760px)" :srcset="near ? lead.image.url : undefined" /><img :src="near ? (lead.landscape || lead.image).url : undefined" :alt="lead.title" decoding="async" /></picture>
+  <div v-if="lead" ref="root" class="card-bento" :class="{'is-global':global,'has-portrait-lead':!lead.landscape?.url}">
+    <button class="bento-lead" type="button" :data-archive-focus-id="`portal-card-art:${lead.id}`" :aria-label="`打开卡片 ${lead.title}`" @click="emit('open',lead)">
+      <picture><source v-if="lead.image?.url" media="(max-width:760px)" :srcset="near ? artUrl(lead.image) : undefined" /><img :src="near ? artUrl(lead.landscape || lead.image) : undefined" :alt="lead.title" decoding="async" @error="artFailed" /></picture>
       <span class="bento-caption"><small>{{ lead.rarity }} · {{ lead.idolName }}</small><strong>{{ lead.title }}</strong><ArrowUpRight :size="16" /></span>
     </button>
-    <template v-if="!global">
-      <button v-if="secondary" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${secondary.id}`" :aria-label="`打开卡片 ${secondary.title}`" @click="emit('open',secondary)"><img :src="near ? secondary.image.url : undefined" :alt="secondary.title" decoding="async" /><span class="bento-tile-caption">{{ secondary.title }}</span></button>
-      <button v-if="third" class="bento-note" type="button" :data-archive-focus-id="`portal-card-art:${third.id}`" @click="emit('open',third)"><img :src="near ? third.image.url : undefined" alt="" decoding="async" /><span><small>{{ third.rarity }} · 精选档案</small><strong>{{ third.title }}</strong></span><ArrowUpRight :size="16" /></button>
-      <button class="bento-directory" type="button" @click="emit('filter',{})"><Layers :size="21" /><strong>{{ counts?.total ?? cards.length }} 张卡片</strong><small>已展出 {{ displayed }} 张 · 完整图鉴</small><ArrowUpRight :size="17" /></button>
-    </template>
-    <template v-else>
-      <div class="bento-encounter"><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="near ? encounter.image.url : undefined" alt="" decoding="async" /><span :data-idol="encounter.idolName"><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button></div>
-      <button v-if="encounterNext" class="encounter-next" type="button" :data-archive-focus-id="`portal-card:${encounterNext.id}`" :aria-label="`打开卡片 ${encounterNext.title}`" @click="emit('open',encounterNext)"><img :src="near ? encounterNext.image.url : undefined" alt="" decoding="async" /><strong>{{ encounterNext.idolName }}</strong></button>
-      <div class="bento-filters"><span>按属性探索</span><div class="attribute-links"><button v-for="attribute in attributes" :key="attribute.id" type="button" :disabled="!attributeAvailable" :title="attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color,'--attribute-icon':attribute.icon}" @click="emit('filter',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attributeAvailable ? counts?.attribute?.[attribute.id] ?? cards.filter(row=>row.attribute===attribute.id).length : '—' }}</small></button></div><div class="rarity-links"><button v-for="rarity in rarities" :key="rarity" type="button" @click="emit('filter',{rarity})">{{ rarity }} <small>{{ counts?.rarity?.[rarity] ?? cards.filter(row=>row.rarity===rarity).length }}</small></button></div></div>
-    </template>
+    <button v-for="card in shownPortraits" :key="card.id" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${card.id}`" :aria-label="`打开卡片 ${card.title}`" @click="emit('open',card)"><img :src="near ? artUrl(card.image) : undefined" alt="" decoding="async" @error="artFailed" /><span class="bento-tile-caption">{{ global ? card.idolName : card.title }}</span></button>
   </div>
   <p v-else class="bento-empty">暂无可展示的卡面。</p>
 </template>
 <script setup>
-import {computed,ref} from 'vue'
-import {ArrowUpRight,Layers} from '@lucide/vue'
+import {computed,onBeforeUnmount,reactive,ref,watch} from 'vue'
+import {ArrowUpRight} from '@lucide/vue'
 import {portalDailyCard} from '../../presentation/PortalBento.js'
 import {useNearViewport} from './useNearViewport.js'
-const props=defineProps({cards:{type:Array,default:()=>[]},counts:Object,global:Boolean,offset:{type:Number,default:0}})
-const emit=defineEmits(['open','filter'])
-// Card art is the Portal's heaviest download (three 640×800 portraits ≈1.6 MB) and sits below the fold on phones;
-// in the wider layout the bento is on the first screen and may be the LCP, so it loads at once as before.
+const props=defineProps({cards:{type:Array,default:()=>[]},global:Boolean,offset:{type:Number,default:0}})
+const emit=defineEmits(['open'])
+// Card art is the Portal's heaviest download and sits below the fold on phones; in the wider layout the
+// gallery is on the first screen and may be the LCP, so it loads at once.
 const root=ref(null)
 const near=useNearViewport(root,{eagerMedia:'(min-width:761px)'})
 const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date())
+// One landscape lead (the only art with a 15:8 picture) and three portraits. The 担当 lens shows its
+// first cards; the all-idol lens draws by date, and 换一组 moves the offset so all four change together.
 const lead=computed(()=>{const pool=props.cards.filter(row=>row.landscape?.url);return props.global ? portalDailyCard(pool,date,props.offset) : pool[0] || props.cards.find(row=>row.image?.url)})
-const secondary=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.image?.url))
-const third=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.id!==secondary.value?.id && row.image?.url))
-const displayed=computed(()=>[lead.value,secondary.value,third.value].filter(Boolean).length)
-// The encounter is never the lead card already shown beside it. The section's 换一组 moves the
-// offset, so the lead and both encounter cards change together.
-const encounter=computed(()=>portalDailyCard(props.cards.filter(row=>row.id!==lead.value?.id),date,props.offset))
-// A second encounter sits beside the first, both as pictures next to the lead.
-const encounterNext=computed(()=>{const next=portalDailyCard(props.cards.filter(row=>row.id!==encounter.value?.id && row.id!==lead.value?.id),date,props.offset);return next?.image?.url ? next : null})
-const rarities=['SSR','SR','R','N']
-const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
-const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)',icon:'var(--gs-attr-icon-physical)'},{id:'Intelligence',label:'Intelli',color:'var(--gs-attr-intelli)',icon:'var(--gs-attr-icon-intelli)'},{id:'Mental',label:'Mental',color:'var(--gs-attr-mental)',icon:'var(--gs-attr-icon-mental)'}]
+const portraits=computed(()=>{
+  const chosen=[]
+  const taken=new Set([lead.value?.id])
+  for(let n=0;n<3;n++){
+    const pool=props.cards.filter(row=>!taken.has(row.id) && row.image?.url)
+    const next=props.global ? portalDailyCard(pool,date,props.offset) : pool[0]
+    if(!next) break
+    chosen.push(next); taken.add(next.id)
+  }
+  return chosen
+})
+// The row holds three portraits only when it is wider than 900px and not the phone layout; narrower rows
+// render two, so the hidden picture is never requested (CSS hiding would still download it).
+const wide=ref(false)
+let resize=null
+watch(root,element=>{
+  resize?.disconnect(); resize=null
+  if(!element || typeof ResizeObserver==='undefined') return
+  resize=new ResizeObserver(([entry])=>{wide.value=entry.contentRect.width>900 && !matchMedia('(max-width:760px)').matches})
+  resize.observe(element)
+},{flush:'post'})
+onBeforeUnmount(()=>resize?.disconnect())
+const shownPortraits=computed(()=>portraits.value.slice(0,wide.value ? 3 : 2))
+// The Portal asks for the derived thumbnail first; if that object is missing (a deployment that has not
+// uploaded thumbnails yet), the picture falls back to the original art instead of staying blank.
+const failed=reactive(new Set())
+const artUrl=art=>art?.url && failed.has(art.url) && art.full ? art.full : art?.url
+function artFailed(event){
+  const src=event.target.currentSrc || event.target.src
+  if(src) failed.add(new URL(src,location.href).pathname)
+}
 </script>
 <style scoped>
-/* Featured cards: pictures whose frames hug the art (media radius, cover, no blurred fill), and the
-   text entries under them as plain rows on the paper. */
-.card-bento { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:224px auto;gap:var(--gs-space-3) var(--gs-space-4);min-width:0; }
+/* Featured cards: one row of pictures at one height. Each picture's flex ratio is its art's width/height,
+   so once the gaps are taken the row splits the rest in proportion and every picture ends equally tall
+   at any width: the landscape lead at 15:8, the portraits at 4:5. */
+.card-bento { display:flex;gap:var(--gs-space-4);min-width:0; }
 .card-bento button { min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer; }
 .card-bento button:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
-.bento-lead, .bento-portrait, .encounter-next, .bento-encounter { position:relative;overflow:hidden;border-radius:var(--gs-radius-media);background:var(--gs-line); }
-.bento-lead { grid-column:span 2; }
+.bento-lead, .bento-portrait { position:relative;overflow:hidden;border-radius:var(--gs-radius-media);background:var(--gs-line); }
+.bento-lead { flex:1.875 1 0;aspect-ratio:15 / 8; }
+.has-portrait-lead .bento-lead { flex:.8 1 0;aspect-ratio:4 / 5; }
+.bento-portrait { flex:.8 1 0;aspect-ratio:4 / 5; }
 .bento-lead picture { display:block;width:100%;height:100%; }
 .card-bento img:not([src]) { visibility:hidden; }
-.bento-lead picture > img, .bento-portrait img, .encounter-card img, .encounter-next img { display:block;width:100%;height:100%;object-fit:cover;object-position:top; }
+.bento-lead picture > img, .bento-portrait img { display:block;width:100%;height:100%;object-fit:cover;object-position:top; }
 /* Captions on art: the only place text sits on a picture, over a chrome fade. */
-.bento-caption, .encounter-card > span, .encounter-next strong { position:absolute;inset:auto 0 0;padding:var(--gs-space-7) var(--gs-space-5) var(--gs-space-4);background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface); }
-.bento-caption { display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px var(--gs-space-3); }
+.bento-caption, .bento-tile-caption { position:absolute;inset:auto 0 0;background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface); }
+.bento-caption { display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px var(--gs-space-3);padding:var(--gs-space-7) var(--gs-space-5) var(--gs-space-4); }
 .bento-caption small { grid-column:1 / -1;font-size:var(--gs-text-meta); }
 .bento-caption strong { font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.4; }
-/* Small tiles carry one line at the bottom, the same fade as the lead: the card title when every
-   card is one idol's, the idol's name in the all-archive view. Rarity is marked on the lead only. */
-.bento-tile-caption { position:absolute;inset:auto 0 0;overflow:hidden;padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);text-overflow:ellipsis;white-space:nowrap; }
-/* Text entries: a third card and the directory, as rows under a hairline. */
-.bento-note, .bento-directory { display:flex;align-items:center;gap:var(--gs-space-4);min-height:76px;padding:var(--gs-space-3) 0 !important;border-top:1px solid var(--gs-line) !important; }
-.bento-note { grid-column:span 2; }
-.bento-note > img { flex:none;width:48px;height:64px;object-fit:cover;object-position:top;border-radius:var(--gs-radius-media); }
-.bento-note > span { display:grid;flex:1;gap:2px;min-width:0; }
-.bento-note small, .bento-directory small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.bento-note strong, .bento-directory strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.4;overflow-wrap:anywhere; }
-.bento-note > svg, .bento-directory > svg { flex:none;color:var(--gs-ink-3); }
-.bento-directory { display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;align-content:center;column-gap:var(--gs-space-3); }
-.bento-directory > svg:first-child { grid-column:1;grid-row:1 / span 2;align-self:center; }
-.bento-directory strong { grid-column:2;grid-row:1; }
-.bento-directory small { grid-column:2;grid-row:2; }
-.bento-directory > svg:last-child { grid-column:3;grid-row:1 / span 2;align-self:center; }
-
-/* Global view: the lead at the landscape art's 15:8, two encounter cards beside it, filters under. */
-.is-global { grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,.5fr));grid-template-rows:minmax(0,1fr) auto;row-gap:var(--gs-space-5); }
-.is-global .bento-lead { grid-column:1;grid-row:1 / span 2;align-self:start;aspect-ratio:15 / 8; }
-.bento-encounter { grid-column:2;grid-row:1; }
-.encounter-card { display:block;width:100%;height:100%; }
-.encounter-card > span small, .encounter-card > span strong, .encounter-card > svg { display:none; }
-.encounter-card > span::after { content:attr(data-idol); }
-.encounter-card > span, .encounter-next strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.encounter-card > span, .encounter-next strong { padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
-.encounter-next { grid-column:3;grid-row:1;display:block; }
-.bento-filters { grid-column:2 / -1;grid-row:2;display:grid;gap:var(--gs-space-3);min-width:0; }
-.bento-filters > span { display:none; }
-.attribute-links, .rarity-links { display:grid;grid-auto-columns:1fr;grid-auto-flow:column;gap:var(--gs-space-2); }
-.card-bento .attribute-links button, .card-bento .rarity-links button { min-height:var(--gs-control-normal);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);text-align:center;white-space:nowrap; }
-.card-bento .attribute-links button { display:inline-flex;align-items:center;justify-content:center;gap:4px;color:var(--attribute);font-weight:var(--gs-weight-semibold); }
-.card-bento .attribute-links button::before { content:"";flex:none;width:15px;height:15px;background:var(--attribute-icon) center / contain no-repeat; }
-.attribute-links small, .rarity-links small { margin-left:2px;color:var(--gs-ink-3);font-weight:var(--gs-weight-regular); }
+/* Portraits carry one line: the card title when every card is one idol's, the idol's name in the
+   all-archive view. Rarity is marked on the lead only. */
+.bento-tile-caption { overflow:hidden;padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);text-overflow:ellipsis;white-space:nowrap; }
 .bento-empty { color:var(--gs-ink-3); }
 
 @media (hover:hover) and (pointer:fine) {
-  .bento-lead img, .bento-portrait img, .encounter-card img, .encounter-next img { transition:transform var(--gs-motion-feedback) var(--gs-motion-ease); }
-  .bento-lead:hover img, .bento-portrait:hover img, .encounter-card:hover img, .encounter-next:hover img { transform:scale(1.02); }
-  .bento-note:hover strong, .bento-directory:hover strong { color:var(--gs-mint-ink); }
-  .card-bento .rarity-links button:hover { border-color:var(--gs-selected-line); }
+  .bento-lead img, .bento-portrait img { transition:transform var(--gs-motion-feedback) var(--gs-motion-ease); }
+  .bento-lead:hover img, .bento-portrait:hover img { transform:scale(1.02); }
 }
 @media (prefers-reduced-motion:reduce) { .card-bento * { transition:none !important;transform:none !important; } }
 
-/* Phones: the lead in portrait, two cards beside it, the text entries and filters below. */
+/* Phones: the lead in its portrait art on the left, two cards stacked beside it. */
 @media (max-width:760px) {
-  .card-bento, .is-global { grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:142px 142px auto;gap:var(--gs-space-3); }
-  .is-global { row-gap:var(--gs-space-3); }
-  .bento-filters { margin-top:var(--gs-space-3); }
-  .bento-lead, .is-global .bento-lead { grid-column:1;grid-row:1 / span 2;aspect-ratio:auto; }
-  .bento-portrait { grid-column:2;grid-row:1; }
-  .bento-note { position:relative;grid-column:2;grid-row:2;display:block;min-height:0;padding:0 !important;border:0 !important;border-radius:var(--gs-radius-media);overflow:hidden;background:var(--gs-line); }
-  .bento-note > img { width:100%;height:100%;border-radius:0; }
-  .bento-note > svg, .bento-note > span small { display:none; }
-  .bento-note > span { position:absolute;inset:auto 0 0;display:block;padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface); }
-  .bento-note > span strong { display:block;overflow:hidden;font-size:var(--gs-text-meta);text-overflow:ellipsis;white-space:nowrap; }
-  .bento-directory { grid-column:1 / -1;grid-row:3; }
-  .bento-encounter { grid-column:2;grid-row:1; }
-  .encounter-next { grid-column:2;grid-row:2; }
-  .bento-filters { grid-column:1 / -1;grid-row:3; }
-  .card-bento .attribute-links button, .card-bento .rarity-links button { min-height:var(--gs-control-touch); }
+  .card-bento { display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:142px 142px;gap:var(--gs-space-3); }
+  .bento-lead, .has-portrait-lead .bento-lead { grid-column:1;grid-row:1 / span 2;aspect-ratio:auto; }
+  .bento-portrait { grid-column:2;aspect-ratio:auto; }
 }
 </style>

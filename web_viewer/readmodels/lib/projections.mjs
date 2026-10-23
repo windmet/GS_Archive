@@ -185,10 +185,25 @@ export async function writeReadModels(root, release, product, provenance = {}) {
     legacy: { data_revision: provenance.dataRevision || null, media_epoch: provenance.mediaEpoch || null },
   };
   if (product.portalStageManifest) {
+  // Counts the Portal's 通信/图鉴 block shows instead of loading the communication or catalogue data:
+  // per-idol chat/phone scenario totals, per-unit room scenarios, and one directory row per entry.
+  const mobileIdols = product.extraDomains?.['mobile-idols']?.records || [];
+  const mobileUnits = product.extraDomains?.['mobile-units']?.records || [];
+  const collectionCounts = {
+    chats: mobileIdols.reduce((sum, record) => sum + (record.summary?.personalCount || 0), 0),
+    groups: mobileUnits.reduce((sum, record) => sum + (record.summary?.scenarioCount || 0), 0),
+    phones: mobileIdols.reduce((sum, record) => sum + (record.summary?.phoneCount || 0), 0),
+    items: (domainRows.items || []).length,
+    honors: (domainRows.honors || []).length,
+    currencies: (domainRows.currencies || []).length,
+    costumes: (domainRows.costumes || []).length,
+    photos: (domainRows.photos || []).length,
+  };
   const summaries = {};
   for (const preferredIdol of [null,...bootstrap.idols]) {
     const id = preferredIdol?.id || 'all';
-    const overview = portalProjection({bootstrap,rows:domainRows,product,preferredIdol});
+    // Site-wide totals belong to the all-idols scope only; the 担当 lens does not show the block.
+    const overview = portalProjection({bootstrap,rows:domainRows,product,preferredIdol,collectionCounts:preferredIdol ? null : collectionCounts});
     summaries[id] = await writer.emit(`portal/scopes/${id}.json`, 'portal.scope',
       {id,overview}, {maxRaw:preferredIdol ? 32*1024 : 64*1024});
   }

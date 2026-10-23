@@ -1,7 +1,8 @@
 // Portal image budget (docs/GS_ARCHIVE_PORTAL_IMAGE_BUDGET_20261013.md): on a phone the card bento is below the
-// fold, so its card art (≈1.6 MB of 640×800 portraits) must not be requested until the reader scrolls near it; on
-// desktop the bento is on screen and its art loads at once. Story banners and song covers below the fold wait the
-// same way on every width. Checks the requests actually sent, not the markup.
+// fold, so its card art must not be requested until the reader scrolls near it; on desktop the bento is on screen
+// and its art loads at once. Every card-art request must be the derived 480/960-wide lossy WebP thumbnail (batch B),
+// never the full-size 640×800 / 1800×960 PNG. Story banners and song covers below the fold wait the same way on
+// every width. Checks the requests actually sent, not the markup.
 //   node scripts/verify-portal-image-budget-browser.mjs [base] [outDir]
 // Needs a running server (dev, scripts/serve-archive-build.mjs or a preview URL) and a cached Playwright Chromium.
 import { spawn } from 'node:child_process'
@@ -19,7 +20,7 @@ const PREFS = `try { localStorage.setItem('sidem:archive-user-preferences', JSON
 const results = []
 const check = (name, ok, detail) => { results.push({ name, ok, detail }); console.log(`${ok ? 'ok  ' : 'FAIL'} ${name} — ${detail}`) }
 
-async function session(viewport, run) {
+async function session(viewport, run, { blocked = [] } = {}) {
   const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-budget-'))
   const port = 9600 + Math.floor(Math.random() * 90)
   const chrome = spawn(path.join(cache, dir, 'chrome-win64/chrome.exe'), [`--remote-debugging-port=${port}`, '--headless=new', `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' })
@@ -41,6 +42,7 @@ async function session(viewport, run) {
     const idle = async (quiet = 2500, cap = 45000) => { const start = Date.now(); while (Date.now() - start < cap && Date.now() - lastNetwork < quiet) await sleep(250) }
     await send('Page.enable'); await send('Runtime.enable'); await send('Network.enable'); await send('Network.setCacheDisabled', { cacheDisabled: true })
     await send('Emulation.setDeviceMetricsOverride', viewport)
+    if (blocked.length) await send('Network.setBlockedURLs', { urls: blocked })
     await send('Page.addScriptToEvaluateOnNewDocument', { source: PREFS })
     await send('Page.navigate', { url: `${base}/` })
     for (let i = 0; i < 120 && !(await ev(`!!document.querySelector('.card-bento')`)); i++) await sleep(250)
@@ -52,10 +54,18 @@ async function session(viewport, run) {
   }
 }
 const cardArt = requests => requests.filter(r => /\/assets\/card-art\//.test(r.url))
+const cardArtThumbs = requests => requests.filter(r => /\/assets\/card-art\/thumb\//.test(r.url))
+const cardArtBytes = requests => requests.reduce((sum, r) => sum + r.bytes, 0)
 const rows = requests => requests.filter(r => /\/assets\/(songs|stories)\//.test(r.url))
 const ROWS = `[...document.querySelectorAll('.overview-song-image img, .overview-main-index img, .overview-story-image img')].map(i => ({ src: i.getAttribute('src'), done: i.complete && i.naturalWidth > 0 }))`
 const imageBytes = requests => requests.filter(r => /\.(png|webp|jpe?g)(\?|$)/.test(r.url)).reduce((sum, r) => sum + r.bytes, 0)
 const kib = bytes => `${(bytes / 1024).toFixed(0)} KiB`
+// Batch C: one landscape lead plus portraits in one row, every picture equally tall AND at its art's own
+// ratio (15:8, 4:5). A flex row stretches its items to one height anyway, so height alone proves nothing.
+const PICTURES = `[...document.querySelectorAll('.card-bento .bento-lead, .card-bento .bento-portrait')].filter(e => e.getClientRects().length).map(e => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, ratio: e.classList.contains('bento-lead') ? 15 / 8 : 4 / 5 } })`
+const equalHeights = pictures => pictures.length > 0 && Math.max(...pictures.map(p => p.h)) - Math.min(...pictures.map(p => p.h)) <= 1
+  && pictures.every(p => Math.abs(p.w - p.h * p.ratio) <= 1)
+const sizes = pictures => pictures.map(p => `${p.w.toFixed(1)}×${p.h.toFixed(1)}`).join(' / ')
 const BENTO = `[...document.querySelectorAll('.card-bento img')].map(i => ({ src: i.getAttribute('src'), done: i.complete && i.naturalWidth > 0 }))`
 
 await session({ width: 390, height: 844, deviceScaleFactor: 3, mobile: true }, async ({ ev, idle, requests, errors, shot }) => {
@@ -73,6 +83,10 @@ await session({ width: 390, height: 844, deviceScaleFactor: 3, mobile: true }, a
   const after = cardArt(requests)
   const images = await ev(BENTO)
   check('phone: card art loads once scrolled near', after.length > 0 && images.every(i => i.done), `${after.length} card-art requests (${kib(after.reduce((s, r) => s + r.bytes, 0))}); ${images.filter(i => i.done).length}/${images.length} rendered`)
+  check('phone: card art is the derived WebP thumbnail', after.length === cardArtThumbs(after).length,
+    `${cardArtThumbs(after).length}/${after.length} thumbnail requests`)
+  check('phone: card-art transfer stays inside the thumbnail budget', cardArtBytes(after) <= 400 * 1024,
+    `${kib(cardArtBytes(after))} for ${after.length} pictures (budget 400 KiB)`)
   await shot('phone-after-scroll')
   const rowCount = await ev(`${ROWS}.length`)
   for (let n = 0; n < rowCount; n++) {
@@ -90,9 +104,36 @@ await session({ width: 1350, height: 940, deviceScaleFactor: 1, mobile: false },
   const images = await ev(BENTO)
   const art = cardArt(requests)
   check('desktop: bento is on screen and its art loads without scrolling', top < 940 && art.length > 0 && images.every(i => i.done), `bento top ${top}px; ${art.length} card-art requests; ${images.filter(i => i.done).length}/${images.length} rendered`)
+  check('desktop: card art is the derived WebP thumbnail', art.length === cardArtThumbs(art).length && art.every(r => r.url.endsWith('.webp')),
+    `${cardArtThumbs(art).length}/${art.length} thumbnail requests`)
+  check('desktop: card-art transfer stays inside the thumbnail budget', cardArtBytes(art) <= 300 * 1024,
+    `${kib(cardArtBytes(art))} for ${art.length} pictures (budget 300 KiB)`)
+  const heights = await ev(PICTURES)
+  check('desktop: one landscape (15:8) and three portraits (4:5) share one height', heights.length === 4 && equalHeights(heights), `${heights.length} pictures, ${sizes(heights)}px`)
   await shot('desktop')
   check('desktop: no page errors', errors.length === 0, errors.slice(0, 2).join(' | ') || 'none')
 })
+
+// A Portal content area of 900px or less (a 1024-wide window beside the sidebar) keeps the row with two
+// portraits, and the third portrait is never requested at all.
+await session({ width: 1024, height: 768, deviceScaleFactor: 1, mobile: false }, async ({ ev, requests, shot }) => {
+  for (let i = 0; i < 80 && !(await ev(`${BENTO}.every(i => i.done)`)); i++) await sleep(250)
+  const heights = await ev(PICTURES)
+  const art = cardArt(requests)
+  check('narrow desktop: one landscape (15:8) and two portraits (4:5) share one height', heights.length === 3 && equalHeights(heights), `${heights.length} pictures, ${sizes(heights)}px`)
+  check('narrow desktop: only the three shown pictures are requested', art.length === 3, `${art.length} card-art requests`)
+  await shot('narrow-desktop')
+})
+
+// A deployment without the thumbnail objects must not leave the gallery blank: each picture falls back
+// to its original art.
+await session({ width: 1350, height: 940, deviceScaleFactor: 1, mobile: false }, async ({ ev, requests }) => {
+  for (let i = 0; i < 80 && !(await ev(`${BENTO}.every(i => i.done)`)); i++) await sleep(250)
+  const images = await ev(BENTO)
+  const full = cardArt(requests).filter(r => !/\/card-art\/thumb\//.test(r.url))
+  check('missing thumbnails: every picture falls back to its original art', images.length === 4 && images.every(i => i.done && !/\/thumb\//.test(i.src)) && full.length === 4,
+    `${images.filter(i => i.done).length}/${images.length} rendered; ${full.length} original-art requests`)
+}, { blocked: ['*/assets/card-art/thumb/*'] })
 
 const failed = results.filter(r => !r.ok)
 console.log(`Portal image budget: ${results.length - failed.length}/${results.length} passed -> ${out}`)

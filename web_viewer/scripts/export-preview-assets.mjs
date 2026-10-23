@@ -8,6 +8,8 @@ import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
 import { resolvePreviewObjectKey, previewTransformKind, COPY_TRANSFORM, LOSSY_WEBP_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.js'
 import { encodeLosslessWebp, runPool, shutdownEncoderPool } from './lib/lossless-webp.mjs'
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
+import { ensureCardArtThumb } from './lib/card-thumbs.mjs'
+import { cardArtThumbKey, cardArtThumbSourceKey } from '../shared/portal/CardArtThumbnails.js'
 import { getBgmUrl, getSeUrl, getAmbientUrl, getLipSyncUrl } from '../src/utils/AssetResolver.js'
 import { getCardPortraitUrl, getCardLandscapeUrl } from '../src/utils/CardAssetResolver.js'
 import { writeSourceBaseline } from './lib/preview-source-baseline.mjs'
@@ -161,6 +163,24 @@ if (argument('--models')) {
     }
   }
   await scanModels(path.join(path.resolve(argument('--models')), 'pages'))
+}
+
+// Portal card thumbnails are derived from the card-art PNGs collected above (and
+// from any card-art binding a read model adds). They are their own `.webp` URL
+// family, so the shared transform resolves each request key to itself and the
+// stage copies the cached thumbnail instead of re-encoding it. The dev server
+// reads the same cache, so local acceptance sees the deployed bytes.
+if (mode === '--export' || mode === '--inventory') {
+  const thumbKeys = [...files.keys()].map(key => cardArtThumbKey(key)).filter(Boolean).sort()
+  const thumbConcurrency = Number(process.env.SIDEM_THUMB_CONCURRENCY || 4)
+  await runPool(thumbKeys, thumbConcurrency, async thumbKey => {
+    const sourceKey = cardArtThumbSourceKey(thumbKey)
+    const item = files.get(sourceKey)
+    if (!item) throw new Error(`Card-art thumbnail has no collected source: ${thumbKey}`)
+    const target = await ensureCardArtThumb({ root, source: item.source, thumbKey })
+    await add(`/${thumbKey}`, target, 'card-art-thumbnail')
+  })
+  console.log(JSON.stringify({ cardArtThumbnails: thumbKeys.length }))
 }
 
 const entries = [...files.values()].sort((a, b) => a.request_key.localeCompare(b.request_key))

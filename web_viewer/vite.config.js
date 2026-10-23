@@ -4,6 +4,8 @@ import vue from '@vitejs/plugin-vue'
 import fs from 'node:fs'
 import path from 'node:path'
 import { createArchiveAssetResolver } from './scripts/lib/archive-assets.mjs'
+import { ensureCardArtThumb } from './scripts/lib/card-thumbs.mjs'
+import { cardArtThumbSourceKey } from './shared/portal/CardArtThumbnails.js'
 import { archiveBootstrapPlugin } from './scripts/lib/archive-bootstrap-plugin.mjs'
 import { loadArchiveSources } from './scripts/lib/archive-sources.mjs'
 import { publicCorpusPlugin } from './scripts/lib/public-corpus-plugin.mjs'
@@ -110,6 +112,27 @@ function cardArtPlugin() {
     configureServer(server) {
       server.middlewares.use('/assets/card-art', (req, res, next) => {
         const rawUrl = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '')
+        // Portal-only thumbnails: derived from the same external PNGs, encoded
+        // once into this checkout's ignored cache and served as WebP.
+        if (rawUrl.startsWith('thumb/')) {
+          const thumbKey = `assets/card-art/${rawUrl}`
+          const sourceKey = cardArtThumbSourceKey(thumbKey)
+          const sourcePath = sourceKey ? assetResolver.cardArtPath(sourceKey.slice('assets/card-art/'.length)) : null
+          if (!sourcePath || !fs.existsSync(sourcePath)) {
+            next()
+            return
+          }
+          ensureCardArtThumb({ root: import.meta.dirname, source: sourcePath, thumbKey })
+            .then(file => {
+              res.setHeader('Content-Type', 'image/webp')
+              res.setHeader('Cache-Control', 'public, max-age=86400')
+              const stream = fs.createReadStream(file)
+              stream.on('error', () => { res.statusCode = 500; res.end() })
+              stream.pipe(res)
+            })
+            .catch(() => next())
+          return
+        }
         const filePath = assetResolver.cardArtPath(rawUrl)
         if (!filePath || !fs.existsSync(filePath)) {
           next()

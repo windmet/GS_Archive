@@ -12,7 +12,7 @@ const counts = (rows, key) => rows.reduce((result, row) => {
 }, {});
 
 // Same pure selectors as the portal, executed once at generation, not on entry.
-export function portalProjection({ bootstrap, rows, product, preferredIdol = null }) {
+export function portalProjection({ bootstrap, rows, product, preferredIdol = null, collectionCounts = null }) {
   const facets = { release: bootstrap.release, cards: Object.fromEntries(rows.cards.map(row => {
     const attribute = product.cards.find(card => card.resource_id === row.resource_id)?.gameplay?.attribute;
     assert(attribute && ({1:'Physical',2:'Intelligence',3:'Mental'})[attribute.id] === attribute.name,
@@ -53,7 +53,7 @@ export function portalProjection({ bootstrap, rows, product, preferredIdol = nul
   const homeVoiceCounts = preferredIdol ? {idol:homeCues.filter(cue => cue.source === 'idol').length,
     card:homeCues.filter(cue => cue.source === 'card').length} : null;
   return {...metadata, collections:{cards,songs,stories,events:preferredIdol ? full.events : portalTimeline(full.events)},
-    storyCounts, songCounts, gatewayCountsByAction, homeVoiceCounts,
+    storyCounts, songCounts, gatewayCountsByAction, homeVoiceCounts, collectionCounts,
     cardCounts:{total:full.cards.length,rarity:counts(full.cards,'rarity'),attribute:counts(full.cards,'attribute')},
     units:preferredIdol ? [] : source.units, eventYears:[], scopeId:preferredIdol?.id || '', projectionVersion:2};
 }
