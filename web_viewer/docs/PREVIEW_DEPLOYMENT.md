@@ -48,6 +48,27 @@ Manifest `schema_version` is 2. Each entry carries `request_key`, `object_key`,
 `transform` and the placement hash. `totals` reports source and deployed bytes
 separately. `missing` still records request keys.
 
+### Portal card-art thumbnails
+
+The Portal draws card art in thumbnail sizes while the card detail page keeps the
+full PNG, so thumbnails are a separate derived URL family rather than a transform
+of the original request key:
+
+```text
+/assets/card-art/portrait/image_card_portrait_hide_003hok_ssr02p.png        (detail page, original PNG)
+/assets/card-art/thumb/portrait/image_card_portrait_hide_003hok_ssr02p.webp (Portal, lossy WebP)
+```
+
+`shared/portal/CardArtThumbnails.js` owns the mapping and the fixed sizes
+(480×600 portrait, 960×512 landscape, quality 80). Because the request key ends
+in `.webp`, the transform policy resolves it to itself and the stage **copies**
+the encoded bytes; it never re-encodes them losslessly. The exporter generates
+missing thumbnails through the same Pillow worker into the ignored
+`.analysis/card-art-thumbnails/` cache, and the Vite dev middleware serves that
+same cache, so local acceptance sees exactly the deployed bytes. Only unframed
+portraits and landscape art are thumbnailed; the framed `show` portrait belongs
+to the detail page.
+
 ## Storage budget
 
 The account is on the Cloudflare free tier, whose storage **budget** is 10 GB-month
