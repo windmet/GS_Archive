@@ -4,7 +4,7 @@
 
 ## 0. 开工前必读（工作区规则摘要）
 
-- 先读 [CURRENT_STATE.md](CURRENT_STATE.md)。本文写于 master = `f0a8be3a`（#84 合入之后）。
+- 先读 [CURRENT_STATE.md](CURRENT_STATE.md)。本文写于 master = `8e748036`（#85 Portal scope 预载、#86 侧栏都已合入）。
 - **分支**：`portal/<日期>-<主题>`，从最新 `origin/master` 开。不在 master 上直接开发，不 rebase、不 force push；PR 只用 merge commit 合并，**合并由用户手动操作**。
 - **worktree**：放在 `E:/Web_build/GS_Archive_Domain_Work/<名字>`，用 LF 检出（两个 `-c` 都要带）：
   ```sh
@@ -30,16 +30,15 @@
 - **旅程测试**：`node scripts/verify-portal-path-locator-browser.mjs http://127.0.0.1:<端口> <输出目录>`。**P37（Reader→播放器）在本机未改动的 master 代码上也失败**（本地没有 compiled 语料给播放器），是环境基线，与改动无关；其余步骤应全部通过。
 - **改读模型或 R2 之前先问用户**：上传 R2、绑定 read-model、部署测试站/正式站都需要授权，而且走 `release/` 分支。
 
-## 1. 已完成：批次 A 侧栏（PR #86，待用户合并）
+## 1. 已完成：批次 A 侧栏（PR #86，2026-10-23 已合并，合并提交 `8e748036`）
 
-- 分支 `portal/20261023-sidebar-split-rows`，worktree `E:/Web_build/GS_Archive_Domain_Work/sidebar-split-20261023`，PR https://github.com/windmet/GS_Archive/pull/86 。
+- PR https://github.com/windmet/GS_Archive/pull/86 。原分支 `portal/20261023-sidebar-split-rows` 合并后被自动删除；之后一次误推送又在远端把它建了回来（只多了一个交接文档提交，已移到 `portal/20261023-review-handoff`），**这个远端分支可以删**。worktree `E:/Web_build/GS_Archive_Domain_Work/sidebar-split-20261023` 现在在 `portal/20261023-review-handoff` 上；本文合并后这个 worktree 可以移除（`git worktree remove`，先解除 node_modules 联接）。
 - 两个提交：
   - `a7eaad48`：第一版，一行放两个链接（如「剧情 · 通信」）。v6 审阅指出右列没有图标、也没有按钮边界，看起来不平衡，所以改了。
   - `73bafe5b`：最终版。8 个核心栏目改成单列，每项有自己的图标（与手机抽屉同一套 `archiveNavigationIcons`），组与组之间靠间距区分，组名保留为 `aria-label`。图鉴改成可折叠行（`aria-expanded`）：点开不跳转页面，当前页属于图鉴时自动展开；展开后 6 项放在两列填色格里。窗口高度 ≤880px 时行高改为 36px。64px 图标栏（横屏手机）不变。
 - 只改了 `src/components/archive/ArchiveShell.vue`，另外在 `scripts/verify-portal-path-locator-browser.mjs` 里把 P41/P45 改成直接点「卡池」「通信」。
 - 验证：门禁 116/116；`build:check` 通过；在 1366×768、1024×768、1180×820、1440×900、1920×1080 下图鉴展开也不需要滚动；1280×640 下图鉴展开要多滚约 84px（可以接受）。
 - **已否决、不要再提的方案**：双列且每格带图标（侧栏 188px，两列每格约 83px，「摄影资源」加图标需要约 94px，放不下）；把第二项做成右侧小胶囊（会让平级栏目看起来像附属项）；缩短「其他语音」的名称（10-20 就已否决）。
-- 如果 #86 合并前 master 前进了：在该 worktree 里 `git fetch origin && git merge origin/master`，重跑门禁后再推。
 
 ## 2. 批次 B：卡面缩略图档（性能，先于 C 做）
 
@@ -139,4 +138,4 @@
 ## 8. 收尾
 
 - 每批合并后更新 [CURRENT_STATE.md](CURRENT_STATE.md) 的「门户 portal」行（经下一条线的 PR 进入 master）。
-- 本文的批次顺序：A（已完成，#86）→ B → C → D → E。B 和 E 互不依赖：如果 B 卡在 R2 授权上，可以先做 E（纯前端，读模型改动最少），再回来做 B/C/D。
+- 本文的批次顺序：A（已合并，#86）→ B → C → D → E。B 和 E 互不依赖：如果 B 卡在 R2 授权上，可以先做 E（纯前端，读模型改动最少），再回来做 B/C/D。
