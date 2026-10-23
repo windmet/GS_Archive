@@ -9,13 +9,13 @@
 | 批次 | 状态 | 位置 |
 |---|---|---|
 | A 侧栏 | 已合并（#86） | — |
-| B 卡面缩略图 | PR #88 待用户合并（**部署顺序有硬约束**，见第 7 节） | `portal/20261023-card-thumbs`，worktree `card-thumb-20261023`，提交 `23831ddf` |
-| C 卡面画廊 | 未开始；**范围按本文第 3 节修改** | — |
+| B 卡面缩略图 | PR #88 待用户合并；**缩略图已传 R2**（10-23，见第 8 节） | `portal/20261023-card-thumbs`，worktree `card-thumb-20261023`，提交 `23831ddf` |
+| C 卡面画廊 | PR #91 待用户合并（门禁 116/116） | `portal/20261023-card-gallery`，worktree `card-gallery-20261023`；分支里合并了 B、E |
 | D 315 岁时记 | 未开始，按上一版第 4 节做 | — |
 | E 门户补齐 | PR #90 待用户合并（E.1–E.3，已验收并补修，见第 7 节）；E.4 移到 F | worktree `portal-gaps-20261023`，分支 `portal/20261023-portal-gaps` |
-| F 担当横幅（新增） | 未开始；依赖 C 和 E | 本文第 4 节 |
+| F 担当横幅（新增） | PR #92 待用户合并 | `portal/20261023-preferred-banner`，worktree `preferred-banner-20261023`；从 C 分支切出 |
 
-顺序：B → C → E（E.1–E.3）→ F → D。D 和 F 互不依赖；如果 D 卡在读模型授权上，可以先做 F。
+顺序：B → C → E（E.1–E.3）→ F → D。**合并顺序**：#88 → #90 → #91 → #92（C 分支里已经合并了 B、E，F 是从 C 切出来的，按这个顺序合并不会有冲突）。下一批是 D。D 和 F 互不依赖；如果 D 卡在读模型授权上，可以先做 F。
 
 ## 2. 问题是什么（v7 审阅，已核实）
 
@@ -127,3 +127,29 @@
 - 门户的卡面 URL 全部换成了 `/assets/card-art/thumb/…webp`。展示层虽然带了 `full` 字段（原图 URL），但**组件里没有任何地方用它**，图片加载失败时不会回退到原图。
 - 所以：**任何包含 #88 的部署（测试分支或正式站）都必须先把 1,609 个缩略图对象传到 R2**，否则门户的卡面全部 404。按规则，上传前先问用户，走 `release/` 分支。
 - C 批要重写 `PortalCardBento.vue`，**顺手加上加载失败的回退**：`<img>` 的 `@error` 在 `src !== full` 时换成 `full`；横卡的 `--card-art` 背景用的也是缩略图，一起处理。verifier 里加一条：缩略图 404 时显示原图。
+
+## 8. 10-23 进展：缩略图上传、C、F
+
+### R2 缩略图（用户 10-23 授权）
+
+- 1,609 个对象（71.8 MiB），上传到 `sidem-archive-preview` 的 `assets/card-art/thumb/{portrait,landscape}/*.webp`。`rclone check` 结果是 0 differences；`https://preview.gs-archive.com/assets/card-art/thumb/...webp` 返回 200 `image/webp`。
+- 暂存目录、清单和回执在主 checkout 的 `web_viewer/.deploy/card-thumbs-20261023/`（`manifest.json`、`upload-receipt.json`、`upload.log`），**清理时不要删**（参考记忆 sidem_r2_overlay_chain_reset）。这批对象没有走 exporter 的 overlay 链；#88 合并后下一次 export 会用同一份缓存、同样的键再暂存一次，字节相同，重传只是覆盖。
+- 唯一一张不是 960×512 的：`image_card_landscape_041ryo_ssr01p` 源图是 1798×960，缩出来是 960×513，属于正常情况（`object-fit:cover`）。
+
+### C（PR #91）
+
+- `PortalCardBento.vue` 重写：一排 1 张横卡加 3 张竖卡，按「宽高比 flex」写法等高；卡面区宽度 ≤900px 时**只渲染** 2 张竖卡（用 `ResizeObserver` 判断。用 CSS 隐藏的话图片照样会下载），手机保持原来的布局。
+- 胶囊放进标题栏（`portalCardFilters`）；担当视图不显示胶囊，只显示总数。
+- 缩略图 `@error` 时回退到 `full`（原图）。
+- `verify-portal-image-budget-browser` 新增等高**加比例**检查。注意：只查等高是空的，flex 行会把所有子项拉成一样高，所以必须同时查每张图保持了原图比例。另外加了 1024 宽只发 3 个请求、屏蔽缩略图后回退两项检查。
+
+### F（PR #92）
+
+- 横幅、两栏列表、活动足迹的中间缝隙在同一个 x 坐标；标题栏胶囊统一成故事分类的样式，并且**不增加标题栏高度**（负的上下外边距；标题栏统一用 baseline 对齐）。这两点都是实测出来的：之前一个差 2.6px，一个差 1.4px。
+- **与第 4.1 节不同的一处**：「设为我的担当 · 制作人」没有放在「偶像档案」那一行的右边，那个位置会压在立绘的脸上。现在放在人物卡底部右侧，和「去事务所」同一行。
+- 新 verifier：`scripts/verify-portal-preferred-alignment-browser.mjs [base] [outDir]`，11 项，已做变异测试。
+- ≤980 和手机的布局没有变；故事分类胶囊在窄屏时仍然单独一行（现在位于标题栏内部，标题栏底边线的上方）。
+
+### 预览端口（本机）
+
+- 5223：C 分支（`card-gallery-20261023`）；5225：F 分支（`preferred-banner-20261023`）。都是后台 dev 服务，最长 2 小时后会被关掉，需要时在对应 worktree 的 `web_viewer` 里重新起。
