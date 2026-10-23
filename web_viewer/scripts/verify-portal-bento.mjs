@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto'
 import {buildPortalDesktopOverview,portalIdolPortrait} from '../src/presentation/ArchivePortalPresentation.js'
 import {portalDailyCard,portalTimeline} from '../src/presentation/PortalBento.js'
 import {storyGateways,storyGatewayCount} from '../src/presentation/StoryGateways.js'
+import {portalHubGroups,portalPreferredStatTiles} from '../src/presentation/PortalOverviewPanels.js'
 const root=process.argv[2]
 assert.ok(root,'Supply verified read model root')
 const json=file=>JSON.parse(fs.readFileSync(file,'utf8'))
@@ -57,12 +58,40 @@ assert.equal(portalDailyCard([],'2026-10-04'),null)
 const gatewayCounts={seasonalCount:index('stories').seasonalCount,workCount:index('stories').workCount,idolStoryCount:bootstrap.idols.length}
 const gateways=storyGateways.filter(row=>row.action!=='external-resources')
 // Card stories (342 phone calls) moved to 通信 in 49c90f2d and are no longer a story gateway.
-assert.equal(gateways.length,5)
+assert.equal(gateways.length,7)
 assert.ok(!gateways.some(row=>row.id==='card_scenarios'))
-assert.deepEqual(gateways.map(row=>storyGatewayCount(row,stories,gatewayCounts)),[49,49,152,44,4])
+// 活动剧情 and 组合前传 were the two story catalogs the Portal overview could not reach.
+assert.deepEqual(gateways.map(row=>row.id),['event','unit_story','idol_story','work','birthday','extra','seasonal_campaign'])
+assert.deepEqual(gateways.map(row=>row.label),['活动剧情','组合前传','个人剧情','工作剧情','生日剧情','额外剧情','季节企划'])
+assert.deepEqual(gateways.map(row=>storyGatewayCount(row,stories,gatewayCounts)),[36,54,49,49,152,44,4])
+// The 通信/图鉴 block: section names from the one dictionary, counts only from the scope, targets typed.
+const hub=portalHubGroups({chats:830,groups:97,phones:342,items:535,honors:1613,currencies:7,costumes:690,photos:50})
+assert.deepEqual(hub.map(group=>group.label),['通信','图鉴'])
+assert.deepEqual(hub[0].entries.map(entry=>entry.label),['个人聊天','组合聊天','电话通信'])
+assert.deepEqual(hub[0].entries.map(entry=>entry.count),[830,97,342])
+assert.deepEqual(hub[0].entries.map(entry=>entry.target),[
+  {section:'interactions',mobileMode:'personal'},{section:'interactions',mobileMode:'unit'},{section:'interactions',mobileMode:'phone'}])
+assert.deepEqual(hub[1].entries.map(entry=>entry.label),['道具','称号','货币','服装','摄影资源','其他语音'])
+assert.deepEqual(hub[1].entries.map(entry=>entry.id),['collections','honors','currencies','costumes','photos','unused'])
+assert.deepEqual(hub[1].entries.map(entry=>entry.count),[535,1613,7,690,50,null])
+assert.equal(hub[1].entries[5].count,null,'the unused-voice archive has no scope count')
+assert.ok(portalHubGroups().every(group=>group.entries.every(entry=>entry.count===null)),'a scope without counts shows no numbers')
+// The 担当 summary tiles are four fixed slots whose numbers/actions come from the scope summary.
+const tiles=portalPreferredStatTiles({cardCounts:{total:17,rarity:{SSR:8,SR:6,R:3,N:0}},
+  storyCounts:{all:46,main:7,event:3,personal:30,other:6},songCounts:{all:4,configurable_formation:1,fixed_unit:3},
+  preferredStats:[{id:'cards',value:17},{id:'stories',value:46},{id:'chats',value:19},{id:'phones',value:4}]})
+assert.deepEqual(tiles.map(tile=>tile.id),['cards','stories','songs','communication'])
+assert.deepEqual(tiles.map(tile=>tile.value),[17,46,4,23])
+assert.deepEqual(tiles.map(tile=>tile.action),['cards','stories','songs','mobile'])
+assert.equal(tiles[0].meta,'SSR 8 · SR 6 · R 3')
+assert.equal(tiles[1].meta,'主线 7 · 活动 3 · 个人 30 · 其他 6')
+assert.equal(tiles[2].meta,'代表曲 1 · 组合曲 3')
+assert.equal(tiles[3].meta,'个人聊天 19 · 电话 4')
+assert.ok(portalPreferredStatTiles({cardCounts:{total:17}}).slice(1).every(tile=>tile.value===null),'absent scope summaries never invent a number')
+assert.deepEqual(portalPreferredStatTiles({}).map(tile=>tile.meta),['','','',''])
 const timeline=portalTimeline([{id:'a',releaseAt:1633046400,subtitle:'date',image:{url:'/assets/a.png'}},{id:'b',releaseAt:1680393600,subtitle:'date',image:{url:'/assets/b.png'}}])
 assert.deepEqual(timeline.map(row=>row.id),['a','b'])
 assert.deepEqual(timeline.map(row=>row.timelineDate),['2021.10.01','2023.04.02'])
 assert.ok(timeline.every(row=>row.seriesLabel==='date'))
 assert.deepEqual(portalTimeline([]),[])
-console.log('PASS Bento: 49 source-bound single portraits; 826 exact detail attributes; landscape capabilities, stale-release rejection, 16 source colors, daily stability, 5 shared gateway counts and source timeline boundaries')
+console.log('PASS Bento: 49 source-bound single portraits; 826 exact detail attributes; landscape capabilities, stale-release rejection, 16 source colors, daily stability, 7 gateway counts, 通信/图鉴 links, 担当 tiles and source timeline boundaries')

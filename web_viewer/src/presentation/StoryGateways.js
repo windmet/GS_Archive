@@ -1,8 +1,11 @@
 import { STORY_KINDS } from '../core/archiveSections.js'
-import { Languages, UserRound, Briefcase, Cake, Sparkles, CalendarRange } from '@lucide/vue'
+import { Languages, UserRound, Briefcase, Cake, Sparkles, CalendarRange, Ticket, BookMarked } from '@lucide/vue'
 // Phone calls (the card_scenarios domain) belong to 通信, not here; they stay searchable as 电话.
 export const storyGateways = Object.freeze([
   {id:'external_story_resources',label:STORY_KINDS.external.label,icon:Languages,unit:'条',action:'external-resources'},
+  // Event stories and the unit prequels (第零话) have their own catalogs; the Portal overview links them here too.
+  {id:'event',label:'活动剧情',icon:Ticket,action:'event-story'},
+  {id:'unit_story',label:STORY_KINDS.unit_story.label,icon:BookMarked,action:'unit-story'},
   {id:'idol_story',label:STORY_KINDS.idol_story.label,icon:UserRound,action:'idol-story'},
   {id:'work',label:STORY_KINDS.work.label,icon:Briefcase,unit:'人',action:'work'},
   {id:'birthday',label:'生日剧情',icon:Cake,action:'birthday'},

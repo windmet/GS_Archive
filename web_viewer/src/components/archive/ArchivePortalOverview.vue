@@ -113,9 +113,22 @@
         <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
           <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="preferredReference?.actionable" class="overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div>
-          <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in readableMainCollections" :key="chapter.id"><button type="button" @click="emit('open-result', chapter)"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" deferred /><span><strong>{{ chapterLabel(chapter.title) }}</strong><small>{{ chapter.chapterCount }} 节 · {{ chapter.episodeCount }} 话</small><ChevronRight :size="16" /></span></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small>{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}<template v-if="storyGatewayNote(gateway, desktopOverview.gatewayCounts)"> · {{ storyGatewayNote(gateway, desktopOverview.gatewayCounts) }}</template></small></span><ArrowUpRight :size="14" /></button></div></div>
+          <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in readableMainCollections" :key="chapter.id"><button type="button" @click="emit('open-result', chapter)"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" deferred /><span><strong>{{ chapterLabel(chapter.title) }}</strong><small>{{ chapter.chapterCount }} 节 · {{ chapter.episodeCount }} 话</small><ChevronRight :size="16" /></span></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small v-if="gatewayCount(gateway) !== null">{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}<template v-if="storyGatewayNote(gateway, desktopOverview.gatewayCounts)"> · {{ storyGatewayNote(gateway, desktopOverview.gatewayCounts) }}</template></small></span><ArrowUpRight :size="14" /></button></div></div>
           <div v-else-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" deferred /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span class="overview-story-copy"><small v-if="story.subtitle">{{ storySubtitle(story.subtitle) }}</small><strong :class="{ 'is-title-pending': storyTitle.pending() }">{{ storyTitle(story.id, story.title) }}</strong></span><span v-if="story.cast?.length" class="overview-story-cast" role="img" :aria-label="`登场偶像：${story.cast.map(idol => idol.name).join('、')}`"><ArchiveIdolAvatar v-for="idol in story.cast.slice(0, 3)" :key="idol.id" :idol-code="idol.id" :accent-color="idol.accentColor" :size="24" :ring-width="1" :gap="1" decorative /><small v-if="story.cast.length > 3">+{{ story.cast.length - 3 }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
+        </section>
+        <section class="overview-panel overview-hub" aria-labelledby="portal-hub-title">
+          <header class="overview-section-heading"><h2 id="portal-hub-title">通信与图鉴</h2></header>
+          <div class="overview-hub-groups">
+            <div v-for="group in hubGroups" :key="group.id" class="overview-hub-group">
+              <h3>{{ group.label }}</h3>
+              <nav class="overview-hub-links" :aria-label="group.label">
+                <button v-for="entry in group.entries" :key="entry.id" type="button" :data-archive-focus-id="`portal-hub:${group.id}:${entry.id}`" @click="emit('navigate', entry.target)">
+                  <span>{{ entry.label }}</span><small v-if="entry.count !== null">{{ formatCount(entry.count) }}</small><ChevronRight :size="14" aria-hidden="true" />
+                </button>
+              </nav>
+            </div>
+          </div>
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
           <header class="overview-section-heading"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : '运营轨迹 · 315 的回忆录' }} <small>{{ collectionCount('events') }}</small></h2><button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
@@ -151,6 +164,7 @@ import { useNearViewportKeys } from './useNearViewport.js'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
+import {portalHubGroups} from '../../presentation/PortalOverviewPanels.js'
 import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
@@ -197,7 +211,16 @@ const scopeOpen = ref(false), storyTab = ref('all'), portraitFailed = ref(false)
 const collections = computed(() => props.desktopOverview.collections || {})
 const activePortrait=computed(()=>props.desktopOverview.portrait)
 const gateways=storyGateways.filter(row=>row.action!=='external-resources')
-function gatewayCount(gateway){return props.desktopOverview.gatewayCountsByAction?.[gateway.id] ?? storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)}
+// A gateway's number is trusted only when the pinned scope carries it: the four-row story preview is
+// too small to count 活动剧情/组合前传, so a scope that predates them shows no number rather than 4.
+function gatewayCount(gateway){
+  const byAction=props.desktopOverview.gatewayCountsByAction
+  if(byAction && Object.hasOwn(byAction,gateway.id)) return byAction[gateway.id]
+  if(byAction) return null
+  return storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)
+}
+// 通信 and 图鉴 entries: names from the one section dictionary, counts only when the scope has them.
+const hubGroups=computed(()=>portalHubGroups(props.desktopOverview.collectionCounts))
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
@@ -401,11 +424,18 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-unit-members:has(> :nth-child(4)) button { box-shadow:0 0 0 1.5px color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface)); }
 }
 
-/* Content sections. */
+/* Content sections. Stories and music share a row on wide pages; 通信/图鉴 and the events follow full width. */
 .overview-content-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
-.overview-events { grid-column:1 / -1; }
-.is-global-grid { grid-template-columns:minmax(0,1fr); }
-.is-global-grid .overview-stories { grid-row:1; }
+.overview-hub, .overview-events { grid-column:1 / -1; }
+
+/* 通信 and 图鉴: one block of quiet link pills, each group titled by the section dictionary. */
+.overview-hub-groups { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-7); }
+.overview-hub-group { min-width:0; }
+.overview-hub-group > h3 { margin:0 0 var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.overview-hub-links { display:flex;flex-wrap:wrap;gap:var(--gs-space-2); }
+.overview-hub-links button { display:inline-flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-normal);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui); }
+.overview-hub-links button small { color:var(--gs-ink-3);font-variant-numeric:tabular-nums; }
+.overview-hub-links button > svg { color:var(--gs-ink-3); }
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
 .overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
@@ -463,7 +493,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-story-gateways button > span { display:flex;flex:1;align-items:center;justify-content:space-between;gap:var(--gs-space-3);min-width:0; }
 .overview-story-gateways strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap; }
 .overview-story-gateways small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.is-global-grid .overview-song-list { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 
 /* Global events: a horizontal timeline of banners. */
 .overview-timeline { display:flex;gap:var(--gs-space-5);overflow-x:auto;padding:var(--gs-space-1) 0 var(--gs-space-4);scroll-snap-type:x proximity;scrollbar-width:thin; }
@@ -510,7 +539,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-personal { display:flex;align-items:stretch; }
   .overview-unit-matrix { grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-2); }
   .overview-unit-tile { height:84px; }
-  .overview-event-grid, .is-global-grid .overview-song-list { grid-template-columns:minmax(0,1fr); }
+  .overview-event-grid, .overview-hub-groups { grid-template-columns:minmax(0,1fr); }
   .overview-event-image { width:112px;height:63px; }
   .overview-scope-actions { grid-template-columns:minmax(0,1fr); }
   .overview-section-heading h2, .overview-section-heading h3 { font-size:var(--gs-text-subtitle); }
@@ -552,7 +581,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-panel { margin-top:var(--gs-space-8); }
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
-  .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button { min-height:var(--gs-control-touch); }
+  .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button, .overview-hub-links button { min-height:var(--gs-control-touch); }
 }
 @media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }
 </style>
