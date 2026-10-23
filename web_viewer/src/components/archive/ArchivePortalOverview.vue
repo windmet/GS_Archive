@@ -607,7 +607,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-song-cover { flex:none; }
 .overview-song-copy { flex:1;min-width:0; }
 .overview-song-detail { display:grid;gap:2px;width:100%;min-width:0;min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-song strong, .overview-story strong, .overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
+.overview-song strong, .overview-story strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
+.overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.overview-event small { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .overview-song small, .overview-story small, .overview-event small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 /* Relation labels are meta, not badges. */
 .overview-relation { color:var(--gs-ink-2) !important; }
@@ -655,10 +657,13 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* 315 岁时记: birthdays and events of one month on the page's 50:50 axis; the events reuse the event rows. */
 .overview-almanac { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
-.overview-almanac-column { min-width:0; }
+.overview-almanac-column { min-width:0;container:almanac-col / inline-size; }
 .overview-almanac-column > h3 { margin:0 0 var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-almanac-column > h3 small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-almanac .overview-event-grid { grid-template-columns:minmax(0,1fr); }
+@container almanac-col (min-width:560px) {
+  .overview-almanac .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-4); }
+}
 .overview-birthdays { display:grid;margin:0;padding:0;list-style:none; }
 .overview-birthdays li { border-bottom:1px solid var(--gs-line); }
 .overview-birthdays button { display:flex;align-items:center;gap:var(--gs-space-4);width:100%;min-height:72px;padding:var(--gs-space-3) 0;border:0;background:none;color:inherit;text-align:left;cursor:pointer; }
