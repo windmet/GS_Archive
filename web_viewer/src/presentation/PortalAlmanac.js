@@ -31,7 +31,8 @@ export function parseIdolBirthday(text) {
 /**
  * Generation-time builder. `idols` are the bootstrap idols (order kept within a day), `birthdays` maps an
  * idol code to its profile birthday text, `events` are the Portal's event entries (with releaseAt, image,
- * title, seriesLabel) and `reprints` the set of event ids that are reprints.
+ * title and a subtitle whose first part is the event kind, e.g. "THEATER · 2021年10月10日") and `reprints`
+ * the set of event ids that are reprints.
  */
 export function buildPortalAlmanac({ idols = [], birthdays = {}, events = [], reprints = new Set() }) {
   const months = Object.fromEntries(ALMANAC_MONTHS.map(month => [month, { birthdays: [], events: [] }]))
@@ -43,7 +44,7 @@ export function buildPortalAlmanac({ idols = [], birthdays = {}, events = [], re
     if (!Number.isFinite(event?.releaseAt) || !event.image?.url) continue
     const { month } = japanMonthDay(event.releaseAt)
     months[month].events.push({ id: String(event.id), title: event.title, releaseAt: event.releaseAt,
-      seriesLabel: event.seriesLabel || '', isReprint: reprints.has(String(event.id)),
+      kind: String(event.subtitle || '').split(' · ')[0], isReprint: reprints.has(String(event.id)),
       image: { url: event.image.url, width: event.image.width, height: event.image.height } })
   }
   for (const month of ALMANAC_MONTHS) {
@@ -51,6 +52,12 @@ export function buildPortalAlmanac({ idols = [], birthdays = {}, events = [], re
     months[month].events.sort((a, b) => a.releaseAt - b.releaseAt)
   }
   return { months }
+}
+
+/** "2021.10.10" for an event's opening day in Japan time. */
+export function almanacEventDate(unixSeconds) {
+  const date = new Date((Number(unixSeconds) + JST_OFFSET_SECONDS) * 1000)
+  return [date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()].map((part, index) => index ? String(part).padStart(2, '0') : part).join('.')
 }
 
 /** One month of a scope's almanac, or null when the scope predates it. */
