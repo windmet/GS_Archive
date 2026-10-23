@@ -101,3 +101,5 @@ side四系统只验证了初速度缩放，其TwoConstants重力和非0/1端点�
 帧号是受控输入，没有执行完整UV动画更新/cache生成器或发射时钟；尚未验证发射/停止/退休、源尺寸颜色的完整消费和container/镜头桥接。Smoke继续missing。
 
 本批完整源码门禁167/167通过。fetch发现master已前进至 `6048cb13`（门户#87–#92等21个提交）；先提交UV证据，再按分支策略普通merge同步，合并后的构建与回归另记。
+
+同步已完成：UV提交 `703180ed`，普通merge提交 `d73d493a`，包含 `origin/master 6048cb13`。合并后 `build:check` 16.23s通过（无public拷贝），本地 `verify:source-batch` 再次167/167通过，verifier coverage为472脚本（上游新增1个外部Browser检查归local-only）。生成审计元数据恢复merge HEAD；未宣称执行该外部Browser验收。既有5213仍由PID62484的主checkout Vite服务，无新端口或部署；无关删除/未跟踪文件保持原样。
