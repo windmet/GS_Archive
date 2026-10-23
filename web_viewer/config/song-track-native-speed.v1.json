@@ -15,7 +15,39 @@
       "rva": "0x317a310",
       "hex": "cdcc4c3d"
     },
-    "execution": "Unicorn ARM64; native instructions; no JS formula used"
+    "execution": "Unicorn ARM64; native instructions; no JS formula used",
+    "noteTimeMethod": {
+      "name": "NoteMesh.GetNoteTime",
+      "rva": "0x20bcebc",
+      "bytes": 48,
+      "sha256": "bd0fb6a1565c95694f2532cb64274f60c01de603d9b21493f4b87077b9c6c97c"
+    },
+    "linkMethods": [
+      {
+        "name": "RhythmGameNoteManager.OnNewNote",
+        "rva": "0x2426874",
+        "bytes": 3280,
+        "sha256": "5e3441842637b62b21ec5c7931a90e93480858bca80b2de3c968fcc3c4787c37"
+      },
+      {
+        "name": "UtilOhashi.NearlyEqual(float,float)",
+        "rva": "0x237d52c",
+        "bytes": 104,
+        "sha256": "a5137bff799cbe0c38a10b206e807651b76edd4fa3db35f41fe52fae36bc3636"
+      },
+      {
+        "name": "Mathf..cctor",
+        "rva": "0x2ae4fd4",
+        "bytes": 136,
+        "sha256": "aea5708150e85cba78097e8cae3fc02bd70f5b27148730219fb845acada30665"
+      },
+      {
+        "name": "MathfInternal..cctor",
+        "rva": "0x2ae505c",
+        "bytes": 176,
+        "sha256": "a37eb74f1d753cb889440b750198c6fa92df83ce65a7e84c6d2581f05e0366a2"
+      }
+    ]
   },
   "cases": [
     {
@@ -522,6 +554,932 @@
       "setting": 110,
       "displaySpeed": 11.0,
       "seconds": 0.5
+    }
+  ],
+  "noteTimeCases": [
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.1,
+      "noteTime": -2.0000000298023224
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.1,
+      "noteTime": -0.7000000104308128
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.1,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.1,
+      "noteTime": 0.05000000074505806
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.2,
+      "noteTime": -4.000000059604645
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.2,
+      "noteTime": -1.4000000208616257
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.2,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.2,
+      "noteTime": 0.10000000149011612
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.3,
+      "noteTime": -6.000000238418579
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.3,
+      "noteTime": -2.1000000834465027
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.3,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.3,
+      "noteTime": 0.15000000596046448
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.5,
+      "noteTime": -10.0
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.5,
+      "noteTime": -3.5
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.5,
+      "noteTime": 0.25
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.8,
+      "noteTime": -16.00000023841858
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.8,
+      "noteTime": -5.600000083446503
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.8,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 0.8,
+      "noteTime": 0.4000000059604645
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1,
+      "noteTime": -20.0
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1,
+      "noteTime": -7.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1,
+      "noteTime": 0.5
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1.5,
+      "noteTime": -30.0
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1.5,
+      "noteTime": -10.5
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 1.5,
+      "noteTime": 0.75
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2,
+      "noteTime": -40.0
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2,
+      "noteTime": -14.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2,
+      "noteTime": 1.0
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2.5,
+      "noteTime": -50.0
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2.5,
+      "noteTime": -17.5
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 2.5,
+      "noteTime": 1.25
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 3,
+      "noteTime": -60.0
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 3,
+      "noteTime": -21.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 3,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 3,
+      "noteTime": 1.5
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 5,
+      "noteTime": -100.0
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 5,
+      "noteTime": -35.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "speed": 5,
+      "noteTime": 2.5
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.1,
+      "noteTime": -0.28571428997176035
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.1,
+      "noteTime": -0.10000000149011612
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.1,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.1,
+      "noteTime": 0.007142857249294009
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.2,
+      "noteTime": -0.5714285799435207
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.2,
+      "noteTime": -0.20000000298023224
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.2,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.2,
+      "noteTime": 0.014285714498588018
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.3,
+      "noteTime": -0.8571428912026542
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.3,
+      "noteTime": -0.30000001192092896
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.3,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.3,
+      "noteTime": 0.021428572280066355
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.5,
+      "noteTime": -1.4285714285714286
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.5,
+      "noteTime": -0.5
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.5,
+      "noteTime": 0.03571428571428571
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.8,
+      "noteTime": -2.285714319774083
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.8,
+      "noteTime": -0.800000011920929
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.8,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 0.8,
+      "noteTime": 0.05714285799435207
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1,
+      "noteTime": -2.857142857142857
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1,
+      "noteTime": -1.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1,
+      "noteTime": 0.07142857142857142
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1.5,
+      "noteTime": -4.285714285714286
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1.5,
+      "noteTime": -1.5
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 1.5,
+      "noteTime": 0.10714285714285714
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2,
+      "noteTime": -5.714285714285714
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2,
+      "noteTime": -2.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2,
+      "noteTime": 0.14285714285714285
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2.5,
+      "noteTime": -7.142857142857143
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2.5,
+      "noteTime": -2.5
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 2.5,
+      "noteTime": 0.17857142857142858
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 3,
+      "noteTime": -8.571428571428571
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 3,
+      "noteTime": -3.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 3,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 3,
+      "noteTime": 0.21428571428571427
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 5,
+      "noteTime": -14.285714285714286
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 5,
+      "noteTime": -5.0
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "speed": 5,
+      "noteTime": 0.35714285714285715
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.1,
+      "noteTime": -0.18181818452748386
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.1,
+      "noteTime": -0.06363636458461934
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.1,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.1,
+      "noteTime": 0.004545454613187097
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.2,
+      "noteTime": -0.3636363690549677
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.2,
+      "noteTime": -0.12727272916923868
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.2,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.2,
+      "noteTime": 0.009090909226374193
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.3,
+      "noteTime": -0.5454545671289618
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.3,
+      "noteTime": -0.19090909849513663
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.3,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.3,
+      "noteTime": 0.013636364178224045
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.5,
+      "noteTime": -0.9090909090909091
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.5,
+      "noteTime": -0.3181818181818182
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.5,
+      "noteTime": 0.022727272727272728
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.8,
+      "noteTime": -1.4545454762198708
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.8,
+      "noteTime": -0.5090909166769547
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.8,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 0.8,
+      "noteTime": 0.03636363690549677
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1,
+      "noteTime": -1.8181818181818181
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1,
+      "noteTime": -0.6363636363636364
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1,
+      "noteTime": 0.045454545454545456
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1.5,
+      "noteTime": -2.7272727272727275
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1.5,
+      "noteTime": -0.9545454545454546
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 1.5,
+      "noteTime": 0.06818181818181819
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2,
+      "noteTime": -3.6363636363636362
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2,
+      "noteTime": -1.2727272727272727
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2,
+      "noteTime": 0.09090909090909091
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2.5,
+      "noteTime": -4.545454545454545
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2.5,
+      "noteTime": -1.5909090909090908
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2.5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 2.5,
+      "noteTime": 0.11363636363636363
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 3,
+      "noteTime": -5.454545454545455
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 3,
+      "noteTime": -1.9090909090909092
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 3,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 3,
+      "noteTime": 0.13636363636363638
+    },
+    {
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 5,
+      "noteTime": -9.09090909090909
+    },
+    {
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 5,
+      "noteTime": -3.1818181818181817
+    },
+    {
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 5,
+      "noteTime": 0.0
+    },
+    {
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "speed": 5,
+      "noteTime": 0.22727272727272727
     }
   ]
 }

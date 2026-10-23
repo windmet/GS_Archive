@@ -14,3 +14,18 @@ export function songTrackSpanForSpeed(speed, timing, cursor = 0) {
   if (!timing || !Number.isFinite(cursor) || cursor < 0) throw new Error('Invalid track timing')
   return timing.secondsToTick(timing.tickToSeconds(cursor) + seconds) - cursor
 }
+
+// NoteMesh.GetNoteTime (0x20bcebc): RAW speed is stored as a float32 and
+// divides the base lead time. It is independent of the user's speed setting.
+export function songTrackNoteReadTime(leadSeconds, speed = 1) {
+  const nativeSpeed = Math.fround(speed)
+  if (!Number.isFinite(leadSeconds) || leadSeconds <= 0 || !Number.isFinite(nativeSpeed) || nativeSpeed <= 0) {
+    throw new Error('Invalid native note timing')
+  }
+  return leadSeconds / nativeSpeed
+}
+
+export function songTrackNoteTime(currentSeconds, hitSeconds, leadSeconds, speed = 1) {
+  if (!Number.isFinite(currentSeconds) || !Number.isFinite(hitSeconds)) throw new Error('Invalid native note timing')
+  return (currentSeconds - hitSeconds) / songTrackNoteReadTime(leadSeconds, speed)
+}

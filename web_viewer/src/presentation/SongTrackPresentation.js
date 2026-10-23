@@ -3,6 +3,7 @@ import nativeGeometry from '../../config/song-track-native-geometry.v1.json' wit
 import { songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
 import { buildSongChartTiming } from './SongChartTiming.js'
 import { songTrackNativePoint } from './SongTrackNativeProjection.js'
+import { songTrackNoteReadTime, songTrackNoteTime } from './SongTrackNativeTiming.js'
 export { songTrackSpanForSpeed } from './SongTrackNativeTiming.js'
 
 export const trackReference = reference
@@ -56,28 +57,36 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
   // Real charts use elapsed seconds, including across tempo changes. Small
   // geometry-only callers without tempos retain their unitless tick window.
   const timing = chart.tempos?.length ? buildSongChartTiming(chart) : null
-  const startSeconds = timing?.tickToSeconds(cursor)
+  const startSeconds = timing ? timing.tickToSeconds(cursor) : cursor
   const duration = timing ? timing.tickToSeconds(cursor + span) - startSeconds : span
-  const project = (lane, tick) => projectTrackPoint(lane,
-    timing ? (timing.tickToSeconds(tick) - startSeconds) / duration : (tick - cursor) / span)
+  const toSeconds = tick => timing ? timing.tickToSeconds(tick) : tick
+  const endForSpeed = speed => timing
+    ? timing.secondsToTick(startSeconds + songTrackNoteReadTime(duration, speed))
+    : cursor + songTrackNoteReadTime(duration, speed)
+  const project = (lane, tick, speed = 1) => {
+    const fraction = -songTrackNoteTime(startSeconds, toSeconds(tick), duration, speed)
+    return { ...projectTrackPoint(lane, fraction), fraction }
+  }
   const glyphs = [], holds = []
   const glyph = (n, tick, lane, type, endpoint) => {
-    if (tick < cursor || tick > cursor + span) return
-    const p = project(lane, tick)
+    const speed = n.speed ?? 1
+    if (tick < cursor || tick > endForSpeed(speed)) return
+    const p = project(lane, tick, speed)
     glyphs.push({ id: `${n.sourceIndex}-${endpoint}`, sourceIndex: n.sourceIndex, type,
-      endpoint, tick, lane, x: p.x, y: p.y,
+      endpoint, tick, lane, speed, fraction: p.fraction, x: p.x, y: p.y,
       width: estimate.normalVisibleWidth * p.scale,
       special: type === 'SPECIAL',
       role: songNoteRole(type) })
   }
   for (const n of chart.notes) {
     const end = n.tick + n.duration
-    if (end < cursor || n.tick > cursor + span) continue
+    const speed = n.speed ?? 1, windowEnd = endForSpeed(speed)
+    if (end < cursor || n.tick > windowEnd) continue
     const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
     glyph(n, n.tick, points[0].posx, n.type, 'head')
     if (!n.duration) continue
     glyph(n, end, points.at(-1).posx, n.endtype || 'END_NORMAL', 'tail')
-    const from = Math.max(n.tick, cursor), to = Math.min(end, cursor + span)
+    const from = Math.max(n.tick, cursor), to = Math.min(end, windowEnd)
     if (to <= from) continue
     const ticks = new Set([from, to])
     // Include every native bend before adding perspective tessellation points.
@@ -85,10 +94,10 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
     // A hold within one lane already projects to a straight trapezoid. Avoid
     // unnecessary internal clip edges there; curved slides need subdivision.
     if (points.some(p => p.posx !== points[0].posx)) {
-      for (let t = from + span / 32; t < to; t += span / 32) ticks.add(t)
+      for (let t = from + (windowEnd - cursor) / 32; t < to; t += (windowEnd - cursor) / 32) ticks.add(t)
     }
     const samples = [...ticks].sort((a, b) => a - b).map(tick => {
-      const lane = laneAt(points, tick - n.tick), p = project(lane, tick)
+      const lane = laneAt(points, tick - n.tick), p = project(lane, tick, speed)
       const half = estimate.normalVisibleWidth * estimate.holdWidthRatio * p.scale / 2
       return { tick, lane, left: { x: p.x - half, y: p.y }, right: { x: p.x + half, y: p.y }, v: (tick - n.tick) / n.duration * 200 }
     })
@@ -104,12 +113,25 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
   }
   const { width, height } = nativeGeometry.viewport
   const topY = projectTrackPoint(2, 1).y, judgeY = projectTrackPoint(2, 0).y
+  const speeds = new Map(chart.notes.map(n => [n.sourceIndex, n.speed ?? 1]))
+  // Native same-timing links also require equal note speeds. Keep this visual
+  // grouping separate from the long chart's schematic tick-only grouping.
+  const groups = new Map()
+  for (const note of chart.notes) {
+    const speed = Math.fround(note.speed ?? 1)
+    if (!groups.has(speed)) groups.set(speed, [])
+    groups.get(speed).push(note)
+  }
+  const links = [...groups.entries()].flatMap(([speed, notes]) => songSimultaneousLinks({ notes })
+    .filter(l => l.tick >= cursor && l.tick <= endForSpeed(speed))
+    .map(l => ({ ...l, id: `${l.tick}-${speed}`, speed,
+      a: project(l.from, l.tick, speed), b: project(l.to, l.tick, speed) })))
   return { width, height, topY, judgeY, cursor, span, holds,
-    middleNodes: songHoldMiddleNodes(chart).filter(n => n.tick >= cursor && n.tick <= cursor + span).map(n => {
-      const p = project(n.lane, n.tick)
+    middleNodes: songHoldMiddleNodes(chart).filter(n => n.tick >= cursor && n.tick <= endForSpeed(speeds.get(n.sourceIndex))).map(n => {
+      const p = project(n.lane, n.tick, speeds.get(n.sourceIndex))
       return { ...n, x: p.x, y: p.y, width: estimate.normalVisibleWidth * p.scale }
     }),
-    links: songSimultaneousLinks(chart).filter(l => l.tick >= cursor && l.tick <= cursor + span).map(l => ({ ...l, a: project(l.from, l.tick), b: project(l.to, l.tick) })),
+    links,
     glyphs: glyphs.sort((a, b) => b.tick - a.tick),
     lanes: Array.from({ length: laneCount + 1 }, (_, i) => {
       const top = projectTrackPoint(i - .5, 1), judge = projectTrackPoint(i - .5, 0)

@@ -35,7 +35,8 @@ for (const song of Object.values(catalog.songs)) for (const d of song.gameplay.d
   for (const cursor of [Math.min(...chart.notes.map(n => n.tick)), firstHold?.tick || 0, chart.maxTick - 500]) {
     const scene = buildSongTrackGeometry(chart, Math.max(cursor, 0))
     for (const n of scene.glyphs) {
-      assert.ok(n.tick >= scene.cursor && n.tick <= scene.cursor + scene.span)
+      assert.ok(n.tick >= scene.cursor && n.fraction >= 0 && n.fraction <= 1 + 1e-12,
+        'each note uses its own native speed window')
       assert.ok(Number.isFinite(n.x) && Number.isFinite(n.y) && n.width > 0)
     }
     for (const h of scene.holds) for (const mesh of h.triangles) {

@@ -2,7 +2,7 @@
 
 日期：2026-10-23。输入 `origin/master` / `2bdd3de44582ef3ce79cad1ec8c014f38118a6d9`；分支 `chart/20261023-native-projection`，LF worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023`。先建立台账，未修改运行时代码。范围仅谱面预览及其来源核查；无舞台修改、R2 上传或部署。
 
-当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点。首表保留输入提交的审计状态；音符完整网格、148尺寸、长条.72宽比、逐音符speed、Special和flick仍开放，不把坐标合同通过写成原机渲染完成。
+当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口。首表保留输入提交的审计状态；音符完整网格、148尺寸、长条.72宽比、Special和flick仍开放，不把坐标合同通过写成原机渲染完成。
 
 ## 审计时的消费者与证据等级
 
@@ -81,3 +81,27 @@ Native坐标通过明确的Web适配转换到现有1280×720画布：x=width/2+n
 验证通过：来源重读；`verify-song-track-native-projection.mjs`（旧depthRatio/topY/judgeY实际模块变异全部被拒绝）；`verify-song-track-native-timing.mjs`；244档track/note-rendering/chart-timing/chart-presentation回归；`build:check`（源码包，无public复制）。
 
 真实Browser：5231/PID67724仍为本worktree，HTTP实际模块含原生曲线；bootstrap release `1accd9d0aa698ec03ec6d0b80211939f914940abac105d51021b36a8fb321081`，候选`rm-release-20261022`。桌面1440×900 Café Parade EXPERT / tick30000，19个可见端点，DOM顶部0、五个判定点Y均571.9999389648438；截图`projection-desktop.png`。手机尺寸390×844 / tick4000，23个端点、3条长条/6个贴图三角形，scrollWidth=390；截图`projection-mobile-holds.png`。返回来源页得到`/songs/cfprde/`，标题、难度表、歌手等内容实际加载，URL无chart_lab残留。控制台无error/warn；已恢复viewport。截图证明真实应用有渲染和交互，不证明原机画面等价。
+
+## 第三批：逐音符speed与独立出现窗口
+
+输入 `5a3fcd5c`。`NoteMesh.GetNoteTime` 0x20bcebc明确执行double `(liveTime - absTime) / (leadTime / (double)floatSpeed)`，不是把用户速度刻度再乘一次。已把原生float32读取和double除法顺序接进`SongTrackNativeTiming.js`，渲染与verifier共同import；没有用`GetCurrentEvalPosY`里的判定除速反推显示位置。
+
+`config/song-track-native-speed.v1.json`现包含原有101档设置结果及另外132组原生归一化输出，覆盖lead=.5/3.5/5.5秒、speed=.1/.2/.3/.5/.8/1/1.5/2/2.5/3/5和判定前/后时刻。两个方法均直接执行ARM64，无数学替身。恢复24000/speed或把逐音符speed强制写回1的实际模块变异均失败。
+
+可见端点、长条裁切范围、用于当前poly折点展示的中间节点分别按该音符`leadTime/speed`计算；慢音符不再被基础tick窗口提前丢弃，快音符也不会提前出现。长条的完整几何/节点生成/判定仍待第四批，不因这次窗口修正而晋升为原生已完成。
+
+当前catalog244档共有109个非1速度音符，全部在`drv999` type1，即页面显示的PASSION。审计见`.analysis/chart-native/active-note-speed-census.json`；不能把目录中248份JSON的额外档位混进这次消费方计数。普通长轨图仍保留按源tick的示意排布，不强行变成游戏速度排布。
+
+透视视图的同时线按float32相同speed分组；来源`OnNewNote` 0x2426874除时间比较外还检查speed的`NearlyEqual(float,float)` 0x237d52c。该比较读取Mathf.Epsilon：0x430f008的TypeInfo usage解析到Android metadata的UnityEngine.Mathf（typeIndex32264 / TypeDef3891）；Mathf与MathfInternal的cctor给出float位型0x1或0x800000，均远小于当前RAW离散speed间隔。因此对本批数据，按float32同值分组不合并不同速度。相关方法hash已存speed fixture；不声称复刻所有任意输入/时间容差下的原生链接状态机。
+
+回归：native-speed来源重读；native-timing的233个原生输出、双变异、跨BPM窗口、快/慢端点、慢长条/poly窗口及真实drv999出现边界均通过。既有244档track/note-rendering/chart-timing/chart-presentation及180组坐标回归通过；`build:check`通过，输出仍为`.analysis/build-check`且无public复制。
+
+实际Browser：同一5231服务，`/songs/drv999/`→打开谱面→PASSION透视。桌面1440×900、默认速度5.0：sourceIndex10 / tick7680 / speed1.5在cursor5000时不显示，cursor5100时显示（fraction=.9872448979591834），截图`speed-drv999-desktop.png`。手机尺寸390×844、cursor57000时，sourceIndex546 / tick68160 / speed.2显示（fraction=.5693877635865796），24个端点、4条长条，scrollWidth390；截图`speed-drv999-mobile-slow.png`。实际播放观察时间从约50.9秒推进到64.06秒，未把它记成整曲长稳验收。返回`/songs/drv999/`后标题与歌曲页内容正常，已恢复viewport，控制台无error/warn。此为桌面Browser模拟手机尺寸，非原机。
+
+## 尺寸续查（尚未接入）
+
+已只读执行`NoteMesh.UpdateFromGameCreateMesh` 0x20bd010，原生主体和Vector3归一化产生9组四顶点结果，临时harness与结果在`.analysis/chart-native/emulate-note-quad.py`、`native-note-quad-cases.json`。Unity Sprite/Texture与Mesh提交、settings读取为明确受控stub；顶点数学和原生坐标函数实际执行。不能直接拿这9例宣称所有皮肤/长条的native mesh已完成。
+
+重要差异：Note1普通音符的完整256×256贴图在判定线约宽144.4103、高154.0377，外轨四边形还沿轨道倾斜；这不是当前148宽和固定宽高比。0x32d4814的312、0x32d4818的192、0x317a32c的.8及`GetNoteScaleRateByNoteTime` 0x1afc78c共同参与尺寸；后者从1.8到1插值。必须连同四顶点/贴图一起接，不能仅把148换成另一个宽度常数。
+
+另外从IPA读出21个native Sprite/Atlas rect，见`native-sprite-rects.json`。Note3横条normal的原Sprite rect为300×300，packed texture rect却是267.94647216796875×95.89712524414062，PNG导出为268×96；其他横条也有小数rect。后续必须使用实际packed rect生成几何，不能把PNG整数像素或透明裁边尺寸冒充原生尺寸。148与长条.72目前仍为估计。
