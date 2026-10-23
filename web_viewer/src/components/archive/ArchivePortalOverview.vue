@@ -595,9 +595,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-event-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:var(--gs-space-6); }
 .overview-event { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line); }
 
-/* Global stories: the main chapters as picture tiles (no frame), the other kinds as rows. */
-.overview-story-hub { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-8); }
-.overview-main-index { display:grid;align-content:start;gap:var(--gs-space-6); }
+/* Global stories: two tiers on desktop (banners on top, gateways in a 2-column grid below). */
+.overview-story-hub { display:flex;flex-direction:column;gap:var(--gs-space-6); }
+.overview-main-index { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);row-gap:var(--gs-space-4);align-content:start; }
 .overview-main-index button { display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left; }
 .overview-main-index article :deep(.domain-media-preview) { display:block;margin:0;padding:0; }
 .overview-main-index article :deep(img) { display:block;width:100%;height:auto;aspect-ratio:906 / 210;object-fit:cover;border-radius:var(--gs-radius-media); }
@@ -607,8 +607,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-main-index small { flex:1;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-main-index button > span > svg { align-self:center;color:var(--gs-ink-3); }
 .overview-main-index article:has(button:disabled) { opacity:.6; }
-.overview-story-gateways { display:grid;align-content:start;border-top:1px solid var(--gs-line); }
+.overview-story-gateways { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);align-content:start;border-top:1px solid var(--gs-line); }
 .overview-story-gateways button { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:56px;padding:0 var(--gs-space-2);border:0;border-bottom:1px solid var(--gs-line);background:none;color:var(--gs-ink);text-align:left; }
+.overview-story-gateways button:last-child:nth-child(odd) { grid-column:1 / -1; }
 .overview-story-gateways button > svg { flex:none;color:var(--gs-ink-3); }
 .overview-story-gateways button > span { display:flex;flex:1;align-items:center;justify-content:space-between;gap:var(--gs-space-3);min-width:0; }
 .overview-story-gateways strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap; }
@@ -678,7 +679,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .is-global-grid .overview-stories { grid-row:1; }
   .is-global-grid .overview-song-list { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
   .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .overview-story-hub { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-6); }
+  .overview-story-hub { gap:var(--gs-space-6); }
+  .overview-main-index, .overview-story-gateways { grid-template-columns:minmax(0,1fr); }
+  .overview-story-gateways button:last-child:nth-child(odd) { grid-column:auto; }
 }
 @container portal (max-width:640px) {
   .overview-personal { display:flex;align-items:stretch; }
