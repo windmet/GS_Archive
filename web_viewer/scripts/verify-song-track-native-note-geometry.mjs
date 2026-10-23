@@ -22,8 +22,8 @@ checkNative(buildNativeSongNoteQuad)
 const nativeError = maximumError
 for (const [type, role] of Object.entries(spec.source.roles)) {
   if (type === 'HOLD_MIDDLE') {
-    const node = songHoldMiddleNodes({ notes: [{ sourceIndex: 1, tick: 0, duration: 100,
-      poly: [{ subtick: 50, posx: 2 }] }] })[0]
+    const node = songHoldMiddleNodes({ notes: [{ sourceIndex: 1, tick: 0, duration: 100, type: 'VARIABLE_HOLD',
+      poly: [{ subtick: 0, posx: 0 }, { subtick: 50, posx: 2 }, { subtick: 100, posx: 4 }] }] })[0]
     assert.equal(node.role, role, 'middle nodes use their separate preview consumer')
   } else assert.equal(songNoteRole(type), role, `native type/draw/Sprite chain: ${type}`)
 }

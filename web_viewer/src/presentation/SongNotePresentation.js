@@ -1,4 +1,5 @@
 import rendering from '../../config/song-note-rendering.v1.json' with { type: 'json' }
+import { nativeSongHoldMiddlePoints } from './SongTrackNativeMiddleNodes.js'
 export const noteRendering = rendering
 export function songNoteRole(type) {
   if (type === 'END_NORMAL') return 'normal'
@@ -14,13 +15,13 @@ export function songNoteEndpoints(chart) {
     return n.duration ? [head, { id: `${n.sourceIndex}-tail`, sourceIndex: n.sourceIndex, endpoint: 'tail', tick: n.tick + n.duration, lane: points.at(-1).posx, role: songNoteRole(n.endtype || 'END_NORMAL') }] : [head]
   }).sort((a, b) => a.tick - b.tick || a.lane - b.lane)
 }
-// Display only interior control points carried by the source. They are separate
-// from raw note objects; runtime judgement generation/merging is not recovered.
+// Native generated children remain separate from the original RAW objects.
+// This preview does not run the game's touch/judgement state machine.
 export function songHoldMiddleNodes(chart) {
-  return chart.notes.flatMap(n => n.duration > 0 ? (n.poly || []).flatMap((p, index) =>
-    p.subtick > 0 && p.subtick < n.duration ? [{ id: `${n.sourceIndex}-middle-${index}`,
-      sourceIndex: n.sourceIndex, endpoint: 'middle', tick: n.tick + p.subtick,
-      lane: p.posx, role: 'middle' }] : []) : [])
+  return chart.notes.flatMap(n => nativeSongHoldMiddlePoints(n).map(p => ({
+    id: `${n.sourceIndex}-middle-${p.polyIndex}`, sourceIndex: n.sourceIndex,
+    endpoint: 'middle', tick: p.tick, lane: p.lane, role: 'middle',
+  })))
 }
 export function songSimultaneousLinks(chart) {
   const groups = new Map()

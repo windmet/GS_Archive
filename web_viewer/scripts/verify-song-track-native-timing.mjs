@@ -55,7 +55,7 @@ const speedChart = { offset: 0, maxTick: 20000, tempos: [{ tick: 0, tempo: 120 }
   { sourceIndex: 1, tick: 1920, duration: 0, start: 0, type: 'SMALL', speed: 2 },
   { sourceIndex: 2, tick: 5760, duration: 0, start: 1, type: 'SMALL', speed: .5 },
   { sourceIndex: 3, tick: 1920, duration: 0, start: 2, type: 'SMALL', speed: 1 },
-  { sourceIndex: 4, tick: 0, duration: 6000, start: 3, end: 3, type: 'HOLD', speed: .5,
+  { sourceIndex: 4, tick: 0, duration: 6000, start: 3, end: 3, type: 'VARIABLE_HOLD', speed: .5,
     poly: [{ subtick: 0, posx: 3 }, { subtick: 4000, posx: 4 }, { subtick: 6000, posx: 3 }] },
   ...[0, 1, 3].map((start, i) => ({ sourceIndex: 5 + i, tick: 960, duration: 0, start, type: 'SMALL', speed: i === 2 ? 2 : 1 })),
 ] }

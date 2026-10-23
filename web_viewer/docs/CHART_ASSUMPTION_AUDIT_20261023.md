@@ -2,7 +2,7 @@
 
 日期：2026-10-23。输入 `origin/master` / `2bdd3de44582ef3ce79cad1ec8c014f38118a6d9`；分支 `chart/20261023-native-projection`，LF worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023`。先建立台账，未修改运行时代码。范围仅谱面预览及其来源核查；无舞台修改、R2 上传或部署。
 
-当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格。首表保留输入提交的审计状态；窗口/按压/已判定节点调度、节点判定、Special固定速度和flick仍开放，不把坐标合同通过写成原机渲染完成。
+当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格，第六批已接原生middle生成并核实判定核心谓词。首表保留输入提交的审计状态；完整窗口/按压/已判定节点调度、Special固定速度和flick效果呈现仍开放，不把坐标合同通过写成原机渲染完成。
 
 ## 审计时的消费者与证据等级
 
@@ -145,3 +145,23 @@ Producer `scripts/audit-song-track-native-hold-geometry.py`重读绑定ELF/IPA�
 `CheckHoldMiddle` 0x2429350需要激活/未删除的middle对象、IsOnTarget与IsLaneHolded，成功后以maxEvaluation经技能修正更新分数/生命、删除音符并触发效果。仅知道poly位置不等于恢复了判定、容差或状态。`GetEffectPointInfoByNoteSerialNo` 0x2423f08及`NoteEffectManager` lambda0x20b967c证明flick效果另走效果时钟、lane、PointInfo和scale链；当前静态提示仍未按这条链复现。
 
 第五批验收补记：`build:check`17.44秒通过，仍仅`.analysis/build-check`且无public复制，保留既有背景未解析/大chunk warning。producer再次不带--write重读ELF/IPA/36组结果一致。当前5231/PID67724仍为本worktreeVite。真实应用桌面1440×900：Café Parade EXPERT tick4000有23端点、3条长条、510个canvas顶点，截图`hold-native-desktop.png`；实际播放从2.40推进到14.98秒，主动暂停，未记成全曲长稳。K.now O.nly EXPERT tick123406可见多折点，桌面截图`hold-native-bends-desktop.png`；手机尺寸390×844切横条皮肤后有3长条/1144顶点/4个旧展示middle，scrollWidth390，截图`hold-native-bends-mobile.png`。首次resize截图尚为旧帧，已按实际新viewport重新截图覆盖。冷刷新后长轨图加载，重新选EXPERT/透视及同tick后canvas重新创建并仍为3/1144；返回URL为`/songs/knwonl/`，控制台无error/warn，已恢复viewport。此为桌面Browser模拟手机尺寸，不是真机，也未做原机GPU逐帧对照。WebGL不可用时的SVG退路未做浏览器故障注入验收。
+
+## 第六批（2026-10-24）：middle生成与判定条件
+
+输入 `f13e75a1`。重读catalog消费的244档，原生VariableHold类型的内部poly索引共2285个：VARIABLE_HOLD 2248、LARGE_VARIABLE_HOLD 37；当前旧subtick范围过滤选中的poly索引集合恰好相同，差异数0。回执`.analysis/chart-native/middle-source-census.json`。这不证明旧过滤规则等于原生：原生按索引排除首尾，不按subtick大小，也不是所有duration>0的hold。
+
+新增`SongTrackNativeMiddleNodes.js`，长轨与透视都经同一个`SongNotePresentation.songHoldMiddleNodes`适配消费。只对两个VariableHold类型使用slice(1,-1)，lane/speed保留float32，tick加subtick；child type=10、duration=0、endtype=-1。UI id继续采用sourceIndex/polyIndex，不冒充原生parentId字符串。既有native-note/timing verifier中的不合法单点poly/普通HOLD带折点夹具已换成真实的VariableHold语义，原来的速度/几何断言仍保留。
+
+`scripts/audit-song-track-native-middle-nodes.py`执行原生类型谓词、GetChildHoldMiddleNotes、复制构造器/Set与child lambda；泛型List/Skip/Take/ForEach、时间服务、parentId格式化为显式stub，Skip/Take使用原生传入的1和count-2。72组覆盖6种类型、0/2/3/4节点、重复端点时刻、分数lane及3种speed，18个生成child的tick/lane/speed/type/duration/endtype由CPU输出；时钟stub值不被当作游戏时间。后续展示仍由已有分段BPM时钟按最终child tick换算。fixture记录ELF、既有enum合同hash及8个原生方法窗口hash。verifier和runtime共用函数；恢复旧subtick范围、允许所有hold、忽略speed的实际模块变异全部失败。
+
+判定核心可单独举证：`IsOnTarget` 0x242a1b4为严格`abs((note.absTime+calibration)-currentTime)<TimeMarginPerfect`；当前Android方法`GetCalibrationAdjust` 0x1afeb88直接返回double0。`IsLaneHolded`枚举触点并使用`GetPosFromLane(lane,0)`的目标点调用`CheckTouchPoint` 0x242ad04。普通模式下X为abs差不大于posMarginX，Y只检查touchY-targetY不大于200，不使用abs，也没有下限。默认posMarginX由SetTargetPosList的相邻目标距离176×1.5再乘laneWidthRate1得到264，**不是264/2**。边界允许等于264/200；时机调整模式绕过这个位置检查。
+
+`EvaluationRangeData..cctor`与getter执行结果：默认调试增量0时，普通档Bad/Good/Great/Perfect的单侧时间阈值为250/120/100/50毫秒；TimingAdjust为600/120/100/50；Story模式为250/225/200/175。原生运算式为factor×(50+floatDebugRangeDiff)/1000，debug值来自PlayerPrefs且默认参数0；没有声称能读取原玩家保存的偏好。这里只报告getter阈值和middle所调用的Perfect条件，不把它们泛化为所有flick/输入分类。
+
+`scripts/audit-song-track-native-judgement.py`直接执行原生Range构造、getter转发、SetTargetPosList/距离、IsOnTarget与CheckTouchPoint，受控分配/容器复制/settings/PlayerPrefs不模拟Unity输入。fixture保存14个方法hash、9组range设置、7组时刻边界、14组位置边界；验证Perfect恰好±50ms排除、紧邻内侧接受，X/Y上界包含、Y无下限、TimingAdjust绕过位置检查。原生`CheckHoldMiddle`本体另存方法hash和反编译；没有伪造整套输入/技能/分数/删除状态的执行验收。
+
+`CheckHoldMiddle`还要求NoteInfo.obj内部值为true、toDelete为false且type=HOLD_MIDDLE；通过上述时间与触点条件后，maxEvaluation经过技能修正交给UpdateScoreLife，设置isTouched，调用DeleteNote/ShowHitEffect，并按isResuming控制声音。nextCheckHoldMiddleTime是独立调度字段。这些控制分支已由方法体及字段布局核对；本批不实现交互判定、按压/失误状态机，也不新增判定窗口UI。之前“中间节点规则待核实”现细分为：生成与核心判定条件有原生依据，完整游戏状态消费不在当前预览实现中。
+
+验证：两个producer不带--write重放一致；72组生成与range/time/touch回执检查、244档2285个共享消费节点通过。233组native timing、180组projection、1080组note quad、36组hold mesh、732窗口及chart timing/presentation回归通过。最终`build:check`23.73秒通过，仍无public复制，保留既有背景未解析/大chunk warning。
+
+第六批Browser：最终源码在本worktree5231/PID67724，K.now O.nly EXPERT tick123406。桌面1440×900和手机尺寸390×844均有4个native生成middle，DOM tick依次124080/124320/124560/124680，canvas仍1144顶点，手机scrollWidth390；截图`middle-native-desktop.png`、`middle-native-mobile.png`。谱面信息已显示原生内部索引生成与不执行游戏判定的边界。长轨图可切换并加载EXPERT Combo603的实际谱面区域；返回`/songs/knwonl/`，控制台无error/warn，已恢复viewport。没有把这次Browser检查称为触点判定/真机验收。
