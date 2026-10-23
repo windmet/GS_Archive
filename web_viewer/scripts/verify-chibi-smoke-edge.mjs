@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
 import vm from 'node:vm'
-import {sampleEmitterShape} from '../src/core/chibiObjectEmitters.js'
+import {sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
+import {stepLifetimeLimitMotion,LIFETIME_LIMIT_PROFILE} from '../src/core/chibiParticleLimit.js'
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url))
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex')
@@ -87,4 +88,57 @@ for(const row of motion.cases){
   }
 }
 assert.equal(integrationCount,6)
-console.log('PASS Smoke motion: 6 native signed-speed systems, 2 force-free down systems / 6 trajectories; side gravity/limit remain open')
+console.log('PASS Smoke motion: 6 native signed-speed systems, 2 force-free down systems / 6 trajectories')
+
+const side=JSON.parse(read('scripts/fixtures/chibi-smoke-side-native.json'))
+assert.equal(side.binarySha256,proof.binarySha256)
+assert.equal(side.sourceSha256,sha(sourceBytes))
+assert.equal(side.motionSha256,sha(read('scripts/fixtures/chibi-smoke-motion-native.json')))
+for(const window of side.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+assert.equal(side.cases.length,16);assert.equal(side.curveCases.length,16)
+const vector=values=>Object.fromEntries([...'xyz'].map((axis,i)=>[axis,values[i]]))
+const curveFor=raw=>({mode:raw.minMaxState,scalar:raw.scalar,keys:raw.maxCurve.m_Curve})
+let sideMaxDelta=0,sideSteps=0,sideCheckpoints=0
+for(const row of side.curveCases){
+  const particle=source.particles.find(p=>p.pathId===row.source.pathId)
+  assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+  const curve=curveFor(particle.modules.ClampVelocityModule.magnitude)
+  for(let lane=0;lane<4;lane++)near(sampleObjectCurve(curve,row.phases[lane],0),row.expected[lane],'native general curve/clamped endpoints')
+}
+for(const row of side.cases){
+  const particle=source.particles.find(p=>p.pathId===row.source.pathId)
+  assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+  assert.deepEqual(row.gravity,particle.modules.InitialModule.gravityModifier)
+  assert.deepEqual(row.limit,particle.modules.ClampVelocityModule)
+  assert.equal(row.fastCacheAccepted,false)
+  assert.equal(row.life,particle.modules.InitialModule.startLifetime.scalar)
+  assert.equal(row.gravity.minMaxState,3)
+  assert.ok(row.steps*row.dt<row.life)
+  assert.equal(row.limit.separateAxis,false);assert.equal(row.limit.inWorldSpace,false)
+  assert.equal(row.limit.drag.scalar,0)
+  const bound=motion.cases.find(c=>c.source.pathId===row.source.pathId)
+  assert.deepEqual(row.initial,bound.scaled)
+  const limit={profile:LIFETIME_LIMIT_PROFILE,dampen:row.limit.dampen,curve:curveFor(row.limit.magnitude)}
+  for(let lane=0;lane<4;lane++){
+    const a=(row.seeds[lane]-0x1d483c3d)>>>0,b=(Math.imul(a,0x6ab51b9d)+0x714acb3f)>>>0,t=(a^(a<<11))>>>0
+    const draw=((b^(b>>>19)^t^(t>>>8))&0x7fffff)/8388608
+    assert.equal(row.gravityDraws[lane],draw)
+    const gravity={x:0,y:-9.81*sampleObjectCurve({mode:3,scalar:row.gravity.scalar,minScalar:row.gravity.minScalar},0,draw),z:0}
+    for(let i=0;i<3;i++)near(row.initial[lane][i+3]+gravity['xyz'[i]]*row.dt,row.gravityStep[lane][i+3],'native seeded gravity')
+    let state={position:vector(row.initial[lane]),velocity:vector(row.initial[lane].slice(3))}
+    for(let step=1;step<=row.steps;step++){
+      state=stepLifetimeLimitMotion(state,gravity,limit,step*row.dt/row.life,row.dt)
+      const checkpoint=row.trace.find(c=>c.step===step)
+      if(checkpoint)sideCheckpoints++
+      if(checkpoint)for(let i=0;i<3;i++)for(const [key,offset] of [['position',0],['velocity',3]]){
+        const delta=Math.abs(state[key]['xyz'[i]]-checkpoint.expected[lane][i+offset])
+        sideMaxDelta=Math.max(sideMaxDelta,delta)
+        assert.ok(delta<2e-5,JSON.stringify({source:row.source.pathId,lane,step,key,delta}))
+      }
+      sideSteps++
+    }
+  }
+}
+assert.equal(sideSteps,23040)
+assert.equal(sideCheckpoints,320)
+console.log(`PASS Smoke side: 4 RAW systems /16 trajectories /23040 particle steps /320 checkpoints, native general curve and seeded gravity; max delta ${sideMaxDelta}; renderer still missing`)

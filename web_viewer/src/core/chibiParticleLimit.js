@@ -1,12 +1,26 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 
 export const LIFETIME_LIMIT_PROFILE='native-lifetime-magnitude-v1'
-// This profile is force-free. ClampVelocity damps the magnitude without
-// changing direction, so integrating a scalar preserves all three axes.
+// The scalar distance cache below is force-free. ClampVelocity damps the
+// magnitude without changing direction; acceleration must be applied first.
 export function stepLifetimeLimit(speed,limit,phase,dt) {
   if(limit.profile!==LIFETIME_LIMIT_PROFILE)throw Error('Unbound lifetime velocity limit')
   const maximum=Math.max(0,sampleParticleCurve(limit.curve,Math.max(0,Math.min(.99999,phase))))
   return speed>maximum?speed+(maximum-speed)*(1-Math.pow(1-limit.dampen,dt*30)):speed
+}
+
+// Native module order: gravity, magnitude limit, then position integration.
+// Supply acceleration in the particle simulation space; source binding and
+// world/local conversion belong to the caller, not this bounded step kernel.
+export function stepLifetimeLimitMotion(state,gravity,limit,phase,dt) {
+  const velocity={x:state.velocity.x+gravity.x*dt,y:state.velocity.y+gravity.y*dt,z:state.velocity.z+gravity.z*dt}
+  const speed=Math.hypot(velocity.x,velocity.y,velocity.z)
+  const limited=stepLifetimeLimit(speed,limit,phase,dt)
+  if(speed>0&&limited!==speed){
+    const ratio=limited/speed
+    velocity.x*=ratio;velocity.y*=ratio;velocity.z*=ratio
+  }
+  return {velocity,position:{x:state.position.x+velocity.x*dt,y:state.position.y+velocity.y*dt,z:state.position.z+velocity.z*dt}}
 }
 
 const integrals=new WeakMap()

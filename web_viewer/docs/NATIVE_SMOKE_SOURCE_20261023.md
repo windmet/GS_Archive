@@ -71,3 +71,19 @@ Shape输出仍是单位方向，给分发器传入speed缓冲区不等于执行�
 side四系统只验证了初速度缩放，其TwoConstants重力和非0/1端点的lifetime限速曲线仍未闭合，不能用down组的直线积分取代。独立Smoke仍缺完整场景/生命周期/UV/材质消费者，保持missing。
 
 本批完整源码门禁167/167通过；最新fixture已无写入重放，stage分支包含fetch后的 `origin/master 8e748036`，无master增量待合并。仅提交本批明确路径，不纳入既有删除/未跟踪文件，未PR或部署。
+
+## side组重力、通用曲线与联动积分补证
+
+输入 HEAD `84350bde`。`0x6deb6c` 调用快速缓存构建器 `0x66334c`，后者明确要求首/末关键帧位于0/1附近；Smoke源关键帧位于0.00478363037109375与0.9856480360031128，实际返回false。因此本组不能套用Bloom的快速缓存。改用完整源AnimationCurve关键帧、weightedMode与pre/post infinity输入，实际执行 `0x6e1838 → 0x65e98c`，由原生求值器构建Hermite缓存；没有在Python中代算系数。首帧前/末帧后、两个端点及两侧、区间内部及倒序共64个源曲线输出与现有JS匹配。源weights保留，weightedMode=0仍走未加权分支。
+
+[prepare-chibi-smoke-side-fixture.py](../scripts/prepare-chibi-smoke-side-fixture.py) 对4个side系统使用两组明确的四通道种子，执行源TwoConstants重力 `0x70dae8`；单独保存加重力前后速度，以验证Native使用的seed hash及标量插值。PhysicsManager getter仅做“返回null”ABI适配，重力向量来自引擎内置fallback，标记此前已发出诊断；没有用host函数代替重力或限速。
+
+联动部分直接运行既有原生模块调度器 `0x6db88c`（重力→限速）及 `0x6d1e9c`（位置更新），保留源负速度、双常量重力、dampen=1与非0/1端点曲线。两个固定步长1/60与1/30均运行到8秒，早于源寿命8.80000019秒，共16条轨迹、5760个四粒子批更新（23040粒子步），在320个粒子检查点记录位置与速度。各轨迹的起点来自前批重新原生重放的有符号速度结果。
+
+新增 [chibi-smoke-side-native.json](../scripts/fixtures/chibi-smoke-side-native.json)；[verify-chibi-smoke-edge.mjs](../scripts/verify-chibi-smoke-edge.mjs) 验证source/motion/hash绑定、快速缓存确实拒绝、64个曲线输出、单步重力及320个轨迹检查点。`chibiParticleLimit.js`新增 `stepLifetimeLimitMotion`，先在模拟空间加加速度，再沿更新后的向量做幅值限速，最后积分；既有force-free标量距离缓存保持原行为。实际JS与原生位置/速度最大误差0.000010565630748970989，阈值2e−5 Unity单位。生产者的既有入场guard尚未放宽，不把新增运动核当作Smoke消费者已接入。
+
+重放命令：`python scripts/prepare-chibi-smoke-side-fixture.py --native-engine <libunity.so> --unicorn-path <runtime>`，生成fixture追加 `--write`；该命令还会无写入重放既有edge/motion/Noise证据。
+
+边界：local inverse为受控单位矩阵，phase为明确传入的post-step寿命分数，种子与帧步长均非原机记录；不含完整发射/退休调度、移动父链或运行时container/镜头桥接，也未消费尺寸/颜色/UV/材质。原生libm powf继续使用既有ABI适配。此次闭合的是side受控运动数学，Smoke在完整场景消费者落地前继续missing。
+
+本批原生生成及无写入重放、object-emitter目标回归通过；`build:check`通过（16.18s，固定E盘代码输出、不复制public），完整源码门禁167/167。构建产生的资源/翻译审计元数据已恢复输入HEAD。本批无可见渲染改动，未新增Browser或完整媒体包验收结论；fetch后无master增量待合并（`origin/master 8e748036`），未PR或部署。
