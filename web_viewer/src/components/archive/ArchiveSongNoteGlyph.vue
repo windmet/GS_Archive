@@ -1,6 +1,6 @@
 <template>
   <g :data-native-role="role">
-    <svg :x="x - width / 2" :y="y - bodyHeight / 2" :width="width" :height="bodyHeight" :viewBox="viewBox(sprite)" overflow="hidden">
+    <svg v-if="showBody" :x="x - width / 2" :y="y - bodyHeight / 2" :width="width" :height="bodyHeight" :viewBox="viewBox(sprite)" overflow="hidden">
       <image :href="sprite.url" :width="sprite.width" :height="sprite.height" />
     </svg>
     <template v-if="hint">
@@ -16,7 +16,7 @@
 <script setup>
 import { computed, getCurrentInstance } from 'vue'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
-const props = defineProps({ role: { type: String, required: true }, skin: { type: String, default: 'Note1SpriteAtlas' }, x: Number, y: Number, width: Number })
+const props = defineProps({ role: { type: String, required: true }, skin: { type: String, default: 'Note1SpriteAtlas' }, x: Number, y: Number, width: Number, showBody: { type: Boolean, default: true } })
 const uid = `note-hint-${getCurrentInstance().uid}`
 const sprite = computed(() => noteRendering.skins[props.skin][props.role])
 const aspect = s => (s.displayBounds[3] - s.displayBounds[1]) / (s.displayBounds[2] - s.displayBounds[0])

@@ -1,9 +1,11 @@
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
 import nativeGeometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
-import { songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
+import nativeNotes from '../../config/song-track-native-note-geometry.v1.json' with { type: 'json' }
+import { noteRendering, songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
 import { buildSongChartTiming } from './SongChartTiming.js'
 import { songTrackNativePoint } from './SongTrackNativeProjection.js'
 import { songTrackNoteReadTime, songTrackNoteTime } from './SongTrackNativeTiming.js'
+import { buildNativeSongNoteQuad } from './SongTrackNativeNoteGeometry.js'
 export { songTrackSpanForSpeed } from './SongTrackNativeTiming.js'
 
 export const trackReference = reference
@@ -29,6 +31,32 @@ export function laneAt(points, subtick) {
   return points.at(-1).posx
 }
 
+// A native note quad is a parallelogram apart from float32 rounding. One
+// affine bitmap avoids a double-alpha seam along a two-triangle SVG clip.
+// Clip to all four native vertices and retain the fractional atlas UV crop.
+export function songTrackNoteImage(role, skin, lane, fraction) {
+  const sprite = nativeNotes.skins[skin]?.[role]
+  if (!sprite) throw new Error('Unknown native track sprite')
+  const quad = buildNativeSongNoteQuad({ lane, fraction,
+    textureWidth: sprite.textureWidth, textureHeight: sprite.textureHeight,
+    noteType: nativeNotes.roleNoteTypes[role], drawScale: nativeNotes.defaultDrawScale,
+    target: nativeGeometry.target })
+  const vertices = quad.vertices.map(p => ({ x: nativeGeometry.viewport.width / 2 + p.x,
+    y: nativeGeometry.viewport.height / 2 - p.y, z: p.z }))
+  const [bottomLeft, topLeft, topRight] = vertices
+  const { left, right, top, bottom } = sprite.uv
+  const a = (topRight.x - topLeft.x) / (right - left)
+  const b = (topRight.y - topLeft.y) / (right - left)
+  const c = (bottomLeft.x - topLeft.x) / (bottom - top)
+  const d = (bottomLeft.y - topLeft.y) / (bottom - top)
+  const matrix = [a, b, c, d, topLeft.x - a * left - c * top, topLeft.y - b * left - d * top]
+  const bounds = noteRendering.skins[skin][role].displayBounds
+  return { url: sprite.url, pngWidth: sprite.pngWidth, pngHeight: sprite.pngHeight,
+    matrix, transform: `matrix(${matrix.join(' ')})`, vertices, nativeVertices: quad.vertices,
+    points: vertices.map(p => `${p.x},${p.y}`).join(' '),
+    visibleWidth: quad.width * (bounds[2] - bounds[0]) / (right - left) }
+}
+
 // Map native 200px hold texture coordinates onto clipped triangle geometry.
 // Keep the full hold's V coordinates when the preview window cuts either end.
 export function songTextureTriangle(screen, uv) {
@@ -52,7 +80,7 @@ export function songTextureTriangle(screen, uv) {
     matrix: `matrix(${[m, o, n, pY, tx, ty].map(round).join(' ')})` }
 }
 
-export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
+export function buildSongTrackGeometry(chart, cursor = 0, span = 6000, skin = 'Note1SpriteAtlas') {
   if (!Number.isFinite(cursor) || cursor < 0 || !Number.isFinite(span) || span <= 0) throw new Error('Invalid track window')
   // Real charts use elapsed seconds, including across tempo changes. Small
   // geometry-only callers without tempos retain their unitless tick window.
@@ -72,11 +100,12 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
     const speed = n.speed ?? 1
     if (tick < cursor || tick > endForSpeed(speed)) return
     const p = project(lane, tick, speed)
+    const role = songNoteRole(type), image = songTrackNoteImage(role, skin, lane, p.fraction)
     glyphs.push({ id: `${n.sourceIndex}-${endpoint}`, sourceIndex: n.sourceIndex, type,
       endpoint, tick, lane, speed, fraction: p.fraction, x: p.x, y: p.y,
-      width: estimate.normalVisibleWidth * p.scale,
+      width: image.visibleWidth, image,
       special: type === 'SPECIAL',
-      role: songNoteRole(type) })
+      role })
   }
   for (const n of chart.notes) {
     const end = n.tick + n.duration
@@ -129,7 +158,8 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
   return { width, height, topY, judgeY, cursor, span, holds,
     middleNodes: songHoldMiddleNodes(chart).filter(n => n.tick >= cursor && n.tick <= endForSpeed(speeds.get(n.sourceIndex))).map(n => {
       const p = project(n.lane, n.tick, speeds.get(n.sourceIndex))
-      return { ...n, x: p.x, y: p.y, width: estimate.normalVisibleWidth * p.scale }
+      const image = songTrackNoteImage('middle', skin, n.lane, p.fraction)
+      return { ...n, x: p.x, y: p.y, width: image.visibleWidth, image }
     }),
     links,
     glyphs: glyphs.sort((a, b) => b.tick - a.tick),

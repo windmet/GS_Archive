@@ -2,7 +2,7 @@
 
 日期：2026-10-23。输入 `origin/master` / `2bdd3de44582ef3ce79cad1ec8c014f38118a6d9`；分支 `chart/20261023-native-projection`，LF worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023`。先建立台账，未修改运行时代码。范围仅谱面预览及其来源核查；无舞台修改、R2 上传或部署。
 
-当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口。首表保留输入提交的审计状态；音符完整网格、148尺寸、长条.72宽比、Special和flick仍开放，不把坐标合同通过写成原机渲染完成。
+当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切。首表保留输入提交的审计状态；长条148×.72宽度、节点判定、Special固定速度和flick仍开放，不把坐标合同通过写成原机渲染完成。
 
 ## 审计时的消费者与证据等级
 
@@ -105,3 +105,17 @@ Native坐标通过明确的Web适配转换到现有1280×720画布：x=width/2+n
 重要差异：Note1普通音符的完整256×256贴图在判定线约宽144.4103、高154.0377，外轨四边形还沿轨道倾斜；这不是当前148宽和固定宽高比。0x32d4814的312、0x32d4818的192、0x317a32c的.8及`GetNoteScaleRateByNoteTime` 0x1afc78c共同参与尺寸；后者从1.8到1插值。必须连同四顶点/贴图一起接，不能仅把148换成另一个宽度常数。
 
 另外从IPA读出21个native Sprite/Atlas rect，见`native-sprite-rects.json`。Note3横条normal的原Sprite rect为300×300，packed texture rect却是267.94647216796875×95.89712524414062，PNG导出为268×96；其他横条也有小数rect。后续必须使用实际packed rect生成几何，不能把PNG整数像素或透明裁边尺寸冒充原生尺寸。148与长条.72目前仍为估计。
+
+## 第四批：原生音符四角与三皮肤裁切
+
+输入 `7bd23715`。`NoteMesh.UpdateFromGameCreateMesh` 0x20bd010、`GetNoteScaleRateByNoteTime` 0x1afc78c和实际Vector3归一化方法均执行ARM64。21个Sprite的9组不同packed尺寸 × 普通/Special × .8/1/1.2尺寸设置 × 4个lane × 5个时间比例，共1080组四角；`SongTrackNativeNoteGeometry.js`与verifier共用，四角最大误差0。`NoteSizeAdjust=312`与192、.8、1.8全部按原生浮点操作接线，不能简化成换一个固定宽度。
+
+IPA实际Sprite/Atlas的packed rect小数参与几何；导出PNG的整数裁切与Unity UV对应关系另作Web适配。21个Sprite/3个lane/3个时间比例的四角映射最大残差0.000030517578125画布单位，单张仿射image避免两三角形半透明接缝，裁切到四个原生顶点。没有恢复原机shader、Z遮挡、粒子或完整GPU流水线。Special四角在受控时间比例下已核实，Special固定速度调度仍开放。
+
+语义映射从原生`ConvertNoteTypeToDrawType` 0x20b85c0的表和`GetSpriteInfos` 0x20b69fc的metadata literal解出，不再只靠截图：SMALL→normal、LARGE→p_skill、三方向FLICK→swipe、SPECIAL→sp、HOLD_MIDDLE→middle。`HoldMesh.Create` 0x21cf2c4调用原生head/end转换；head HOLD/VARIABLE→SMALL，LARGE_HOLD/LARGE_VARIABLE→LARGE；tail普通→SMALL、三划向→对应FLICK。皮肤默认来自构造器noteDesign=1/noteSize=100，除数100；不把默认值当作每个玩家实际设置。
+
+可重放producer `scripts/audit-song-track-native-note-geometry.py`读取已绑定ELF、IPA、Android metadata，核对Android/iOS音符enum并重新执行1080组；config存21个Sprite、9个方法hash和边界，fixture另存原生输出，不进入bundle。资源/Sprite/Texture读取、settings、标量helper和Mesh提交是显式stub，顶点/位置/归一化主体不是JS期望值镜像。反编译/指令在`.analysis/chart-native/decompiled{9,10,11,12}/`和`mesh-instructions.txt`。
+
+验证：来源重读一致；native-note-geometry的旧148宽、PNG整数尺寸、平直矩形实际模块变异全部拒绝；233组native-timing、180组projection、244档track/note-rendering/chart-timing/chart-presentation回归通过；`build:check`通过（21.77秒，无public复制），保留既有背景未解析与大chunk warning。148现在只供待核实的长条148×.72使用，普通头尾和poly展示节点不再读取它。长轨图仍保留其示意布局。
+
+实际Browser仍为本worktree5231/PID67724：桌面1440×900 Café Parade EXPERT tick30000，19个端点，圆形与横条分别截图`note-quad-desktop.png`、`note-quad-skin3-desktop.png`，可见外轨倾斜、紫星、flick贴图。HMR刷新后重新选EXPERT/透视/tick4000，手机尺寸390×844有23端点/3长条，scrollWidth390，截图`note-quad-mobile.png`。`note-quad-skin3-mobile.png`实际在刷新后的长轨页面，不作为横条透视证据。控制台无error/warn。以上仍是桌面Browser手机尺寸模拟，无原机对照。

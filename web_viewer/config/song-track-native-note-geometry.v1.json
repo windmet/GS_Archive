@@ -1,0 +1,690 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "dataSha256": "fb28e28793e4f9d21e76dd96be2c776a71382cb607d98acd24f65f20bed8018a",
+    "metadataSha256": "dc257cb9aaa706915fad7635acce8f0977c0416372b985e763825f5990461184",
+    "androidEnumTypeDefinitionIndex": 10672,
+    "nativeEnumValues": {
+      "NONE": -10,
+      "MEASURE_GRID": -1,
+      "BEAT_GRID": -2,
+      "SMALL": 0,
+      "LARGE": 1,
+      "FLICK_LEFT": 2,
+      "FLICK_UP": 3,
+      "FLICK_RIGHT": 4,
+      "HOLD": 5,
+      "VARIABLE_HOLD": 6,
+      "LARGE_HOLD": 7,
+      "LARGE_VARIABLE_HOLD": 8,
+      "SPECIAL": 9,
+      "HOLD_MIDDLE": 10
+    },
+    "drawSprites": {
+      "1": {
+        "name": "live_notes_normal",
+        "usageRva": "0x42ea460",
+        "literalIndex": 16507
+      },
+      "2": {
+        "name": "live_notes_p_skill",
+        "usageRva": "0x4314a80",
+        "literalIndex": 16508
+      },
+      "3": {
+        "name": "live_notes_swipe_up",
+        "usageRva": "0x42fea98",
+        "literalIndex": 16512
+      },
+      "4": {
+        "name": "live_notes_swipe_left",
+        "usageRva": "0x42eccf8",
+        "literalIndex": 16510
+      },
+      "5": {
+        "name": "live_notes_swipe_right",
+        "usageRva": "0x42dcf40",
+        "literalIndex": 16511
+      },
+      "6": {
+        "name": "live_notes_sp",
+        "usageRva": "0x434c568",
+        "literalIndex": 16509
+      },
+      "7": {
+        "name": "live_notes_middle",
+        "usageRva": "0x42ccbb8",
+        "literalIndex": 16506
+      },
+      "8": {
+        "name": "timing_line",
+        "usageRva": "0x434d6c0",
+        "literalIndex": 18114
+      },
+      "9": {
+        "name": "live_notes_hold_line",
+        "usageRva": "0x4305528",
+        "literalIndex": 16505
+      }
+    },
+    "typeToDraw": {
+      "SMALL": 1,
+      "LARGE": 2,
+      "FLICK_LEFT": 4,
+      "FLICK_UP": 3,
+      "FLICK_RIGHT": 5,
+      "HOLD": 0,
+      "VARIABLE_HOLD": 0,
+      "LARGE_HOLD": 0,
+      "LARGE_VARIABLE_HOLD": 0,
+      "SPECIAL": 6,
+      "HOLD_MIDDLE": 7
+    },
+    "holdBeginTypes": {
+      "HOLD": 0,
+      "VARIABLE_HOLD": 0,
+      "LARGE_HOLD": 1,
+      "LARGE_VARIABLE_HOLD": 1
+    },
+    "holdEndTypes": {
+      "END_NORMAL": 0,
+      "END_FLICK_LEFT": 2,
+      "END_FLICK_UP": 3,
+      "END_FLICK_RIGHT": 4
+    },
+    "roles": {
+      "SMALL": "normal",
+      "LARGE": "p_skill",
+      "FLICK_LEFT": "swipe_left",
+      "FLICK_UP": "swipe_up",
+      "FLICK_RIGHT": "swipe_right",
+      "SPECIAL": "sp",
+      "HOLD_MIDDLE": "middle",
+      "HOLD": "normal",
+      "VARIABLE_HOLD": "normal",
+      "LARGE_HOLD": "p_skill",
+      "LARGE_VARIABLE_HOLD": "p_skill",
+      "END_NORMAL": "normal",
+      "END_FLICK_LEFT": "swipe_left",
+      "END_FLICK_UP": "swipe_up",
+      "END_FLICK_RIGHT": "swipe_right"
+    },
+    "elfSha256": "9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e",
+    "coordinateContractSha256": "dbea5795c8f67a6a6d71dfbdf82336148581e65ef32d7e8f91351edaa844f802",
+    "methods": [
+      {
+        "name": "NoteMesh.UpdateFromGameCreateMesh",
+        "rva": "0x20bd010",
+        "bytes": 1588,
+        "sha256": "f891c5296affdfe5ee133cbfb6d705f09860ceb7ac95950734631f770fc68d60"
+      },
+      {
+        "name": "RhythmGameDef.GetNoteScaleRateByNoteTime",
+        "rva": "0x1afc78c",
+        "bytes": 36,
+        "sha256": "f915902d7380b68f0613df4a14023c342ec7fdb340c233bcc04a1564d3ac0806"
+      },
+      {
+        "name": "NoteDrawManager.GetSpriteInfos",
+        "rva": "0x20b69fc",
+        "bytes": 1164,
+        "sha256": "13162baf9972bbb6002415e5066fd09734cd9238e773a32814c28d628b0a08a5"
+      },
+      {
+        "name": "NoteDrawManager.ConvertNoteTypeToDrawType",
+        "rva": "0x20b85c0",
+        "bytes": 32,
+        "sha256": "13cfb7a748eb6a50b48cbd48a5d2f821f017e1db2af2270a9e9be897a1f14ce8"
+      },
+      {
+        "name": "ToHoldBeginNoteType",
+        "rva": "0x1f474e0",
+        "bytes": 172,
+        "sha256": "639a35347424b0cd3ca521416d0d7d8e07eccc5f8b127c01ed36d2dd2a831636"
+      },
+      {
+        "name": "EndType.ToEventNoteType",
+        "rva": "0x1f461cc",
+        "bytes": 28,
+        "sha256": "ee6541f61c1cd7d98abf39ffd4ffc2feff3a984d538ae2e6622d1d12f441c27a"
+      },
+      {
+        "name": "HoldMesh.Create",
+        "rva": "0x21cf2c4",
+        "bytes": 1600,
+        "sha256": "2b768764a317b127095359543d288dcd178212eb05be642eeb8f2568669a5e56"
+      },
+      {
+        "name": "LiveSettingsData.get_noteDrawScale",
+        "rva": "0x1c1b4bc",
+        "bytes": 60,
+        "sha256": "bbcce6fb2f744d99b7a6c959e04c217d64441d4b55b555f6a3b26310e8d42d4c"
+      },
+      {
+        "name": "LiveSettingsData..ctor",
+        "rva": "0x1c1b6e0",
+        "bytes": 220,
+        "sha256": "6ed52a73a1901e349837cfc8756cdd905a75390ea579777437c9841c3f2ad522"
+      }
+    ],
+    "constants": {
+      "sizeAdjust": {
+        "rva": "0x32d4814",
+        "hex": "00009c43",
+        "value": 312.0
+      },
+      "heightAdjust": {
+        "rva": "0x32d4818",
+        "hex": "00004043",
+        "value": 192.0
+      },
+      "heightRate": {
+        "rva": "0x317a32c",
+        "hex": "cdcc4c3f",
+        "value": 0.800000011920929
+      },
+      "farScale": {
+        "rva": "0x32cc6e0",
+        "hex": "6666e63f",
+        "value": 1.7999999523162842
+      },
+      "settingsScaleDivisor": {
+        "rva": "0x3168e80",
+        "hex": "0000c842",
+        "value": 100.0
+      }
+    },
+    "defaultSettings": {
+      "rva": "0x32cce20",
+      "hex": "0100000064000000",
+      "noteDesign": 1,
+      "noteSize": 100,
+      "noteDrawScale": 1.0
+    }
+  },
+  "skins": {
+    "Note1SpriteAtlas": {
+      "normal": {
+        "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_normal.png",
+        "spritePathId": "1949",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          520.0,
+          276.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "de960b4f11362d59f15383db1e4bc2efdae06516f6c2aaff02e4077942ad0dcb"
+      },
+      "p_skill": {
+        "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_p_skill.png",
+        "spritePathId": "1665",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          0.0,
+          304.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "d53fd8964dd8cc52648fae2db4d619bd87601d383d20b204284b9dfd7b94adff"
+      },
+      "swipe_left": {
+        "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_swipe_left.png",
+        "spritePathId": "1864",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          260.0,
+          304.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "369e61c558e149bf361674757a88833a6d9ca5cd7f2658dc447adbb8a4fd9d8d"
+      },
+      "swipe_up": {
+        "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_swipe_up.png",
+        "spritePathId": "2078",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          580.0,
+          0.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "b0b38e44d401083df868f3f6fce1a348a88449c2e44a0a3a77b26a01294f47e1"
+      },
+      "swipe_right": {
+        "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_swipe_right.png",
+        "spritePathId": "2114",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          0.0,
+          564.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "291ca32bf6eb51701bc5df653717ba7a2d2a955830f91e3876ee220d16dd2437"
+      },
+      "sp": {
+        "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_sp.png",
+        "spritePathId": "1787",
+        "pngWidth": 300,
+        "pngHeight": 300,
+        "textureWidth": 300.0,
+        "textureHeight": 300.0,
+        "uv": {
+          "left": 0.0,
+          "right": 300.0,
+          "top": 0.0,
+          "bottom": 300.0
+        },
+        "textureRect": [
+          0.0,
+          0.0,
+          300.0,
+          300.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "00a4f508c4bc6cd742ee3b51c0307463a89720f33accee642a7fff3ed515b8f3"
+      },
+      "middle": {
+        "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_middle.png",
+        "spritePathId": "2262",
+        "pngWidth": 272,
+        "pngHeight": 272,
+        "textureWidth": 272.0,
+        "textureHeight": 272.0,
+        "uv": {
+          "left": 0.0,
+          "right": 272.0,
+          "top": 0.0,
+          "bottom": 272.0
+        },
+        "textureRect": [
+          304.0,
+          0.0,
+          272.0,
+          272.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "0ec9f6d241c2000bb377c57b14a3e37d24b9fcd5a01a89cca3f7c53214851c38"
+      }
+    },
+    "Note2SpriteAtlas": {
+      "normal": {
+        "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_normal.png",
+        "spritePathId": "1982",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          0.0,
+          304.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "eda68bda3f64baa9747fc82f98a3b1c2e69b3127c26130481e7b4037a3df3d81"
+      },
+      "p_skill": {
+        "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_p_skill.png",
+        "spritePathId": "1701",
+        "pngWidth": 272,
+        "pngHeight": 272,
+        "textureWidth": 272.0,
+        "textureHeight": 272.0,
+        "uv": {
+          "left": 0.0,
+          "right": 272.0,
+          "top": 0.0,
+          "bottom": 272.0
+        },
+        "textureRect": [
+          304.0,
+          0.0,
+          272.0,
+          272.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "fc392052051afcb44d0cb9e85cd500ea648431413c674966ca03a645b7d9d233"
+      },
+      "swipe_left": {
+        "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_swipe_left.png",
+        "spritePathId": "2055",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          304.0,
+          276.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "06b6d6c3bdc593339ac148d7c347b4fc486f2e542fe2b4fe54dbfb35ed1e620e"
+      },
+      "swipe_up": {
+        "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_swipe_up.png",
+        "spritePathId": "2828",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          0.0,
+          564.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "b4137eee882e5d100c7d4e289e0c4e6120f79be9785e71712b3935e793b0fb56"
+      },
+      "swipe_right": {
+        "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_swipe_right.png",
+        "spritePathId": "1974",
+        "pngWidth": 256,
+        "pngHeight": 256,
+        "textureWidth": 256.0,
+        "textureHeight": 256.0,
+        "uv": {
+          "left": 0.0,
+          "right": 256.0,
+          "top": 0.0,
+          "bottom": 256.0
+        },
+        "textureRect": [
+          564.0,
+          276.0,
+          256.0,
+          256.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "3e97e3f743855826d514c88fcab28fd0a2fee299b03266c6b3862cf3371226b4"
+      },
+      "sp": {
+        "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_sp.png",
+        "spritePathId": "1579",
+        "pngWidth": 300,
+        "pngHeight": 300,
+        "textureWidth": 300.0,
+        "textureHeight": 300.0,
+        "uv": {
+          "left": 0.0,
+          "right": 300.0,
+          "top": 0.0,
+          "bottom": 300.0
+        },
+        "textureRect": [
+          0.0,
+          0.0,
+          300.0,
+          300.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "b524a7a8030eab5463dc06be83fe5ea54b492925a09374a8fadd873d344e97fc"
+      },
+      "middle": {
+        "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_middle.png",
+        "spritePathId": "2554",
+        "pngWidth": 272,
+        "pngHeight": 272,
+        "textureWidth": 272.0,
+        "textureHeight": 272.0,
+        "uv": {
+          "left": 0.0,
+          "right": 272.0,
+          "top": 0.0,
+          "bottom": 272.0
+        },
+        "textureRect": [
+          580.0,
+          0.0,
+          272.0,
+          272.0
+        ],
+        "settingsRaw": 3,
+        "pngSha256": "0ec9f6d241c2000bb377c57b14a3e37d24b9fcd5a01a89cca3f7c53214851c38"
+      }
+    },
+    "Note3SpriteAtlas": {
+      "normal": {
+        "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_normal.png",
+        "spritePathId": "2182",
+        "pngWidth": 268,
+        "pngHeight": 96,
+        "textureWidth": 267.94647216796875,
+        "textureHeight": 95.89712524414062,
+        "uv": {
+          "left": 0.026750564575195312,
+          "right": 267.9732360839844,
+          "top": 0.076171875,
+          "bottom": 95.9732666015625
+        },
+        "textureRect": [
+          0.026750564575195312,
+          550.0267333984375,
+          267.94647216796875,
+          95.89712524414062
+        ],
+        "settingsRaw": 67,
+        "pngSha256": "4024a1d86416d187cdd06dd9a0e7c6a4d0f769e10fd81cc1454d35de523b5e89"
+      },
+      "p_skill": {
+        "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_p_skill.png",
+        "spritePathId": "2491",
+        "pngWidth": 268,
+        "pngHeight": 96,
+        "textureWidth": 267.94647216796875,
+        "textureHeight": 95.89712524414062,
+        "uv": {
+          "left": 0.026750564575195312,
+          "right": 267.9732360839844,
+          "top": 0.076171875,
+          "bottom": 95.9732666015625
+        },
+        "textureRect": [
+          0.026750564575195312,
+          650.0267333984375,
+          267.94647216796875,
+          95.89712524414062
+        ],
+        "settingsRaw": 67,
+        "pngSha256": "27af8b4ef99d9cad2a7f696078323c791b239337f5ea7b4000b42879ebe9ac27"
+      },
+      "swipe_left": {
+        "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_swipe_left.png",
+        "spritePathId": "2581",
+        "pngWidth": 269,
+        "pngHeight": 128,
+        "textureWidth": 268.8971252441406,
+        "textureHeight": 127.8477554321289,
+        "uv": {
+          "left": 0.07612049579620361,
+          "right": 268.9732360839844,
+          "top": 0.076141357421875,
+          "bottom": 127.92388916015625
+        },
+        "textureRect": [
+          0.07612049579620361,
+          204.07611083984375,
+          268.8971252441406,
+          127.8477554321289
+        ],
+        "settingsRaw": 67,
+        "pngSha256": "a6a1a309eda8fcd711eb0480b3c35764c78589a44366ba4c07ab3333713c1f99"
+      },
+      "swipe_up": {
+        "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_swipe_up.png",
+        "spritePathId": "2213",
+        "pngWidth": 268,
+        "pngHeight": 110,
+        "textureWidth": 267.8809814453125,
+        "textureHeight": 109.94650268554688,
+        "uv": {
+          "left": 0.0429079532623291,
+          "right": 267.92388916015625,
+          "top": 0.026763916015625,
+          "bottom": 109.9732666015625
+        },
+        "textureRect": [
+          0.0429079532623291,
+          336.0267333984375,
+          267.8809814453125,
+          109.94650268554688
+        ],
+        "settingsRaw": 67,
+        "pngSha256": "d6e2d3ed1a932e98595d099948653d118bef8cd817dbe931b5df985d1c286df9"
+      },
+      "swipe_right": {
+        "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_swipe_right.png",
+        "spritePathId": "2759",
+        "pngWidth": 269,
+        "pngHeight": 128,
+        "textureWidth": 268.8971252441406,
+        "textureHeight": 127.86974334716797,
+        "uv": {
+          "left": 0.0267486572265625,
+          "right": 268.92388916015625,
+          "top": 0.0761260986328125,
+          "bottom": 127.94586944580078
+        },
+        "textureRect": [
+          204.02674865722656,
+          0.05413055419921875,
+          268.8971252441406,
+          127.86974334716797
+        ],
+        "settingsRaw": 67,
+        "pngSha256": "1b3db57f0cbdacda52486c05af7bac43c8ba2aab3dedfebc829e0e74a1fc4d8f"
+      },
+      "sp": {
+        "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_sp.png",
+        "spritePathId": "2626",
+        "pngWidth": 298,
+        "pngHeight": 96,
+        "textureWidth": 297.94647216796875,
+        "textureHeight": 95.89712524414062,
+        "uv": {
+          "left": 0.026751041412353516,
+          "right": 297.9732360839844,
+          "top": 0.076171875,
+          "bottom": 95.9732666015625
+        },
+        "textureRect": [
+          0.026751041412353516,
+          450.0267333984375,
+          297.94647216796875,
+          95.89712524414062
+        ],
+        "settingsRaw": 67,
+        "pngSha256": "0b3bb01aff24848e9b9ea2cfbb43bddd61b50c2ab571d693b0d636a7eeb87d1a"
+      },
+      "middle": {
+        "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_middle.png",
+        "spritePathId": "2145",
+        "pngWidth": 272,
+        "pngHeight": 34,
+        "textureWidth": 271.8971252441406,
+        "textureHeight": 33.847755432128906,
+        "uv": {
+          "left": 0.07612049579620361,
+          "right": 271.9732360839844,
+          "top": 0.07611083984375,
+          "bottom": 33.92388916015625
+        },
+        "textureRect": [
+          0.07612049579620361,
+          750.0761108398438,
+          271.8971252441406,
+          33.847755432128906
+        ],
+        "settingsRaw": 67,
+        "pngSha256": "84f0e37e2c1d52dddbbf0fb43afe3c9616df9d781fbab21692e5953eb9ccff9a"
+      }
+    }
+  },
+  "roleNoteTypes": {
+    "normal": 0,
+    "p_skill": 1,
+    "swipe_left": 2,
+    "swipe_up": 3,
+    "swipe_right": 4,
+    "sp": 9,
+    "middle": 10
+  },
+  "defaultDrawScale": 1.0,
+  "boundaries": {
+    "vertices": "native quad math at controlled normalized time",
+    "timing": "ordinary note timing recovered separately; Special fixed-speed override pending",
+    "renderer": "SVG bitmap/canvas adapter; original shaders, depth compositing and particles pending"
+  }
+}
