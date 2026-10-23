@@ -28,6 +28,8 @@
 
 舞台 Smoke 补证（同分支，输入 `91f61d32` / `8290ec28` / `84350bde`）：6系统/120个受控出生位置与单位方向、+1.5/+7/−7原生startSpeed及down两系统的6条无外力轨迹已核对。side四系统确认快速缓存拒绝非0/1端点，改走原生通用曲线，双常量重力→限速→积分16轨迹/320粒子检查点同新增JS运动核对照，最大误差1.06e−5。对照已纳入object-emitter门禁，见[Smoke来源记录](NATIVE_SMOKE_SOURCE_20261023.md)。原机时钟/退休调度、完整本地模拟与场景消费仍开放，Smoke继续missing。
 
+Smoke UV补证（输入 `f5f174a7`）：down两系统的1×12源网格经过原生renderer context与UV writer的32个受控四边形核对，真实frame分配函数保留1024/12小数行高；side无UV且非循环发射。未改渲染逻辑，完整UV更新/发射时钟与场景消费者仍待接入，见同一[Smoke记录](NATIVE_SMOKE_SOURCE_20261023.md)。
+
 ## 未合入但保留的分支
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。

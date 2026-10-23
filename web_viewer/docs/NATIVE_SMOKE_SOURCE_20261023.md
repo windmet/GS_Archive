@@ -87,3 +87,17 @@ side四系统只验证了初速度缩放，其TwoConstants重力和非0/1端点�
 边界：local inverse为受控单位矩阵，phase为明确传入的post-step寿命分数，种子与帧步长均非原机记录；不含完整发射/退休调度、移动父链或运行时container/镜头桥接，也未消费尺寸/颜色/UV/材质。原生libm powf继续使用既有ABI适配。此次闭合的是side受控运动数学，Smoke在完整场景消费者落地前继续missing。
 
 本批原生生成及无写入重放、object-emitter目标回归通过；`build:check`通过（16.18s，固定E盘代码输出、不复制public），完整源码门禁167/167。构建产生的资源/翻译审计元数据已恢复输入HEAD。本批无可见渲染改动，未新增Browser或完整媒体包验收结论；fetch后无master增量待合并（`origin/master 8e748036`），未PR或部署。
+
+## down组UV布局补证
+
+输入 HEAD `f5f174a7`。源down两系统的UV均为Grid/Lifetime/WholeSheet、1列12行、cycles=1、startFrame=0，frameOverTime为线性0→1乘0.9998999834060669；同一纹理为171×1024，单行高度1024/12不是整数。side四系统没有UV模块，且looping=false、发射时长10秒，不能套用down组3秒循环。源Emission rate依次为2、1、30、30、10、10粒子/秒，均无burst和距离发射；这里只记录来源差异，未据此宣称原生发射时钟已重放。
+
+[prepare-chibi-smoke-uv-fixture.py](../scripts/prepare-chibi-smoke-uv-fixture.py) 复用原生source hierarchy与renderer context `0x6cf028/0x6c505c`，在UVModule真实cache偏移0x830写入源enabled、mode、tiles与channel mask。`0x6d8fe0`提供源网格数量，context将1/12分别打包到bit0…9/10…18，tileCount=12；随后真实执行UV写入器 `0x813330`。两系统各4个四通道批次，覆盖全部12个帧号与边界内的受控小数帧输入，共32个UV四边形。仅free(NULL)适配ABI，未替换UV计算。
+
+结果 [chibi-smoke-uv-native.json](../scripts/fixtures/chibi-smoke-uv-native.json) 绑定引擎和源fixture哈希。[verify-chibi-smoke-edge.mjs](../scripts/verify-chibi-smoke-edge.mjs) 实际调用现有 `loadObjectEmitters`，以最小PIXI边界记录它分配的12个Rectangle；确认帧高保留1024/12，PNG Y翻转后的归一化UV与32个原生四边形匹配。现有renderer的布局分配无需修改。本次fake PIXI只观察真实分配函数，不是GPU上传、纹理过滤、shader或Browser验收。
+
+重放命令：`python scripts/prepare-chibi-smoke-uv-fixture.py --native-engine <libunity.so> --unicorn-path <runtime>`，生成fixture追加 `--write`。生成和无写入重放、目标JS检查通过；还会重放既有42个Smoke几何、9个billboard角度/53个父链与Noise证据。本批仅新增工具/证据/检查，不改前端运行逻辑，不重复Vite构建。
+
+帧号是受控输入，没有执行完整UV动画更新/cache生成器或发射时钟；尚未验证发射/停止/退休、源尺寸颜色的完整消费和container/镜头桥接。Smoke继续missing。
+
+本批完整源码门禁167/167通过。fetch发现master已前进至 `6048cb13`（门户#87–#92等21个提交）；先提交UV证据，再按分支策略普通merge同步，合并后的构建与回归另记。

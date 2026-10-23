@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import vm from 'node:vm'
 import {sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
 import {stepLifetimeLimitMotion,LIFETIME_LIMIT_PROFILE} from '../src/core/chibiParticleLimit.js'
+import {loadObjectEmitters} from '../src/core/chibiObjectEmitterRenderer.js'
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url))
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex')
@@ -142,3 +143,48 @@ for(const row of side.cases){
 assert.equal(sideSteps,23040)
 assert.equal(sideCheckpoints,320)
 console.log(`PASS Smoke side: 4 RAW systems /16 trajectories /23040 particle steps /320 checkpoints, native general curve and seeded gravity; max delta ${sideMaxDelta}; renderer still missing`)
+
+const uvProof=JSON.parse(read('scripts/fixtures/chibi-smoke-uv-native.json'))
+assert.equal(uvProof.binarySha256,proof.binarySha256)
+assert.equal(uvProof.sourceSha256,sha(sourceBytes))
+for(const window of uvProof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+assert.equal(uvProof.cases.length,8)
+// Run the actual renderer's frame allocation; the PIXI boundary records its
+// rectangles only. This is not texture upload, GPU filtering or Browser proof.
+class Rectangle {constructor(x,y,width,height){Object.assign(this,{x,y,width,height})}}
+class Texture {constructor(baseTexture,frame){Object.assign(this,{baseTexture,frame})}destroy(){}}
+class Sprite {constructor(texture){this.texture=texture;this.anchor={set(){}}}}
+class Container {constructor(){this.children=[]}addChild(sprite){this.children.push(sprite)}destroy(){}}
+const PIXI={Rectangle,Texture,Sprite,Container,BLEND_MODES:{NORMAL_NPM:0,ADD_NPM:1}}
+for(const particle of source.particles.filter(p=>p.modules.UVModule)){
+  const uv=particle.modules.UVModule,texture=source.textures['668']
+  assert.equal(uv.tilesX,1);assert.equal(uv.tilesY,12)
+  assert.equal(texture.width,171);assert.equal(texture.height,1024)
+  assert.equal(uv.frameOverTime.scalar*12<12,true,'Source endpoint scale avoids frame 12')
+  const original={width:texture.width,height:texture.height,baseTexture:{},destroy(){}}
+  const runtime=await loadObjectEmitters(PIXI,{masks:[],textures:{'668':{file:'source-smoke-uv-probe',nativeSampling:texture.sampling}},
+    systems:[{texture:'668',uv:{columns:uv.tilesX,rows:uv.tilesY},capacity:1,sortingOrder:particle.renderer.sortingOrder,blend:'normal'}]},async()=>original)
+  const frames=runtime.nativeEmitters[0].frames
+  assert.equal(frames.length,12)
+  assert.equal(frames[0].frame.height,1024/12)
+  assert.notEqual(frames[0].frame.height,Math.floor(1024/12),'Do not round source sheet rows')
+  assert.equal(original.baseTexture.alphaMode,0)
+  assert.equal(original.baseTexture.wrapMode,33071)
+  const rows=uvProof.cases.filter(row=>row.source.pathId===particle.pathId)
+  assert.equal(rows.length,4)
+  for(const row of rows){
+    assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+    assert.equal(row.flags&0x3ff,uv.tilesX);assert.equal((row.flags>>>10)&0x1ff,uv.tilesY)
+    assert.equal(row.tileCount,12)
+    for(let lane=0;lane<4;lane++){
+      const rect=frames[Math.floor(row.frames[lane])].frame
+      const corners=[[rect.x,rect.y],[rect.x+rect.width,rect.y],[rect.x+rect.width,rect.y+rect.height],[rect.x,rect.y+rect.height]]
+      for(let corner=0;corner<4;corner++){
+        near(corners[corner][0]/texture.width,row.expected[lane][corner][0],'native UV/Pixi X')
+        near(1-corners[corner][1]/texture.height,row.expected[lane][corner][1],'native UV/Pixi flipped Y')
+      }
+    }
+  }
+}
+assert.equal(source.particles.filter(p=>!p.modules.UVModule).length,4,'Side systems have no sheet animation')
+console.log('PASS Smoke UV: 2 source systems /32 native quads, all 12 rows and fractional 1024/12 renderer frames; no GPU or animation-clock proof')
