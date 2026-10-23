@@ -141,12 +141,12 @@
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
           <header class="overview-section-heading" :class="{'overview-chip-heading':almanacMonth}"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : almanacMonth ? `315 岁时记 · ${almanacMonthNumber} 月` : '运营轨迹 · 315 的回忆录' }} <small v-if="!almanacMonth">{{ collectionCount('events') }}</small></h2>
-            <div v-if="almanacMonth" class="overview-heading-chips overview-story-tabs" role="group" aria-label="选择月份"><button v-for="month in ALMANAC_MONTHS" :key="month" type="button" :aria-pressed="almanacMonthNumber === month" @click="almanacMonthNumber = month">{{ month }}月</button></div>
+            <div v-if="almanacMonth" ref="almanacChips" class="overview-heading-chips overview-story-tabs" role="group" aria-label="选择月份"><button v-for="month in ALMANAC_MONTHS" :key="month" type="button" :aria-pressed="almanacMonthNumber === month" @click="almanacMonthNumber = month">{{ month }}月</button></div>
             <button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <!-- 315 岁时记: the month's birthdays beside every event that opened in that month, reprints included. -->
           <div v-if="almanacMonth" class="overview-almanac">
             <div class="overview-almanac-column"><h3>{{ almanacMonthNumber }} 月生日偶像 <small>{{ almanacMonth.birthdays.length }}</small></h3>
-              <ul v-if="almanacMonth.birthdays.length" class="overview-birthdays"><li v-for="birthday in almanacMonth.birthdays" :key="birthday.idolCode"><button type="button" :data-archive-focus-id="`portal-birthday:${birthday.idolCode}`" @click="emit('open-result',{target:birthdayCollectionTarget(birthday.idolCode)})"><ArchiveIdolAvatar :idol-code="birthday.idolCode" :accent-color="idols.find(row => row.id === birthday.idolCode)?.color" :size="40" :ring-width="2" decorative /><span><strong>{{ almanacIdolName(birthday.idolCode) }}</strong><small>{{ birthday.month }}月{{ birthday.day }}日</small></span><span class="overview-birthday-action">生日剧情<ChevronRight :size="14" aria-hidden="true" /></span></button></li></ul>
+              <ul v-if="almanacMonth.birthdays.length" class="overview-birthdays"><li v-for="birthday in almanacMonth.birthdays" :key="birthday.idolCode"><button type="button" :data-archive-focus-id="`portal-birthday:${birthday.idolCode}`" @click="emit('open-result',{target:birthdayCollectionTarget(birthday.idolCode)})"><ArchiveIdolAvatar :idol-code="birthday.idolCode" :accent-color="idols.find(row => row.id === birthday.idolCode)?.color" :size="40" :ring-width="2" decorative /><span class="overview-birthday-copy"><strong>{{ almanacIdolName(birthday.idolCode) }}</strong><small>{{ birthday.month }}月{{ birthday.day }}日</small></span><span class="overview-birthday-action">生日剧情<ChevronRight :size="14" aria-hidden="true" /></span></button></li></ul>
               <p v-else class="overview-empty">这个月没有偶像过生日。</p>
             </div>
             <div class="overview-almanac-column"><h3>历年 {{ almanacMonthNumber }} 月活动 <small>{{ almanacMonth.events.length }}</small></h3>
@@ -172,7 +172,7 @@
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
-import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
@@ -253,6 +253,13 @@ function openStatTile(tile){
 // 315 岁时记 opens on this month in Japan time; a scope without it keeps the timeline.
 const almanacMonthNumber=ref(currentJapanMonth())
 const almanacMonth=computed(()=>props.preferredReference?.actionable ? null : portalAlmanacMonth(props.desktopOverview.almanac,almanacMonthNumber.value))
+// A narrow heading scrolls its chip row; keep the chosen month in view without moving the page.
+const almanacChips=ref(null)
+watch([almanacChips,almanacMonthNumber],async([row])=>{
+  await nextTick()
+  const chip=row?.querySelector('[aria-pressed="true"]')
+  if(chip) row.scrollLeft+=chip.getBoundingClientRect().left-row.getBoundingClientRect().left-(row.clientWidth-chip.offsetWidth)/2
+},{flush:'post'})
 const almanacIdolName=code=>props.idolName(code,props.idols.find(row=>row.id===code)?.name) || props.idols.find(row=>row.id===code)?.name || code
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
@@ -567,7 +574,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-birthdays { display:grid;margin:0;padding:0;list-style:none; }
 .overview-birthdays li { border-bottom:1px solid var(--gs-line); }
 .overview-birthdays button { display:flex;align-items:center;gap:var(--gs-space-4);width:100%;min-height:72px;padding:var(--gs-space-3) 0;border:0;background:none;color:inherit;text-align:left;cursor:pointer; }
-.overview-birthdays button > span:not(.overview-birthday-action) { display:grid;flex:1;gap:2px;min-width:0; }
+.overview-birthday-copy { display:grid;flex:1;gap:2px;min-width:0; }
 .overview-birthdays strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-birthdays small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
 .overview-birthday-action { display:inline-flex;flex:none;align-items:center;gap:2px;color:var(--gs-mint-ink);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
