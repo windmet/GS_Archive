@@ -1,5 +1,7 @@
 # 交接：门户/导航外部审阅的吸收（2026-10-23）
 
+> **10-23 下午更新**：C 批范围（担当视图画廊改通栏）和 E.4（磁贴位置）已改，新增 F 批「担当横幅」，以 [GS_ARCHIVE_HANDOFF_20261023_PORTAL_LAYOUT.md](GS_ARCHIVE_HANDOFF_20261023_PORTAL_LAYOUT.md) 为准。
+
 本文给接手的新会话用。外部审阅（v4→v5→v6 三版）已经逐条和代码核对、取舍完毕，**不要重新评估**，按下面的批次顺序直接做。每批一条新的 `portal/<日期>-<主题>` 分支，从最新 `origin/master` 切；做完一批开一个 PR。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)、[../AGENTS.md](../AGENTS.md)。
 
 ## 0. 开工前必读（工作区规则摘要）
