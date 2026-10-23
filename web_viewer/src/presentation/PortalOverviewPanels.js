@@ -66,3 +66,26 @@ export function portalPreferredStatTiles({ cardCounts, storyCounts, songCounts, 
       meta: joined([chats !== null && `个人聊天 ${chats}`, phones !== null && `电话 ${phones}`]) },
   ]
 }
+
+const CARD_ATTRIBUTES = Object.freeze([
+  { id: 'Physical', label: 'Physical', color: 'var(--gs-attr-physical)', icon: 'var(--gs-attr-icon-physical)' },
+  { id: 'Intelligence', label: 'Intelli', color: 'var(--gs-attr-intelli)', icon: 'var(--gs-attr-icon-intelli)' },
+  { id: 'Mental', label: 'Mental', color: 'var(--gs-attr-mental)', icon: 'var(--gs-attr-icon-mental)' },
+])
+const CARD_RARITIES = Object.freeze(['SSR', 'SR', 'R', 'N'])
+
+/**
+ * The card section's heading chips: three attributes and four rarities, each a jump into the card
+ * directory. Counts come from the scope facets; the attribute chips are disabled when the scope has
+ * no complete attribute facet (an older scope) and the preview rows do not carry attributes either.
+ */
+export function portalCardFilters(cardCounts = null, cards = []) {
+  const attributeAvailable = Boolean(cardCounts?.attribute && Object.keys(cardCounts.attribute).length === 3)
+    || (cards.length > 0 && cards.every(row => row.attribute))
+  return {
+    attributeAvailable,
+    attributes: CARD_ATTRIBUTES.map(attribute => ({ ...attribute,
+      count: attributeAvailable ? cardCounts?.attribute?.[attribute.id] ?? cards.filter(row => row.attribute === attribute.id).length : null })),
+    rarities: CARD_RARITIES.map(id => ({ id, count: cardCounts?.rarity?.[id] ?? cards.filter(row => row.rarity === id).length })),
+  }
+}
