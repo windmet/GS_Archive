@@ -1,5 +1,7 @@
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
 import { songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
+import { buildSongChartTiming } from './SongChartTiming.js'
+export { songTrackSpanForSpeed } from './SongTrackNativeTiming.js'
 
 export const trackReference = reference
 const estimate = reference.screenshotEstimates
@@ -7,12 +9,6 @@ const laneCount = reference.constants.LaneCount.value
 const nearWidth = reference.constants.TargetLaneWidth.value
 const farWidth = reference.constants.TopLaneWidth.value
 const round = value => Number(value.toFixed(5))
-
-// Relative visual scale only; this is not the game's unrecovered speed formula.
-export function songTrackSpanForSpeed(speed) {
-  if (!Number.isFinite(speed) || speed < 1 || speed > 30) throw new Error('Invalid visual speed')
-  return Math.round(24000 / speed)
-}
 
 // Native constants establish five lanes and the two widths. This interpolation
 // is a screenshot reconstruction, not the unrecovered Unity camera matrix.
@@ -58,7 +54,13 @@ export function songTextureTriangle(screen, uv) {
 
 export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
   if (!Number.isFinite(cursor) || cursor < 0 || !Number.isFinite(span) || span <= 0) throw new Error('Invalid track window')
-  const project = (lane, tick) => projectTrackPoint(lane, (tick - cursor) / span)
+  // Real charts use elapsed seconds, including across tempo changes. Small
+  // geometry-only callers without tempos retain their unitless tick window.
+  const timing = chart.tempos?.length ? buildSongChartTiming(chart) : null
+  const startSeconds = timing?.tickToSeconds(cursor)
+  const duration = timing ? timing.tickToSeconds(cursor + span) - startSeconds : span
+  const project = (lane, tick) => projectTrackPoint(lane,
+    timing ? (timing.tickToSeconds(tick) - startSeconds) / duration : (tick - cursor) / span)
   const glyphs = [], holds = []
   const glyph = (n, tick, lane, type, endpoint) => {
     if (tick < cursor || tick > cursor + span) return

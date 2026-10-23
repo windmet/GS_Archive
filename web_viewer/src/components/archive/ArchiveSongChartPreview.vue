@@ -14,7 +14,7 @@
         <div v-if="settingsOpen" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :style="settingsPosition" role="dialog" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
           <header class="settings-heading"><strong>显示与播放</strong><button type="button" aria-label="关闭视图设置" @click="closeSettings()"><X :size="18" aria-hidden="true" /></button></header>
           <label>贴图样式 <select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></label>
-          <template v-if="mode === 'perspective'"><label class="speed-setting">视觉配速 <input v-model.number="speed" type="number" min="1" max="30" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" type="range" min="1" max="30" step="0.1" aria-label="轨道配速滑杆" /></label><p class="setting-note">1–30 为相对刻度，越大落下越快；只改变画面疏密。</p></template>
+          <template v-if="mode === 'perspective'"><label class="speed-setting">音符速度 <input v-model.number="speed" type="number" min="1" max="11" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" type="range" min="1" max="11" step="0.1" aria-label="轨道配速滑杆" /></label><p class="setting-note">1.0–11.0，沿用原作设置刻度；越大落下越快。</p></template>
           <template v-else><label>纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label><label>长轨排布 <select v-model="longLayout" aria-label="长轨排布"><option value="auto">自动：桌面分栏 / 手机单栏</option><option value="columns">分栏横向阅读</option><option value="continuous">单栏纵向阅读</option></select></label></template>
           <div class="settings-audio"><label>播放速度 <select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></label><label>音量 <input v-model.number="volume" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></label></div>
         </div>
@@ -33,7 +33,7 @@
           <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
         </footer>
       </template>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长采用原作速度设置；相机、位置曲线、逐音符速度、Special 及特效仍为复刻估计。</p></div>
     </template>
   </section>
 </template>
@@ -71,7 +71,7 @@ function leaveImmersive() {
 watch(fullscreenActive, (active, was) => { if (was && !active) immersive.value = false })
 const uid = `chart-viewer-${getCurrentInstance().uid}`
 const opened = ref(props.standalone), selected = ref(props.difficulties[0]?.type || 1), mode = ref('perspective')
-const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(10), longLayout = ref('auto'), followPlayback = ref(false)
+const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(5), longLayout = ref('auto'), followPlayback = ref(false)
 const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
@@ -82,8 +82,8 @@ const playbackRate = ref(1), volume = ref(1), clockSnapshot = ref({ phase: 'idle
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const timing = computed(() => chart.value ? buildSongChartTiming(chart.value) : null)
 const safeCursor = computed(() => Math.min(chart.value?.maxTick || 0, Math.max(0, Number(cursor.value) || 0)))
-const safeSpeed = computed(() => Math.max(1, Math.min(30, Number(speed.value) || 10)))
-const span = computed(() => songTrackSpanForSpeed(safeSpeed.value))
+const safeSpeed = computed(() => Math.round(Math.max(1, Math.min(11, Number(speed.value) || 5)) * 10) / 10)
+const span = computed(() => timing.value ? songTrackSpanForSpeed(safeSpeed.value, timing.value, safeCursor.value) : 1)
 const currentSeconds = computed(() => Math.max(0, timing.value?.tickToSeconds(Math.max(0, Number(cursor.value) || 0)) || 0))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
