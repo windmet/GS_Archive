@@ -90,9 +90,13 @@ assert.ok(portalHubGroups().every(group=>group.entries.every(entry=>entry.count=
 // The 担当 summary tiles are four fixed slots whose numbers/actions come from the scope summary.
 const tiles=portalPreferredStatTiles({cardCounts:{total:17,rarity:{SSR:8,SR:6,R:3,N:0}},
   storyCounts:{all:46,main:7,event:3,personal:30,other:6},songCounts:{all:4,configurable_formation:1,fixed_unit:3},
-  preferredStats:[{id:'cards',value:17},{id:'stories',value:46},{id:'chats',value:19},{id:'phones',value:4}]})
+  preferredStats:[{id:'cards',value:17},{id:'stories',value:46},{id:'chats',value:19},{id:'phones',value:4}],
+  footprints:[{id:'cards',total:826},{id:'stories',total:1394},{id:'songs',total:60}]})
 assert.deepEqual(tiles.map(tile=>tile.id),['cards','stories','songs','communication'])
 assert.deepEqual(tiles.map(tile=>tile.value),[17,46,4,23])
+assert.deepEqual(tiles.map(tile=>tile.total),[826,1394,60,null])
+assert.deepEqual(tiles.map(tile=>tile.parts.reduce((sum, p)=>sum + p.count, 0)),tiles.map(tile=>tile.value),'the sum of tile parts matches the tile value')
+assert.deepEqual(tiles[0].parts,[{id:'SSR',label:'SSR',count:8},{id:'SR',label:'SR',count:6},{id:'R',label:'R',count:3}])
 assert.deepEqual(tiles.map(tile=>tile.action),['cards','stories','songs','mobile'])
 assert.equal(tiles[0].meta,'SSR 8 · SR 6 · R 3')
 assert.equal(tiles[1].meta,'主线 7 · 活动 3 · 个人 30 · 其他 6')
@@ -100,6 +104,7 @@ assert.equal(tiles[2].meta,'代表曲 1 · 组合曲 3')
 assert.equal(tiles[3].meta,'个人聊天 19 · 电话 4')
 assert.ok(portalPreferredStatTiles({cardCounts:{total:17}}).slice(1).every(tile=>tile.value===null),'absent scope summaries never invent a number')
 assert.deepEqual(portalPreferredStatTiles({}).map(tile=>tile.meta),['','','',''])
+assert.ok(portalPreferredStatTiles({}).every(tile=>tile.parts.length===0),'empty scope produces empty parts')
 const timeline=portalTimeline([{id:'a',releaseAt:1633046400,subtitle:'date',image:{url:'/assets/a.png'}},{id:'b',releaseAt:1680393600,subtitle:'date',image:{url:'/assets/b.png'}}])
 assert.deepEqual(timeline.map(row=>row.id),['a','b'])
 assert.deepEqual(timeline.map(row=>row.timelineDate),['2021.10.01','2023.04.02'])

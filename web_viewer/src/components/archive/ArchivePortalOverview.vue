@@ -45,7 +45,7 @@
       </header>
       <slot name="notices" />
       <!-- Scale of the archive as one line of links, not a row of number tiles. -->
-      <p class="overview-footprint" aria-label="当前视角资料数量" :aria-busy="!footprints.length">
+      <p class="overview-footprint" :class="{'is-preferred-footprint': preferredReference?.actionable}" aria-label="当前视角资料数量" :aria-busy="!footprints.length">
         <button v-for="count in footprintSlots" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" @click="openDirectory(count.id)">
           <b>{{ formatCount(count.value) }}<small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></b> <span>{{ count.label }}</span>
         </button>
@@ -67,7 +67,7 @@
           <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="unitNear(unit.id, index) ? idol.id : ''" :size="28" :ring-width="0" fallback-text="" decorative /></button></div>
         </article><article v-for="n in unitPlaceholderCount" :key="`unit-placeholder-${n}`" class="overview-unit-tile is-placeholder" aria-hidden="true"></article></div>
       </section>
-      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
+      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :style="preferredReference?.actionable ? heroStyle : undefined" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
           <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}" :style="heroStyle">
             <header class="overview-identity">
               <div class="overview-portrait-slot"><span class="overview-signature" aria-hidden="true"></span><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
@@ -90,10 +90,44 @@
           </div>
           <!-- The banner's right half: four summary tiles, every number already in the scope (no extra request). -->
           <div v-if="preferredReference?.actionable" class="overview-personal-stats" aria-label="担当数据">
-            <button v-for="tile in statTiles" :key="tile.id" class="overview-stat" type="button" :data-archive-focus-id="`portal-stat:${tile.id}`" @click="openStatTile(tile)">
-              <span class="overview-stat-label">{{ tile.label }}</span>
-              <strong>{{ formatCount(tile.value) }}</strong>
-              <small v-if="tile.meta">{{ tile.meta }}</small>
+            <button
+              v-for="tile in statTiles"
+              :key="tile.id"
+              class="overview-stat"
+              type="button"
+              :data-archive-focus-id="`portal-stat:${tile.id}`"
+              :aria-label="tile.meta ? `${tile.label} ${tile.value}${tile.total ? ` / ${tile.total}` : ''}，${tile.meta}` : `${tile.label} ${tile.value ?? ''}`"
+              @click="openStatTile(tile)"
+            >
+              <div class="overview-stat-header">
+                <span class="overview-stat-title">
+                  <component :is="archiveNavigationIcons[tile.icon || tile.id]" :size="16" aria-hidden="true" />
+                  <span>{{ tile.label }}</span>
+                </span>
+                <span class="overview-stat-figure">
+                  <strong>{{ formatCount(tile.value) }}</strong>
+                  <small v-if="tile.total" class="overview-stat-total">/ {{ formatCount(tile.total) }}</small>
+                  <ArrowUpRight :size="14" class="overview-stat-arrow" aria-hidden="true" />
+                </span>
+              </div>
+              <div v-if="tile.value && tile.parts?.length" class="overview-stat-bar" aria-hidden="true">
+                <span
+                  v-for="part in tile.parts"
+                  :key="part.id"
+                  class="overview-stat-segment"
+                  :style="{ flexGrow: part.count }"
+                ></span>
+              </div>
+              <div v-if="tile.parts?.length" class="overview-stat-chips" aria-hidden="true">
+                <span
+                  v-for="part in tile.parts"
+                  :key="part.id"
+                  class="overview-stat-chip"
+                >
+                  <span class="overview-stat-dot"></span>
+                  <span class="overview-stat-chip-label">{{ part.label }} {{ part.count }}</span>
+                </span>
+              </div>
             </button>
           </div>
           <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
@@ -431,6 +465,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
    column gap as the lists below), stretched to one height; the gallery then takes the full row. */
 .overview-personal-stats { display:none; }
 @container portal (min-width:981px) {
+  .overview-footprint.is-preferred-footprint { display:none; }
   .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
   .overview-featured:not(.is-all-view) > .overview-card-showcase { grid-column:1 / -1; }
   .overview-featured:not(.is-all-view) .overview-identity { flex:1;height:auto;min-height:228px; }
@@ -439,11 +474,25 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
   .overview-content-grid:not(.is-global-grid) .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 }
-.overview-stat { display:grid;align-content:center;gap:2px;min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer; }
+.overview-stat { display:flex;flex-direction:column;justify-content:space-between;gap:var(--gs-space-3);min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer; }
 .overview-stat:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
-.overview-stat-label { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-stat-header { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-2);min-width:0; }
+.overview-stat-title { display:inline-flex;align-items:center;gap:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
+.overview-stat-title svg { flex:none;color:var(--gs-ink-3); }
+.overview-stat-figure { display:inline-flex;align-items:baseline;gap:var(--gs-space-2);white-space:nowrap; }
 .overview-stat strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-section);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums;line-height:1.2; }
-.overview-stat small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
+.overview-stat-total { color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-stat-arrow { flex:none;color:var(--gs-ink-3);margin-left:2px; }
+.overview-stat:hover .overview-stat-arrow { color:var(--gs-mint-ink); }
+.overview-stat-bar { display:flex;height:6px;border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--gs-line) 80%,transparent);overflow:hidden;gap:1px; }
+.overview-stat-segment { display:block;height:100%;min-width:2px; }
+.overview-stat-chips { display:flex;flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-3);min-width:0; }
+.overview-stat-chip { display:inline-flex;align-items:center;gap:5px;color:var(--gs-ink-2);font-size:var(--gs-text-meta);line-height:1.2; }
+.overview-stat-dot { display:inline-block;width:6px;height:6px;border-radius:50%;flex:none; }
+.overview-stat-segment:nth-child(1), .overview-stat-chip:nth-child(1) .overview-stat-dot { background:var(--hero-ink,var(--gs-mint-ink)); }
+.overview-stat-segment:nth-child(2), .overview-stat-chip:nth-child(2) .overview-stat-dot { background:color-mix(in srgb,var(--hero-ink,var(--gs-mint-ink)) 68%,var(--hero-light,var(--gs-mint))); }
+.overview-stat-segment:nth-child(3), .overview-stat-chip:nth-child(3) .overview-stat-dot { background:color-mix(in srgb,var(--hero-ink,var(--gs-mint-ink)) 40%,var(--hero-light,var(--gs-mint))); }
+.overview-stat-segment:nth-child(4), .overview-stat-chip:nth-child(4) .overview-stat-dot { background:color-mix(in srgb,var(--hero-ink,var(--gs-mint-ink)) 18%,var(--hero-light,var(--gs-mint))); }
 .overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
