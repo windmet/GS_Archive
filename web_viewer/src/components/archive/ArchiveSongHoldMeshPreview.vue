@@ -34,7 +34,11 @@ function draw() {
     const mesh = hold.nativeMesh
     const data = new Float32Array(mesh.vertices.length * 4)
     for (let i = 0; i < mesh.vertices.length; i++) {
-      data.set([mesh.vertices[i].x, mesh.vertices[i].y, ...mesh.uv[i]], i * 4)
+      const offset = i * 4
+      data[offset] = mesh.vertices[i].x
+      data[offset + 1] = mesh.vertices[i].y
+      data[offset + 2] = mesh.uv[i][0]
+      data[offset + 3] = mesh.uv[i][1]
     }
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.triangles), gl.DYNAMIC_DRAW)

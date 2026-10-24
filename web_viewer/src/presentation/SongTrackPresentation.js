@@ -83,17 +83,44 @@ export function songTextureTriangle(screen, uv) {
     matrix: `matrix(${[m, o, n, pY, tx, ty].map(round).join(' ')})` }
 }
 
+// One renderer belongs to one loaded (immutable) chart. Changing charts creates
+// a new renderer; skin, speed and seeks reuse only cursor-independent data.
+export function createSongTrackRenderer(chart) {
+  const timing = chart.tempos?.length ? buildSongChartTiming(chart) : null
+  const speeds = new Map(chart.notes.map(n => [n.sourceIndex, n.speed ?? 1]))
+  const groups = new Map()
+  for (const note of chart.notes) {
+    const speed = Math.fround(note.speed ?? 1)
+    if (!groups.has(speed)) groups.set(speed, [])
+    groups.get(speed).push(note)
+  }
+  const links = [...groups.entries()].flatMap(([speed, notes]) =>
+    songSimultaneousLinks({ notes }).map(link => ({ ...link, speed })))
+  const prepared = { timing, speeds, links, middleNodes: songHoldMiddleNodes(chart) }
+  return (cursor = 0, span = 6000, skin = 'Note1SpriteAtlas') => renderSongTrackGeometry(chart, cursor, span, skin, prepared)
+}
+
 export function buildSongTrackGeometry(chart, cursor = 0, span = 6000, skin = 'Note1SpriteAtlas') {
+  return createSongTrackRenderer(chart)(cursor, span, skin)
+}
+
+function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
   if (!Number.isFinite(cursor) || cursor < 0 || !Number.isFinite(span) || span <= 0) throw new Error('Invalid track window')
   // Real charts use elapsed seconds, including across tempo changes. Small
   // geometry-only callers without tempos retain their unitless tick window.
-  const timing = chart.tempos?.length ? buildSongChartTiming(chart) : null
+  const { timing, speeds } = prepared
   const startSeconds = timing ? timing.tickToSeconds(cursor) : cursor
   const duration = timing ? timing.tickToSeconds(cursor + span) - startSeconds : span
   const toSeconds = tick => timing ? timing.tickToSeconds(tick) : tick
-  const endForSpeed = speed => timing
+  const windowEnds = new Map()
+  const endForSpeed = (speed = 1) => {
+    if (windowEnds.has(speed)) return windowEnds.get(speed)
+    const end = timing
     ? timing.secondsToTick(startSeconds + songTrackNoteReadTime(duration, speed))
     : cursor + songTrackNoteReadTime(duration, speed)
+    windowEnds.set(speed, end)
+    return end
+  }
   const project = (lane, tick, speed = 1) => {
     const fraction = -songTrackNoteTime(startSeconds, toSeconds(tick), duration, speed)
     return { ...projectTrackPoint(lane, fraction), fraction }
@@ -151,21 +178,13 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000, skin = 'N
   }
   const { width, height } = nativeGeometry.viewport
   const topY = projectTrackPoint(2, 1).y, judgeY = projectTrackPoint(2, 0).y
-  const speeds = new Map(chart.notes.map(n => [n.sourceIndex, n.speed ?? 1]))
   // Native same-timing links also require equal note speeds. Keep this visual
   // grouping separate from the long chart's schematic tick-only grouping.
-  const groups = new Map()
-  for (const note of chart.notes) {
-    const speed = Math.fround(note.speed ?? 1)
-    if (!groups.has(speed)) groups.set(speed, [])
-    groups.get(speed).push(note)
-  }
-  const links = [...groups.entries()].flatMap(([speed, notes]) => songSimultaneousLinks({ notes })
-    .filter(l => l.tick >= cursor && l.tick <= endForSpeed(speed))
-    .map(l => ({ ...l, id: `${l.tick}-${speed}`, speed,
-      a: project(l.from, l.tick, speed), b: project(l.to, l.tick, speed) })))
+  const links = prepared.links.filter(l => l.tick >= cursor && l.tick <= endForSpeed(l.speed))
+    .map(l => ({ ...l, id: `${l.tick}-${l.speed}`,
+      a: project(l.from, l.tick, l.speed), b: project(l.to, l.tick, l.speed) }))
   return { width, height, topY, judgeY, cursor, span, holds,
-    middleNodes: songHoldMiddleNodes(chart).filter(n => n.tick >= cursor && n.tick <= endForSpeed(speeds.get(n.sourceIndex))).map(n => {
+    middleNodes: prepared.middleNodes.filter(n => n.tick >= cursor && n.tick <= endForSpeed(speeds.get(n.sourceIndex))).map(n => {
       const p = project(n.lane, n.tick, speeds.get(n.sourceIndex))
       const image = songTrackNoteImage('middle', skin, n.lane, p.fraction)
       return { ...n, x: p.x, y: p.y, width: image.visibleWidth, image }

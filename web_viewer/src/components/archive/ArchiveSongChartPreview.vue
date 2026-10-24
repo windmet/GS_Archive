@@ -47,6 +47,7 @@ import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode
 import { playableSongChart, validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackPresentation.js'
+import { songChartFrameTime } from '../../presentation/SongChartFrameClock.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
@@ -90,7 +91,7 @@ const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.valu
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 const previousNote = computed(() => endpoints.value.filter(n => n.tick < safeCursor.value - .001).at(-1))
 const nextNote = computed(() => endpoints.value.find(n => n.tick > safeCursor.value + .001))
-let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0, lastPaint = 0
+let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0, lastPaint = null
 const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
   if (snapshot.phase === 'error') { audioError.value = '歌曲音频加载失败，请点击播放重试。'; stopPlayback() }
@@ -144,14 +145,29 @@ function step(direction) {
   const note = direction > 0 ? nextNote.value : previousNote.value
   if (note) { seek(note.tick); locateMessage.value = `tick ${note.tick} · 轨位 ${note.lane + 1}` }
 }
-function stopPlayback() { playGeneration++; starting.value = false; if (frame) cancelAnimationFrame(frame); frame = 0; audio.value?.pause() }
+function stopPlayback() {
+  playGeneration++; starting.value = false
+  if (frame) cancelAnimationFrame(frame)
+  frame = 0; lastPaint = null
+  // Preserve the exact media position when pausing between visual frames.
+  if (audio.value && timing.value && audio.value.readyState >= 1) {
+    pendingSeconds = audio.value.currentTime
+    cursor.value = timing.value.secondsToTick(pendingSeconds)
+  }
+  audio.value?.pause()
+}
 defineExpose({ pause: stopPlayback })
 function updatePlayback(now = 0) {
   const element = audio.value
   if (!element || element.paused || !timing.value) { frame = 0; return }
-  // The audio remains the clock; a 30 Hz visual cursor avoids invalidating the
-  // chart/toolbars at the iPad's 120 Hz display rate.
-  if (now - lastPaint >= 33) { cursor.value = timing.value.secondsToTick(element.currentTime); lastPaint = now }
+  // Cap at 60 Hz on high-refresh displays. Keep the fractional remainder so
+  // rAF jitter does not turn a 60 Hz target into alternating skipped frames.
+  // Long-chart scrolling retains its cheaper 30 Hz cadence.
+  const paintTime = songChartFrameTime(lastPaint, now, mode.value === 'perspective' ? 60 : 30)
+  if (paintTime !== null) {
+    lastPaint = paintTime
+    cursor.value = timing.value.secondsToTick(element.currentTime)
+  }
   pendingSeconds = element.currentTime
   frame = requestAnimationFrame(updatePlayback)
 }

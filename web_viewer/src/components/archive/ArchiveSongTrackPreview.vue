@@ -20,7 +20,7 @@
       <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" :y="scene.judgeY - 12" width="1280" height="24" preserveAspectRatio="none" />
       <image href="/assets/song-chart-track/live_target_line.png" x="0" :y="scene.judgeY - 10" width="1280" height="20" preserveAspectRatio="none" />
       <g v-for="(p, i) in scene.judges" :key="i" :data-judge-lane="i">
-        <!-- The glow is a soft wide ring, not an SVG blur: the track redraws 30 times a second and a
+        <!-- The glow is a soft wide ring, not an SVG blur: the track redraws up to 60 times a second and a
              filter is re-rasterised on every one of them, which is what made iOS stutter. -->
         <circle :cx="p.x" :cy="p.y" r="10" fill="none" stroke="#70efff" stroke-width="10" opacity=".3" />
         <circle :cx="p.x" :cy="p.y" r="9" fill="none" stroke="#befaff" stroke-width="2.5" />
@@ -35,7 +35,7 @@
 
 <script setup>
 import { computed, getCurrentInstance, ref } from 'vue'
-import { buildSongTrackGeometry } from '../../presentation/SongTrackPresentation.js'
+import { createSongTrackRenderer } from '../../presentation/SongTrackPresentation.js'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
 import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
@@ -43,7 +43,8 @@ const props = defineProps({ chart: { type: Object, required: true }, title: { ty
 const uid = `track-${getCurrentInstance().uid}`
 const holdCanvasUnavailable = ref(false)
 const safeCursor = computed(() => Math.max(0, props.cursor))
-const scene = computed(() => buildSongTrackGeometry(props.chart, safeCursor.value, props.span, props.skin))
+const renderTrack = computed(() => createSongTrackRenderer(props.chart))
+const scene = computed(() => renderTrack.value(safeCursor.value, props.span, props.skin))
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)
 const laneOutline = computed(() => {
   const a = scene.value.lanes[0], b = scene.value.lanes[5]
