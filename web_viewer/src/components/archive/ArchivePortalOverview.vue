@@ -45,7 +45,7 @@
       </header>
       <slot name="notices" />
       <!-- Scale of the archive as one line of links, not a row of number tiles. -->
-      <p class="overview-footprint" aria-label="当前视角资料数量" :aria-busy="!footprints.length">
+      <p class="overview-footprint" :class="{'is-preferred-footprint': preferredReference?.actionable}" aria-label="当前视角资料数量" :aria-busy="!footprints.length">
         <button v-for="count in footprintSlots" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" @click="openDirectory(count.id)">
           <b>{{ formatCount(count.value) }}<small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></b> <span>{{ count.label }}</span>
         </button>
@@ -67,7 +67,7 @@
           <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="unitNear(unit.id, index) ? idol.id : ''" :size="28" :ring-width="0" fallback-text="" decorative /></button></div>
         </article><article v-for="n in unitPlaceholderCount" :key="`unit-placeholder-${n}`" class="overview-unit-tile is-placeholder" aria-hidden="true"></article></div>
       </section>
-      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
+      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :style="preferredReference?.actionable ? heroStyle : undefined" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
           <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}" :style="heroStyle">
             <header class="overview-identity">
               <div class="overview-portrait-slot"><span class="overview-signature" aria-hidden="true"></span><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
@@ -90,10 +90,36 @@
           </div>
           <!-- The banner's right half: four summary tiles, every number already in the scope (no extra request). -->
           <div v-if="preferredReference?.actionable" class="overview-personal-stats" aria-label="担当数据">
-            <button v-for="tile in statTiles" :key="tile.id" class="overview-stat" type="button" :data-archive-focus-id="`portal-stat:${tile.id}`" @click="openStatTile(tile)">
-              <span class="overview-stat-label">{{ tile.label }}</span>
-              <strong>{{ formatCount(tile.value) }}</strong>
-              <small v-if="tile.meta">{{ tile.meta }}</small>
+            <button
+              v-for="tile in statTiles"
+              :key="tile.id"
+              class="overview-stat"
+              type="button"
+              :data-archive-focus-id="`portal-stat:${tile.id}`"
+              :aria-label="tile.meta ? `${tile.label} ${tile.value}${tile.total ? ` / ${tile.total}` : ''}，${tile.meta}` : `${tile.label} ${tile.value ?? ''}`"
+              @click="openStatTile(tile)"
+            >
+              <div class="overview-stat-header">
+                <span class="overview-stat-title">
+                  <component :is="archiveNavigationIcons[tile.icon || tile.id]" :size="16" aria-hidden="true" />
+                  <span>{{ tile.label }}</span>
+                </span>
+                <span class="overview-stat-figure">
+                  <strong>{{ formatCount(tile.value) }}</strong>
+                  <small v-if="tile.total" class="overview-stat-total">/ {{ formatCount(tile.total) }}</small>
+                  <ArrowUpRight :size="14" class="overview-stat-arrow" aria-hidden="true" />
+                </span>
+              </div>
+              <div v-if="tile.parts?.length" class="overview-stat-bricks" :style="{ gridTemplateColumns: `repeat(${tile.parts.length}, minmax(0, 1fr))` }" aria-hidden="true">
+                <div
+                  v-for="part in tile.parts"
+                  :key="part.id"
+                  class="overview-stat-brick"
+                >
+                  <strong class="overview-stat-brick-value">{{ formatCount(part.count) }}</strong>
+                  <span class="overview-stat-brick-label">{{ part.label }}</span>
+                </div>
+              </div>
             </button>
           </div>
           <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
@@ -121,7 +147,7 @@
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取歌曲预览…' : '暂无可展示的歌曲预览，可前往目录查阅。' }}</p>
           </section>
         <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
-          <header class="overview-section-heading" :class="{'overview-chip-heading':preferredReference?.actionable}"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><div v-if="preferredReference?.actionable" class="overview-heading-chips overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <header class="overview-section-heading" :class="{'overview-chip-heading':preferredReference?.actionable}"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><div v-if="preferredReference?.actionable" ref="storyChipsRef" class="overview-heading-chips overview-story-tabs" :class="{'has-overflow': storyChipsOverflow}" @scroll="updateStoryChipsOverflow" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small v-if="tab.id !== 'all'">{{ tab.count }}</small></button></div><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in readableMainCollections" :key="chapter.id"><button type="button" @click="emit('open-result', chapter)"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" deferred /><span><strong>{{ chapterLabel(chapter.title) }}</strong><small>{{ chapter.chapterCount }} 节 · {{ chapter.episodeCount }} 话</small><ChevronRight :size="16" /></span></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small v-if="gatewayCount(gateway) !== null" :title="storyGatewayNote(gateway, desktopOverview.gatewayCounts) || undefined">{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}</small></span><ArrowUpRight :size="14" /></button></div></div>
           <div v-else-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" deferred /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span class="overview-story-copy"><small v-if="story.subtitle">{{ storySubtitle(story.subtitle) }}</small><strong :class="{ 'is-title-pending': storyTitle.pending() }">{{ storyTitle(story.id, story.title) }}</strong></span><span v-if="story.cast?.length" class="overview-story-cast" role="img" :aria-label="`登场偶像：${story.cast.map(idol => idol.name).join('、')}`"><ArchiveIdolAvatar v-for="idol in story.cast.slice(0, 3)" :key="idol.id" :idol-code="idol.id" :accent-color="idol.accentColor" :size="24" :ring-width="1" :gap="1" decorative /><small v-if="story.cast.length > 3">+{{ story.cast.length - 3 }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
@@ -133,7 +159,11 @@
               <h3>{{ group.label }}</h3>
               <nav class="overview-hub-links" :aria-label="group.label">
                 <button v-for="entry in group.entries" :key="entry.id" type="button" :data-archive-focus-id="`portal-hub:${group.id}:${entry.id}`" @click="emit('navigate', entry.target)">
-                  <span>{{ entry.label }}</span><small v-if="entry.count !== null">{{ formatCount(entry.count) }}</small><ChevronRight :size="14" aria-hidden="true" />
+                  <span class="overview-hub-card-head">
+                    <component :is="hubEntryIcons[entry.id] || ChevronRight" :size="16" aria-hidden="true" />
+                    <strong>{{ entry.label }}</strong>
+                  </span>
+                  <small v-if="entry.count !== null" class="overview-hub-card-count">{{ formatCount(entry.count) }}</small>
                 </button>
               </nav>
             </div>
@@ -173,7 +203,7 @@
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
 import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Play, Search, Shuffle, Users, X } from '@lucide/vue'
+import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
@@ -267,9 +297,49 @@ function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code)
 function openDirectory(domain, filters = {}) {
   emit('open-directory', { domain, idolCode: props.preferredReference?.actionable ? props.preferredReference.idolCode : '', ...filters })
 }
+const hubEntryIcons = {
+  ...archiveNavigationIcons,
+  personal: MessageCircle,
+  unit: Users,
+  phone: Phone,
+}
+
+const storyChipsRef = ref(null)
+const storyChipsOverflow = ref(false)
+function updateStoryChipsOverflow() {
+  const el = storyChipsRef.value
+  if (!el) {
+    storyChipsOverflow.value = false
+    return
+  }
+  storyChipsOverflow.value = el.scrollWidth > el.clientWidth && (el.scrollLeft + el.clientWidth < el.scrollWidth - 2)
+}
+let storyChipsObserver = null
+onMounted(() => {
+  if (typeof ResizeObserver !== 'undefined') {
+    storyChipsObserver = new ResizeObserver(() => updateStoryChipsOverflow())
+    if (storyChipsRef.value) storyChipsObserver.observe(storyChipsRef.value)
+  }
+  updateStoryChipsOverflow()
+})
+onBeforeUnmount(() => {
+  if (storyChipsObserver) {
+    storyChipsObserver.disconnect()
+    storyChipsObserver = null
+  }
+})
+watch(storyChipsRef, (el, oldEl) => {
+  if (storyChipsObserver) {
+    if (oldEl) storyChipsObserver.unobserve(oldEl)
+    if (el) storyChipsObserver.observe(el)
+  }
+  nextTick(updateStoryChipsOverflow)
+})
+
 const storyTabs = computed(() => [{id:'all',label:'全部',count:props.desktopOverview.storyCounts?.all ?? (collections.value.stories || []).length},
   ...[['main','主线'],['event','活动'],['personal','个人'],['other','其他']].map(([id,label]) => ({id,label,count:props.desktopOverview.storyCounts?.[id] ?? (collections.value.stories || []).filter(row => storyGroup(row) === id).length})).filter(row => row.count)])
 function storyGroup(row) { return ['main','event'].includes(row.domain) ? row.domain : ['idol_story','card_scenarios','work','birthday'].includes(row.domain) ? 'personal' : 'other' }
+watch(storyTabs, () => { nextTick(updateStoryChipsOverflow); });
 watch(() => props.desktopOverview.scopeId, () => { storyTab.value = 'all'; portraitFailed.value = false })
 const cardOffset = ref(0)
 function shuffleCards() { cardOffset.value += 1; emit('expand-cards') }
@@ -404,17 +474,18 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-section-heading h2, .overview-section-heading h3 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.4; }
 .overview-section-heading h2 > small, .overview-section-heading h3 > small { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-section-heading button, .overview-heading-actions { display:flex;flex:none;align-items:center;gap:var(--gs-space-2); }
-.overview-section-heading button { min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
+.overview-section-heading button { flex-shrink:0;white-space:nowrap;min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
 .overview-heading-actions { gap:var(--gs-space-5); }
 /* Chips inside a heading row: one quiet pill row between the title and its actions, scrolling when it
    runs out of room. Each chip opens the directory filtered by it. */
 /* The chip row keeps a focus-ring margin inside its scroller but adds no height: a heading with chips is
    exactly as tall as one without, so the lists under two side-by-side headings start on one line. */
 .overview-heading-chips { display:flex;flex:1;gap:var(--gs-space-2);min-width:0;overflow-x:auto;margin-block:calc(-1 * var(--gs-space-1));padding:var(--gs-space-1);scrollbar-width:none; }
+.overview-heading-chips.has-overflow { -webkit-mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%);mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%); }
 .overview-heading-chips::-webkit-scrollbar { display:none; }
 .overview-section-heading .overview-heading-chips.overview-story-tabs { margin:calc(-1 * var(--gs-space-1)) 0; }
 /* One pill for every chip: the heading chips share the story tabs' look (below). */
-.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui);white-space:nowrap; }
+.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
 .overview-heading-chips button small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
 .overview-section-heading .overview-heading-chips button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
 .overview-section-heading .overview-heading-chips button[aria-pressed=true] small { color:inherit;opacity:.75; }
@@ -424,14 +495,15 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-section-heading .overview-shuffle { color:var(--gs-ink-2); }
 
 /* Featured: the 担当 hero beside the featured cards. */
-.overview-featured { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7); }
+.overview-featured { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7);--idol-soft-bg:color-mix(in srgb,var(--hero-wash,var(--gs-mint-wash)) 75%,var(--gs-surface));--idol-ink:var(--hero-ink,var(--gs-mint-ink)); }
 .overview-unit-hub + .overview-featured { margin-top:var(--gs-space-section); }
 .overview-personal, .overview-card-showcase { min-width:0; }
 /* The 担当 banner on wide pages: the hero card and its four tiles share the page's one 50:50 axis (the same
    column gap as the lists below), stretched to one height; the gallery then takes the full row. */
 .overview-personal-stats { display:none; }
 @container portal (min-width:981px) {
-  .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
+  .overview-footprint.is-preferred-footprint { display:none; }
+  .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);margin-top:var(--gs-space-4); }
   .overview-featured:not(.is-all-view) > .overview-card-showcase { grid-column:1 / -1; }
   .overview-featured:not(.is-all-view) .overview-identity { flex:1;height:auto;min-height:228px; }
   .overview-personal-stats { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:var(--gs-space-3); }
@@ -439,11 +511,21 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
   .overview-content-grid:not(.is-global-grid) .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 }
-.overview-stat { display:grid;align-content:center;gap:2px;min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer; }
+.overview-stat { display:flex;flex-direction:column;justify-content:space-between;gap:var(--gs-space-3);min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer;transition:border-color var(--gs-motion-fast); }
 .overview-stat:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
-.overview-stat-label { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.overview-stat strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-section);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums;line-height:1.2; }
-.overview-stat small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
+.overview-stat:hover { border-color:var(--gs-rule); }
+.overview-stat:hover .overview-stat-arrow { color:var(--idol-ink,var(--gs-mint-ink)); }
+.overview-stat-header { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-2);min-width:0; }
+.overview-stat-title { display:inline-flex;align-items:center;gap:var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-stat-title svg { flex:none;color:var(--idol-ink,var(--gs-mint-ink)); }
+.overview-stat-figure { display:inline-flex;align-items:baseline;gap:2px;white-space:nowrap; }
+.overview-stat-figure strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-title);font-weight:var(--gs-weight-bold);font-variant-numeric:tabular-nums;line-height:1;color:var(--gs-ink); }
+.overview-stat-total { margin-left:4px;color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-stat-arrow { flex:none;color:var(--gs-ink-3);margin-left:4px;align-self:center; }
+.overview-stat-bricks { display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;width:100%;margin-top:var(--gs-space-3); }
+.overview-stat-brick { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--idol-soft-bg);border-radius:var(--gs-radius-control);padding:8px 6px;text-align:center;min-width:0; }
+.overview-stat-brick-value { font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-bold);color:var(--gs-ink);font-variant-numeric:tabular-nums;line-height:1.2; }
+.overview-stat-brick-label { font-size:var(--gs-text-caption);color:var(--gs-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2; }
 .overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
@@ -503,10 +585,15 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-hub-groups { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-7); }
 .overview-hub-group { min-width:0; }
 .overview-hub-group > h3 { margin:0 0 var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
-.overview-hub-links { display:flex;flex-wrap:wrap;gap:var(--gs-space-2); }
-.overview-hub-links button { display:inline-flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-normal);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui); }
-.overview-hub-links button small { color:var(--gs-ink-3);font-variant-numeric:tabular-nums; }
-.overview-hub-links button > svg { color:var(--gs-ink-3); }
+.overview-hub-links { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-2); }
+.overview-hub-links button { display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-height:58px;padding:var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink-2);text-align:left;box-sizing:border-box; }
+.overview-hub-links button:hover { border-color:var(--gs-rule);background:var(--gs-surface-raised,var(--gs-surface)); }
+.overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-mint-ink); }
+.overview-hub-links button:hover .overview-hub-card-head > svg { color:var(--gs-mint-ink); }
+.overview-hub-card-head { display:flex;align-items:center;gap:var(--gs-space-2);width:100%;min-width:0; }
+.overview-hub-card-head > svg { flex:none;color:var(--gs-ink-3); }
+.overview-hub-card-head > strong { flex:1;min-width:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.overview-hub-card-count { margin-top:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
 .overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
@@ -520,7 +607,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-song-cover { flex:none; }
 .overview-song-copy { flex:1;min-width:0; }
 .overview-song-detail { display:grid;gap:2px;width:100%;min-width:0;min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-song strong, .overview-story strong, .overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
+.overview-song strong, .overview-story strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
+.overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.overview-event small { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .overview-song small, .overview-story small, .overview-event small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 /* Relation labels are meta, not badges. */
 .overview-relation { color:var(--gs-ink-2) !important; }
@@ -546,9 +635,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-event-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:var(--gs-space-6); }
 .overview-event { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line); }
 
-/* Global stories: the main chapters as picture tiles (no frame), the other kinds as rows. */
-.overview-story-hub { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-8); }
-.overview-main-index { display:grid;align-content:start;gap:var(--gs-space-6); }
+/* Global stories: two tiers on desktop (banners on top, gateways in a 2-column grid below). */
+.overview-story-hub { display:flex;flex-direction:column;gap:var(--gs-space-6); }
+.overview-main-index { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);row-gap:var(--gs-space-4);align-content:start; }
 .overview-main-index button { display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left; }
 .overview-main-index article :deep(.domain-media-preview) { display:block;margin:0;padding:0; }
 .overview-main-index article :deep(img) { display:block;width:100%;height:auto;aspect-ratio:906 / 210;object-fit:cover;border-radius:var(--gs-radius-media); }
@@ -558,8 +647,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-main-index small { flex:1;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-main-index button > span > svg { align-self:center;color:var(--gs-ink-3); }
 .overview-main-index article:has(button:disabled) { opacity:.6; }
-.overview-story-gateways { display:grid;align-content:start;border-top:1px solid var(--gs-line); }
+.overview-story-gateways { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);align-content:start;border-top:1px solid var(--gs-line); }
 .overview-story-gateways button { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:56px;padding:0 var(--gs-space-2);border:0;border-bottom:1px solid var(--gs-line);background:none;color:var(--gs-ink);text-align:left; }
+.overview-story-gateways button:last-child:nth-child(odd) { grid-column:1 / -1; }
 .overview-story-gateways button > svg { flex:none;color:var(--gs-ink-3); }
 .overview-story-gateways button > span { display:flex;flex:1;align-items:center;justify-content:space-between;gap:var(--gs-space-3);min-width:0; }
 .overview-story-gateways strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap; }
@@ -567,10 +657,13 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* 315 岁时记: birthdays and events of one month on the page's 50:50 axis; the events reuse the event rows. */
 .overview-almanac { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
-.overview-almanac-column { min-width:0; }
+.overview-almanac-column { min-width:0;container:almanac-col / inline-size; }
 .overview-almanac-column > h3 { margin:0 0 var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-almanac-column > h3 small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-almanac .overview-event-grid { grid-template-columns:minmax(0,1fr); }
+@container almanac-col (min-width:560px) {
+  .overview-almanac .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-4); }
+}
 .overview-birthdays { display:grid;margin:0;padding:0;list-style:none; }
 .overview-birthdays li { border-bottom:1px solid var(--gs-line); }
 .overview-birthdays button { display:flex;align-items:center;gap:var(--gs-space-4);width:100%;min-height:72px;padding:var(--gs-space-3) 0;border:0;background:none;color:inherit;text-align:left;cursor:pointer; }
@@ -629,7 +722,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .is-global-grid .overview-stories { grid-row:1; }
   .is-global-grid .overview-song-list { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
   .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .overview-story-hub { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-6); }
+  .overview-story-hub { gap:var(--gs-space-6); }
+  .overview-main-index, .overview-story-gateways { grid-template-columns:minmax(0,1fr); }
+  .overview-story-gateways button:last-child:nth-child(odd) { grid-column:auto; }
 }
 @container portal (max-width:640px) {
   .overview-personal { display:flex;align-items:stretch; }
@@ -678,6 +773,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
   .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button, .overview-hub-links button { min-height:var(--gs-control-touch); }
+  @container portal (max-width:420px) { .overview-hub-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 }
 @media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }
 </style>
