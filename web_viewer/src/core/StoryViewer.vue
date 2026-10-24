@@ -1513,6 +1513,13 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   transform: translateY(0);
   filter: blur(0);
 }
+@media (prefers-reduced-motion: reduce) {
+  .adv-dialogue-fade-enter-from,
+  .adv-dialogue-fade-leave-to {
+    transform: none;
+    filter: none;
+  }
+}
 .icon-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 4px; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
 .icon-btn.dark { border-color: #d8e0e3; background: #fff; color: #26343c; }
 .restore-ui {
