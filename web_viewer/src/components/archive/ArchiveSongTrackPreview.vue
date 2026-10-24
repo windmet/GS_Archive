@@ -36,15 +36,21 @@
 <script setup>
 import { computed, getCurrentInstance, ref } from 'vue'
 import { createSongTrackRenderer } from '../../presentation/SongTrackPresentation.js'
+import { buildSongChartTiming } from '../../presentation/SongChartTiming.js'
+import { songTrackSpanForSpeed } from '../../presentation/SongTrackNativeTiming.js'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
 import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
-const props = defineProps({ chart: { type: Object, required: true }, title: { type: String, required: true }, skin: { type: String, default: 'Note1SpriteAtlas' }, cursor: { type: Number, required: true }, span: { type: Number, required: true } })
+const props = defineProps({ chart: { type: Object, required: true }, title: { type: String, required: true }, skin: { type: String, default: 'Note1SpriteAtlas' }, position: { type: Object, required: true }, speed: { type: Number, required: true } })
 const uid = `track-${getCurrentInstance().uid}`
 const holdCanvasUnavailable = ref(false)
-const safeCursor = computed(() => Math.max(0, props.cursor))
+const safeCursor = computed(() => Math.min(props.chart.maxTick, Math.max(0, props.position.tick.value)))
+const timing = computed(() => buildSongChartTiming(props.chart))
+// Integrate from this frame's cursor, including a BPM transition in the read
+// window. A slower transport cursor must never determine the track window.
+const span = computed(() => songTrackSpanForSpeed(props.speed, timing.value, safeCursor.value))
 const renderTrack = computed(() => createSongTrackRenderer(props.chart))
-const scene = computed(() => renderTrack.value(safeCursor.value, props.span, props.skin))
+const scene = computed(() => renderTrack.value(safeCursor.value, span.value, props.skin))
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)
 const laneOutline = computed(() => {
   const a = scene.value.lanes[0], b = scene.value.lanes[5]

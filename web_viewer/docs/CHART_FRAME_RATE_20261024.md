@@ -34,3 +34,31 @@ Browser临时onUpdated探针在基线采到193个有效更新，约29.6Hz、中�
 桌面1440×900冷加载Café Parade!，进入EXPERT tick22000，23端点、612个hold顶点，三方向静态提示及长条实际可见。初次截图比DOM落后一帧，重新截图确认EXPERT/tick22000后才保存 `frame-final-desktop.png`。播放后暂停到tick44860/audio25.488931秒，audio.paused=true。手机尺寸390×844切横条、配速8、播放速度1.5，倒退tick22000后756个hold顶点、scrollWidth390；截图 `frame-final-mobile.png`。倍速播放后暂停到tick32304/audio18.354665秒。长轨图实际加载EXPERT Combo816，切回透视并切NORMAL后重置tick0/Combo302。控制台error/warn为空，未见框架错误覆盖层，最终DOM无临时探针。截图在 `.analysis/chart-native/`。此为桌面Browser手机尺寸模拟，没有真机/全曲长稳/GPU对照。
 
 本批不实现Autoplay，不上传R2，不部署，不修改端口或候选版本。
+
+## 第二批：隔离轨道与控制台更新
+
+输入 `5a06e5f1`。第一批仍通过父组件cursor向轨道传位置，使每个60Hz轨道帧都运行整套父组件render与控制台查询。本批改用一个冻结容器传递独立shallowRef，只有透视轨道订阅高频tick。`SongChartPlaybackCadence`把同一次audio.currentTime采样分别交给60Hz轨道与10Hz控制台；长轨图继续30Hz。轨道自己从当前帧cursor积分读取窗口，不能拿控制台的旧cursor算跨BPM窗口。没有增加第二个rAF或模拟媒体时钟。
+
+seek、暂停、恢复首帧和视图切换立即同步两处；跳前后音符、编辑tick前先读取实际媒体位置，避免10Hz控制台延迟影响定位。自然停止时最后一次rAF也会同步实际媒体位置。组件卸载及切歌/难度仍由既有generation、AbortController、cancelAnimationFrame和clock.dispose收口。
+
+新增 `node scripts/verify-song-chart-playback-cadence.mjs`，覆盖60/90/120/144Hz显示输入下的轨道/控制台次数、长轨30Hz、媒体1.5倍速、倒退与精确暂停/末尾同步。既有frame-clock、media-element-clock、244档chart-timing、native timing/hold/effects和244档976窗口renderer回归通过。`build:check`29.84秒通过，2998模块，固定输出且不复制public；仅既有背景和大chunk warning。
+
+### 真实组件的受控Browser回放
+
+本地回归入口：`/scripts/fixtures/song-chart-playback-browser.html`。通过Browser点击“运行回放”，挂载实际ArchiveSongChartPreview/Track/Hold组件和真实来源谱面；只在此专用页面控制HTMLMediaElement与显示回调，用Vue mixin统计实际updated次数。它不修改产品页面，不是真实音频或设备FPS测试。
+
+| 谱面 / 显示回调 | 10秒轨道更新 | 父组件更新 | 逐窗口几何检查 |
+| --- | --- | --- | --- |
+| Café Parade! EXPERT / 60Hz | 599 | 120 | 11 |
+| Café Parade! EXPERT / 120Hz | 599 | 120 | 21 |
+| Reversed Masquerade EXPERT / 120Hz | 599 | 120 | 21 |
+
+受控回放包含每秒4次timeupdate，所以父组件实际为约12Hz，而不严格等于控制台的10Hz。两种显示频率下，轨道继续约60Hz、父组件约12Hz，证明高频tick不再传播成父组件每帧刷新。Reversed Masquerade从首个tempo变化前3秒开始，跨160→196 BPM；DOM各端点的sourceIndex和fraction与共享renderer逐项一致。三组均验证精确暂停、倒退3.12秒、长轨与透视重挂载。原始回执 `.analysis/chart-native/playback-cadence-browser-20261024.json`。
+
+回归页最初的3.125秒时间轴输入被HTML range的0.01步长正规化；用例已修正为合法3.12秒，未放宽投影容差。长轨检查也从已退役的svg.chart-svg选择器修正为当前分片结构.chart-drawing svg。初次HTML缺少闭合head导致bootstrap注入500，已补齐标准文档结构。最终三组status均为passed；这些中间失败没有当作产品回归或最终通过证据。
+
+### 实际媒体页面
+
+同一5231/PID67724与release `1accd9d0`。单独Browser页冷加载Café Parade! EXPERT，桌面1440×900从tick22000/audio12.5秒播放，暂停时audio50.526217秒、轨道88926.14192000001、控制台88926，精度与显示舍入一致。手机尺寸390×844切横条/配速8/1.5倍速，暂停时audio32.036878秒、轨道56384.77856、控制台56385；倒退tick22000两处立即同步，scrollWidth390。长轨图实际加载EXPERT Combo816。截图 `frame-isolation-desktop.png` / `frame-isolation-mobile.png`，均在.analysis/chart-native。实际音频检查与上面的受控回放分别记账；没有真机连续FPS、GPU或全曲验收声明。
+
+工作期间origin/master更新到`193c964a`（#95舞台、#96门户），按仓库规则在本批提交后普通merge同步；合并验证补记见后文。未上传R2、未部署、未改端口或候选绑定。

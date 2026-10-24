@@ -24,7 +24,7 @@
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
-        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :span="span" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
+        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase">
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
@@ -46,8 +46,7 @@ import { ChevronLeft, ChevronRight, Download, Info, Maximize, Minimize, Pause, P
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js'
 import { playableSongChart, validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
-import { songTrackSpanForSpeed } from '../../presentation/SongTrackPresentation.js'
-import { songChartFrameTime } from '../../presentation/SongChartFrameClock.js'
+import { createSongChartPlaybackCadence } from '../../presentation/SongChartPlaybackCadence.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
@@ -77,6 +76,9 @@ const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(nul
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
 const chart = shallowRef(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
+// A stable, non-reactive container passes the ref itself into the track. The
+// parent template never reads its value, so a track frame cannot rerender it.
+const trackPosition = Object.freeze({ tick: shallowRef(0) })
 const exporting = ref(false), exportError = ref(''), audio = ref(null), audioError = ref(''), starting = ref(false)
 const exportFormat = ref('svg'), exportProgress = ref(0)
 const playbackRate = ref(1), volume = ref(1), clockSnapshot = ref({ phase: 'idle', currentTime: 0, duration: null })
@@ -84,14 +86,18 @@ const activeDifficulty = computed(() => props.difficulties.find(d => d.type === 
 const timing = computed(() => chart.value ? buildSongChartTiming(chart.value) : null)
 const safeCursor = computed(() => Math.min(chart.value?.maxTick || 0, Math.max(0, Number(cursor.value) || 0)))
 const safeSpeed = computed(() => Math.round(Math.max(1, Math.min(11, Number(speed.value) || 5)) * 10) / 10)
-const span = computed(() => timing.value ? songTrackSpanForSpeed(safeSpeed.value, timing.value, safeCursor.value) : 1)
 const currentSeconds = computed(() => Math.max(0, timing.value?.tickToSeconds(Math.max(0, Number(cursor.value) || 0)) || 0))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 const previousNote = computed(() => endpoints.value.filter(n => n.tick < safeCursor.value - .001).at(-1))
 const nextNote = computed(() => endpoints.value.find(n => n.tick > safeCursor.value + .001))
-let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0, lastPaint = null
+let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0
+const cadence = createSongChartPlaybackCadence({
+  track: seconds => { if (timing.value) trackPosition.tick.value = timing.value.secondsToTick(seconds) },
+  controls: seconds => { if (timing.value) cursor.value = timing.value.secondsToTick(seconds) },
+})
+watch(mode, () => cadence.sync(pendingSeconds))
 const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
   if (snapshot.phase === 'error') { audioError.value = '歌曲音频加载失败，请点击播放重试。'; stopPlayback() }
@@ -136,39 +142,38 @@ onBeforeUnmount(() => {
 function applyPendingSeek() { clock.seek(pendingSeconds) }
 function seekSeconds(seconds) {
   const time = Math.max(0, Math.min(totalSeconds.value, Number(seconds) || 0))
-  pendingSeconds = time; cursor.value = timing.value.secondsToTick(time); locateMessage.value = ''
+  pendingSeconds = time; cadence.sync(time); locateMessage.value = ''
   if (audio.value?.readyState >= 1) clock.seek(time)
   void nextTick(() => longPreview.value?.scrollToTick())
 }
 function seek(tick) { seekSeconds(timing.value.tickToSeconds(Math.max(0, Math.min(chart.value.maxTick, Number(tick) || 0)))) }
 function step(direction) {
+  syncMediaPosition()
   const note = direction > 0 ? nextNote.value : previousNote.value
   if (note) { seek(note.tick); locateMessage.value = `tick ${note.tick} · 轨位 ${note.lane + 1}` }
+}
+function syncMediaPosition() {
+  if (audio.value && timing.value && audio.value.readyState >= 1) {
+    pendingSeconds = audio.value.currentTime
+    cadence.sync(pendingSeconds)
+  }
 }
 function stopPlayback() {
   playGeneration++; starting.value = false
   if (frame) cancelAnimationFrame(frame)
-  frame = 0; lastPaint = null
+  frame = 0; cadence.reset()
   // Preserve the exact media position when pausing between visual frames.
-  if (audio.value && timing.value && audio.value.readyState >= 1) {
-    pendingSeconds = audio.value.currentTime
-    cursor.value = timing.value.secondsToTick(pendingSeconds)
-  }
+  syncMediaPosition()
   audio.value?.pause()
 }
 defineExpose({ pause: stopPlayback })
 function updatePlayback(now = 0) {
   const element = audio.value
-  if (!element || element.paused || !timing.value) { frame = 0; return }
-  // Cap at 60 Hz on high-refresh displays. Keep the fractional remainder so
-  // rAF jitter does not turn a 60 Hz target into alternating skipped frames.
-  // Long-chart scrolling retains its cheaper 30 Hz cadence.
-  const paintTime = songChartFrameTime(lastPaint, now, mode.value === 'perspective' ? 60 : 30)
-  if (paintTime !== null) {
-    lastPaint = paintTime
-    cursor.value = timing.value.secondsToTick(element.currentTime)
+  if (!element || element.paused || !timing.value) {
+    syncMediaPosition(); cadence.reset(); frame = 0; return
   }
   pendingSeconds = element.currentTime
+  cadence.paint(now, pendingSeconds, mode.value === 'perspective')
   frame = requestAnimationFrame(updatePlayback)
 }
 async function togglePlayback() {
@@ -227,6 +232,7 @@ function onSettingsEscape(event) {
   if (settingsOpen.value && event.key === 'Escape') { event.preventDefault(); void closeSettings() }
 }
 async function editTick() {
+  syncMediaPosition()
   tickDraft.value = String(Math.round(safeCursor.value)); editingTick.value = true
   await nextTick(); tickInput.value?.focus({ preventScroll: true }); tickInput.value?.select()
 }
