@@ -331,7 +331,8 @@ function cycleFocus(event) {
 .drawer-campaign-name { display: inline-flex; align-items: center; gap: var(--gs-space-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .drawer-campaign.focused .drawer-campaign-name { color: var(--gs-selected-ink); }
 .drawer-campaign-head small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
-.drawer-play { display: grid; place-items: center; width: var(--gs-control-normal); height: var(--gs-control-normal); margin-left: auto; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-play-bg); color: var(--gs-play-ink); cursor: pointer; }
+.drawer-play { position: relative; display: grid; place-items: center; width: var(--gs-control-normal); height: var(--gs-control-normal); margin-left: auto; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-play-bg); color: var(--gs-play-ink); cursor: pointer; }
+.drawer-play::after { content: ""; position: absolute; top: 50%; left: 50%; width: var(--gs-control-touch); height: var(--gs-control-touch); transform: translate(-50%, -50%); }
 .drawer-episodes { margin: 0; padding: 0; list-style: none; }
 .drawer-episode { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-3); width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-2) 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; text-align: left; }
 .drawer-episode:not(:has(.part-mark)) { grid-template-columns: minmax(0, 1fr) auto; }
