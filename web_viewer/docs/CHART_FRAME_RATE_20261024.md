@@ -72,3 +72,37 @@ seek、暂停、恢复首帧和视图切换立即同步两处；跳前后音符�
 最终源码再次Browser冷加载，手机尺寸Café Parade! EXPERT从tick22000播放，暂停时audio43.759564秒、轨道77016.70592000001、控制台77017；重新倒退tick22000，截图`frame-isolation-merged-mobile.png`。“返回歌曲”的最终URL实际为`/songs/cfprde/`，Café Parade!详情标题、完整混音播放器、难度表和演唱者均已加载；控制台error/warn为空，视口已恢复。首次记录在导航尚未完成时误记为歌曲列表，现以加载完成后的URL与内容纠正。
 
 剩余验证边界：本批已验证刷新隔离、媒体位置同步和原生几何一致性；受控回放的599次组件更新不能当作前台GPU实际呈现599帧，真机/120Hz设备持续FPS仍未测得。无需为该回放边界改动原生几何或引入独立模拟时钟。
+
+## 第三批：真实媒体与rAF持续采样
+
+输入`422dc351`。新增可复跑的本地诊断入口`/scripts/fixtures/song-chart-live-performance.html`，通过Browser点击“采样20秒”运行。挂载实际ArchiveSongChartPreview/Track/Hold组件，读取真实catalog和谱面，音频URL使用产品同一个getSongFullMixUrl；没有替换HTMLMediaElement、requestAnimationFrame、媒体时间或显示回调。Vue mixin仅观察beforeUpdate/updated，另一个rAF仅记录显示回调时间戳，不驱动产品轨道。所有探针留在专用诊断页，产品Vue/JS代码没有改动。
+
+每轮记录20秒wall time、音频起止、rAF间隔、三个组件的实际updated次数、轨道beforeUpdate到updated的CPU耗时、可见/焦点变化与媒体事件。前台失焦、媒体未推进完整观察窗口会明确列入warnings。采样起点限制在音频和谱面结尾前至少25秒，避免尾奏冻结或自然结束拉低轨道更新次数。
+
+### 实测结果
+
+复用同一5231/PID67724、release `1accd9d0`。三轮均为正常1倍速、默认圆形/配速5；每轮观察时页面保持visible/focused，没有waiting/stalled事件。窗口坐标和媒体时间见下表。这里的“轨道Hz”是组件更新次数/wall time，rAF Hz是独立观察回调频率；二者都不冒充GPU实际呈现帧数。
+
+| 谱面 / Browser尺寸 | 媒体起止秒 | 观察秒 | 轨道更新 / Hz | 轨道CPU中位数 / P95 | rAF中位间隔 / P95 | >50ms回调间隔 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Café Parade! EXPERT / 1440×900 | 12.500→32.415 | 20.001 | 1180 / 59.00 | 4.0 / 5.9ms | 8.3 / 8.5ms | 4 |
+| K.now O.nly EXPERT / 1440×900 | 104.120→124.046 | 20.005 | 1186 / 59.28 | 3.0 / 5.6ms | 8.3 / 8.5ms | 2 |
+| Café Parade! EXPERT / 390×844 | 12.500→32.436 | 20.001 | 1198 / 59.90 | 3.7 / 5.6ms | 8.3 / 8.5ms | 0 |
+
+三轮rAF分别约116.60/117.32/119.09Hz；父组件分别279/274/279次，明显低于轨道1180/1186/1198次。轨道CPU最大值分别10.7/8.3/8.4ms；没有超过250ms的回调间隔。K.now O.nly的窗口包含此前tick123406附近的折线长条。最终Browser控制台error/warn为空，手机尺寸截图`live-frame-cfprde-mobile.png`。
+
+原始JSON保存在`.analysis/chart-native/`：
+
+- `live-frame-cfprde-desktop.json`
+- `live-frame-knwonl-desktop-complete.json`
+- `live-frame-cfprde-mobile.json`
+
+最初K.now O.nly仍用tick123406起播，对应118.66秒，音频在131.077秒自然结束，因此20秒wall time中只有约12.4秒媒体播放。这份`live-frame-knwonl-desktop.json`只保留为无效完整窗口的调查记录，不纳入表内。修正起点预留后，重新测到完整20秒及空warnings。第一轮Café Parade使用修正前的同一探针，不存在提前结束/失焦，保留其原始schema和读数，不回填后加的warnings字段。
+
+### 本轮结论与边界
+
+在当前前台Browser的三轮真实媒体播放中，轨道约59–60Hz，更新CPU P95约5.6–5.9ms，未再复现最初约30Hz上限，也未出现前两批调查中的1秒后台调度间隔。因此帧率修复在当前Browser环境完成了连续播放验证。本轮只补诊断工具和证据，没有继续无依据地更换原生几何、GPU合成或音符渲染后端。
+
+这是桌面Browser及其手机尺寸模拟的20秒窗口验收，不是物理手机、完整歌曲长稳、原机视觉等价或GPU呈现时间验收；桌面两轮仍有少量>50ms间隔，未声称零卡顿。当前产品代码的build:check和244档回归沿用第二批最终结果；本轮只增加不进入产品bundle的诊断HTML，已验证HTTP200、Vite模块加载、三轮真实执行、控制台、JSON媒体推进/可见性及diff，未无意义地再次构建素材包。
+
+收尾时重新fetch核实origin/master仍为`193c964a`，已是本分支祖先。端口、候选、发布绑定不变，未上传R2或部署。
