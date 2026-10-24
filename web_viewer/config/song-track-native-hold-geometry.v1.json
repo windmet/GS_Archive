@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "dataSha256": "fb28e28793e4f9d21e76dd96be2c776a71382cb607d98acd24f65f20bed8018a",
+    "elfSha256": "9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e",
+    "coordinateContractSha256": "dbea5795c8f67a6a6d71dfbdf82336148581e65ef32d7e8f91351edaa844f802",
+    "methods": [
+      {
+        "name": "RhythmGameManager.Init",
+        "rva": "0x1afe6c4",
+        "bytes": 876,
+        "sha256": "2fef42ab27a9e528d97b6d940d15735f107cab17d6a80405a5e94da7eadd1b06"
+      },
+      {
+        "name": "HoldMesh.SetMetrics",
+        "rva": "0x21cf244",
+        "bytes": 128,
+        "sha256": "6c7c4da71925b7db6425ce288ae8ba7ec117c1021f71d933f4ede73e9d8702e9"
+      },
+      {
+        "name": "HoldMesh.Create",
+        "rva": "0x21cf2c4",
+        "bytes": 1600,
+        "sha256": "2b768764a317b127095359543d288dcd178212eb05be642eeb8f2568669a5e56"
+      },
+      {
+        "name": "HoldMesh.GetLaneModifytimePosFromLane",
+        "rva": "0x21cfbb8",
+        "bytes": 128,
+        "sha256": "f078247ea6a682ba664ba20bab7938cebd1ba58f493166fd6cb3c6b3583e3468"
+      },
+      {
+        "name": "HoldMesh.GetV3PosFromLaneModifytimePos",
+        "rva": "0x21cfc38",
+        "bytes": 280,
+        "sha256": "cc42168b15e4515c9f2a76f0b7c161e3153ddb05ad7f3d4afd276b678c35cde4"
+      },
+      {
+        "name": "HoldMesh.GetNormalizedPoint",
+        "rva": "0x21cfd50",
+        "bytes": 304,
+        "sha256": "37f4c2392579268e73ebf6934a8278d6a63ae3af498e9327711a748102f03930"
+      },
+      {
+        "name": "HoldMesh.UpdateFromGameHoldCreatePartsList",
+        "rva": "0x21d1610",
+        "bytes": 3916,
+        "sha256": "b975e1b40c84d51aa5d12b7c32038111c9bad8dd5dee67c89f1350daa0d7282a"
+      },
+      {
+        "name": "HoldMesh.UpdateFromGameHoldCreateMesh",
+        "rva": "0x21d255c",
+        "bytes": 4520,
+        "sha256": "8aa3c32109ada66b916f84e5dc91b61cb55b058bb9ee2de080de32a0ac876e8c"
+      },
+      {
+        "name": "NoteDrawManager..cctor",
+        "rva": "0x20b85e8",
+        "bytes": 244,
+        "sha256": "bc8538b79f553b87d009b4b3c536e6e3eebc5714a56727c288d95c6c69d915a3"
+      },
+      {
+        "name": "UnityEngine.Vector2.Normalize",
+        "rva": "0x3068b7c",
+        "bytes": 124,
+        "sha256": "b9229f5b8e9bbac8a77fcb5ad10c5b426bb331546eb92d35917f633b52c54eb8"
+      },
+      {
+        "name": "UnityEngine.Vector2.get_magnitude",
+        "rva": "0x3068bf8",
+        "bytes": 148,
+        "sha256": "575b3bec13badc51743853fa564cef682321105435e54f2ababb7c84c5efc182"
+      },
+      {
+        "name": "NoteDrawManager.CreateMaterial",
+        "rva": "0x20b6e88",
+        "bytes": 236,
+        "sha256": "043a4a7d52b615be74209fabefcfa59511b9efa5ec9948b5cbae6587b6e1375c"
+      },
+      {
+        "name": "UtilOhashi.SetSourceRect",
+        "rva": "0x237d1b8",
+        "bytes": 300,
+        "sha256": "fdd8d35d755762d1a0796ff8691ee8f7cecc6a351f946c6f196e5e9d0c0c8ed7"
+      }
+    ],
+    "stubs": [
+      "0x11dd650",
+      "0x11dd748",
+      "0x11ddb30",
+      "0x11de6f4",
+      "0x11de820",
+      "0x11debc4",
+      "0x11f2e80",
+      "0x11f2eb4",
+      "0x11f4ed0",
+      "0x11f5104",
+      "0x145f2f0",
+      "0x1afb028",
+      "0x1afcd88",
+      "0x1afea30",
+      "0x1c1b4bc",
+      "0x1c1b4f8",
+      "0x20bbfc4",
+      "0x21cf020",
+      "0x2ad39ec",
+      "0x2ae4c1c",
+      "0x2ae4d38",
+      "0x2ae4d5c",
+      "0x3035f04",
+      "0x30362f8",
+      "0x3036650",
+      "0x3068c8c",
+      "0x3069400",
+      "0x30b428c",
+      "0x30b458c",
+      "0x30b7204",
+      "0x30b751c",
+      "0x310f078",
+      "0x310f390",
+      "0x312f528",
+      "0x312f818",
+      "0x10070000",
+      "0x10070010"
+    ],
+    "execution": "Unicorn ARM64 native Init metrics, parts, length normalization, Vector2 normalization/magnitude, position and mesh bodies; resource/settings, lists, scalar helpers and Mesh submission stubs"
+  },
+  "metrics": {
+    "timeFactor": 12.721426963806152,
+    "laneWidth": 176.0,
+    "radius": 44
+  },
+  "skins": {
+    "Note1SpriteAtlas": {
+      "url": "/assets/song-chart-sprites/Note1SpriteAtlas/live_notes_hold_line.png",
+      "spritePathId": 2832,
+      "textureRect": [
+        260.0,
+        564.0,
+        200.0,
+        200.0
+      ],
+      "atlasWidth": 1024,
+      "atlasHeight": 1024,
+      "pngWidth": 200,
+      "pngHeight": 200,
+      "pngSha256": "f7b47c6457d635929b34a7da48a13822ce751aeaecb2365b489f93e768d45e19"
+    },
+    "Note2SpriteAtlas": {
+      "url": "/assets/song-chart-sprites/Note2SpriteAtlas/live_notes_hold_line.png",
+      "spritePathId": 1971,
+      "textureRect": [
+        260.0,
+        536.0,
+        200.0,
+        200.0
+      ],
+      "atlasWidth": 1024,
+      "atlasHeight": 1024,
+      "pngWidth": 200,
+      "pngHeight": 200,
+      "pngSha256": "f7b47c6457d635929b34a7da48a13822ce751aeaecb2365b489f93e768d45e19"
+    },
+    "Note3SpriteAtlas": {
+      "url": "/assets/song-chart-sprites/Note3SpriteAtlas/live_notes_hold_line.png",
+      "spritePathId": 2370,
+      "textureRect": [
+        0.0,
+        0.0,
+        200.0,
+        200.0
+      ],
+      "atlasWidth": 512,
+      "atlasHeight": 1024,
+      "pngWidth": 200,
+      "pngHeight": 200,
+      "pngSha256": "f7b47c6457d635929b34a7da48a13822ce751aeaecb2365b489f93e768d45e19"
+    }
+  },
+  "boundaries": {
+    "mesh": "native mesh at supplied lane/modified-time points",
+    "clipping": "Web preview shows future points up to the current cursor; native input/deleted-middle state scheduling is separate",
+    "rendering": "WebGL draws native x/y, UV and indices with cropped PNGs; SVG fallback is available; original GPU depth, shader and holding particles are not reproduced"
+  }
+}

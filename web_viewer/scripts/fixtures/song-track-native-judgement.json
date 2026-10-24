@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "elfSha256": "9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e",
+    "coordinateContractSha256": "dbea5795c8f67a6a6d71dfbdf82336148581e65ef32d7e8f91351edaa844f802",
+    "methods": [
+      {
+        "name": "EvaluationRangeData..cctor",
+        "rva": "0x1faf0dc",
+        "bytes": 244,
+        "sha256": "8e8a8fc43e199fe88d56c0528752d0d24f5404efb7f32cceb07544d3f31aeaf9"
+      },
+      {
+        "name": "EvaluationRangeData.get_timeMarginBad",
+        "rva": "0x1faee80",
+        "bytes": 136,
+        "sha256": "ec2505394cfb22ae6802f90b30cffe93c474605ff27dfc04ffe7e8f6aaf6cf54"
+      },
+      {
+        "name": "EvaluationRangeData.get_timeMarginGood",
+        "rva": "0x1faef3c",
+        "bytes": 136,
+        "sha256": "cba9d4e6dff359a4913cd131924bbfcdea9834bc89112c1a41861b128ae661a2"
+      },
+      {
+        "name": "EvaluationRangeData.get_timeMarginGreat",
+        "rva": "0x1faefc4",
+        "bytes": 136,
+        "sha256": "7b21ae22004eb6848e1358504a88915797e6eb04d1bb3c56c432c73030901042"
+      },
+      {
+        "name": "EvaluationRangeData.get_timeMarginPerfect",
+        "rva": "0x1faf04c",
+        "bytes": 136,
+        "sha256": "d16d62fe9c0273af10ee326489396debc00ab45773a598fcc46904ba58242f45"
+      },
+      {
+        "name": "RhythmDebugButtonConfig.get_perfectRangeDiff",
+        "rva": "0x1afae20",
+        "bytes": 76,
+        "sha256": "010aff95f7be44c59bc5262e9bdbf6bcb8e1a4893a4918331da23d489cb470d3"
+      },
+      {
+        "name": "RhythmGameData.get_evaluationRange",
+        "rva": "0x1afb60c",
+        "bytes": 204,
+        "sha256": "79b784734f368c5e06c56f4ebfe2338ebb42c865e3ac58c778f71408b0721e7d"
+      },
+      {
+        "name": "RhythmGameNoteManager.get_evaluationRange",
+        "rva": "0x2424428",
+        "bytes": 40,
+        "sha256": "6084243580c6eb9a3b9060ffb0715d68dc378e71d0ba23321000186666249e12"
+      },
+      {
+        "name": "RhythmGameManager.GetCalibrationAdjust",
+        "rva": "0x1afeb88",
+        "bytes": 8,
+        "sha256": "38d6fa5d646a8c91a44a40998571d98dff99de7b0e6abed1a1c393c9bc3dc004"
+      },
+      {
+        "name": "RhythmGameNoteManager.IsOnTarget",
+        "rva": "0x242a1b4",
+        "bytes": 188,
+        "sha256": "e8241dd581b6570fbb81c0f9f11da47f9c939d9c821f380fc38849eb85595510"
+      },
+      {
+        "name": "RhythmGameNoteManager.CheckTouchPoint",
+        "rva": "0x242ad04",
+        "bytes": 264,
+        "sha256": "d0530e9b8d780e1371533582c11fda1e66a4fbe1c7926a2dab867656e126b7cc"
+      },
+      {
+        "name": "RhythmGameNoteManager.get_posMarginX",
+        "rva": "0x24244e8",
+        "bytes": 76,
+        "sha256": "94474897a7da46ccc4a68d889db7ab11593f10cbc7a050f40c9646f74e27df9e"
+      },
+      {
+        "name": "RhythmGameNoteManager.CheckHoldMiddle",
+        "rva": "0x2429350",
+        "bytes": 1436,
+        "sha256": "33112697c3d2ab997d4d69f2e3172bb87e784ac9b25b1702d62dccfdd25b7f8f"
+      },
+      {
+        "name": "RhythmGameNoteManager.SetTargetPosList",
+        "rva": "0x242454c",
+        "bytes": 272,
+        "sha256": "cc36853ede787a0ffd97e49e38dea294ec8cdb237438fabfa35fd1ece8f0199f"
+      }
+    ],
+    "services": [
+      "0xdf63f0",
+      "0x175d8ac",
+      "0x1dfb1f4",
+      "0x30b3768"
+    ],
+    "boundaries": "Native range/getter and time/touch predicates only. Full input, skill, score and deleted-middle state transitions are not emulated; no judgement UI is added."
+  },
+  "positionMargins": [
+    264.0,
+    200.0
+  ],
+  "margins": [
+    {
+      "mode": "normal",
+      "debugRangeDiff": 0,
+      "seconds": {
+        "bad": 0.25,
+        "good": 0.12,
+        "great": 0.1,
+        "perfect": 0.05
+      }
+    },
+    {
+      "mode": "normal",
+      "debugRangeDiff": 10,
+      "seconds": {
+        "bad": 0.3,
+        "good": 0.144,
+        "great": 0.12,
+        "perfect": 0.06
+      }
+    },
+    {
+      "mode": "normal",
+      "debugRangeDiff": -10,
+      "seconds": {
+        "bad": 0.2,
+        "good": 0.096,
+        "great": 0.08,
+        "perfect": 0.04
+      }
+    },
+    {
+      "mode": "adjust",
+      "debugRangeDiff": 0,
+      "seconds": {
+        "bad": 0.6000000000000001,
+        "good": 0.12,
+        "great": 0.1,
+        "perfect": 0.05
+      }
+    },
+    {
+      "mode": "adjust",
+      "debugRangeDiff": 10,
+      "seconds": {
+        "bad": 0.72,
+        "good": 0.144,
+        "great": 0.12,
+        "perfect": 0.06
+      }
+    },
+    {
+      "mode": "adjust",
+      "debugRangeDiff": -10,
+      "seconds": {
+        "bad": 0.48,
+        "good": 0.096,
+        "great": 0.08,
+        "perfect": 0.04
+      }
+    },
+    {
+      "mode": "story",
+      "debugRangeDiff": 0,
+      "seconds": {
+        "bad": 0.25,
+        "good": 0.225,
+        "great": 0.2,
+        "perfect": 0.17500000000000002
+      }
+    },
+    {
+      "mode": "story",
+      "debugRangeDiff": 10,
+      "seconds": {
+        "bad": 0.3,
+        "good": 0.27,
+        "great": 0.24,
+        "perfect": 0.21
+      }
+    },
+    {
+      "mode": "story",
+      "debugRangeDiff": -10,
+      "seconds": {
+        "bad": 0.2,
+        "good": 0.18,
+        "great": 0.16,
+        "perfect": 0.14
+      }
+    }
+  ],
+  "onTarget": [
+    {
+      "absTime": 0,
+      "currentTime": -0.051,
+      "accepted": false
+    },
+    {
+      "absTime": 0,
+      "currentTime": -0.05,
+      "accepted": false
+    },
+    {
+      "absTime": 0,
+      "currentTime": -0.049999,
+      "accepted": true
+    },
+    {
+      "absTime": 0,
+      "currentTime": 0,
+      "accepted": true
+    },
+    {
+      "absTime": 0,
+      "currentTime": 0.049999,
+      "accepted": true
+    },
+    {
+      "absTime": 0,
+      "currentTime": 0.05,
+      "accepted": false
+    },
+    {
+      "absTime": 0,
+      "currentTime": 0.051,
+      "accepted": false
+    }
+  ],
+  "touches": [
+    {
+      "x": 0,
+      "y": 0,
+      "timingAdjust": false,
+      "accepted": true
+    },
+    {
+      "x": 264,
+      "y": 200,
+      "timingAdjust": false,
+      "accepted": true
+    },
+    {
+      "x": -264,
+      "y": 200,
+      "timingAdjust": false,
+      "accepted": true
+    },
+    {
+      "x": 264.001,
+      "y": 0,
+      "timingAdjust": false,
+      "accepted": false
+    },
+    {
+      "x": -264.001,
+      "y": 0,
+      "timingAdjust": false,
+      "accepted": false
+    },
+    {
+      "x": 0,
+      "y": 200.001,
+      "timingAdjust": false,
+      "accepted": false
+    },
+    {
+      "x": 0,
+      "y": -10000,
+      "timingAdjust": false,
+      "accepted": true
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "timingAdjust": true,
+      "accepted": true
+    },
+    {
+      "x": 264,
+      "y": 200,
+      "timingAdjust": true,
+      "accepted": true
+    },
+    {
+      "x": -264,
+      "y": 200,
+      "timingAdjust": true,
+      "accepted": true
+    },
+    {
+      "x": 264.001,
+      "y": 0,
+      "timingAdjust": true,
+      "accepted": true
+    },
+    {
+      "x": -264.001,
+      "y": 0,
+      "timingAdjust": true,
+      "accepted": true
+    },
+    {
+      "x": 0,
+      "y": 200.001,
+      "timingAdjust": true,
+      "accepted": true
+    },
+    {
+      "x": 0,
+      "y": -10000,
+      "timingAdjust": true,
+      "accepted": true
+    }
+  ]
+}

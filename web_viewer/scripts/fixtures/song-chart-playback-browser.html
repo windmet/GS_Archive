@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Song chart playback cadence regression</title>
+<style>body {font:16px system-ui; margin:16px} pre {white-space:pre-wrap} #app {max-width:960px} button {min-height:36px}</style>
+</head>
+<body>
+<h1>谱面刷新隔离回归</h1>
+<p>受控媒体与显示回调，检查实际 Vue 组件更新次数；不是设备 FPS 测试。谱面与渲染组件使用真实来源。</p>
+<button id="run" disabled>运行回放</button>
+<pre id="result" role="status">正在加载…</pre>
+<div id="app"></div>
+<script type="module">
+import { createApp, nextTick } from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
+import Chart from '/src/components/archive/ArchiveSongChartPreview.vue'
+import { buildSongChartTiming } from '/src/presentation/SongChartTiming.js'
+import { createSongTrackRenderer } from '/src/presentation/SongTrackPresentation.js'
+import { songTrackSpanForSpeed } from '/src/presentation/SongTrackNativeTiming.js'
+import { songNoteEndpoints } from '/src/presentation/SongNotePresentation.js'
+
+const result = document.querySelector('#result'), run = document.querySelector('#run')
+const songs = (await (await fetch('/data/song_catalog.json')).json()).songs
+let song, difficulty, chart, timing
+const media = { currentTime: 0, paused: true, playbackRate: 1 }
+const frames = new Map()
+let frameID = 0, app, counts
+window.requestAnimationFrame = cb => { frames.set(++frameID, cb); return frameID }
+window.cancelAnimationFrame = id => frames.delete(id)
+for (const [name, getter] of Object.entries({
+  currentTime: () => media.currentTime, paused: () => media.paused,
+  duration: () => 135, readyState: () => 4, seeking: () => false,
+  ended: () => false, error: () => null,
+})) Object.defineProperty(HTMLMediaElement.prototype, name, {
+  configurable: true, get: getter,
+  ...(name === 'currentTime' ? { set(value) { media.currentTime = value } } : {}),
+})
+HTMLMediaElement.prototype.play = async function () {
+  media.paused = false
+  this.dispatchEvent(new Event('play')); this.dispatchEvent(new Event('playing'))
+}
+HTMLMediaElement.prototype.pause = function () {
+  if (!media.paused) { media.paused = true; this.dispatchEvent(new Event('pause')) }
+}
+HTMLMediaElement.prototype.load = function () {}
+function check(value, message) { if (!value) throw new Error(message) }
+function button(text) { return [...document.querySelectorAll('#app button')].find(el => el.textContent.trim() === text) }
+async function seek(seconds) {
+  const slider = document.querySelector('[aria-label="谱面时间轴"]')
+  slider.value = String(seconds); slider.dispatchEvent(new Event('input', { bubbles: true }))
+  await nextTick()
+}
+function positions() {
+  return { control: Number(document.querySelector('.tick-readout')?.dataset.tick),
+    track: Number(document.querySelector('.track-svg title')?.textContent.split('tick ')[1]) }
+}
+async function mount(code) {
+  app?.unmount(); frames.clear(); media.currentTime = 0; media.paused = true
+  song = songs[code]; difficulty = song.gameplay.difficulties.find(d => d.type === 4)
+  chart = await (await fetch(difficulty.chart.url)).json(); timing = buildSongChartTiming(chart)
+  app = createApp(Chart, { standalone: true, songCode: code, title: song.title,
+    difficulties: [difficulty], audioTrack: { url: 'data:audio/wav;base64,', source: { duration_seconds: 135 } } })
+  counts = { parent: 0, track: 0, holds: 0 }
+  app.mixin({ updated() {
+    const name = this.$options.__name
+    if (name === 'ArchiveSongChartPreview') counts.parent++
+    if (name === 'ArchiveSongTrackPreview') counts.track++
+    if (name === 'ArchiveSongHoldMeshPreview') counts.holds++
+  } })
+  app.mount('#app')
+  for (let i = 0; i < 200 && !document.querySelector('.track-svg'); i++) await new Promise(r => setTimeout(r, 10))
+  check(document.querySelector('.track-svg'), 'real chart failed to load')
+}
+run.disabled = false; result.textContent = '就绪'
+run.onclick = async () => {
+  run.disabled = true
+  try {
+    const cases = []
+    for (const [code, hz] of [['cfprde', 60], ['cfprde', 120], ['remasq', 120]]) {
+      await mount(code)
+      const start = code === 'remasq' ? timing.tickToSeconds(chart.tempos[1].tick) - 3 : 12.5
+      await seek(start)
+      button('播放').click(); await nextTick(); await nextTick()
+      const before = { ...counts }
+      const reference = createSongTrackRenderer(chart)
+      let geometryChecks = 0
+      // Event clock updates are also delivered, as in a real audio element.
+      const audio = document.querySelector('audio')
+      for (let i = 0; i < hz * 10; i++) {
+        media.currentTime = start + i / hz
+        if (i % (hz / 4) === 0) audio.dispatchEvent(new Event('timeupdate'))
+        const pending = [...frames.values()]; frames.clear()
+        for (const callback of pending) callback(i * 1000 / hz)
+        await nextTick()
+        if (i % 59 === 0) {
+          const tick = positions().track
+          const expected = reference(tick, songTrackSpanForSpeed(5, timing, tick)).glyphs
+          const actual = [...document.querySelectorAll('[data-track-note]')]
+          check(actual.length === expected.length, 'track used stale transport window')
+          for (const [j, glyph] of expected.entries()) {
+            check(actual[j].dataset.trackNote === String(glyph.sourceIndex), 'track note identity drift')
+            check(Number(actual[j].dataset.noteFraction) === glyph.fraction, 'track projection used stale transport cursor')
+          }
+          geometryChecks++
+        }
+      }
+      const updates = Object.fromEntries(Object.keys(counts).map(key => [key, counts[key] - before[key]]))
+      check(updates.track >= 590 && updates.track <= 601, `track cadence: ${JSON.stringify(updates)}`)
+      check(updates.parent <= 145, `parent must not rerender with every track frame: ${JSON.stringify(updates)}`)
+      // User actions can land between two transport updates. Advance the
+      // sampled media without a display callback to expose stale-control use.
+      const endpoints = songNoteEndpoints(chart)
+      const probeTick = endpoints[40].tick + 1
+      media.currentTime = timing.tickToSeconds(probeTick)
+      const next = endpoints.find(note => note.tick > probeTick + .001)
+      document.querySelector('[aria-label="下一个音符"]').click(); await nextTick()
+      check(positions().control === next.tick, 'next-note action used stale transport position')
+      media.currentTime = timing.tickToSeconds(probeTick)
+      document.querySelector('[aria-label="编辑谱面 tick 位置"]').click(); await nextTick()
+      check(Number(document.querySelector('[aria-label="轨道位置 tick"]').value) === Math.round(probeTick), 'tick editor used stale transport position')
+      document.querySelector('[aria-label="轨道位置 tick"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await nextTick()
+      button('长轨图').click(); await nextTick()
+      check(Number(document.querySelector('.tick-readout').dataset.tick) === Math.round(probeTick), 'live view switch used stale transport position')
+      button('透视轨道').click(); await nextTick()
+      button('暂停').click(); await nextTick()
+      let p = positions()
+      check(Math.abs(p.track - timing.secondsToTick(media.currentTime)) < 1e-7, 'pause track differs from exact media position')
+      check(p.control === Math.round(p.track), 'pause transport differs from track')
+      await seek(3.12); p = positions()
+      check(p.control === Math.round(p.track) && Math.abs(p.track - timing.secondsToTick(3.12)) < 1e-7, `backward seek did not sync both consumers: ${JSON.stringify(p)}`)
+      button('长轨图').click(); await nextTick()
+      check(document.querySelector('.chart-drawing svg'), 'long chart not rendered')
+      button('透视轨道').click(); await nextTick(); p = positions()
+      check(p.control === Math.round(p.track), 'view remount lost media position')
+      cases.push({ code, hz, updates, geometryChecks, liveActions: 'next/editor/view passed', paused: media.paused, backwardSeek: p })
+    }
+    result.textContent = JSON.stringify({ status: 'passed', cases }, null, 2)
+  } catch (error) {
+    result.textContent = JSON.stringify({ status: 'failed', error: error.message }, null, 2)
+    console.error(error)
+  } finally { run.disabled = false }
+}
+</script>
+</body>
+</html>

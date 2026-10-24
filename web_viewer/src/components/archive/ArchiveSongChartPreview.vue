@@ -14,7 +14,7 @@
         <div v-if="settingsOpen" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :style="settingsPosition" role="dialog" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
           <header class="settings-heading"><strong>显示与播放</strong><button type="button" aria-label="关闭视图设置" @click="closeSettings()"><X :size="18" aria-hidden="true" /></button></header>
           <label>贴图样式 <select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></label>
-          <template v-if="mode === 'perspective'"><label class="speed-setting">视觉配速 <input v-model.number="speed" type="number" min="1" max="30" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" type="range" min="1" max="30" step="0.1" aria-label="轨道配速滑杆" /></label><p class="setting-note">1–30 为相对刻度，越大落下越快；只改变画面疏密。</p></template>
+          <template v-if="mode === 'perspective'"><label class="speed-setting">音符速度 <input v-model.number="speed" type="number" min="1" max="11" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" type="range" min="1" max="11" step="0.1" aria-label="轨道配速滑杆" /></label><p class="setting-note">1.0–11.0，沿用原作设置刻度；越大落下越快。</p></template>
           <template v-else><label>纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label><label>长轨排布 <select v-model="longLayout" aria-label="长轨排布"><option value="auto">自动：桌面分栏 / 手机单栏</option><option value="columns">分栏横向阅读</option><option value="continuous">单栏纵向阅读</option></select></label></template>
           <div class="settings-audio"><label>播放速度 <select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></label><label>音量 <input v-model.number="volume" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></label></div>
         </div>
@@ -24,7 +24,7 @@
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
-        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :span="span" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
+        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase">
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
@@ -33,7 +33,7 @@
           <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
         </footer>
       </template>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条依照原生 poly 内部索引生成；预览不进行游戏判定。</p><p>完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长、逐音符速度（含 Special）、轨道坐标、音符四角及长条网格已有原生依据；当前窗口裁切仍采用预览规则，flick 方向提示采用原生默认 prefab 的发射器锚点和静态轮廓／填色。它不模拟粒子运动、预热、随机相位或原机 shader；原机按压状态与 flick 连线仍待核实。</p></div>
     </template>
   </section>
 </template>
@@ -46,7 +46,7 @@ import { ChevronLeft, ChevronRight, Download, Info, Maximize, Minimize, Pause, P
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js'
 import { playableSongChart, validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
-import { songTrackSpanForSpeed } from '../../presentation/SongTrackPresentation.js'
+import { createSongChartPlaybackCadence } from '../../presentation/SongChartPlaybackCadence.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
@@ -71,26 +71,36 @@ function leaveImmersive() {
 watch(fullscreenActive, (active, was) => { if (was && !active) immersive.value = false })
 const uid = `chart-viewer-${getCurrentInstance().uid}`
 const opened = ref(props.standalone), selected = ref(props.difficulties[0]?.type || 1), mode = ref('perspective')
-const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(10), longLayout = ref('auto'), followPlayback = ref(false)
+const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(5), longLayout = ref('auto'), followPlayback = ref(false)
 const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
 const chart = shallowRef(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
+// A stable, non-reactive container passes the ref itself into the track. The
+// parent template never reads its value, so a track frame cannot rerender it.
+const trackPosition = Object.freeze({ tick: shallowRef(0) })
 const exporting = ref(false), exportError = ref(''), audio = ref(null), audioError = ref(''), starting = ref(false)
 const exportFormat = ref('svg'), exportProgress = ref(0)
 const playbackRate = ref(1), volume = ref(1), clockSnapshot = ref({ phase: 'idle', currentTime: 0, duration: null })
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const timing = computed(() => chart.value ? buildSongChartTiming(chart.value) : null)
 const safeCursor = computed(() => Math.min(chart.value?.maxTick || 0, Math.max(0, Number(cursor.value) || 0)))
-const safeSpeed = computed(() => Math.max(1, Math.min(30, Number(speed.value) || 10)))
-const span = computed(() => songTrackSpanForSpeed(safeSpeed.value))
+const safeSpeed = computed(() => Math.round(Math.max(1, Math.min(11, Number(speed.value) || 5)) * 10) / 10)
 const currentSeconds = computed(() => Math.max(0, timing.value?.tickToSeconds(Math.max(0, Number(cursor.value) || 0)) || 0))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 const previousNote = computed(() => endpoints.value.filter(n => n.tick < safeCursor.value - .001).at(-1))
 const nextNote = computed(() => endpoints.value.find(n => n.tick > safeCursor.value + .001))
-let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0, lastPaint = 0
+let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0
+const cadence = createSongChartPlaybackCadence({
+  track: seconds => { if (timing.value) trackPosition.tick.value = timing.value.secondsToTick(seconds) },
+  controls: seconds => { if (timing.value) cursor.value = timing.value.secondsToTick(seconds) },
+})
+watch(mode, () => {
+  if (audio.value?.readyState >= 1) syncMediaPosition()
+  else cadence.sync(pendingSeconds)
+})
 const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
   if (snapshot.phase === 'error') { audioError.value = '歌曲音频加载失败，请点击播放重试。'; stopPlayback() }
@@ -119,7 +129,7 @@ async function loadChart() {
 }
 watch([opened, selected, () => props.songCode], loadChart)
 onMounted(() => {
-  if (props.standalone) { if (window.matchMedia('(max-width: 760px)').matches) mode.value = 'long'; void loadChart() }
+  if (props.standalone) void loadChart()
   document.addEventListener('pointerdown', onOutsideSettings)
   document.addEventListener('keydown', onSettingsEscape)
   window.addEventListener('resize', positionSettings)
@@ -135,24 +145,38 @@ onBeforeUnmount(() => {
 function applyPendingSeek() { clock.seek(pendingSeconds) }
 function seekSeconds(seconds) {
   const time = Math.max(0, Math.min(totalSeconds.value, Number(seconds) || 0))
-  pendingSeconds = time; cursor.value = timing.value.secondsToTick(time); locateMessage.value = ''
+  pendingSeconds = time; cadence.sync(time); locateMessage.value = ''
   if (audio.value?.readyState >= 1) clock.seek(time)
   void nextTick(() => longPreview.value?.scrollToTick())
 }
 function seek(tick) { seekSeconds(timing.value.tickToSeconds(Math.max(0, Math.min(chart.value.maxTick, Number(tick) || 0)))) }
 function step(direction) {
+  syncMediaPosition()
   const note = direction > 0 ? nextNote.value : previousNote.value
   if (note) { seek(note.tick); locateMessage.value = `tick ${note.tick} · 轨位 ${note.lane + 1}` }
 }
-function stopPlayback() { playGeneration++; starting.value = false; if (frame) cancelAnimationFrame(frame); frame = 0; audio.value?.pause() }
+function syncMediaPosition() {
+  if (audio.value && timing.value && audio.value.readyState >= 1) {
+    pendingSeconds = audio.value.currentTime
+    cadence.sync(pendingSeconds)
+  }
+}
+function stopPlayback() {
+  playGeneration++; starting.value = false
+  if (frame) cancelAnimationFrame(frame)
+  frame = 0; cadence.reset()
+  // Preserve the exact media position when pausing between visual frames.
+  syncMediaPosition()
+  audio.value?.pause()
+}
 defineExpose({ pause: stopPlayback })
 function updatePlayback(now = 0) {
   const element = audio.value
-  if (!element || element.paused || !timing.value) { frame = 0; return }
-  // The audio remains the clock; a 30 Hz visual cursor avoids invalidating the
-  // chart/toolbars at the iPad's 120 Hz display rate.
-  if (now - lastPaint >= 33) { cursor.value = timing.value.secondsToTick(element.currentTime); lastPaint = now }
+  if (!element || element.paused || !timing.value) {
+    syncMediaPosition(); cadence.reset(); frame = 0; return
+  }
   pendingSeconds = element.currentTime
+  cadence.paint(now, pendingSeconds, mode.value === 'perspective')
   frame = requestAnimationFrame(updatePlayback)
 }
 async function togglePlayback() {
@@ -211,6 +235,7 @@ function onSettingsEscape(event) {
   if (settingsOpen.value && event.key === 'Escape') { event.preventDefault(); void closeSettings() }
 }
 async function editTick() {
+  syncMediaPosition()
   tickDraft.value = String(Math.round(safeCursor.value)); editingTick.value = true
   await nextTick(); tickInput.value?.focus({ preventScroll: true }); tickInput.value?.select()
 }

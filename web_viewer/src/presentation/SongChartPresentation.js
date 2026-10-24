@@ -1,3 +1,4 @@
+import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
 const TYPES = new Set(['SMALL', 'LARGE', 'FLICK_LEFT', 'FLICK_UP', 'FLICK_RIGHT', 'HOLD', 'VARIABLE_HOLD', 'LARGE_HOLD', 'LARGE_VARIABLE_HOLD', 'SPECIAL'])
 const END_TYPES = new Set(['END_NORMAL', 'END_FLICK_LEFT', 'END_FLICK_UP', 'END_FLICK_RIGHT'])
 const arrow = type => type?.endsWith('LEFT') ? '←' : type?.endsWith('RIGHT') ? '→' : type?.endsWith('UP') ? '↑' : ''
@@ -62,7 +63,7 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
       const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
       const last = points.at(-1)
       const bodyTriangles = []
-      for (let i = 1; n.duration > 0 && i < points.length; i++) {
+      for (let i = 1; nativeSongNoteIsHold(n) && n.duration > 0 && i < points.length; i++) {
         const a = points[i - 1], b = points[i]
         const leftA = { x: x(a.posx) - 5.5, y: y(n.tick + a.subtick) }, rightA = { x: x(a.posx) + 5.5, y: y(n.tick + a.subtick) }
         const leftB = { x: x(b.posx) - 5.5, y: y(n.tick + b.subtick) }, rightB = { x: x(b.posx) + 5.5, y: y(n.tick + b.subtick) }
@@ -72,7 +73,7 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
       return {
         id: n.sourceIndex, type: n.type, x: x(n.start), y: y(n.tick), endX: x(last.posx), endY: y(n.tick + n.duration),
         path: points.map((p, i) => `${i ? 'L' : 'M'} ${x(p.posx)} ${y(n.tick + p.subtick)}`).join(' '),
-        held: n.duration > 0, wide: n.type.startsWith('LARGE'), special: n.type === 'SPECIAL',
+        held: nativeSongNoteIsHold(n) && n.duration > 0, wide: n.type.startsWith('LARGE'), special: n.type === 'SPECIAL',
         flick: arrow(n.type), endFlick: arrow(n.endtype),
         role: songNoteRole(n.type), endRole: songNoteRole(n.endtype || 'END_NORMAL'), bodyTriangles,
       }

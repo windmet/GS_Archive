@@ -20,7 +20,8 @@ assert.equal(clipped.glyphs.length, 0, 'window cannot invent hold endpoints')
 const hold = clipped.holds[0]
 assert.equal(hold.from, 300); assert.equal(hold.to, 900)
 assert.ok(hold.samples.some(p => p.tick === 600 && p.lane === 2.35), 'keep fractional bend')
-assert.equal(hold.samples[0].v, 40); assert.equal(hold.samples.at(-1).v, 160, 'clipping must keep full-hold UV')
+assert.equal(hold.nativeMesh.uv[0][1], .25)
+assert.equal(hold.nativeMesh.uv.at(-1)[1], .75, 'native strip recomputes length UV over the supplied clipped points')
 const all = buildSongTrackGeometry(fixture, 0, 2000)
 assert.equal(all.glyphs.find(p => p.endpoint === 'tail').lane, 4, 'poly endpoint overrides stale native end')
 assert.equal(all.glyphs.find(p => p.endpoint === 'tail').role, 'swipe_right')
@@ -35,12 +36,16 @@ for (const song of Object.values(catalog.songs)) for (const d of song.gameplay.d
   for (const cursor of [Math.min(...chart.notes.map(n => n.tick)), firstHold?.tick || 0, chart.maxTick - 500]) {
     const scene = buildSongTrackGeometry(chart, Math.max(cursor, 0))
     for (const n of scene.glyphs) {
-      assert.ok(n.tick >= scene.cursor && n.tick <= scene.cursor + scene.span)
+      assert.ok(n.tick >= scene.cursor && n.fraction >= 0 && n.fraction <= 1 + 1e-12,
+        'each note uses its own native speed window')
       assert.ok(Number.isFinite(n.x) && Number.isFinite(n.y) && n.width > 0)
     }
-    for (const h of scene.holds) for (const mesh of h.triangles) {
-      assert.ok(!/NaN|Infinity/.test(mesh.matrix + mesh.points))
-      paths++
+    for (const h of scene.holds) {
+      assert.ok(h.nativeMesh.vertices.length <= 65536, 'preview WebGL indices fit Uint16')
+      for (const mesh of h.triangles) {
+        assert.ok(!/NaN|Infinity/.test(mesh.matrix + mesh.points))
+        paths++
+      }
     }
     windows++
   }

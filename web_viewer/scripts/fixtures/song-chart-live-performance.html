@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Song chart live playback performance</title>
+  <style>body{font:16px system-ui;margin:16px}#app{max-width:1280px}button{min-height:40px}pre{white-space:pre-wrap;overflow-wrap:anywhere}label{display:inline-block;margin:8px}</style>
+</head>
+<body>
+  <h1>实际谱面播放采样</h1>
+  <p>使用真实音频、真实 rAF 与实际播放器组件；保持此页位于前台。统计的是回调与组件更新，不等同于 GPU 呈现帧或手机实机帧率。</p>
+  <label>歌曲 <select id="song"><option value="cfprde">Café Parade!</option><option value="knwonl">K.now O.nly</option><option value="remasq">Reversed Masquerade</option></select></label>
+  <button id="run" disabled>采样 20 秒</button>
+  <pre id="result" role="status">正在加载…</pre>
+  <div id="app"></div>
+  <script type="module">
+    import { createApp, nextTick } from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
+    import Chart from '/src/components/archive/ArchiveSongChartPreview.vue'
+    import { getSongFullMixUrl } from '/src/utils/AssetResolver.js'
+    import { buildSongChartTiming } from '/src/presentation/SongChartTiming.js'
+
+    const result = document.querySelector('#result'), run = document.querySelector('#run'), select = document.querySelector('#song')
+    const songs = (await (await fetch('/data/song_catalog.json')).json()).songs
+    let app, player, active = null, observationFrame = 0, stopTimer = 0, renderStart = new WeakMap()
+    const quantile = (values, fraction) => values.length ? [...values].sort((a,b) => a-b)[Math.min(values.length-1, Math.floor(values.length*fraction))] : null
+    const summary = values => ({ count: values.length, median: quantile(values,.5), p95: quantile(values,.95), max: values.length ? Math.max(...values) : null })
+    function observe(now) {
+      if (!active) return
+      active.callbacks.push(now)
+      observationFrame = requestAnimationFrame(observe)
+    }
+    function recordVisibility() {
+      if (active) active.visibility.push({ at: performance.now(), state: document.visibilityState, focused: document.hasFocus() })
+    }
+    document.addEventListener('visibilitychange', recordVisibility)
+    window.addEventListener('focus', recordVisibility)
+    window.addEventListener('blur', recordVisibility)
+    function finish() {
+      if (!active) return
+      cancelAnimationFrame(observationFrame); clearTimeout(stopTimer)
+      const sample = active; active = null
+      sample.finished = performance.now()
+      const audio = document.querySelector('audio')
+      sample.mediaTo = audio?.currentTime ?? null
+      // Freeze the state without adding pause's final sync to measured updates.
+      player.pause()
+      const span = (sample.finished - sample.started)/1000
+      const intervals = sample.callbacks.slice(1).map((t,i) => t-sample.callbacks[i])
+      const report = {
+        code: sample.code, seconds: span, viewport: { width: innerWidth, height: innerHeight },
+        mediaFrom: sample.mediaFrom, mediaTo: sample.mediaTo,
+        rafCallbacks: sample.callbacks.length, rafHz: sample.callbacks.length/span,
+        callbackIntervalsMs: summary(intervals),
+        over50ms: intervals.filter(t=>t>50).length, over250ms: intervals.filter(t=>t>250).length,
+        componentUpdates: sample.updates,
+        mediaEvents: sample.mediaEvents,
+        trackCpuUpdateMs: summary(sample.trackCpu),
+        visibility: sample.visibility,
+        warnings: [
+          ...(sample.mediaTo - sample.mediaFrom < span * .9 ? ['media did not advance through the full observation window'] : []),
+          ...(sample.visibility.some(v=>v.state !== 'visible' || !v.focused) ? ['page was hidden or unfocused during observation'] : []),
+        ],
+        limitations: 'rAF callbacks and Vue CPU updates; not GPU presented frames or physical mobile acceptance',
+      }
+      result.textContent = JSON.stringify(report, null, 2)
+      run.disabled = false; select.disabled = false
+    }
+    async function load(code) {
+      app?.unmount(); app = null
+      const song = songs[code], difficulty = song.gameplay.difficulties.find(d=>d.type===4)
+      app = createApp(Chart, { standalone: true, songCode: code, title: song.title,
+        difficulties: [difficulty], audioTrack: { url: getSongFullMixUrl(code) } })
+      app.mixin({
+        beforeUpdate() { if (active && this.$options.__name === 'ArchiveSongTrackPreview') renderStart.set(this, performance.now()) },
+        updated() {
+          if (!active) return
+          const name = this.$options.__name
+          if (name === 'ArchiveSongChartPreview') active.updates.parent++
+          if (name === 'ArchiveSongTrackPreview') {
+            active.updates.track++
+            const start = renderStart.get(this)
+            if (start !== undefined) active.trackCpu.push(performance.now()-start)
+          }
+          if (name === 'ArchiveSongHoldMeshPreview') active.updates.holds++
+        },
+      })
+      player = app.mount('#app')
+      for (let i=0; i<500 && !document.querySelector('.track-svg'); i++) await new Promise(resolve=>setTimeout(resolve,10))
+      if (!document.querySelector('.track-svg')) throw new Error('谱面加载失败')
+      const chart = await (await fetch(difficulty.chart.url)).json()
+      const timing = buildSongChartTiming(chart)
+      const tick = code === 'knwonl' ? 123406 : code === 'remasq' ? 30720 : 22000
+      const audio = document.querySelector('audio')
+      for (const type of ['playing','waiting','stalled','seeking','seeked','pause','ratechange']) audio.addEventListener(type,()=> {
+        if (active) active.mediaEvents.push({ type, at: performance.now(), time: audio.currentTime })
+      })
+      audio.preload = 'auto'; audio.load()
+      if (audio.readyState < 1) await new Promise((resolve,reject)=> {
+        audio.addEventListener('loadedmetadata',resolve,{once:true})
+        audio.addEventListener('error',reject,{once:true})
+      })
+      const slider = document.querySelector('[aria-label="谱面时间轴"]')
+      // Keep the complete observation inside both the chart and the audio.
+      // An outro or ended media would otherwise undercount component updates.
+      const start = Math.min(timing.tickToSeconds(tick), Math.max(0, Math.min(timing.duration, audio.duration) - 25))
+      slider.value = String(start); slider.dispatchEvent(new Event('input',{bubbles:true}))
+      await nextTick()
+      return audio
+    }
+    run.disabled = false; result.textContent = '就绪'
+    run.onclick = async () => {
+      run.disabled = true; select.disabled = true
+      try {
+        const code = select.value, audio = await load(code)
+        document.querySelector('.chart-play').click()
+        for (let i=0; i<500 && (audio.paused || audio.readyState < 3); i++) await new Promise(resolve=>setTimeout(resolve,10))
+        if (audio.paused || audio.readyState < 3) throw new Error('音频未开始播放')
+        const started = performance.now()
+        active = { code, started, mediaFrom: audio.currentTime, callbacks: [], trackCpu: [], visibility: [], mediaEvents: [], updates: { parent: 0, track: 0, holds: 0 } }
+        recordVisibility()
+        result.textContent = '正在采样；请保持前台20秒…'
+        observationFrame = requestAnimationFrame(observe)
+        stopTimer = setTimeout(finish,20000)
+      } catch (error) {
+        if (active) finish()
+        result.textContent = `失败：${error?.message || String(error)}`
+        run.disabled = false; select.disabled = false
+      }
+    }
+    window.addEventListener('pagehide',()=>{ clearTimeout(stopTimer); cancelAnimationFrame(observationFrame); active=null; app?.unmount() },{once:true})
+  </script>
+</body>
+</html>

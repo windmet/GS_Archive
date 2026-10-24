@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { noteRendering, songNoteRole, songNoteEndpoints, songSimultaneousLinks, songHoldMiddleNodes } from '../src/presentation/SongNotePresentation.js'
 import { buildSongChartGeometry } from '../src/presentation/SongChartPresentation.js'
-import { buildSongTrackGeometry, songTrackSpanForSpeed } from '../src/presentation/SongTrackPresentation.js'
+import { buildSongTrackGeometry } from '../src/presentation/SongTrackPresentation.js'
 const root = new URL('../public/data/', import.meta.url)
 const cafe = JSON.parse(readFileSync(new URL('song_charts/cfprde-4.json', root)))
 const know = JSON.parse(readFileSync(new URL('song_charts/knwonl-4.json', root)))
@@ -13,13 +13,6 @@ const middle = songHoldMiddleNodes(know).filter(n => n.sourceIndex === 994)
 assert.deepEqual(middle.map(n => [n.tick, n.lane]), [[124080,0],[124320,1],[124560,0],[124680,1]])
 assert.equal(buildSongTrackGeometry(know,123406,3000).middleNodes.filter(n => n.sourceIndex === 994).length,4)
 assert.equal(buildSongTrackGeometry(know,124400,100).middleNodes.filter(n => n.sourceIndex === 994).length,0)
-assert.equal(songTrackSpanForSpeed(8),3000)
-assert.equal(songTrackSpanForSpeed(1),24000)
-assert.equal(songTrackSpanForSpeed(20),1200)
-assert.equal(songTrackSpanForSpeed(30),800)
-assert.ok(songTrackSpanForSpeed(6)>songTrackSpanForSpeed(8) && songTrackSpanForSpeed(8)>songTrackSpanForSpeed(11))
-assert.throws(() => songTrackSpanForSpeed(0),/speed/)
-assert.throws(() => songTrackSpanForSpeed(31),/speed/)
 assert.equal(cafe.notes.find(n => n.sourceIndex === 239).tick, 30720)
 assert.equal(songNoteRole(cafe.notes.find(n => n.sourceIndex === 239).type), 'p_skill', 'purple star belongs to LARGE, not SPECIAL')
 assert.equal(songNoteRole(cafe.notes.find(n => n.sourceIndex === 1035).type), 'sp')
@@ -45,7 +38,7 @@ for (const song of Object.values(catalog.songs)) for (const difficulty of song.g
   const chart = JSON.parse(readFileSync(new URL(difficulty.chart.url.replace('/data/', ''), root)))
   const long = buildSongChartGeometry(chart)
   const notes = songNoteEndpoints(chart)
-  assert.equal(notes.length, chart.notes.length + chart.notes.filter(n => n.duration > 0).length)
+  assert.equal(notes.length, chart.notes.length + chart.notes.filter(n => ['HOLD', 'VARIABLE_HOLD', 'LARGE_HOLD', 'LARGE_VARIABLE_HOLD'].includes(n.type) && n.duration > 0).length)
   assert.equal(long.notes.length, chart.notes.length)
   assert.equal(long.middleNodes.length, songHoldMiddleNodes(chart).length)
   assert.equal(long.notes.filter(n => n.role === 'p_skill').length, chart.notes.filter(n => n.type.startsWith('LARGE')).length)

@@ -1,0 +1,823 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "elfSha256": "9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e",
+    "methods": [
+      {
+        "name": "EventNoteTypeExtenions.IsAnyHold",
+        "rva": "0x1f46110",
+        "bytes": 156,
+        "sha256": "4648c99ac06e40305e0cbe5f4fed6ad086bee32649c9ef00e09239510d8c809d"
+      },
+      {
+        "name": "EventNoteTypeExtenions.IsAnyHoldOrFlick",
+        "rva": "0x1f47364",
+        "bytes": 164,
+        "sha256": "90910a8cd9d2dcfbb89f1e25b4b96c5ece75c15a6182a6f3e4c1684aab7d3b7b"
+      },
+      {
+        "name": "RhythmGameNoteManager.OnNewNote",
+        "rva": "0x2426874",
+        "bytes": 3280,
+        "sha256": "5e3441842637b62b21ec5c7931a90e93480858bca80b2de3c968fcc3c4787c37"
+      },
+      {
+        "name": "HoldMesh.Create",
+        "rva": "0x21cf2c4",
+        "bytes": 1600,
+        "sha256": "2b768764a317b127095359543d288dcd178212eb05be642eeb8f2568669a5e56"
+      },
+      {
+        "name": "SequencePlayer.ISequenceListener.OnReset",
+        "rva": "0x1b02384",
+        "bytes": 276,
+        "sha256": "7ad610f198cf44b12b4cd78bef4479bf75bab8b67df165cf8cb5f0d5656b6eba"
+      },
+      {
+        "name": "RhythmGameManager.get_leadTime",
+        "rva": "0x1b02364",
+        "bytes": 32,
+        "sha256": "fc466486e2c7ad1c07a737b3aec45a78f2a5c897dc1b061c5cc9cdbe5cc2477b"
+      },
+      {
+        "name": "LiveSettingsData.GetReadTime",
+        "rva": "0x1c1b160",
+        "bytes": 36,
+        "sha256": "3c05ea67b970d42baa1b3a6b0b047a62fedcf38554ad4b623a3eec5de2e88398"
+      },
+      {
+        "name": "NoteManager.SetDelayLeadTime",
+        "rva": "0x20bb0f4",
+        "bytes": 12,
+        "sha256": "f8c2b0869a00a95f009cd8116deac66a0c6096768e1427a68d4b316d94f7a64d"
+      },
+      {
+        "name": "NoteManager.CalcAbsoluteTime",
+        "rva": "0x20bb100",
+        "bytes": 844,
+        "sha256": "4abc274834d30a8e9a0918871dca54bd9f709027a663262c41308eca06c95274"
+      },
+      {
+        "name": "NoteInfo.GetNoteTime",
+        "rva": "0x1edcc28",
+        "bytes": 28,
+        "sha256": "aa0558e059b88c2dcfce53022c0398146b448c74299ad168480ced29e4f6bfd7"
+      },
+      {
+        "name": "EventNoteData.GetNoteTime",
+        "rva": "0x1f471cc",
+        "bytes": 32,
+        "sha256": "3f96aace6b04890b2a59f507a3faedece1d7b27addc07769a5c9386292b48a5c"
+      },
+      {
+        "name": "FixSpNoteSpeedButton.get_isOn",
+        "rva": "0x2059fe8",
+        "bytes": 76,
+        "sha256": "b50b92d0b0ec36ed4f387230c6f45d4bcb3f5a9fd5fcbb61060663ceef79665b"
+      }
+    ],
+    "services": [
+      "0x1afd000",
+      "0x20bb100",
+      "0x20baa30",
+      "0x1df9818"
+    ],
+    "debugPreferenceDefault": 1,
+    "boundaries": "Default common lead and typed timing proved; static xrefs found only debug UI callers of FixSpNoteSpeedButton. This is not a claim about arbitrary reflection or saved player preferences."
+  },
+  "settings": [
+    {
+      "setting": 10,
+      "displaySpeed": 1.0,
+      "commonLeadSeconds": 5.5
+    },
+    {
+      "setting": 50,
+      "displaySpeed": 5.0,
+      "commonLeadSeconds": 3.5
+    },
+    {
+      "setting": 110,
+      "displaySpeed": 11.0,
+      "commonLeadSeconds": 0.5
+    }
+  ],
+  "cases": [
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -1.8181818181818181
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.6363636363636364
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.045454545454545456
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.3636363690549677
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.12727272916923868
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.009090909226374193
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -2.7272727272727275
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.9545454545454546
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.06818181818181819
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -1.8181818181818181
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.6363636363636364
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.045454545454545456
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.3636363690549677
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.12727272916923868
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 0.2,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.009090909226374193
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -2.7272727272727275
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": -0.9545454545454546
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 1.0,
+      "speed": 1.5,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 5.5,
+      "noteTime": 0.06818181818181819
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -2.857142857142857
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -1.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.07142857142857142
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -0.5714285799435207
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -0.20000000298023224
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.014285714498588018
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -4.285714285714286
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -1.5
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.10714285714285714
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -2.857142857142857
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -1.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.07142857142857142
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -0.5714285799435207
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -0.20000000298023224
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 0.2,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.014285714498588018
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -4.285714285714286
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": -1.5
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 5.0,
+      "speed": 1.5,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 3.5,
+      "noteTime": 0.10714285714285714
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -20.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -7.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.5
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -4.000000059604645
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -1.4000000208616257
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.10000000149011612
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -30.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -10.5
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 0,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.75
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -20.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -7.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.5
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -4.000000059604645
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -1.4000000208616257
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 0.2,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.10000000149011612
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 0,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -30.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 6.5,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": -10.5
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 10,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.0
+    },
+    {
+      "noteType": 9,
+      "displaySpeed": 11.0,
+      "speed": 1.5,
+      "currentSeconds": 10.25,
+      "hitSeconds": 10,
+      "leadSeconds": 0.5,
+      "noteTime": 0.75
+    }
+  ],
+  "classifications": [
+    {
+      "name": "SMALL",
+      "noteType": 0,
+      "isHold": false,
+      "usesHoldMesh": false
+    },
+    {
+      "name": "LARGE",
+      "noteType": 1,
+      "isHold": false,
+      "usesHoldMesh": false
+    },
+    {
+      "name": "FLICK_LEFT",
+      "noteType": 2,
+      "isHold": false,
+      "usesHoldMesh": true
+    },
+    {
+      "name": "FLICK_UP",
+      "noteType": 3,
+      "isHold": false,
+      "usesHoldMesh": true
+    },
+    {
+      "name": "FLICK_RIGHT",
+      "noteType": 4,
+      "isHold": false,
+      "usesHoldMesh": true
+    },
+    {
+      "name": "HOLD",
+      "noteType": 5,
+      "isHold": true,
+      "usesHoldMesh": true
+    },
+    {
+      "name": "VARIABLE_HOLD",
+      "noteType": 6,
+      "isHold": true,
+      "usesHoldMesh": true
+    },
+    {
+      "name": "LARGE_HOLD",
+      "noteType": 7,
+      "isHold": true,
+      "usesHoldMesh": true
+    },
+    {
+      "name": "LARGE_VARIABLE_HOLD",
+      "noteType": 8,
+      "isHold": true,
+      "usesHoldMesh": true
+    },
+    {
+      "name": "SPECIAL",
+      "noteType": 9,
+      "isHold": false,
+      "usesHoldMesh": false
+    },
+    {
+      "name": "HOLD_MIDDLE",
+      "noteType": 10,
+      "isHold": false,
+      "usesHoldMesh": false
+    }
+  ]
+}
