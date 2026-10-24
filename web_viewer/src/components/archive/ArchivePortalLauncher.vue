@@ -59,7 +59,10 @@ const preferredActions = [{ id: 'profile', label: '资料' }, { id: 'story', lab
 
 onMounted(async () => {
   await nextTick()
-  if (!props.globalSearch?.query?.trim()) {
+  const hasQuery = Boolean(props.globalSearch?.query?.trim())
+  let isCollapsed = false
+  try { isCollapsed = sessionStorage.getItem('sidem:portal-search-collapsed') === 'true' } catch {}
+  if (!hasQuery || isCollapsed) {
     overview.value?.focusHeading()
   } else {
     overview.value?.restoreSearchFocus()

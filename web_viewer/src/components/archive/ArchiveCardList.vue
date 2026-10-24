@@ -3,6 +3,7 @@
     <ArchiveListHeader v-if="!embedded" :title="title" @back="emit('back')">
       <template #filters>
         <input
+          ref="searchInput"
           :value="modelValue"
           placeholder="搜索卡片标题或稀有度"
           class="filter-input"
@@ -129,7 +130,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { ChevronRight, LayoutGrid, List } from '@lucide/vue'
 import ArchiveFilterSheet from './ArchiveFilterSheet.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
@@ -196,12 +197,24 @@ const hasActiveFilters = computed(() => {
   )
 })
 
+const searchInput = ref(null)
+
 function resetFilters() {
   emit('update:modelValue', '')
   emit('select-rarity', 'all')
   emit('select-attribute', 'all')
   emit('select-asset-state', 'all')
   emit('select-relation-state', 'all')
+  nextTick(() => {
+    if (searchInput.value) {
+      searchInput.value.focus({ preventScroll: true })
+      return
+    }
+    const fallback = document.querySelector('.card-rarity-tab.active') ||
+      document.querySelector('.card-rarity-tab') ||
+      document.querySelector('.card-archive-row')
+    fallback?.focus?.({ preventScroll: true })
+  })
 }
 
 // Counts read as words; a zero is simply left out.

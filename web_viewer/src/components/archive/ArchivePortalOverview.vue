@@ -13,16 +13,16 @@
 
       <section ref="searchPanel" class="overview-search" @keydown.esc.prevent="searchOpen = false" aria-labelledby="portal-search-title">
         <h2 id="portal-search-title" class="overview-visually-hidden">搜索全站档案</h2>
-        <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; emit('search', query)">
+        <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; setSearchCollapsed(false); emit('search', query)">
           <Search :size="21" aria-hidden="true" />
-          <input id="portal-global-search" ref="searchInput" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
-          <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', '')"><X :size="18" aria-hidden="true" /></button>
+          <input id="portal-global-search" ref="searchInput" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true; setSearchCollapsed(false)" @input="searchOpen = true; setSearchCollapsed(false); emit('search', $event.target.value)" />
+          <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', ''); setSearchCollapsed(false); searchOpen = false"><X :size="18" aria-hidden="true" /></button>
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
 
         <div v-if="searchOpen" id="portal-search-results" class="overview-search-results gs-enter-popover" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
-          <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="searchOpen = false"><X :size="16" />收起</button>
-          <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="emit('search',term)">{{ term }}</button></div>
+          <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="collapseSearch"><X :size="16" />收起</button>
+          <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="setSearchCollapsed(false); searchOpen = true; emit('search',term)">{{ term }}</button></div>
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
           <ArchiveErrorNote v-if="globalSearch.error" class="overview-error">{{ globalSearch.error }}</ArchiveErrorNote>
           <template v-if="searchGroups.length">
@@ -33,7 +33,7 @@
             <li v-for="result in group.rows" :key="result.key">
               <DomainMediaPreview v-if="result.image?.url" class="overview-result-image" :binding="result.image" :name="result.label" compact />
               <span v-else class="overview-result-kind" aria-hidden="true"><component :is="archiveNavigationIcons[result.domain] || Search" :size="21" /></span>
-              <button type="button" :disabled="!result.target" :data-archive-focus-id="`portal-search:${result.key}`" @click="emit('open-result', result)"><span class="overview-result-copy"><small>{{ domainLabel(result.domain) }}</small><strong>{{ result.label }}</strong><span v-if="result.subtitle">{{ result.subtitle }}</span></span><ArrowUpRight :size="18" aria-hidden="true" /></button>
+              <button type="button" :disabled="!result.target" :data-archive-focus-id="`portal-search:${result.key}`" @click="setSearchCollapsed(false); emit('open-result', result)"><span class="overview-result-copy"><small>{{ domainLabel(result.domain) }}</small><strong>{{ result.label }}</strong><span v-if="result.subtitle">{{ result.subtitle }}</span></span><ArrowUpRight :size="18" aria-hidden="true" /></button>
             </li>
               </ul>
             </section>
@@ -242,8 +242,25 @@ const readableMainCollections = computed(() => (props.desktopOverview.mainCollec
 const storyTitle = useStoryTitles()
 const storySubtitle = text => String(text || '').split(' · ').map(chapterLabel).join(' · ')
 const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred', 'expand-cards'])
-const searchPanel = ref(null), searchInput = ref(null), searchOpen = ref(Boolean(props.globalSearch?.query?.trim()))
-function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) searchOpen.value = false }
+const SEARCH_COLLAPSED_KEY = 'sidem:portal-search-collapsed'
+function isSearchCollapsed() {
+  try { return sessionStorage.getItem(SEARCH_COLLAPSED_KEY) === 'true' } catch { return false }
+}
+function setSearchCollapsed(collapsed) {
+  try {
+    if (collapsed) sessionStorage.setItem(SEARCH_COLLAPSED_KEY, 'true')
+    else sessionStorage.removeItem(SEARCH_COLLAPSED_KEY)
+  } catch {}
+}
+
+const searchPanel = ref(null), searchInput = ref(null)
+const searchOpen = ref(Boolean(props.globalSearch?.query?.trim()) && !isSearchCollapsed())
+
+function collapseSearch() {
+  searchOpen.value = false
+  setSearchCollapsed(true)
+}
+function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) collapseSearch() }
 onMounted(() => document.addEventListener('pointerdown',closeSearchOutside))
 onBeforeUnmount(() => document.removeEventListener('pointerdown',closeSearchOutside))
 const heading = ref(null)
@@ -777,5 +794,5 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button, .overview-hub-links button { min-height:var(--gs-control-touch); }
   @container portal (max-width:420px) { .overview-hub-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 }
-@media (prefers-reduced-motion:reduce) { .portal-overview *, .portal-overview *::before, .portal-overview *::after { animation-duration:0.01ms !important;animation-iteration-count:1 !important; } }
+@media (prefers-reduced-motion:reduce) { .portal-overview :where(button, a) { transform:none !important; } }
 </style>
