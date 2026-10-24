@@ -3,8 +3,11 @@ import argparse,copy,hashlib,json,math,runpy,struct,sys
 from pathlib import Path
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--native-engine',required=True);parser.add_argument('--unicorn-path');parser.add_argument('--write',action='store_true')
+parser.add_argument('--fire',action='store_true')
 args=parser.parse_args();root=Path(__file__).resolve().parents[1]
 context_path=root/'scripts/fixtures/chibi-spatial-context-native.json';context=json.loads(context_path.read_text(encoding='utf8'))
+if args.fire:
+    context['arrangement']=json.loads((root/'scripts/fixtures/chibi-bnckgy-fire-native.json').read_text(encoding='utf8'))['arrangement']
 sys.argv=[str(root/'scripts/prepare-chibi-noise-kernel-fixture.py'),'--native-engine',args.native_engine]
 if args.unicorn_path:sys.argv+=['--unicorn-path',args.unicorn_path]
 n=runpy.run_path(sys.argv[0]);uc=n['uc'];floats=n['floats'];ptr=n['ptr'];execute=n['execute']
@@ -45,6 +48,10 @@ proof=dict(schemaVersion=1,binarySha256=n['identity'],sourceContextSha256=hashli
     adapters=['0x3170d8 resolves the controlled RAW Transform','0x3fcbcc returns native TRS array/index access; does not replace matrix math'],
     boundary='Native Transform world-to-local, Camera Z flip/multiply and cached-return branch execute. Wide-stage source target poses only; script conversion and Z-roll quaternions are explicit inputs, not DOTween/Unity Quaternion execution. No tween history, tracked-idol branch, final rendered scene, projection getter or particle solver admission.')
 target=root/'scripts/fixtures/chibi-camera-matrix-native.json'
+if args.fire:
+    target=root/'scripts/fixtures/chibi-fire-camera-native.json'
+    proof['choreographySha256']=hashlib.sha256((root/'public/assets/live-chibi/choreography/index.json').read_bytes()).hexdigest()
+    proof['arrangementId']=context['arrangement']['id']
 if args.write:target.write_text(json.dumps(proof,ensure_ascii=False,separators=(',',':')),encoding='utf8')
 else:assert json.loads(target.read_text(encoding='utf8'))==proof,'Native camera matrix/source evidence changed'
 print(json.dumps(dict(cases=len(cases),initial=cases[0]['expected'])))

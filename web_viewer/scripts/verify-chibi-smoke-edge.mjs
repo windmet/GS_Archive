@@ -1,0 +1,190 @@
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import crypto from 'node:crypto'
+import vm from 'node:vm'
+import {sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
+import {stepLifetimeLimitMotion,LIFETIME_LIMIT_PROFILE} from '../src/core/chibiParticleLimit.js'
+import {loadObjectEmitters} from '../src/core/chibiObjectEmitterRenderer.js'
+
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url))
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex')
+const sourceBytes=read('scripts/fixtures/chibi-smoke-source.json'),source=JSON.parse(sourceBytes)
+const proof=JSON.parse(read('scripts/fixtures/chibi-smoke-edge-native.json'))
+assert.equal(proof.sourceSha256,sha(sourceBytes))
+assert.equal(proof.binarySha256,'acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0')
+for(const window of proof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+assert.equal(proof.initialization.function,'0x1c3d68')
+assert.notEqual(proof.initialization.before,proof.initialization.after)
+assert.notDeepEqual(proof.initialization.uninitialized.expected,proof.initialization.initialized.expected)
+// Execute the actual private helper rather than a copied Euler implementation.
+const code=read('src/core/chibiObjectEmitters.js').toString()
+const start=code.indexOf('function euler('),end=code.indexOf('// libunity ShapeModule',start)
+assert.ok(start>=0&&end>start)
+const euler=vm.runInNewContext(`(${code.slice(start,end).trim()})`)
+const near=(a,b,label)=>assert.ok(Math.abs(a-b)<2e-6,`${label}: ${a} != ${b}`)
+assert.equal(proof.cases.length,source.particles.length*5)
+for(const particle of source.particles){
+  const cases=proof.cases.filter(row=>row.source.pathId===particle.pathId)
+  assert.equal(cases.length,5)
+  for(const row of cases){
+    assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+    assert.deepEqual(row.shape,particle.modules.ShapeModule)
+    for(let lane=0;lane<4;lane++){
+      const words=[0,1,2,3].map(i=>row.seed[lane+i*4])
+      const t=(words[0]^(words[0]<<11))>>>0
+      const next=(words[3]^(words[3]>>>19)^t^(t>>>8))>>>0
+      assert.deepEqual([0,1,2,3].map(i=>row.finalSeed[lane+i*4]),[...words.slice(1),next])
+      assert.equal(row.draws[lane],(next&0x7fffff)/8388608)
+      const raw=sampleEmitterShape(row.shape,()=>row.draws[lane])
+      const position=euler(raw.position,row.shape.m_Rotation),direction=euler(raw.direction,row.shape.m_Rotation)
+      for(const [i,axis] of [...'xyz'].entries()){
+        near(raw.position[axis],row.intermediate.rawPosition[i*4+lane],'raw edge '+axis)
+        near(raw.direction[axis],row.intermediate.rawDirection[i*4+lane],'raw direction '+axis)
+        near(position[axis]+row.shape.m_Position[axis],row.expected[lane][i],'rotated birth '+axis)
+        near(direction[axis],row.expected[lane][i+3],'rotated direction '+axis)
+      }
+    }
+  }
+}
+console.log('PASS Smoke edge: 6 source systems, 30 native batches / 120 births, startup control, RNG state and actual JS shape/Euler; no renderer admission')
+
+const motion=JSON.parse(read('scripts/fixtures/chibi-smoke-motion-native.json'))
+assert.equal(motion.binarySha256,proof.binarySha256)
+assert.equal(motion.sourceSha256,sha(sourceBytes))
+assert.equal(motion.edgeSha256,sha(read('scripts/fixtures/chibi-smoke-edge-native.json')))
+assert.deepEqual(motion.speedCache,{serializedNameAddress:'0xee07c7',serializedName:'startSpeed',curveOffset:0x30,modeOffset:0x34,scalarOffset:0x3c})
+for(const window of motion.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+const distanceStart=code.indexOf('function distance('),distanceEnd=code.indexOf('// RotationModule',distanceStart)
+assert.ok(distanceStart>=0&&distanceEnd>distanceStart)
+const distance=vm.runInNewContext(`(${code.slice(distanceStart,distanceEnd).trim()})`)
+assert.equal(motion.cases.length,6)
+assert.deepEqual([...new Set(motion.cases.map(c=>c.speed.scalar))].sort((a,b)=>a-b),[-7,1.5,7])
+let integrationCount=0
+for(const row of motion.cases){
+  const particle=source.particles.find(p=>p.pathId===row.source.pathId)
+  assert.ok(particle)
+  assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+  assert.deepEqual(row.speed,particle.modules.InitialModule.startSpeed)
+  const edge=proof.cases.find(c=>c.source.pathId===row.source.pathId&&JSON.stringify(c.seed)===JSON.stringify(row.edgeSeed))
+  assert.deepEqual(row.initial,edge.expected)
+  for(let lane=0;lane<4;lane++)for(let axis=0;axis<3;axis++){
+    near(row.scaled[lane][axis],row.initial[lane][axis],'speed must preserve birth position')
+    near(row.scaled[lane][axis+3],row.initial[lane][axis+3]*row.speed.scalar,'native signed speed')
+  }
+  if(row.trajectories.length){
+    assert.equal(particle.main.moveWithTransform,1)
+    assert.equal(particle.modules.InitialModule.gravityModifier.scalar,0)
+    for(const key of ['ClampVelocityModule','NoiseModule','VelocityModule'])assert.ok(!particle.modules[key])
+    assert.equal(row.trajectories.length,3)
+  }else assert.ok(particle.modules.ClampVelocityModule,'side limit must not silently disappear')
+  for(const trajectory of row.trajectories){
+    integrationCount++
+    const age=trajectory.dt*trajectory.steps
+    assert.ok(age<particle.modules.InitialModule.startLifetime.scalar)
+    for(let lane=0;lane<4;lane++)for(let axis=0;axis<3;axis++){
+      const expected=row.initial[lane][axis]+row.initial[lane][axis+3]*distance(row.speed.scalar,null,age)
+      assert.ok(Math.abs(expected-trajectory.expected[lane][axis])<1e-5,'actual JS force-free distance vs native integration')
+      near(trajectory.expected[lane][axis+3],row.scaled[lane][axis+3],'force-free velocity')
+    }
+  }
+}
+assert.equal(integrationCount,6)
+console.log('PASS Smoke motion: 6 native signed-speed systems, 2 force-free down systems / 6 trajectories')
+
+const side=JSON.parse(read('scripts/fixtures/chibi-smoke-side-native.json'))
+assert.equal(side.binarySha256,proof.binarySha256)
+assert.equal(side.sourceSha256,sha(sourceBytes))
+assert.equal(side.motionSha256,sha(read('scripts/fixtures/chibi-smoke-motion-native.json')))
+for(const window of side.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+assert.equal(side.cases.length,16);assert.equal(side.curveCases.length,16)
+const vector=values=>Object.fromEntries([...'xyz'].map((axis,i)=>[axis,values[i]]))
+const curveFor=raw=>({mode:raw.minMaxState,scalar:raw.scalar,keys:raw.maxCurve.m_Curve})
+let sideMaxDelta=0,sideSteps=0,sideCheckpoints=0
+for(const row of side.curveCases){
+  const particle=source.particles.find(p=>p.pathId===row.source.pathId)
+  assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+  const curve=curveFor(particle.modules.ClampVelocityModule.magnitude)
+  for(let lane=0;lane<4;lane++)near(sampleObjectCurve(curve,row.phases[lane],0),row.expected[lane],'native general curve/clamped endpoints')
+}
+for(const row of side.cases){
+  const particle=source.particles.find(p=>p.pathId===row.source.pathId)
+  assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+  assert.deepEqual(row.gravity,particle.modules.InitialModule.gravityModifier)
+  assert.deepEqual(row.limit,particle.modules.ClampVelocityModule)
+  assert.equal(row.fastCacheAccepted,false)
+  assert.equal(row.life,particle.modules.InitialModule.startLifetime.scalar)
+  assert.equal(row.gravity.minMaxState,3)
+  assert.ok(row.steps*row.dt<row.life)
+  assert.equal(row.limit.separateAxis,false);assert.equal(row.limit.inWorldSpace,false)
+  assert.equal(row.limit.drag.scalar,0)
+  const bound=motion.cases.find(c=>c.source.pathId===row.source.pathId)
+  assert.deepEqual(row.initial,bound.scaled)
+  const limit={profile:LIFETIME_LIMIT_PROFILE,dampen:row.limit.dampen,curve:curveFor(row.limit.magnitude)}
+  for(let lane=0;lane<4;lane++){
+    const a=(row.seeds[lane]-0x1d483c3d)>>>0,b=(Math.imul(a,0x6ab51b9d)+0x714acb3f)>>>0,t=(a^(a<<11))>>>0
+    const draw=((b^(b>>>19)^t^(t>>>8))&0x7fffff)/8388608
+    assert.equal(row.gravityDraws[lane],draw)
+    const gravity={x:0,y:-9.81*sampleObjectCurve({mode:3,scalar:row.gravity.scalar,minScalar:row.gravity.minScalar},0,draw),z:0}
+    for(let i=0;i<3;i++)near(row.initial[lane][i+3]+gravity['xyz'[i]]*row.dt,row.gravityStep[lane][i+3],'native seeded gravity')
+    let state={position:vector(row.initial[lane]),velocity:vector(row.initial[lane].slice(3))}
+    for(let step=1;step<=row.steps;step++){
+      state=stepLifetimeLimitMotion(state,gravity,limit,step*row.dt/row.life,row.dt)
+      const checkpoint=row.trace.find(c=>c.step===step)
+      if(checkpoint)sideCheckpoints++
+      if(checkpoint)for(let i=0;i<3;i++)for(const [key,offset] of [['position',0],['velocity',3]]){
+        const delta=Math.abs(state[key]['xyz'[i]]-checkpoint.expected[lane][i+offset])
+        sideMaxDelta=Math.max(sideMaxDelta,delta)
+        assert.ok(delta<2e-5,JSON.stringify({source:row.source.pathId,lane,step,key,delta}))
+      }
+      sideSteps++
+    }
+  }
+}
+assert.equal(sideSteps,23040)
+assert.equal(sideCheckpoints,320)
+console.log(`PASS Smoke side: 4 RAW systems /16 trajectories /23040 particle steps /320 checkpoints, native general curve and seeded gravity; max delta ${sideMaxDelta}; renderer still missing`)
+
+const uvProof=JSON.parse(read('scripts/fixtures/chibi-smoke-uv-native.json'))
+assert.equal(uvProof.binarySha256,proof.binarySha256)
+assert.equal(uvProof.sourceSha256,sha(sourceBytes))
+for(const window of uvProof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+assert.equal(uvProof.cases.length,8)
+// Run the actual renderer's frame allocation; the PIXI boundary records its
+// rectangles only. This is not texture upload, GPU filtering or Browser proof.
+class Rectangle {constructor(x,y,width,height){Object.assign(this,{x,y,width,height})}}
+class Texture {constructor(baseTexture,frame){Object.assign(this,{baseTexture,frame})}destroy(){}}
+class Sprite {constructor(texture){this.texture=texture;this.anchor={set(){}}}}
+class Container {constructor(){this.children=[]}addChild(sprite){this.children.push(sprite)}destroy(){}}
+const PIXI={Rectangle,Texture,Sprite,Container,BLEND_MODES:{NORMAL_NPM:0,ADD_NPM:1}}
+for(const particle of source.particles.filter(p=>p.modules.UVModule)){
+  const uv=particle.modules.UVModule,texture=source.textures['668']
+  assert.equal(uv.tilesX,1);assert.equal(uv.tilesY,12)
+  assert.equal(texture.width,171);assert.equal(texture.height,1024)
+  assert.equal(uv.frameOverTime.scalar*12<12,true,'Source endpoint scale avoids frame 12')
+  const original={width:texture.width,height:texture.height,baseTexture:{},destroy(){}}
+  const runtime=await loadObjectEmitters(PIXI,{masks:[],textures:{'668':{file:'source-smoke-uv-probe',nativeSampling:texture.sampling}},
+    systems:[{texture:'668',uv:{columns:uv.tilesX,rows:uv.tilesY},capacity:1,sortingOrder:particle.renderer.sortingOrder,blend:'normal'}]},async()=>original)
+  const frames=runtime.nativeEmitters[0].frames
+  assert.equal(frames.length,12)
+  assert.equal(frames[0].frame.height,1024/12)
+  assert.notEqual(frames[0].frame.height,Math.floor(1024/12),'Do not round source sheet rows')
+  assert.equal(original.baseTexture.alphaMode,0)
+  assert.equal(original.baseTexture.wrapMode,33071)
+  const rows=uvProof.cases.filter(row=>row.source.pathId===particle.pathId)
+  assert.equal(rows.length,4)
+  for(const row of rows){
+    assert.deepEqual(row.source,Object.fromEntries(['serializedFile','pathId','parameterTreeSha256'].map(k=>[k,particle[k]])))
+    assert.equal(row.flags&0x3ff,uv.tilesX);assert.equal((row.flags>>>10)&0x1ff,uv.tilesY)
+    assert.equal(row.tileCount,12)
+    for(let lane=0;lane<4;lane++){
+      const rect=frames[Math.floor(row.frames[lane])].frame
+      const corners=[[rect.x,rect.y],[rect.x+rect.width,rect.y],[rect.x+rect.width,rect.y+rect.height],[rect.x,rect.y+rect.height]]
+      for(let corner=0;corner<4;corner++){
+        near(corners[corner][0]/texture.width,row.expected[lane][corner][0],'native UV/Pixi X')
+        near(1-corners[corner][1]/texture.height,row.expected[lane][corner][1],'native UV/Pixi flipped Y')
+      }
+    }
+  }
+}
+assert.equal(source.particles.filter(p=>!p.modules.UVModule).length,4,'Side systems have no sheet animation')
+console.log('PASS Smoke UV: 2 source systems /32 native quads, all 12 rows and fractional 1024/12 renderer frames; no GPU or animation-clock proof')

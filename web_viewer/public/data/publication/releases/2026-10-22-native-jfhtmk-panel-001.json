@@ -1,0 +1,170 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-22-native-jfhtmk-panel-001",
+  "created_at": "2026-10-22T03:42:36.488663+00:00",
+  "prepared_from_commit": "c2a5c99e989f5fef253743abdd729ba83e40d4e0",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:a81de17be6dfb373a4d35149",
+      "stage-object-emitters:71defddbb53db923a0d9b86d"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:a81de17be6dfb373a4d35149",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_jfhtmk.unity3d",
+        "sha256": "3c4a69c56a6f88d2e5b8fa1459a6a4d9fece9d61c8503da20f07642d7c6d7c86",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_jfhtmk_light",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-a21b68d423d0a5dc603c32d2460e87be:-5690758956316821555",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 757f7dfd3ec80b744283e8df2e8105453697c5eb60b361b223eb1a004c61d63c; 512x256 RGBA. Native static local parent projection; no device/scene/RNG parity claim."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/a81de17be6dfb373a4d35149.png",
+          "url": "/data/stage-object-emitters/a81de17be6dfb373a4d35149.png",
+          "bytes": 11844,
+          "sha256": "2090eb76f08fafe53f742612a6c15fdd29116caabc0d8f5ef30cfdb892cce808"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixel comparison matched; texture parity only. Thirty-six source-bound native cases use the correct nonuniform writer and size bounds; combine with90 prior local-parent cases.",
+          "All104existing models preserve geometry/lifecycle parameters;117texture descriptors unchanged. Two previous local-parent proof SHA references corrected to canonical LF. Native RNG/clock/device/original scene parity remain unverified."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=jfhtmk&stage=jfhtmk_live_effect",
+        "tested_at": "2026-10-22T04:01:31.718491+00:00",
+        "tested_commit": "c2a5c99e989f5fef253743abdd729ba83e40d4e0",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 finalPID21936,rm-release-20261015,full mode; inherited manual5-member cast,not original-member acceptance.",
+          "10000ms JFHTMK panel visible7particles;20000ms removed0;22500ms restarted7;rewind10000ms7. Playback on initialPID69656 observed10s through76.5s,pause succeeded at84.5s with paused DOM.",
+          "LF proof normalization created new hashed shards. Old Vite snapshot returned HTML and one seek error; corrected by restarting same5213. Final common shard HTTP application/json, fresh Browser session cold seek10000ms ready=true7particles,unsupported/deferred empty,error logs0.",
+          "Actual in-stage switch to VIVA clears old objects,then VIVA ready=true876particles. Desktop1280x720/mobile390x844;mobile document/scrollWidth390. Final screenshots local-size-jfhtmk-10s-desktop.png,local-size-jfhtmk-10s-mobile.png;old failure log local-size-stale-server-logs.json retained.",
+          "Controlled correct nonuniform native writer36cases plus prior90static parent cases;no original scene/device/native RNG/tween/frame history or perspective claim."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:71defddbb53db923a0d9b86d",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_jfhtmk.unity3d",
+        "sha256": "3c4a69c56a6f88d2e5b8fa1459a6a4d9fece9d61c8503da20f07642d7c6d7c86",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_jfhtmk_panel_1",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-a21b68d423d0a5dc603c32d2460e87be:6308013145848266854",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 d820a6bd0061d5c16144f8d20199b976c61e4cda4fa96bac79d25553cff2b00a; 1024x1024 RGBA. Native static local parent projection; no device/scene/RNG parity claim."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/71defddbb53db923a0d9b86d.png",
+          "url": "/data/stage-object-emitters/71defddbb53db923a0d9b86d.png",
+          "bytes": 20503,
+          "sha256": "c36f11c30f9cbcc01349ac2a87713e1b0233632a3dac2752e32c8d246881c330"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixel comparison matched; texture parity only. Thirty-six source-bound native cases use the correct nonuniform writer and size bounds; combine with90 prior local-parent cases.",
+          "All104existing models preserve geometry/lifecycle parameters;117texture descriptors unchanged. Two previous local-parent proof SHA references corrected to canonical LF. Native RNG/clock/device/original scene parity remain unverified."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=jfhtmk&stage=jfhtmk_live_effect",
+        "tested_at": "2026-10-22T04:01:31.718526+00:00",
+        "tested_commit": "c2a5c99e989f5fef253743abdd729ba83e40d4e0",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 finalPID21936,rm-release-20261015,full mode; inherited manual5-member cast,not original-member acceptance.",
+          "10000ms JFHTMK panel visible7particles;20000ms removed0;22500ms restarted7;rewind10000ms7. Playback on initialPID69656 observed10s through76.5s,pause succeeded at84.5s with paused DOM.",
+          "LF proof normalization created new hashed shards. Old Vite snapshot returned HTML and one seek error; corrected by restarting same5213. Final common shard HTTP application/json, fresh Browser session cold seek10000ms ready=true7particles,unsupported/deferred empty,error logs0.",
+          "Actual in-stage switch to VIVA clears old objects,then VIVA ready=true876particles. Desktop1280x720/mobile390x844;mobile document/scrollWidth390. Final screenshots local-size-jfhtmk-10s-desktop.png,local-size-jfhtmk-10s-mobile.png;old failure log local-size-stale-server-logs.json retained.",
+          "Controlled correct nonuniform native writer36cases plus prior90static parent cases;no original scene/device/native RNG/tween/frame history or perspective claim."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}
