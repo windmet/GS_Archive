@@ -27,7 +27,7 @@ def free_null(uc,address,size,user):
 
 hook=uc.hook_add(UC_HOOK_CODE,free_null,begin=0x306258,end=0x306258)
 
-def vertices(angles,rotation3d,chain=None,alignment=0,frame=None):
+def vertices(angles,rotation3d,chain=None,alignment=0,frame=None,position=None,particleSize=None,sizeBounds=None,viewHeight=10):
     context,params,modules,particles,scratch,out=0x20a0000,0x20a1000,0x20a2000,0x20a4000,0x20a6000,0x20b0000
     for address,size in [(context,0x1000),(params,0x1000),(modules,0x2000),(particles,0x1000),(scratch,0x1000),(out,0x10000)]:uc.mem_write(address,bytes(size))
     for offset in range(0,0x780,0x20):
@@ -58,18 +58,26 @@ def vertices(angles,rotation3d,chain=None,alignment=0,frame=None):
         if frame is not None:
             matrix=struct.unpack('<16f',uc.mem_read(state+0x3c,64))
             frame.update(expectedMatrix=dict(zip(['a','b','c','d','tx','ty'],[matrix[i] for i in [0,1,4,5,12,13]])),expectedParticleScale=list(struct.unpack('<3f',uc.mem_read(state+0x154,12))),expectedRotation=list(struct.unpack('<4f',uc.mem_read(state+0x7c,16))))
+            if position is not None:frame['expectedFullMatrix']=list(matrix)
         renderer,camera=0x20e0000,0x20e4000
         uc.mem_write(renderer,bytes(0x1000));uc.mem_write(camera,bytes(0x1000))
-        floats(renderer+0x1cc,[0,100,0,0,1,0,1,0])
+        floats(renderer+0x1cc,[*(sizeBounds or [0,100]),0,0,1,0,1,0])
         uc.mem_write(renderer+0x1ec,struct.pack('<I',alignment))
         default=struct.unpack('<Q',uc.mem_read(0x11d1178,8))[0]
         uc.mem_write(modules+0x8ac,bytes(uc.mem_read(default,8)))
         floats(camera+4,[1,0,0,0,0,1,0,0,0,0,1,0,0,0,-10,1])
         uc.mem_write(camera+0x44,bytes(uc.mem_read(camera+4,64)))
-        floats(camera+0xd4,[0,0,1]);floats(camera+0xe0,[10,1,1]);uc.mem_write(camera+0xec,bytes([1]))
+        floats(camera+0xd4,[0,0,1]);floats(camera+0xe0,[viewHeight,1,1]);uc.mem_write(camera+0xec,bytes([1]))
         execute(0x6c505c,[renderer,engine,camera,0,context,params,0])
         field(0x40,0)
+    if position is not None:
+        for offset,value in zip([0,0x20,0x40],position):field(offset,value)
+    if particleSize is not None:
+        assert not rotation3d,'Nonuniform 3D rotation needs independent native proof'
+        uc.mem_write(particles+0x7b4,bytes([1]))
+        for offset,value in zip([0x2a0,0x2c0,0x2e0],particleSize):field(offset,value)
     function=0x81beac if rotation3d else 0x81e2e0
+    if particleSize is not None:function=0x815a1c
     execute(function,[out,context,params,modules,particles,scratch])
     result=[]
     for i in range(4):

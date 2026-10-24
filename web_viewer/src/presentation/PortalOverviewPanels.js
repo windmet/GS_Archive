@@ -49,21 +49,56 @@ const joined = rows => rows.filter(Boolean).join(' · ')
  * Four compact tiles beside the 担当 hero. Every number comes from the scope's own summary
  * (cardCounts/storyCounts/songCounts/preferredStats); nothing is fetched for this panel.
  */
-export function portalPreferredStatTiles({ cardCounts, storyCounts, songCounts, preferredStats } = {}) {
+export function portalPreferredStatTiles({ cardCounts, storyCounts, songCounts, preferredStats, footprints } = {}) {
   const stat = id => count(preferredStats?.find?.(row => row.id === id)?.value)
   const chats = stat('chats'), phones = stat('phones')
+  const totalFor = id => count(footprints?.find?.(row => row.id === id)?.total)
+
+  const cardRarities = ['SSR', 'SR', 'R']
+  if (count(cardCounts?.rarity?.N) > 0) cardRarities.push('N')
+  const cardParts = count(cardCounts?.total) !== null
+    ? cardRarities
+        .map(rarity => ({ id: rarity, label: rarity, count: count(cardCounts?.rarity?.[rarity]) }))
+        .filter(part => typeof part.count === 'number' && part.count > 0)
+    : []
+
+  const storyDefs = [['main', '主线'], ['event', '活动'], ['personal', '个人'], ['other', '其他']]
+  const storyParts = count(storyCounts?.all) !== null
+    ? storyDefs
+        .map(([key, label]) => ({ id: key, label, count: count(storyCounts?.[key]) }))
+        .filter(part => typeof part.count === 'number' && part.count > 0)
+    : []
+
+  const songDefs = SONG_LINEUP_TAXONOMY.filter(entry => entry.id !== 'all').map(entry => [entry.id, entry.label])
+  const songParts = count(songCounts?.all) !== null
+    ? songDefs
+        .map(([key, label]) => ({ id: key, label, count: count(songCounts?.[key]) }))
+        .filter(part => typeof part.count === 'number' && part.count > 0)
+    : []
+
+  const commParts = chats !== null && phones !== null
+    ? [
+        { id: 'chats', label: '个人聊天', count: chats },
+        { id: 'phones', label: '电话', count: phones },
+      ].filter(part => typeof part.count === 'number' && part.count > 0)
+    : []
+
   return [
-    { id: 'cards', label: '卡片', action: 'cards', value: count(cardCounts?.total),
+    { id: 'cards', label: '卡片', action: 'cards', icon: 'cards', value: count(cardCounts?.total),
+      total: totalFor('cards'), parts: cardParts,
       meta: joined(['SSR', 'SR', 'R'].filter(rarity => count(cardCounts?.rarity?.[rarity]) !== null)
         .map(rarity => `${rarity} ${cardCounts.rarity[rarity]}`)) },
-    { id: 'stories', label: '出场剧情', action: 'stories', value: count(storyCounts?.all),
+    { id: 'stories', label: '出场剧情', action: 'stories', icon: 'stories', value: count(storyCounts?.all),
+      total: totalFor('stories'), parts: storyParts,
       meta: joined([['main', '主线'], ['event', '活动'], ['personal', '个人'], ['other', '其他']]
         .filter(([key]) => count(storyCounts?.[key]) !== null).map(([key, label]) => `${label} ${storyCounts[key]}`)) },
-    { id: 'songs', label: '参与歌曲', action: 'songs', value: count(songCounts?.all),
+    { id: 'songs', label: '参与歌曲', action: 'songs', icon: 'songs', value: count(songCounts?.all),
+      total: totalFor('songs'), parts: songParts,
       meta: joined(SONG_LINEUP_TAXONOMY.filter(entry => entry.id !== 'all')
         .filter(entry => count(songCounts?.[entry.id]) !== null).map(entry => `${entry.label} ${songCounts[entry.id]}`)) },
-    { id: 'communication', label: '通信', action: 'mobile',
+    { id: 'communication', label: '通信', action: 'mobile', icon: 'interactions',
       value: chats !== null && phones !== null ? chats + phones : null,
+      total: null, parts: commParts,
       meta: joined([chats !== null && `个人聊天 ${chats}`, phones !== null && `电话 ${phones}`]) },
   ]
 }

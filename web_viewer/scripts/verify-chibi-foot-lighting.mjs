@@ -43,11 +43,12 @@ const ref=value=>({value})
 const bodyRuntimes=new Map([[2,{spine:{}}],[3,{spine:{}}]])
 let spots=[],pins=[],gradientCalls=0
 const tintControls=ref(new Map())
-const applyBody=new Function('currentFootLighting','spotlightStatesAt','pinspotlightStatesAt','stageTime','parseHexColor','runtimes','mixRgb','currentBodyColors','multiplyBodyTint','syncFootLighting','PIXI','appliedBodyColors','activePositions','playing','inspectorOpen','syncNativeBodyColor',`return () => {${bodyBranch}\n}`)(
+const addressedFoot=ref(new Map()),soloDiagnostic=ref('')
+const applyBody=new Function('currentFootLighting','spotlightStatesAt','pinspotlightStatesAt','stageTime','parseHexColor','runtimes','mixRgb','currentBodyColors','multiplyBodyTint','syncFootLighting','PIXI','appliedBodyColors','activePositions','playing','inspectorOpen','syncNativeBodyColor','currentAddressedFootLighting','appliedFootSoloColors',`return () => {${bodyBranch}\n}`)(
  ref(state),()=>new Map(spots.map((s,i)=>[i,s])),()=>new Map(pins.map((s,i)=>[i,s])),ref(5200),
  c=>c?parseInt(c.slice(1),16):0x221d23,bodyRuntimes,
  (a,b,f)=>f===0?a:f===1?b:0x808080,tintControls,(a,b)=>b??a,
- ()=>{},{},ref(''),ref([2,3]),ref(false),ref(false),(_pixi,r,rgba,enabled,foot)=>{r.appliedBody=rgba;r.appliedFoot=foot;gradientCalls++})
+ ()=>{},{},ref(''),ref([2,3]),ref(false),ref(false),(_pixi,r,rgba,enabled,foot)=>{r.appliedBody=rgba;r.appliedFoot=foot;gradientCalls++},addressedFoot,soloDiagnostic)
 const environment={alpha:1,beamColor:'#ffffff',asset:'Pinspotlight',environmentColor:'#000000',environmentOpacity:1000}
 spots=[environment];pins=[environment];applyBody()
 assert.equal(bodyRuntimes.get(2).spine.tint,0xffffff,'Free/offstage environment does not black out the face')
@@ -63,6 +64,12 @@ assert.deepEqual(bodyRuntimes.get(2).appliedBody,[.1,.2,.3,.6],'Explicit Body_Co
 assert.equal(bodyRuntimes.get(2).spine.tint,0xffffff,'Native replacement must not also multiply the Spine')
 assert.equal(bodyRuntimes.get(3).spine.tint,0xffffff,'Rewind/song change leaves no stale lamp dimming')
 assert.equal(gradientCalls,8,'Foot uniforms are wired per performer alongside Body RGBA')
+const soloState={rgba:[1,0,0,.5],rcpHeight:.01}
+addressedFoot.value=new Map([[3,soloState]]);applyBody()
+assert.equal(bodyRuntimes.get(3).appliedFoot,soloState,'Actual renderer receives the addressed native material')
+assert.equal(bodyRuntimes.get(2).appliedFoot,state,'Unaddressed actors retain the shared foot material')
+assert.match(soloDiagnostic.value,/3:rgba\(1.000,0.000,0.000,0.500\)/)
+addressedFoot.value=new Map();applyBody();assert.equal(soloDiagnostic.value,'','Switch/rewind removes stale solo diagnostics')
 if (process.argv.includes('--published-assets')) {
  const index=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json',import.meta.url)))
  const growing=index.songs.find(s=>s.id==='grwsml_live_effect')

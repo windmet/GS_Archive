@@ -1,0 +1,326 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-22-native-local-panels-001",
+  "created_at": "2026-10-22T03:21:08.265368+00:00",
+  "prepared_from_commit": "aa987f404cd28265e3149beaebe10150290730b5",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:979df7f87c603a9a755b4541",
+      "stage-object-emitters:9769050e6fb1fe5f30004a47",
+      "stage-object-emitters:39750b57bcd9457fae273951",
+      "stage-object-emitters:c9cea295b9c3adbfe443e3a4"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:979df7f87c603a9a755b4541",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_unmikn.unity3d",
+        "sha256": "aef8a425636958caaa76566cb3a5737dcf8a0af4ead9a645a3ab7567b8d2ab96",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_jfhtmk_light",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-ffb73eb7b41a794eb4590364a1a0fa74:-5690758956316821555",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 7c0c145925270efe2f163376af5e9bf16388ea39b39791d5b49da7c3e2a10c8c; 512x256 RGBA. Native static local parent projection; no device/scene/RNG parity claim."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/979df7f87c603a9a755b4541.png",
+          "url": "/data/stage-object-emitters/979df7f87c603a9a755b4541.png",
+          "bytes": 11844,
+          "sha256": "2090eb76f08fafe53f742612a6c15fdd29116caabc0d8f5ef30cfdb892cce808"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixel comparison matched; texture parity only. Ninety native hierarchy/context/vertex cases cover actual tilted source chains, local Z and particle rotation.",
+          "Previous102models113texture descriptors unchanged; native RNG, clock, perspective and original scene remain unverified."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=unmikn&stage=unmikn_live_effect",
+        "tested_at": "2026-10-22T03:28:14.330920+00:00",
+        "tested_commit": "aa987f404cd28265e3149beaebe10150290730b5",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 PID58104,rm-release-20261015,full mode; inherited manual cast, not original-member acceptance.",
+          "UNMIKN10000ms panel3 loaded and64 total object particles,16200ms removed and11,60000ms restarted and63; rewind and page reload/cold seek10000ms restore64.",
+          "Actual in-stage switch to VIVA clears old objects. VIVA0/10000ms876 total object particles,negative2s activation retained. Playback observed10s to51.4s,pause succeeded at60.8s and DOM reports paused,rewind and cold reload10000ms restore876.",
+          "Desktop1280x720/mobile390x844,both document/scrollWidth390. Sampled ready=true,unsupported/deferred empty,console errors0;warnings not asserted absent. Screenshots local-parent-unmikn-10s-desktop.png,local-parent-unmikn-10s-mobile.png,local-parent-vvfmrm-0s-desktop.png,local-parent-vvfmrm-10s-desktop.png,local-parent-vvfmrm-10s-mobile.png.",
+          "Ninety static-source native parent vertex cases,not original scene,device,native RNG/tween/frame history or perspective acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:9769050e6fb1fe5f30004a47",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_unmikn.unity3d",
+        "sha256": "aef8a425636958caaa76566cb3a5737dcf8a0af4ead9a645a3ab7567b8d2ab96",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_unmikn_panel_3",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-ffb73eb7b41a794eb4590364a1a0fa74:5894507546990979107",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 d77f18bf58e677b7d1a13a9633fa7843fd5de009546c122c83c7b9890ba340db; 1024x1024 RGBA. Native static local parent projection; no device/scene/RNG parity claim."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/9769050e6fb1fe5f30004a47.png",
+          "url": "/data/stage-object-emitters/9769050e6fb1fe5f30004a47.png",
+          "bytes": 12450,
+          "sha256": "d74fcec966886fc3128cd35e218bb105e2afaecb43975bda21bd0f40929c769e"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixel comparison matched; texture parity only. Ninety native hierarchy/context/vertex cases cover actual tilted source chains, local Z and particle rotation.",
+          "Previous102models113texture descriptors unchanged; native RNG, clock, perspective and original scene remain unverified."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=unmikn&stage=unmikn_live_effect",
+        "tested_at": "2026-10-22T03:28:14.330971+00:00",
+        "tested_commit": "aa987f404cd28265e3149beaebe10150290730b5",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 PID58104,rm-release-20261015,full mode; inherited manual cast, not original-member acceptance.",
+          "UNMIKN10000ms panel3 loaded and64 total object particles,16200ms removed and11,60000ms restarted and63; rewind and page reload/cold seek10000ms restore64.",
+          "Actual in-stage switch to VIVA clears old objects. VIVA0/10000ms876 total object particles,negative2s activation retained. Playback observed10s to51.4s,pause succeeded at60.8s and DOM reports paused,rewind and cold reload10000ms restore876.",
+          "Desktop1280x720/mobile390x844,both document/scrollWidth390. Sampled ready=true,unsupported/deferred empty,console errors0;warnings not asserted absent. Screenshots local-parent-unmikn-10s-desktop.png,local-parent-unmikn-10s-mobile.png,local-parent-vvfmrm-0s-desktop.png,local-parent-vvfmrm-10s-desktop.png,local-parent-vvfmrm-10s-mobile.png.",
+          "Ninety static-source native parent vertex cases,not original scene,device,native RNG/tween/frame history or perspective acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:39750b57bcd9457fae273951",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_vvfmrm.unity3d",
+        "sha256": "535ef5c69b51aa94a4edf3f1becd91921a345c46311c901551bb8efd387052b4",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_vvfmrm_panel_1",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-c372cdf31259f5a1ccc4eed378258fb5:2189767880910603685",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 1822fdc8092f086aa27dba27042841091613094c9040cd1c18fd3b4326b7944e; 1024x1024 RGBA. Native static local parent projection; no device/scene/RNG parity claim."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/39750b57bcd9457fae273951.png",
+          "url": "/data/stage-object-emitters/39750b57bcd9457fae273951.png",
+          "bytes": 12877,
+          "sha256": "eae0bfa9e771df5d1037a3423b25c7b51d87543c955233294de0eef702cff1cf"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixel comparison matched; texture parity only. Ninety native hierarchy/context/vertex cases cover actual tilted source chains, local Z and particle rotation.",
+          "Previous102models113texture descriptors unchanged; native RNG, clock, perspective and original scene remain unverified."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=vvfmrm&stage=vvfmrm_live_effect",
+        "tested_at": "2026-10-22T03:28:14.330987+00:00",
+        "tested_commit": "aa987f404cd28265e3149beaebe10150290730b5",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 PID58104,rm-release-20261015,full mode; inherited manual cast, not original-member acceptance.",
+          "UNMIKN10000ms panel3 loaded and64 total object particles,16200ms removed and11,60000ms restarted and63; rewind and page reload/cold seek10000ms restore64.",
+          "Actual in-stage switch to VIVA clears old objects. VIVA0/10000ms876 total object particles,negative2s activation retained. Playback observed10s to51.4s,pause succeeded at60.8s and DOM reports paused,rewind and cold reload10000ms restore876.",
+          "Desktop1280x720/mobile390x844,both document/scrollWidth390. Sampled ready=true,unsupported/deferred empty,console errors0;warnings not asserted absent. Screenshots local-parent-unmikn-10s-desktop.png,local-parent-unmikn-10s-mobile.png,local-parent-vvfmrm-0s-desktop.png,local-parent-vvfmrm-10s-desktop.png,local-parent-vvfmrm-10s-mobile.png.",
+          "Ninety static-source native parent vertex cases,not original scene,device,native RNG/tween/frame history or perspective acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:c9cea295b9c3adbfe443e3a4",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_vvfmrm.unity3d",
+        "sha256": "535ef5c69b51aa94a4edf3f1becd91921a345c46311c901551bb8efd387052b4",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_vvfmrm_panel_3",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-c372cdf31259f5a1ccc4eed378258fb5:-3641729219090922145",
+          "evidence": "Exact 64-bit PathID in string; RAW object SHA256 d0b61f90e108b9626e1910f3fe9350c285c310cf37cf28813ebca72f54896f62; 1024x512 RGBA. Native static local parent projection; no device/scene/RNG parity claim."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/c9cea295b9c3adbfe443e3a4.png",
+          "url": "/data/stage-object-emitters/c9cea295b9c3adbfe443e3a4.png",
+          "bytes": 24002,
+          "sha256": "c2a5b8f1012c312c3358fec2bc9f9bf6a8aa97ea905ba6cdf7b19ccd82095f9b"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixel comparison matched; texture parity only. Ninety native hierarchy/context/vertex cases cover actual tilted source chains, local Z and particle rotation.",
+          "Previous102models113texture descriptors unchanged; native RNG, clock, perspective and original scene remain unverified."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=vvfmrm&stage=vvfmrm_live_effect",
+        "tested_at": "2026-10-22T03:28:14.330996+00:00",
+        "tested_commit": "aa987f404cd28265e3149beaebe10150290730b5",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD plus scoped changes; main checkout5213 PID58104,rm-release-20261015,full mode; inherited manual cast, not original-member acceptance.",
+          "UNMIKN10000ms panel3 loaded and64 total object particles,16200ms removed and11,60000ms restarted and63; rewind and page reload/cold seek10000ms restore64.",
+          "Actual in-stage switch to VIVA clears old objects. VIVA0/10000ms876 total object particles,negative2s activation retained. Playback observed10s to51.4s,pause succeeded at60.8s and DOM reports paused,rewind and cold reload10000ms restore876.",
+          "Desktop1280x720/mobile390x844,both document/scrollWidth390. Sampled ready=true,unsupported/deferred empty,console errors0;warnings not asserted absent. Screenshots local-parent-unmikn-10s-desktop.png,local-parent-unmikn-10s-mobile.png,local-parent-vvfmrm-0s-desktop.png,local-parent-vvfmrm-10s-desktop.png,local-parent-vvfmrm-10s-mobile.png.",
+          "Ninety static-source native parent vertex cases,not original scene,device,native RNG/tween/frame history or perspective acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

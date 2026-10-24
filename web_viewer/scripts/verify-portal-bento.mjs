@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {buildPortalDesktopOverview,portalIdolPortrait} from '../src/presentation/ArchivePortalPresentation.js'
-import {portalDailyCard,portalTimeline} from '../src/presentation/PortalBento.js'
+import {portalDailyCard,portalTimeline,portalCardCaption} from '../src/presentation/PortalBento.js'
 import {portalDisplayOverview} from '../src/data/PortalRepository.js'
 import {storyGateways,storyGatewayCount} from '../src/presentation/StoryGateways.js'
 import {cardArtThumbKey,cardArtThumbSourceKey,cardArtThumbSpec,CARD_ART_THUMB_QUALITY,CARD_ART_THUMB_SIZES} from '../shared/portal/CardArtThumbnails.js'
@@ -90,9 +90,13 @@ assert.ok(portalHubGroups().every(group=>group.entries.every(entry=>entry.count=
 // The 担当 summary tiles are four fixed slots whose numbers/actions come from the scope summary.
 const tiles=portalPreferredStatTiles({cardCounts:{total:17,rarity:{SSR:8,SR:6,R:3,N:0}},
   storyCounts:{all:46,main:7,event:3,personal:30,other:6},songCounts:{all:4,configurable_formation:1,fixed_unit:3},
-  preferredStats:[{id:'cards',value:17},{id:'stories',value:46},{id:'chats',value:19},{id:'phones',value:4}]})
+  preferredStats:[{id:'cards',value:17},{id:'stories',value:46},{id:'chats',value:19},{id:'phones',value:4}],
+  footprints:[{id:'cards',total:826},{id:'stories',total:1394},{id:'songs',total:60}]})
 assert.deepEqual(tiles.map(tile=>tile.id),['cards','stories','songs','communication'])
 assert.deepEqual(tiles.map(tile=>tile.value),[17,46,4,23])
+assert.deepEqual(tiles.map(tile=>tile.total),[826,1394,60,null])
+assert.deepEqual(tiles.map(tile=>tile.parts.reduce((sum, p)=>sum + p.count, 0)),tiles.map(tile=>tile.value),'the sum of tile parts matches the tile value')
+assert.deepEqual(tiles[0].parts,[{id:'SSR',label:'SSR',count:8},{id:'SR',label:'SR',count:6},{id:'R',label:'R',count:3}])
 assert.deepEqual(tiles.map(tile=>tile.action),['cards','stories','songs','mobile'])
 assert.equal(tiles[0].meta,'SSR 8 · SR 6 · R 3')
 assert.equal(tiles[1].meta,'主线 7 · 活动 3 · 个人 30 · 其他 6')
@@ -100,6 +104,7 @@ assert.equal(tiles[2].meta,'代表曲 1 · 组合曲 3')
 assert.equal(tiles[3].meta,'个人聊天 19 · 电话 4')
 assert.ok(portalPreferredStatTiles({cardCounts:{total:17}}).slice(1).every(tile=>tile.value===null),'absent scope summaries never invent a number')
 assert.deepEqual(portalPreferredStatTiles({}).map(tile=>tile.meta),['','','',''])
+assert.ok(portalPreferredStatTiles({}).every(tile=>tile.parts.length===0),'empty scope produces empty parts')
 const timeline=portalTimeline([{id:'a',releaseAt:1633046400,subtitle:'date',image:{url:'/assets/a.png'}},{id:'b',releaseAt:1680393600,subtitle:'date',image:{url:'/assets/b.png'}}])
 assert.deepEqual(timeline.map(row=>row.id),['a','b'])
 assert.deepEqual(timeline.map(row=>row.timelineDate),['2021.10.01','2023.04.02'])
@@ -139,4 +144,20 @@ const remapped=portalDisplayOverview({...baked,collections:{...baked.collections
 assert.equal(remapped.collections.cards[0].image.url,displayed.collections.cards[0].image.url,'mapping an already-thumbnailed row is stable')
 const noArt=portalDisplayOverview({...baked,collections:{...baked.collections,cards:[{...baked.collections.cards[0],image:null,landscape:null}]}},{})
 assert.equal(noArt.collections.cards[0].image,null,'cards without art stay null')
-console.log('PASS Bento: 49 source-bound single portraits; 826 exact detail attributes; 826 Portal thumbnails with full-size fallbacks; pinned-scope thumbnail mapping; landscape capabilities, stale-release rejection, 16 source colors, daily stability, 7 gateway counts, 通信/图鉴 links, 担当 tiles and source timeline boundaries')
+// Vertical portrait captions carry rarity and card title (plus idol name in global view).
+const sampleCards = [
+  { id: 'c1', rarity: 'SR', idolName: '柏木翼', title: '引人沉沦的眼神' },
+  { id: 'c2', rarity: 'SSR', idolName: '御手洗翔太', title: '满溢的感激之情' },
+  { id: 'c3', rarity: 'R', idolName: '天道辉', title: '热血沸腾' },
+]
+for (const card of sampleCards) {
+  const pref = portalCardCaption(card, { global: false })
+  assert.equal(pref.eyebrow, null, 'preferred vertical caption has no eyebrow')
+  assert.ok(pref.title.includes(card.rarity), `preferred caption title must contain rarity ${card.rarity}`)
+  assert.ok(pref.title.includes(card.title), `preferred caption title must contain card title ${card.title}`)
+
+  const glob = portalCardCaption(card, { global: true })
+  assert.ok(glob.eyebrow.includes(card.rarity), `global caption eyebrow must contain rarity ${card.rarity}`)
+  assert.ok(glob.eyebrow.includes(card.idolName), `global caption eyebrow must contain idolName ${card.idolName}`)
+  assert.ok(glob.title.includes(card.title), `global caption title must contain card title ${card.title}`)
+}

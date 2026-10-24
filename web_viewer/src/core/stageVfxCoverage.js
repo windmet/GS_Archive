@@ -79,6 +79,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
       newSuspensionlight: suspensionCount,
       penlight: indexes.penlightCommands?.songs?.[song.id]?.events?.length || 0,
       mouthFix: indexes.mouthFix?.songs?.[song.id]?.events?.length || 0,
+      footSolo: indexes.footSolo?.songs?.[song.id]?.events?.filter(event=>event.solo).length || 0,
       motionOffset: indexes.motionOffset?.songs?.[song.id]?.events?.length || 0,
     },
     resourceAssets: { backmonitor: backmonitorAssets.length, imageLayer: imageAssets.length, imageObject: imageObjectAssets.length },
