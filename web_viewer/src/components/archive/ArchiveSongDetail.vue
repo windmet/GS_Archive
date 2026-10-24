@@ -360,7 +360,10 @@ function revealPlayer() {
   const column = songListenColumn.value
   if (!column) return
   const rect = column.getBoundingClientRect()
-  if (rect.bottom < 80 || rect.top > (globalThis.innerHeight || 0) - 80) column.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  const reduceMotion = typeof globalThis.matchMedia === 'function' && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (rect.bottom < 80 || rect.top > (globalThis.innerHeight || 0) - 80) {
+    column.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' })
+  }
 }
 function playSolo(code) {
   songPlayer.value?.playSolo?.(code)
@@ -478,8 +481,9 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .version-pill:hover { border-color: var(--gs-ink-3); color: var(--gs-ink); }
 .version-pill[aria-pressed="true"] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); border-color: var(--gs-selected-line); font-weight: var(--gs-weight-semibold); }
 
-.song-difficulty-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gs-space-3); margin: var(--gs-space-4) 0 var(--gs-space-2); padding: 0; list-style: none; }
-.difficulty-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gs-space-1); padding: var(--gs-space-3) var(--gs-space-2); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); text-align: center; font-variant-numeric: tabular-nums; }
+.song-difficulty-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: var(--gs-space-4) 0 var(--gs-space-2); padding: var(--gs-space-3) 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); list-style: none; }
+.difficulty-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gs-space-1); padding: var(--gs-space-2) var(--gs-space-1); border: 0; background: transparent; text-align: center; font-variant-numeric: tabular-nums; }
+.difficulty-card:not(:last-child) { border-right: 1px solid var(--gs-line); }
 .difficulty-label { font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-bold); letter-spacing: .04em; color: var(--diff-color, var(--gs-ink)); }
 .difficulty-level { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.1; color: var(--gs-ink); }
 .difficulty-combo { font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); color: var(--gs-ink-3); }
