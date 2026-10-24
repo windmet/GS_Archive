@@ -96,7 +96,34 @@ export function createSongTrackRenderer(chart) {
   }
   const links = [...groups.entries()].flatMap(([speed, notes]) =>
     songSimultaneousLinks({ notes }).map(link => ({ ...link, speed })))
-  const prepared = { timing, speeds, links, middleNodes: songHoldMiddleNodes(chart) }
+
+  // Native flickgroup connector pairs (RhythmGameNoteManager.OnNewNote & HoldMesh.Create 0x21cf544)
+  const flickGroups = new Map()
+  for (const note of chart.notes) {
+    const fg = note.flickgroup ?? 0
+    if (fg > 0) {
+      if (!flickGroups.has(fg)) flickGroups.set(fg, [])
+      flickGroups.get(fg).push(note)
+    }
+  }
+  const flickConnectors = []
+  for (const [fg, notes] of flickGroups.entries()) {
+    notes.sort((a, b) => a.tick - b.tick)
+    for (let i = 0; i < notes.length - 1; i++) {
+      const a = notes[i], b = notes[i + 1]
+      flickConnectors.push({
+        id: 'flick-' + fg + '-' + a.sourceIndex + '-' + b.sourceIndex,
+        flickgroup: fg,
+        fromNote: a,
+        toNote: b,
+        fromTick: a.tick,
+        toTick: b.tick,
+        speed: a.speed ?? 1,
+      })
+    }
+  }
+
+  const prepared = { timing, speeds, links, middleNodes: songHoldMiddleNodes(chart), flickConnectors }
   return (cursor = 0, span = 6000, skin = 'Note1SpriteAtlas') => renderSongTrackGeometry(chart, cursor, span, skin, prepared)
 }
 
@@ -163,6 +190,40 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
     // when needed, instead of rebuilding hundreds of clip matrices per frame.
     let triangles
     holds.push({ id: n.sourceIndex, from, to, samples, nativeMesh, get triangles() {
+      if (triangles) return triangles
+      triangles = []
+      for (let i = 0; i < nativeMesh.triangles.length; i += 3) {
+        const indices = nativeMesh.triangles.slice(i, i + 3)
+        const screen = indices.map(index => ({ x: nativeGeometry.viewport.width / 2 + nativeMesh.vertices[index].x,
+          y: nativeGeometry.viewport.height / 2 - nativeMesh.vertices[index].y }))
+        const uv = indices.map(index => ({ x: nativeMesh.uv[index][0] * 200, y: (1 - nativeMesh.uv[index][1]) * 200 }))
+        const mesh = songTextureTriangle(screen, uv)
+        if (mesh) triangles.push(mesh)
+      }
+      return triangles
+    } })
+  }
+  // Native flick connectors: HoldMesh.Create radius = baseRadius - 20 = 24.0 (0x21cf5f0)
+  const flickHoldMetrics = { ...nativeHolds.metrics, radius: 24 }
+  for (const fc of (prepared.flickConnectors || [])) {
+    const { fromNote, toNote, fromTick, toTick, speed } = fc
+    const windowEnd = endForSpeed(speed)
+    if (toTick < cursor || fromTick > windowEnd) continue
+    const from = Math.max(fromTick, cursor), to = Math.min(toTick, windowEnd)
+    if (to <= from) continue
+    const ticks = new Set([from, to])
+    const fromSec = toSeconds(fromTick), toSec = toSeconds(toTick)
+    const secDiff = toSec - fromSec
+    const samples = [...ticks].sort((a, b) => a - b).map(tick => {
+      const pRatio = secDiff > 0 ? (toSeconds(tick) - fromSec) / secDiff : 0
+      const lane = fromNote.start + (toNote.start - fromNote.start) * pRatio
+      const p = project(lane, tick, speed)
+      return { tick, lane, fraction: p.fraction }
+    })
+    const planePoints = [...samples].reverse().map(p => ({ x: p.lane, y: -p.fraction * flickHoldMetrics.timeFactor }))
+    const nativeMesh = buildNativeSongHoldMesh(planePoints, nativeGeometry.target, flickHoldMetrics, nativeNotes.defaultDrawScale)
+    let triangles
+    holds.push({ id: fc.id, from, to, samples, nativeMesh, flickConnector: true, flickgroup: fc.flickgroup, get triangles() {
       if (triangles) return triangles
       triangles = []
       for (let i = 0; i < nativeMesh.triangles.length; i += 3) {

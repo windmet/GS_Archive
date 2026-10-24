@@ -1,268 +1,189 @@
-﻿import hitEffectsConfig from '../../config/song-hit-effects.v1.json' with { type: 'json' }
+import hitEffectsConfig from '../../config/song-hit-effects.v1.json' with { type: 'json' }
 
 export { hitEffectsConfig }
 
 const DEG_TO_RAD = Math.PI / 180
 
-// Sample deterministic render layers for transient hit effects
+// Asset texture pixel dimensions lookup
+const TEXTURE_SIZES = {
+  440: { width: 256, height: 256 },
+  339: { width: 1024, height: 1024 },
+  461: { width: 1024, height: 1024 },
+  446: { width: 1024, height: 1024 },
+  935: { width: 2048, height: 2048 },
+  346: { width: 1024, height: 1024 },
+  720: { width: 1024, height: 1024 },
+  889: { width: 1024, height: 1024 },
+  943: { width: 1024, height: 1024 },
+  2068: { width: 136, height: 63 },
+}
+
+// Sample deterministic render layers for transient hit effects driven by source contract
 export function sampleHitEffectFrame(hit, age, contracts = hitEffectsConfig.defaultContracts) {
   const instructions = []
   if (!hit || age < 0) return instructions
 
   const hitType = hit.hitType ?? 0
-  const contract = contracts?.[String(hit.pathId)]
+  const HIT_TYPE_DEFAULT_PATH_IDS = {
+    0: '14650',
+    1: '37973',
+    2: '19171',
+    3: '34995',
+    4: '32265',
+    5: '11316',
+    6: '15053',
+  }
+  const contractId = hit.pathId != null
+    ? String(hit.pathId)
+    : (HIT_TYPE_DEFAULT_PATH_IDS[hitType] || '14650')
+  const contract = contracts?.[contractId]
+  if (!contract || !Array.isArray(contract.layers)) return instructions
 
-  // 1. Ordinary PERFECT (14650) - 9 systems
-  if (hitType === 0) {
-    const duration = 0.70
-    if (age >= duration) return instructions
+  for (let layerIdx = 0; layerIdx < contract.layers.length; layerIdx++) {
+    const layer = contract.layers[layerIdx]
+    const { subName, texture, lifetime, bursts, uv } = layer
+    const textureId = texture?.pathId ?? 440
+    const texMeta = TEXTURE_SIZES[textureId] || { width: 256, height: 256 }
+    const tilesX = uv?.tilesX ?? 1
+    const tilesY = uv?.tilesY ?? 1
+    const totalFrames = tilesX * tilesY
+    const sw = Math.floor(texMeta.width / tilesX)
+    const sh = Math.floor(texMeta.height / tilesY)
 
-    // Layer 0: flash (2x2 tap_shine, frame 2 = row 1, col 0)
-    if (age < 0.30) {
-      const p = age / 0.30
-      instructions.push({
-        textureId: 440,
-        subName: 'flash',
-        sx: 0, sy: 128, sw: 128, sh: 128,
-        w: 128 * (1.1 + 0.4 * p), h: 128 * (1.1 + 0.4 * p),
-        rotation: 0,
-        alpha: (1 - p) * 0.95,
-        blendMode: 'lighter',
-      })
-    }
+    const burstList = Array.isArray(bursts) && bursts.length ? bursts : [{ time: 0, count: 1 }]
 
-    // Layer 1 & 2: shine (2x2 tap_shine, frame 0 = row 0, col 0, two rotations)
-    if (age < 0.30) {
-      const p = age / 0.30
-      instructions.push({
-        textureId: 440,
-        subName: 'shine-1',
-        sx: 0, sy: 0, sw: 128, sh: 128,
-        w: 110 * (1.0 + 0.2 * p), h: 110 * (1.0 + 0.2 * p),
-        rotation: 0,
-        alpha: (1 - p) * 0.85,
-        blendMode: 'lighter',
-      })
-      instructions.push({
-        textureId: 440,
-        subName: 'shine-2',
-        sx: 0, sy: 0, sw: 128, sh: 128,
-        w: 110 * (1.0 + 0.2 * p), h: 110 * (1.0 + 0.2 * p),
-        rotation: Math.PI / 4,
-        alpha: (1 - p) * 0.85,
-        blendMode: 'lighter',
-      })
-    }
+    for (const burst of burstList) {
+      const bTime = burst.time ?? 0
+      const burstAge = age - bTime
+      if (burstAge < 0 || burstAge >= lifetime) continue
+      const p = burstAge / lifetime
 
-    // Layer 3: circle (4x4 circleframe_3, 16-frame animation over 0.70s)
-    if (age < 0.70) {
-      const p = age / 0.70
-      const frame = Math.min(15, Math.floor(p * 16))
-      const col = frame % 4
-      const row = Math.floor(frame / 4)
-      const alpha = p < 0.15 ? p / 0.15 : Math.max(0, 1 - (p - 0.15) / 0.85)
-      instructions.push({
-        textureId: 339,
-        subName: 'circle-339',
-        sx: col * 256, sy: row * 256, sw: 256, sh: 256,
-        w: 220 * (0.85 + 0.35 * p),
-        h: 220 * (0.85 + 0.35 * p) * 0.82, // perspective X-tilt ~35 deg
-        rotation: 0,
-        alpha: alpha * 0.95,
-        blendMode: 'lighter',
-      })
-    }
-
-    // Layer 5: circle (4x4 circleframe_2, bursts at t=0 and t=0.1)
-    for (const burstTime of [0.0, 0.10]) {
-      const burstAge = age - burstTime
-      if (burstAge >= 0 && burstAge < 0.60) {
-        const p = burstAge / 0.60
-        const frame = Math.min(15, Math.floor(p * 16))
-        const col = frame % 4
-        const row = Math.floor(frame / 4)
-        const alpha = burstAge < 0.1 ? burstAge / 0.1 : Math.max(0, 1 - (burstAge - 0.1) / 0.5)
+      if (subName === 'flash') {
+        const frame = Math.round((uv?.startFrame ?? 0.5) * totalFrames) % totalFrames
+        const col = frame % tilesX, row = Math.floor(frame / tilesX)
         instructions.push({
-          textureId: 461,
-          subName: `circle-461-burst-${burstTime}`,
-          sx: col * 256, sy: row * 256, sw: 256, sh: 256,
-          w: 190 * (0.8 + 0.4 * p),
-          h: 190 * (0.8 + 0.4 * p) * 0.82,
+          textureId,
+          subName: 'flash',
+          sx: col * sw, sy: row * sh, sw, sh,
+          w: 128 * (1.1 + 0.4 * p), h: 128 * (1.1 + 0.4 * p),
           rotation: 0,
-          alpha: alpha * 0.85,
+          alpha: (1 - p) * 0.95,
           blendMode: 'lighter',
         })
-      }
-    }
-
-    // Layer 6: circle (4x4 circleframe_2_2)
-    if (age < 0.60) {
-      const p = age / 0.60
-      const frame = Math.min(15, Math.floor(p * 16))
-      const col = frame % 4
-      const row = Math.floor(frame / 4)
-      const alpha = age < 0.1 ? age / 0.1 : Math.max(0, 1 - (age - 0.1) / 0.5)
-      instructions.push({
-        textureId: 446,
-        subName: 'circle-446',
-        sx: col * 256, sy: row * 256, sw: 256, sh: 256,
-        w: 180 * (0.85 + 0.35 * p),
-        h: 180 * (0.85 + 0.35 * p) * 0.82,
-        rotation: 0,
-        alpha: alpha * 0.80,
-        blendMode: 'lighter',
-      })
-    }
-
-    // Layer 7: glitter (2x2 tap_shine, frame 1 = row 0, col 1, 4 sparkles per burst at t=0, 0.1, 0.2)
-    for (const burstTime of [0.0, 0.10, 0.20]) {
-      const bAge = age - burstTime
-      if (bAge >= 0 && bAge < 0.50) {
-        const p = bAge / 0.50
-        const alpha = Math.max(0, 1 - p) * 0.85
-        const dist = bAge * 85
-        for (let i = 0; i < 4; i++) {
-          const angle = (i * 90 + burstTime * 360) * DEG_TO_RAD
+      } else if (subName === 'shine') {
+        const frame = Math.round((uv?.startFrame ?? 0) * totalFrames) % totalFrames
+        const col = frame % tilesX, row = Math.floor(frame / tilesX)
+        const rotation = layerIdx % 2 === 1 ? Math.PI / 4 : 0
+        instructions.push({
+          textureId,
+          subName: 'shine-' + (layerIdx % 2 === 1 ? '2' : '1'),
+          sx: col * sw, sy: row * sh, sw, sh,
+          w: 110 * (1.0 + 0.2 * p), h: 110 * (1.0 + 0.2 * p),
+          rotation,
+          alpha: (1 - p) * 0.85,
+          blendMode: 'lighter',
+        })
+      } else if (subName === 'circle') {
+        const frame = Math.min(totalFrames - 1, Math.floor(p * totalFrames))
+        const col = frame % tilesX, row = Math.floor(frame / tilesX)
+        const alpha = burstAge < 0.1 ? burstAge / 0.1 : Math.max(0, 1 - (burstAge - 0.1) / Math.max(0.01, lifetime - 0.1))
+        const baseW = textureId === 339 ? 220 : textureId === 461 ? 190 : 180
+        const w = baseW * (0.85 + 0.35 * p)
+        const nameSuffix = bTime > 0 ? '-burst-' + Number(bTime.toFixed(2)) : ''
+        instructions.push({
+          textureId,
+          subName: 'circle-' + textureId + nameSuffix,
+          sx: col * sw, sy: row * sh, sw, sh,
+          w, h: w * 0.82,
+          rotation: 0,
+          alpha: alpha * (textureId === 339 ? 0.95 : 0.85),
+          blendMode: 'lighter',
+        })
+      } else if (subName === 'glitter') {
+        const frame = Math.round((uv?.startFrame ?? 0.25) * totalFrames) % totalFrames
+        const col = frame % tilesX, row = Math.floor(frame / tilesX)
+        const count = burst.count ?? 4
+        const dist = burstAge * 85
+        for (let j = 0; j < count; j++) {
+          const angle = (j * (360 / count) + bTime * 360) * DEG_TO_RAD
           instructions.push({
-            textureId: 440,
-            subName: `glitter-${burstTime}-${i}`,
-            sx: 128, sy: 0, sw: 128, sh: 128,
+            textureId,
+            subName: 'glitter-' + bTime + '-' + j,
+            sx: col * sw, sy: row * sh, sw, sh,
             dx: Math.cos(angle) * dist,
             dy: Math.sin(angle) * dist * 0.82,
             w: 24, h: 24,
             rotation: angle,
-            alpha,
+            alpha: (1 - p) * 0.85,
             blendMode: 'lighter',
           })
         }
-      }
-    }
-
-    // Layer 8: speedline (stretched billboard rays, 20 rays at t=0)
-    if (age < 0.30) {
-      const p = age / 0.30
-      const alpha = (1 - p) * 0.75
-      const dist = age * 160
-      const rayLen = 35 * (1 + p)
-      for (let i = 0; i < 12; i++) {
-        const angle = (i * 30) * DEG_TO_RAD
+      } else if (subName === 'speedline') {
+        const frame = Math.round((uv?.startFrame ?? 0.5) * totalFrames) % totalFrames
+        const col = frame % tilesX, row = Math.floor(frame / tilesX)
+        const count = burst.count ?? 20
+        const dist = burstAge * 160
+        const rayLen = 35 * (1 + p)
+        for (let j = 0; j < count; j++) {
+          const angle = (j * (360 / count)) * DEG_TO_RAD
+          instructions.push({
+            textureId,
+            subName: 'speedline-' + j,
+            sx: col * sw, sy: row * sh, sw, sh,
+            dx: Math.cos(angle) * dist,
+            dy: Math.sin(angle) * dist * 0.82,
+            w: rayLen, h: 10,
+            rotation: angle,
+            alpha: (1 - p) * 0.75,
+            blendMode: 'lighter',
+          })
+        }
+      } else if (subName === 'line') {
+        const col = 0, row = 0
+        const dirAngle = hitType === 1 ? -Math.PI / 2 : hitType === 2 ? 0 : Math.PI
+        const streakDist = burstAge * 180
         instructions.push({
-          textureId: 440,
-          subName: `speedline-${i}`,
-          sx: 0, sy: 128, sw: 128, sh: 128,
-          dx: Math.cos(angle) * dist,
-          dy: Math.sin(angle) * dist * 0.82,
-          w: rayLen, h: 10,
-          rotation: angle,
-          alpha,
+          textureId: 935,
+          subName: 'flick-streak',
+          sx: col * sw, sy: row * sh, sw, sh,
+          dx: Math.cos(dirAngle) * streakDist,
+          dy: Math.sin(dirAngle) * streakDist * 0.82,
+          w: 160 * (1 + p * 0.5), h: 80,
+          rotation: dirAngle + Math.PI / 2,
+          alpha: (1 - p) * 0.85,
+          blendMode: 'lighter',
+        })
+      } else if (subName === 'M_mark') {
+        const col = 0, row = 0
+        instructions.push({
+          textureId: 346,
+          subName: 'sp-m-mark',
+          sx: col * sw, sy: row * sh, sw, sh,
+          w: 90 * (1 + p * 0.2), h: 90 * (1 + p * 0.2),
+          rotation: 0,
+          alpha: (1 - p) * 0.95,
+          blendMode: 'lighter',
+        })
+      } else if (subName === 'square') {
+        const col = 0, row = 0
+        const isInner = textureId === 889
+        instructions.push({
+          textureId,
+          subName: isInner ? 'pskill-frame-inner' : 'pskill-frame',
+          sx: col * sw, sy: row * sh, sw, sh,
+          w: (isInner ? 120 : 160) * (0.8 + 0.4 * p),
+          h: (isInner ? 120 : 160) * (0.8 + 0.4 * p),
+          rotation: Math.PI / 4 + (isInner ? -1 : 1) * p * 0.4,
+          alpha: (1 - p) * (isInner ? 0.85 : 0.9),
           blendMode: 'lighter',
         })
       }
     }
   }
 
-  // 2. Flick hits (hitType 1 = Up, 2 = Right, 3 = Left)
-  else if (hitType >= 1 && hitType <= 3) {
-    const duration = 0.70
-    if (age >= duration) return instructions
-    const p = age / duration
-
-    // Direction angle
-    const dirAngle = hitType === 1 ? -Math.PI / 2 : hitType === 2 ? 0 : Math.PI
-    const streakDist = age * 180
-
-    // Core flash & shine
-    if (age < 0.30) {
-      const sp = age / 0.30
-      instructions.push({
-        textureId: 440,
-        subName: 'flick-flash',
-        sx: 0, sy: 128, sw: 128, sh: 128,
-        w: 120 * (1.1 + 0.3 * sp), h: 120 * (1.1 + 0.3 * sp),
-        rotation: 0,
-        alpha: (1 - sp) * 0.9,
-        blendMode: 'lighter',
-      })
-    }
-
-    // Directional flick line (935-flick_line.png)
-    if (age < 0.45) {
-      const fp = age / 0.45
-      instructions.push({
-        textureId: 935,
-        subName: 'flick-streak',
-        sx: 0, sy: 0, sw: 2048, sh: 2048,
-        dx: Math.cos(dirAngle) * streakDist,
-        dy: Math.sin(dirAngle) * streakDist * 0.82,
-        w: 160 * (1 + fp * 0.5), h: 80,
-        rotation: dirAngle + Math.PI / 2,
-        alpha: (1 - fp) * 0.85,
-        blendMode: 'lighter',
-      })
-    }
-  }
-
-  // 3. P-Skill (hitType 5) - rotating starframe
-  else if (hitType === 5) {
-    const duration = 0.50
-    if (age >= duration) return instructions
-    const p = age / duration
-
-    // Starframe square frame (720-starframe.png) rotated 45 degrees
-    instructions.push({
-      textureId: 720,
-      subName: 'pskill-frame',
-      sx: 0, sy: 0, sw: 1024, sh: 1024,
-      w: 160 * (0.8 + 0.4 * p), h: 160 * (0.8 + 0.4 * p),
-      rotation: Math.PI / 4 + p * 0.4,
-      alpha: (1 - p) * 0.9,
-      blendMode: 'lighter',
-    })
-
-    // Inner starframe2 (889-starframe2.png)
-    instructions.push({
-      textureId: 889,
-      subName: 'pskill-frame-inner',
-      sx: 0, sy: 0, sw: 1024, sh: 1024,
-      w: 120 * (0.9 + 0.3 * p), h: 120 * (0.9 + 0.3 * p),
-      rotation: Math.PI / 4 - p * 0.4,
-      alpha: (1 - p) * 0.85,
-      blendMode: 'lighter',
-    })
-
-    // Central flash
-    if (age < 0.30) {
-      const sp = age / 0.30
-      instructions.push({
-        textureId: 440,
-        subName: 'pskill-flash',
-        sx: 0, sy: 0, sw: 128, sh: 128,
-        w: 100 * (1 + sp * 0.3), h: 100 * (1 + sp * 0.3),
-        rotation: 0,
-        alpha: (1 - sp) * 0.95,
-        blendMode: 'lighter',
-      })
-    }
-  }
-
-  // 4. Special (hitType 6) - M_mark & double SP ring
-  else if (hitType === 6) {
-    const duration = 0.55
-    if (age >= duration) return instructions
-    const p = age / duration
-
-    // Central M_mark (346-sptap_M_mark.png)
-    instructions.push({
-      textureId: 346,
-      subName: 'sp-m-mark',
-      sx: 0, sy: 0, sw: 1024, sh: 1024,
-      w: 90 * (1 + p * 0.2), h: 90 * (1 + p * 0.2),
-      rotation: 0,
-      alpha: (1 - p) * 0.95,
-      blendMode: 'lighter',
-    })
-
-    // Expanding outer ring
+  // Complementary special outer ring if Special
+  if (hitType === 6) {
+    const p = Math.min(1, age / 0.55)
     instructions.push({
       textureId: 339,
       subName: 'sp-ring',
@@ -282,7 +203,6 @@ export function sampleHoldEffectFrame(hold, age) {
   const instructions = []
   if (!hold || age < 0) return instructions
 
-  // Flash: pulsing starburst (rateOverTime: 3)
   const pulse = Math.sin(age * 10) * 0.15
   instructions.push({
     textureId: 440,
@@ -294,7 +214,6 @@ export function sampleHoldEffectFrame(hold, age) {
     blendMode: 'lighter',
   })
 
-  // Shine: rotating contact star (rateOverTime: 2)
   instructions.push({
     textureId: 440,
     subName: 'hold-shine-1',
@@ -314,13 +233,12 @@ export function sampleHoldEffectFrame(hold, age) {
     blendMode: 'lighter',
   })
 
-  // Glitter: continuous sparkles orbiting the hold head (rateOverTime: 20 + 10)
   for (let i = 0; i < 4; i++) {
-    const orbitAngle = (age * 4.0 + i * (Math.PI / 2))
+    const orbitAngle = age * 4.0 + i * (Math.PI / 2)
     const r = 26 + Math.sin(age * 8 + i) * 6
     instructions.push({
       textureId: 440,
-      subName: `hold-glitter-${i}`,
+      subName: 'hold-glitter-' + i,
       sx: 128, sy: 0, sw: 128, sh: 128,
       dx: Math.cos(orbitAngle) * r,
       dy: Math.sin(orbitAngle) * r * 0.82,
@@ -334,52 +252,79 @@ export function sampleHoldEffectFrame(hold, age) {
   return instructions
 }
 
+// Keyframe curve evaluation helper
+function evaluateKeyframeCurve(keyframes, t, defaultValue = 1.0) {
+  if (!keyframes || !keyframes.length) return defaultValue
+  if (t <= keyframes[0].t) return keyframes[0].val ?? defaultValue
+  if (t >= keyframes.at(-1).t) return keyframes.at(-1).val ?? defaultValue
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const k0 = keyframes[i], k1 = keyframes[i + 1]
+    if (t >= k0.t && t <= k1.t) {
+      const p = (t - k0.t) / (k1.t - k0.t)
+      return k0.val + (k1.val - k0.val) * p
+    }
+  }
+  return defaultValue
+}
+
 // Sample Auto UI 3-layer animation from native EvalAnimationAuto (1090)
 export function sampleAutoEvaluationFrame(age, animData = hitEffectsConfig.evaluation.animation) {
-  if (age < 0 || age >= animData.duration) return null
+  if (age < 0 || age >= (animData.duration ?? 1.0)) return null
 
-  // Target 1: EvaluationImage (main sprite 2068)
-  const scale1 = age < 0.1333 ? 1.10 - 0.10 * (age / 0.1333) : 1.0
-  const alpha1 = age < 0.9167 ? 1.0 : Math.max(0, 1.0 - (age - 0.9167) / 0.0833)
+  const targets = animData.targets || {}
+  const layers = []
 
-  const layers = [
-    {
-      target: 'EvaluationImage',
-      spriteId: 2068,
-      scaleX: scale1,
-      scaleY: scale1,
-      alpha: alpha1,
-    },
-  ]
-
-  // Target 2: EvaluationEffectImage (initial flash)
-  if (age < 0.1333) {
-    const p = age / 0.1333
-    layers.push({
-      target: 'EvaluationEffectImage',
-      spriteId: 2068,
-      scaleX: 1.10 - 0.10 * p,
-      scaleY: 1.10 - 0.10 * p,
-      alpha: (1 - p) * 0.50,
-      blendMode: 'lighter',
-    })
+  // Target 1: EvaluationImage
+  if (targets.EvaluationImage) {
+    const scaleX = evaluateKeyframeCurve(targets.EvaluationImage.scale?.map(k => ({ t: k.t, val: k.x })), age, 1.0)
+    const scaleY = evaluateKeyframeCurve(targets.EvaluationImage.scale?.map(k => ({ t: k.t, val: k.y })), age, 1.0)
+    const alpha = evaluateKeyframeCurve(targets.EvaluationImage.alpha, age, 1.0)
+    if (alpha > 0.001) {
+      layers.push({
+        target: 'EvaluationImage',
+        spriteId: 2068,
+        scaleX,
+        scaleY,
+        alpha,
+      })
+    }
   }
 
-  // Target 3: EvaluationEffectImage2 (horizontal expansion streak)
-  if (age < 0.3333) {
-    const p = age / 0.3333
-    const pScale = Math.min(1, age / 0.1333)
-    const scaleX = 1.10 + (1.4288 - 1.10) * pScale
-    const scaleY = 1.10 + (0.9284 - 1.10) * pScale
-    layers.push({
-      target: 'EvaluationEffectImage2',
-      spriteId: 2068,
-      scaleX,
-      scaleY,
-      alpha: (1 - p) * 0.50,
-      colorTint: { r: 0, g: 1.0 - p * 0.6, b: 0.8 - p * 0.5 },
-      blendMode: 'lighter',
-    })
+  // Target 2: EvaluationEffectImage (initial flash)
+  if (targets.EvaluationEffectImage) {
+    const scaleX = evaluateKeyframeCurve(targets.EvaluationEffectImage.scale?.map(k => ({ t: k.t, val: k.x })), age, 1.0)
+    const scaleY = evaluateKeyframeCurve(targets.EvaluationEffectImage.scale?.map(k => ({ t: k.t, val: k.y })), age, 1.0)
+    const alpha = evaluateKeyframeCurve(targets.EvaluationEffectImage.alpha, age, 0.0)
+    if (alpha > 0.001) {
+      layers.push({
+        target: 'EvaluationEffectImage',
+        spriteId: 2068,
+        scaleX,
+        scaleY,
+        alpha,
+        blendMode: 'lighter',
+      })
+    }
+  }
+
+  // Target 3: EvaluationEffectImage2 (horizontal expansion streak with cyan-green glow)
+  if (targets.EvaluationEffectImage2) {
+    const scaleX = evaluateKeyframeCurve(targets.EvaluationEffectImage2.scale?.map(k => ({ t: k.t, val: k.x })), age, 1.0)
+    const scaleY = evaluateKeyframeCurve(targets.EvaluationEffectImage2.scale?.map(k => ({ t: k.t, val: k.y })), age, 1.0)
+    const alpha = evaluateKeyframeCurve(targets.EvaluationEffectImage2.alpha, age, 0.0)
+    const colorG = evaluateKeyframeCurve(targets.EvaluationEffectImage2.colorG, age, 1.0)
+    const colorB = evaluateKeyframeCurve(targets.EvaluationEffectImage2.colorB, age, 0.8)
+    if (alpha > 0.001) {
+      layers.push({
+        target: 'EvaluationEffectImage2',
+        spriteId: 2068,
+        scaleX,
+        scaleY,
+        alpha,
+        colorTint: { r: 0, g: colorG, b: colorB },
+        blendMode: 'lighter',
+      })
+    }
   }
 
   return { age, layers }

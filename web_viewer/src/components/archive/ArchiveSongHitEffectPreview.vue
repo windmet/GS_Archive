@@ -110,6 +110,11 @@ function draw() {
           ctx.globalAlpha = Math.max(0, Math.min(1, layer.alpha))
           ctx.translate(640, props.judgeY - 45)
           ctx.scale(layer.scaleX, layer.scaleY)
+          if (layer.colorTint && typeof ctx.filter === 'string') {
+            const g = Math.round(layer.colorTint.g * 255)
+            const b = Math.round(layer.colorTint.b * 255)
+            ctx.filter = 'drop-shadow(0 0 10px rgba(0, ' + g + ', ' + b + ', 0.85))'
+          }
           ctx.drawImage(autoImg, 0, 0, 136, 63, -68, -31.5, 136, 63)
           ctx.restore()
         }
