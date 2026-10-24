@@ -242,7 +242,7 @@ const displayedEventItems = computed(() => {
 
 <style scoped>
 /* Unit detail: the unit's own stage art as a cover image, then flat sections on paper. */
-.unit-detail { display: grid; align-content: start; gap: var(--gs-space-section); height: 100%; padding: var(--gs-space-8); overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
+.unit-detail { display: grid; align-content: start; gap: var(--gs-space-section); container: unit-detail / inline-size; height: 100%; padding: var(--gs-space-8); overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
 .unit-detail > * { width: 100%; max-width: var(--gs-content-width); margin-inline: auto; }
 .unit-hero { position: relative; display: flex; align-items: flex-end; min-height: 280px; padding: var(--gs-space-8); overflow: hidden; border-radius: var(--gs-radius-media); background-position: center; background-size: cover; color: #fff; }
 .unit-hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(15 23 42 / 92%) 0%, rgb(15 23 42 / 84%) 48%, rgb(15 23 42 / 28%) 80%), linear-gradient(0deg, rgb(15 23 42 / 80%) 0%, transparent 60%); }
@@ -251,7 +251,7 @@ const displayedEventItems = computed(() => {
 .unit-hero h2 { margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
 .unit-hero p.unit-hero-kana { margin: 0; color: rgb(255 255 255 / 78%); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
 .unit-hero-desc { margin: var(--gs-space-3) 0 var(--gs-space-5); color: rgb(255 255 255 / 88%); font-size: var(--gs-text-ui); line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
-.unit-card-pill { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 24%); border-radius: var(--gs-radius-pill); background: rgb(255 255 255 / 16%); backdrop-filter: blur(8px); color: #fff; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; transition: background var(--gs-transition-fast), border-color var(--gs-transition-fast); }
+.unit-card-pill { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 24%); border-radius: var(--gs-radius-pill); background: rgb(255 255 255 / 16%); backdrop-filter: blur(8px); color: var(--gs-media-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; transition: background var(--gs-transition-fast), border-color var(--gs-transition-fast); }
 .unit-card-pill svg { flex: none; }
 .unit-card-pill:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .unit-swatch { position: absolute; z-index: 1; top: var(--gs-space-6); right: var(--gs-space-6); width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
@@ -289,7 +289,7 @@ const displayedEventItems = computed(() => {
   .event-filter-chip:hover { background: var(--gs-mint-wash); border-color: var(--gs-mint-line); }
   .unit-songs button:hover strong, .unit-stories button:hover strong { color: var(--gs-mint-ink); }
 }
-@media (max-width: 980px) {
+@container unit-detail (max-width: 980px) {
   .unit-content-split { grid-template-columns: 1fr; gap: var(--gs-space-section); }
 }
 @media (max-width: 760px) {

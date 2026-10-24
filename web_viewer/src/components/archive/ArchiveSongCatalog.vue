@@ -326,7 +326,7 @@ const filteredSongs = computed(() => {
   padding: var(--gs-space-3, 10px) var(--gs-space-4, 12px);
   border: 0;
   border-bottom: 1px solid var(--gs-line);
-  border-radius: var(--gs-radius-control, 6px);
+  border-radius: var(--gs-radius-control);
   box-shadow: none;
   background: transparent;
   color: var(--gs-ink);
@@ -341,7 +341,7 @@ const filteredSongs = computed(() => {
   place-items: center;
   width: 72px;
   height: 72px;
-  border-radius: 8px;
+  border-radius: var(--gs-radius-control);
   background: var(--gs-mint-wash);
   color: var(--gs-mint-ink);
   font-size: var(--gs-text-caption);
@@ -354,7 +354,7 @@ const filteredSongs = computed(() => {
 .song-card-jacket {
   width: 72px;
   height: 72px;
-  border-radius: 8px;
+  border-radius: var(--gs-radius-control);
   overflow: hidden;
   background: var(--gs-line);
   flex: none;
@@ -387,7 +387,7 @@ const filteredSongs = computed(() => {
   .song-search { min-width: 0; height: var(--gs-control-touch); }
   .song-grid { gap: 0; }
   .song-card { grid-template-columns: 60px minmax(0, 1fr); gap: var(--gs-space-3); padding: var(--gs-space-3) 0; }
-  .song-card-jacket, .song-card-code { width: 60px; height: 60px; border-radius: 8px; }
+  .song-card-jacket, .song-card-code { width: 60px; height: 60px; border-radius: var(--gs-radius-control); }
   .song-card-copy { gap: 2px; }
   .song-credits { display: none; }
   .song-performers { font-size: var(--gs-text-meta); line-height: 15px; }

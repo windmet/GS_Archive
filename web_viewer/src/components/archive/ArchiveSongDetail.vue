@@ -483,10 +483,10 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .difficulty-label { font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-bold); letter-spacing: .04em; color: var(--diff-color, var(--gs-ink)); }
 .difficulty-level { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.1; color: var(--gs-ink); }
 .difficulty-combo { font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); color: var(--gs-ink-3); }
-.difficulty-card[data-difficulty="easy"] { --diff-color: #247145; }
-.difficulty-card[data-difficulty="normal"] { --diff-color: #24649c; }
-.difficulty-card[data-difficulty="hard"] { --diff-color: #936309; }
-.difficulty-card[data-difficulty="expert"] { --diff-color: #994070; }
+.difficulty-card[data-difficulty="easy"] { --diff-color: var(--gs-diff-easy); }
+.difficulty-card[data-difficulty="normal"] { --diff-color: var(--gs-diff-normal); }
+.difficulty-card[data-difficulty="hard"] { --diff-color: var(--gs-diff-hard); }
+.difficulty-card[data-difficulty="expert"] { --diff-color: var(--gs-diff-expert); }
 
 .song-gameplay a, .song-history a { color: var(--gs-mint-ink); }
 .song-unlock-link { display: inline; padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; cursor: pointer; }
