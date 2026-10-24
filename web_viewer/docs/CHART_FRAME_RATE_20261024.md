@@ -62,3 +62,13 @@ seek、暂停、恢复首帧和视图切换立即同步两处；跳前后音符�
 同一5231/PID67724与release `1accd9d0`。单独Browser页冷加载Café Parade! EXPERT，桌面1440×900从tick22000/audio12.5秒播放，暂停时audio50.526217秒、轨道88926.14192000001、控制台88926，精度与显示舍入一致。手机尺寸390×844切横条/配速8/1.5倍速，暂停时audio32.036878秒、轨道56384.77856、控制台56385；倒退tick22000两处立即同步，scrollWidth390。长轨图实际加载EXPERT Combo816。截图 `frame-isolation-desktop.png` / `frame-isolation-mobile.png`，均在.analysis/chart-native。实际音频检查与上面的受控回放分别记账；没有真机连续FPS、GPU或全曲验收声明。
 
 工作期间origin/master更新到`193c964a`（#95舞台、#96门户），按仓库规则在本批提交后普通merge同步；合并验证补记见后文。未上传R2、未部署、未改端口或候选绑定。
+
+### master同步及最终补验
+
+刷新隔离提交`f5157122`；随后通过普通merge `ab6f8911`纳入master `193c964a`。唯一冲突是`policies/tracked-binary-assets.v1.json`的生成元数据及汇总。使用合并后的生成器与Git跟踪集合重新生成，保留谱面四PNG和master新增十八张舞台PNG；`verify:tracked-binary-inventory`通过，441 PNG / 77,198,487字节。没有改资源内容、来源hash或配额，也没有上传。
+
+合并后进一步把播放中切视图改为直接同步audio.currentTime，而非上一rAF缓存的pendingSeconds。受控回放新增“媒体已前进但控制台尚未更新时”点击下一个音符、打开tick编辑器、切长轨再切回透视的回归；三组均通过，轨道599/父组件120的次数及53个窗口几何检查保持。此后最后一次`build:check`27.99秒/3004模块通过；合并后、最后修正前的另一次构建28.51秒同样通过，二者都是同一固定代码输出目录，未复制public。最终构建日志`frame-isolation-final-build.log`。
+
+最终源码再次Browser冷加载，手机尺寸Café Parade! EXPERT从tick22000播放，暂停时audio43.759564秒、轨道77016.70592000001、控制台77017；重新倒退tick22000，截图`frame-isolation-merged-mobile.png`。返回歌曲的最终URL为`/songs/`，列表内容实际加载；控制台error/warn为空，视口已恢复。此独立入口没有来源详情页，因此按钮是“返回歌曲”，不把此前`/songs/cfprde/`的来源回跳混作本次导航结果。
+
+剩余验证边界：本批已验证刷新隔离、媒体位置同步和原生几何一致性；受控回放的599次组件更新不能当作前台GPU实际呈现599帧，真机/120Hz设备持续FPS仍未测得。无需为该回放边界改动原生几何或引入独立模拟时钟。

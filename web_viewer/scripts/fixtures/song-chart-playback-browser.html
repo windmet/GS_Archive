@@ -17,6 +17,7 @@ import Chart from '/src/components/archive/ArchiveSongChartPreview.vue'
 import { buildSongChartTiming } from '/src/presentation/SongChartTiming.js'
 import { createSongTrackRenderer } from '/src/presentation/SongTrackPresentation.js'
 import { songTrackSpanForSpeed } from '/src/presentation/SongTrackNativeTiming.js'
+import { songNoteEndpoints } from '/src/presentation/SongNotePresentation.js'
 
 const result = document.querySelector('#result'), run = document.querySelector('#run')
 const songs = (await (await fetch('/data/song_catalog.json')).json()).songs
@@ -106,6 +107,22 @@ run.onclick = async () => {
       const updates = Object.fromEntries(Object.keys(counts).map(key => [key, counts[key] - before[key]]))
       check(updates.track >= 590 && updates.track <= 601, `track cadence: ${JSON.stringify(updates)}`)
       check(updates.parent <= 145, `parent must not rerender with every track frame: ${JSON.stringify(updates)}`)
+      // User actions can land between two transport updates. Advance the
+      // sampled media without a display callback to expose stale-control use.
+      const endpoints = songNoteEndpoints(chart)
+      const probeTick = endpoints[40].tick + 1
+      media.currentTime = timing.tickToSeconds(probeTick)
+      const next = endpoints.find(note => note.tick > probeTick + .001)
+      document.querySelector('[aria-label="下一个音符"]').click(); await nextTick()
+      check(positions().control === next.tick, 'next-note action used stale transport position')
+      media.currentTime = timing.tickToSeconds(probeTick)
+      document.querySelector('[aria-label="编辑谱面 tick 位置"]').click(); await nextTick()
+      check(Number(document.querySelector('[aria-label="轨道位置 tick"]').value) === Math.round(probeTick), 'tick editor used stale transport position')
+      document.querySelector('[aria-label="轨道位置 tick"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await nextTick()
+      button('长轨图').click(); await nextTick()
+      check(Number(document.querySelector('.tick-readout').dataset.tick) === Math.round(probeTick), 'live view switch used stale transport position')
+      button('透视轨道').click(); await nextTick()
       button('暂停').click(); await nextTick()
       let p = positions()
       check(Math.abs(p.track - timing.secondsToTick(media.currentTime)) < 1e-7, 'pause track differs from exact media position')
@@ -116,7 +133,7 @@ run.onclick = async () => {
       check(document.querySelector('.chart-drawing svg'), 'long chart not rendered')
       button('透视轨道').click(); await nextTick(); p = positions()
       check(p.control === Math.round(p.track), 'view remount lost media position')
-      cases.push({ code, hz, updates, geometryChecks, paused: media.paused, backwardSeek: p })
+      cases.push({ code, hz, updates, geometryChecks, liveActions: 'next/editor/view passed', paused: media.paused, backwardSeek: p })
     }
     result.textContent = JSON.stringify({ status: 'passed', cases }, null, 2)
   } catch (error) {

@@ -97,7 +97,10 @@ const cadence = createSongChartPlaybackCadence({
   track: seconds => { if (timing.value) trackPosition.tick.value = timing.value.secondsToTick(seconds) },
   controls: seconds => { if (timing.value) cursor.value = timing.value.secondsToTick(seconds) },
 })
-watch(mode, () => cadence.sync(pendingSeconds))
+watch(mode, () => {
+  if (audio.value?.readyState >= 1) syncMediaPosition()
+  else cadence.sync(pendingSeconds)
+})
 const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
   if (snapshot.phase === 'error') { audioError.value = '歌曲音频加载失败，请点击播放重试。'; stopPlayback() }
