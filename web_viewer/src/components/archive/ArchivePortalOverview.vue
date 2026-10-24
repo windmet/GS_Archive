@@ -15,7 +15,7 @@
         <h2 id="portal-search-title" class="overview-visually-hidden">搜索全站档案</h2>
         <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; emit('search', query)">
           <Search :size="21" aria-hidden="true" />
-          <input id="portal-global-search" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
+          <input id="portal-global-search" ref="searchInput" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
           <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', '')"><X :size="18" aria-hidden="true" /></button>
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
@@ -24,7 +24,7 @@
           <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="searchOpen = false"><X :size="16" />收起</button>
           <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="emit('search',term)">{{ term }}</button></div>
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
-          <p v-if="globalSearch.error" class="overview-error" role="status">{{ globalSearch.error }}</p>
+          <ArchiveErrorNote v-if="globalSearch.error" class="overview-error">{{ globalSearch.error }}</ArchiveErrorNote>
           <template v-if="searchGroups.length">
             <p class="overview-search-total">匹配 {{ formatCount(searchResults.length) }} 条 · 每类展示最多 6 条</p>
             <section v-for="group in searchGroups" :key="group.domain" class="overview-result-group" :aria-labelledby="`portal-search-${group.domain}`">
@@ -58,7 +58,7 @@
 
       <!-- Announced only: the placeholders below already hold the layout, so this line must not move it. -->
       <p v-if="desktopOverview.loading" class="overview-status overview-visually-hidden" role="status">正在读取门户资料…</p>
-      <p v-if="desktopOverview.error" class="overview-error" role="status">{{ desktopOverview.error }}<button type="button" data-archive-focus-id="portal-overview-retry" @click="emit('retry-overview')">重试门户资料</button></p>
+      <ArchiveErrorNote v-if="desktopOverview.error" class="overview-error">{{ desktopOverview.error }}<button type="button" data-archive-focus-id="portal-overview-retry" @click="emit('retry-overview')">重试门户资料</button></ArchiveErrorNote>
 
       <section v-if="!preferredReference?.actionable" class="overview-panel overview-unit-hub" aria-labelledby="portal-units-title">
         <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length || unitPlaceholderCount || '' }} 个组合</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
@@ -204,6 +204,7 @@ import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
 import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
+import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
@@ -241,12 +242,12 @@ const readableMainCollections = computed(() => (props.desktopOverview.mainCollec
 const storyTitle = useStoryTitles()
 const storySubtitle = text => String(text || '').split(' · ').map(chapterLabel).join(' · ')
 const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred', 'expand-cards'])
-const searchPanel = ref(null), searchOpen = ref(false)
+const searchPanel = ref(null), searchInput = ref(null), searchOpen = ref(Boolean(props.globalSearch?.query?.trim()))
 function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) searchOpen.value = false }
 onMounted(() => document.addEventListener('pointerdown',closeSearchOutside))
 onBeforeUnmount(() => document.removeEventListener('pointerdown',closeSearchOutside))
 const heading = ref(null)
-defineExpose({ focusHeading: () => heading.value?.focus({ preventScroll: true }) })
+defineExpose({ focusHeading: () => heading.value?.focus({ preventScroll: true }), restoreSearchFocus: () => searchInput.value?.focus({ preventScroll: true }) })
 const footprints = computed(() => props.desktopOverview.footprints || [])
 // Until the overview arrives, keep the same four footprint slots and one empty tile per unit (the unit list is
 // in the bootstrap), so the counts and logos fill in place instead of pushing the page down.
@@ -465,9 +466,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footprint b small { color:var(--gs-ink-3);font-family:var(--gs-font-body);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-directory { display:none; }
 
-.overview-status, .overview-error, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
-.overview-error { color:#875a40; }
-.overview-error > button { min-height:var(--gs-control-touch);margin-left:var(--gs-space-4);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-status, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
+.overview-error { margin:0;padding:var(--gs-space-4) 0;font-size:var(--gs-text-ui); }
+.overview-error button, .overview-error > button { min-height:var(--gs-control-touch);margin-left:var(--gs-space-4);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:var(--gs-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);cursor:pointer; }
 
 /* Sections: heading and count on one baseline over a rule, the directory link at the end. */
 .overview-panel { min-width:0;margin-top:var(--gs-space-section); }
@@ -776,5 +777,5 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button, .overview-hub-links button { min-height:var(--gs-control-touch); }
   @container portal (max-width:420px) { .overview-hub-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 }
-@media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }
+@media (prefers-reduced-motion:reduce) { .portal-overview *, .portal-overview *::before, .portal-overview *::after { animation-duration:0.01ms !important;animation-iteration-count:1 !important; } }
 </style>
