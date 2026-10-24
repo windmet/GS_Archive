@@ -59,7 +59,11 @@ const preferredActions = [{ id: 'profile', label: '资料' }, { id: 'story', lab
 
 onMounted(async () => {
   await nextTick()
-  overview.value?.focusHeading()
+  if (!props.globalSearch?.query?.trim()) {
+    overview.value?.focusHeading()
+  } else {
+    overview.value?.restoreSearchFocus()
+  }
   if (wallpaper.preferences.value.wallpaperKey) {
     wallpaper.load()
     void loadArchiveNames('cards').catch(error => console.warn('Wallpaper card names unavailable', error))
