@@ -6,23 +6,33 @@
       <slot name="header-action" />
     </div>
     <p class="song-block-note">分轨试听与原游戏混音可能不同。</p>
-    <label class="song-mode-selector" data-vocal-setting-selector>
-      <span>试听模式</span>
-      <select :value="mode" @change="changeListeningMode">
-        <option v-for="item in listeningModes" :key="item.id" :value="item.id">{{ item.label }}</option>
-      </select>
-    </label>
-    <button v-if="mode === 'solo' && hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${soloDisplayName(currentSoloTrack) || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
-    <div class="experimental-controls">
-      <label v-if="mode === 'unit'">
-        组合
-        <select v-model="selectedUnitKey">
-          <option v-for="option in unitOptions" :key="option.key" :value="option.key">
-            {{ option.label }}
-          </option>
+    <div v-if="mode === 'unit' && !unitSelectorOpen" class="unit-preset-indicator">
+      <span class="unit-preset-label">当前：组合预设 · {{ currentSingleTrack?.label || '未选择' }}</span>
+      <button type="button" class="unit-preset-change-btn" @click="unitSelectorOpen = true">更换</button>
+    </div>
+    <template v-else>
+      <label class="song-mode-selector" data-vocal-setting-selector>
+        <span>试听模式</span>
+        <select :value="mode" @change="changeListeningMode">
+          <option v-for="item in listeningModes" :key="item.id" :value="item.id">{{ item.label }}</option>
         </select>
       </label>
-      <label v-else-if="mode === 'single'">
+      <div v-if="mode === 'unit'" class="experimental-controls">
+        <label>
+          组合
+          <select v-model="selectedUnitKey" @change="unitSelectorOpen = false">
+            <option v-for="option in unitOptions" :key="option.key" :value="option.key">
+              {{ option.label }}
+            </option>
+          </select>
+        </label>
+        <button type="button" class="unit-preset-close-btn" @click="unitSelectorOpen = false">收起</button>
+      </div>
+    </template>
+
+    <button v-if="mode === 'solo' && hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${soloDisplayName(currentSoloTrack) || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
+    <div v-if="mode === 'single'" class="experimental-controls">
+      <label>
         收录音轨
         <select v-model="selectedSingleKey">
           <option v-for="option in auditedOptions" :key="option.key" :value="option.key">
@@ -154,6 +164,7 @@ defineExpose({
 })
 
 const mode = ref('single')
+const unitSelectorOpen = ref(false)
 const soloOpen = ref(false), soloQuery = ref(''), soloUnit = ref('')
 const soloTitleId = useId()
 const soloDirectory = computed(() => new Map(props.idolDirectory.map(idol => [idol.id, idol])))
@@ -175,6 +186,7 @@ const listeningModes = computed(() => [
   ...(auditedOptions.value.length ? [{ id: 'single', label: '收录音轨' }] : []),
 ])
 function changeListeningMode(event) {
+  unitSelectorOpen.value = false
   const selector = event.target
   const requestedMode = selector.value
   if (!listeningModes.value.some(item => item.id === requestedMode)) {
@@ -393,6 +405,7 @@ watch([mode, selectedUnitKey, selectedSingleKey], () => {
   })
 }, { immediate: true })
 watch(() => props.audioExperiment, async experiment => {
+  unitSelectorOpen.value = false
   selectedIdolCode.value = Object.keys(experiment?.solo_tracks || {})[0] || ''
   selectedUnitKey.value = unitOptions.value[0]?.key || ''
   selectedSingleKey.value = auditedOptions.value[0]?.key || ''
@@ -405,6 +418,11 @@ onBeforeUnmount(() => resetPlayback())
 
 <style scoped>
 /* Audition: sits on the paper like every other section; controls are plain archive controls. */
+.unit-preset-indicator { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-3); min-height: var(--gs-control-normal); padding: var(--gs-space-2) var(--gs-space-3); margin-top: var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.unit-preset-label { font-weight: var(--gs-weight-semibold); color: var(--gs-ink); }
+.unit-preset-change-btn, .unit-preset-close-btn { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); cursor: pointer; transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
+.unit-preset-change-btn:hover, .unit-preset-close-btn:hover { background: var(--gs-mint-wash); color: var(--gs-mint-ink); border-color: var(--gs-mint); }
+.unit-preset-close-btn { align-self: flex-end; margin-bottom: var(--gs-space-1); }
 .experimental-controls { display: flex; flex-wrap: wrap; gap: var(--gs-space-4); margin-top: var(--gs-space-4); }
 .experimental-controls label, .experimental-mix-controls label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .experimental-controls select { min-width: 190px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
