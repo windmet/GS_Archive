@@ -1,5 +1,7 @@
 # 固定嘴型 RAW 与舞台消费者（2026-10-15）
 
+**2026-10-23 纠正**：本记录将 `GetTargetIdolObj(value1)` 的原生角色列表编号误称为画面站位。RAW 参数和补间计算正确，但 Viewer 曾漏做 `stagePositionMap` 转换，FLASH LIGHT/precious love 的 target1 因而作用到画面1而非中心3。已修正消费者并加入两首真实台词时窗及四份编排的映射回归，见 [Center 嘴型目标修正](NATIVE_CENTER_MOUTH_TARGET_20261023.md)。下面的旧站位验收只能证明旧实现，不能作为正确目标的证据。
+
 输入 HEAD `bacdaddd`，分支 `stage/20261014-native-fidelity`，工作目录 `E:/Web_build/GS_Archive_Domain_Work/stage-native-fidelity-20261014/web_viewer`。继续使用 5212 的现有 Vite（PID 61564），没有部署或切换 read-model 候选。
 
 ## 原生来源

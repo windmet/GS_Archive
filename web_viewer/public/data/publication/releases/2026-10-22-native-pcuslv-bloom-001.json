@@ -1,0 +1,92 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-22-native-pcuslv-bloom-001",
+  "created_at": "2026-10-22T08:19:02.270596+00:00",
+  "prepared_from_commit": "79628853e7a52b9cdd5ec234096a2a370fae983f",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:99916964340aad44a43cf51c"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:99916964340aad44a43cf51c",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/song_pcuslv.unity3d",
+        "sha256": "4328e9017adf338644d345d70b2da634165836ceaaae8455fdaa3c99979eb563",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_particle_variation2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-efe29974fa9fb94904a882e23a8d46ad:3147239844506611722",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 24dfa901147553ca1aeb8fb01701c7c6c10854747c549af4797efd0724d3ba02; 1024x1024 RGBA. Source-bound lifetime magnitude limits and tilted Local parent geometry; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/99916964340aad44a43cf51c.png",
+          "url": "/data/stage-object-emitters/99916964340aad44a43cf51c.png",
+          "bytes": 196702,
+          "sha256": "f301c0fe171b5356b058126cfd5217abd533543492cf72ac6dec7b2b8f254d97"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Actual native ClampVelocity/integration108controlled trajectories cover3312steps; Local parent36controlled vertex cases.",
+          "All106previous models and122texture descriptors unchanged. Four complete Bloom resources /12systems; native clock/RNG/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=pcuslv&stage=pcuslv_live_effect",
+        "tested_at": "2026-10-22T08:25:44.531819+00:00",
+        "tested_commit": "79628853e7a52b9cdd5ec234096a2a370fae983f",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD79628853 plus scoped changes; main checkout5213 PID73284, rm-release-20261015, full mode, inherited manual4-member cast; not original-member acceptance.",
+          "Before3600ms no Bloom assets;4500ms all4Bloom assets /338totalobjectparticles;8000ms repeat342;65000ms166;rewind4500ms restores338. Ready=true, unsupported/deferred empty.",
+          "Actual playback from4500ms; observed61200ms,manual pause observed71200ms. Desktop1280x720 and mobile390x844 /scrollWidth390; floor glow visible. Screenshots bloom-pcuslv-4s-desktop.png and bloom-pcuslv-4s-mobile.png.",
+          "Cold reload and seek4500ms restores338; actual SPA switch to VIVA clears oldobjects/particles0 then ready=true /876 with VIVA assets only. Console errors0; warn-free not claimed.",
+          "Native controlled limit trajectories and Local parent geometry only. Harness bakes Hermite coefficients and supplies phase/dt. Native curve baking/scene clock/RNG/device/original scene remain unverified."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

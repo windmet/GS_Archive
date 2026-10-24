@@ -1,10 +1,20 @@
-"""Extract bounded box/point emitters; keep noise/stretch as explicit gaps."""
+"""Extract source-bound native object emitters with explicit preview profiles."""
 import json,sys,argparse,importlib.util
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 PROMOTIONS=json.loads((ROOT/'scripts/fixtures/chibi-object-emitter-promotions.json').read_text(encoding='utf8'))
 SPATIAL_CONTEXT=json.loads((ROOT/'scripts/fixtures/chibi-spatial-context-native.json').read_text(encoding='utf8'))
 SPATIAL_CONES=json.loads((ROOT/'scripts/fixtures/chibi-cone-stretch-native.json').read_text(encoding='utf8'))
+LOCAL_PARENTS=json.loads((ROOT/'scripts/fixtures/chibi-local-parent-native.json').read_text(encoding='utf8'))
+LOCAL_SIZES=json.loads((ROOT/'scripts/fixtures/chibi-local-size-native.json').read_text(encoding='utf8'))
+TORUS_SHAPES=json.loads((ROOT/'scripts/fixtures/chibi-torus-native.json').read_text(encoding='utf8'))
+BLOOM_PARENTS=json.loads((ROOT/'scripts/fixtures/chibi-bloom-parent-native.json').read_text(encoding='utf8'))
+LIFETIME_LIMITS=json.loads((ROOT/'scripts/fixtures/chibi-limit-curve-native.json').read_text(encoding='utf8'))
+COLOR_PAIRS=json.loads((ROOT/'scripts/fixtures/chibi-color-pair-native.json').read_text(encoding='utf8'))
+UNIFORM_SIZES=json.loads((ROOT/'scripts/fixtures/chibi-uniform-size-native.json').read_text(encoding='utf8'))
+FIRE_PROOFS=json.loads((ROOT/'scripts/fixtures/chibi-bnckgy-fire-native.json').read_text(encoding='utf8'))
+FIRE_SIZES=json.loads((ROOT/'scripts/fixtures/chibi-fire-uniform-size-native.json').read_text(encoding='utf8'))
+FIRE_SCENE=json.loads((ROOT/'scripts/fixtures/chibi-fire-scene-native.json').read_text(encoding='utf8'))
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
@@ -51,7 +61,7 @@ def stationary_distance_proof(record, environment, audit, choreography):
     w.require(bool(arrangements),'No choreography proof for distance emitter')
     return dict(profile='stationary-object-layer-v1',components=components,arrangements=arrangements)
 
-def model(p, partial=False, stationary=False, spatial_source=None):
+def model(p, partial=False, stationary=False, spatial_source=None, parent_source=None, torus_source=None, limit_source=None, color_source=None):
     m=p.get('modules') or {};i=m.get('InitialModule');e=m.get('EmissionModule');r=p.get('renderer') or {};main=p.get('main') or {}
     w.require(bool(i) and bool(e) and bool(r) and bool(main),'Missing core particle modules')
     s=m.get('ShapeModule');u=m.get('UVModule');c=m.get('ClampVelocityModule');chain=p.get('transformChain') or []
@@ -67,11 +77,20 @@ def model(p, partial=False, stationary=False, spatial_source=None):
     w.require(main.get('moveWithTransform')==0,'Unsupported move with transform')
     w.require(main.get('scalingMode')==0,'Unsupported scaling mode')
     w.require(i['startColor']['minMaxState'] in [0,2,4],'Unsupported start color mode')
-    w.require(not s or s['type'] in [0,2,4,5,10,12],'Unsupported shape')
+    w.require(not s or s['type'] in ([0,2,4,5,10,12,17] if torus_source else [0,2,4,5,10,12]),'Unsupported shape')
+    if s and s['type']==17:
+        w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==torus_source['source'] and chain==torus_source['chain'] and s==torus_source['shape'],'Torus source binding changed')
+        w.require(r['alignment']==2 and r['renderMode']==0 and not i['size3D'] and not i.get('rotation3D') and i['startSpeed']['minMaxState'] in [0,3] and i['startSpeed']['scalar']==0 and (i['startSpeed']['minMaxState']==0 or i['startSpeed']['minScalar']==0) and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0 and not c and 'VelocityModule' not in m and 'NoiseModule' not in m,'Unsupported torus motion/renderer profile')
+        w.require(s['m_Position']==s['m_Rotation']==dict(x=0,y=0,z=0) and s['m_Texture']['m_PathID']==0 and 0<=s['radiusThickness']<=1 and s['donutRadius']>=0 and 0<s['arc']['value']<=360,'Unsupported torus transform/texture/range')
     if s:w.require(s['randomDirectionAmount']==s['sphericalDirectionAmount']==s['randomPositionAmount']==0 and not s['alignToDirection'],'Unsupported shape direction')
-    if s and s['type'] in [0,2,4,10]:
+    if s and s['type'] in [0,2,4,10,17]:
         w.require(s['radius']['mode']==0 and s['arc']['mode']==0 and s['arc']['spread']==0,'Unsupported animated or stepped shape radius/arc')
-    for t in chain:
+    if parent_source:
+        if parent_source['profile']=='native-local-size-orthographic-v1':w.require('SizeModule' not in m,'Nonuniform size envelope excludes lifetime size modules')
+        w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==parent_source['source'] and chain==parent_source['chain'],'Local parent source changed')
+        passive_limit=bool(limit_source) and i['startSpeed']['minMaxState']==0 and i['startSpeed']['scalar']==0
+        w.require(r['alignment']==2 and r['renderMode']==0 and i['size3D']==parent_source.get('size3D',False) and not i.get('rotation3D') and (not c or passive_limit) and not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0,'Unsupported spatial local parent profile')
+    for t in chain if not parent_source else []:
         q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
         w.require(abs(2*(x*z-v*y))<1e-5 and abs(2*(y*z+v*x))<1e-5,'Nonplanar emitter transform')
     if s and s['type']==12:w.require(s['radius']['mode']==0 and i['startSpeed']['scalar']==0,'Unsupported moving edge')
@@ -82,7 +101,10 @@ def model(p, partial=False, stationary=False, spatial_source=None):
         w.require(rot3['curve']['minMaxState'] in (0,1,3),'Unsupported rotation curve mode')
         if rot3.get('separateAxes'):
             w.require(all(rot3[k]['minMaxState'] in (0,1,3) for k in ['x','y']),'Unsupported separate rotation curve mode')
-    if 'ColorModule' in m:w.require(m['ColorModule']['gradient']['minMaxState']==1,'Unsupported lifetime color mode')
+    if color_source:
+        w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==color_source['source'] and chain==color_source['chain'] and m['ColorModule']['gradient']==color_source['gradient'],'Two-gradient source binding changed')
+        w.require(m['ColorModule']['gradient']['minMaxState']==3,'Unsupported paired gradient mode')
+    elif 'ColorModule' in m:w.require(m['ColorModule']['gradient']['minMaxState']==1,'Unsupported lifetime color mode')
     w.require(e['rateOverTime']['minMaxState']==0,'Unsupported emission rate curve')
     distance=e['rateOverDistance']
     w.require(distance['minMaxState']==0 and (distance['scalar']==0 or stationary),'Rate-over-distance requires emitter motion history')
@@ -91,7 +113,12 @@ def model(p, partial=False, stationary=False, spatial_source=None):
         w.require(b['countCurve']['minMaxState']==0 and b['cycleCount']==1 and b['probability']==1,'Unsupported burst')
         bursts.append(dict(time=b['time'],count=int(b['countCurve']['scalar'])))
     if u:w.require(u['mode']==u['timeMode']==u['animationType']==0 and u['flipU']==u['flipV']==0,'Unsupported sheet')
-    if c:w.require(not c['separateAxis'] and c['drag']['scalar']==0 and c['magnitude']['minMaxState']==0,'Unsupported velocity limit')
+    if limit_source:
+        w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==limit_source['source'] and chain==limit_source['chain'] and c==limit_source['limit'],'Lifetime limit source binding changed')
+        w.require(c and not c['separateAxis'] and not c['inWorldSpace'] and c['drag']['minMaxState']==0 and c['drag']['scalar']==0 and c['magnitude']['minMaxState'] in (0,1) and 0<=c['dampen']<=1,'Unsupported lifetime magnitude limit')
+        w.require(not m.get('VelocityModule') and not m.get('NoiseModule') and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0 and i['startSpeed']['minMaxState'] in (0,3) and min(i['startSpeed']['scalar'],i['startSpeed']['minScalar'])>=0,'Lifetime limit requires force-free source')
+        initial_curve(c['magnitude'])
+    elif c:w.require(not c['separateAxis'] and c['drag']['scalar']==0 and c['magnitude']['minMaxState']==0,'Unsupported velocity limit')
     w.require(len(r['materials'])==1,'Ambiguous renderer material')
     velocity=m.get('VelocityModule')
     if velocity:
@@ -114,6 +141,10 @@ def model(p, partial=False, stationary=False, spatial_source=None):
         velocity={k:w.curve(velocity[k]) for k in ['x','y','z']} if velocity else None,
         limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') or mat['shader']['name']=='Mobile/Particles/Alpha Blended' else 'add')
     if masked and material_tint!=[1,1,1,1]:data['materialTint']=material_tint
+    if s and s['type']==17:data['shapeBinding']=dict(profile='native-random-torus-v1',proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-torus-native.json').read_bytes()))
+    if parent_source:data['parentProjection']=dict(profile=parent_source['profile'],proofSha256=parent_source['proofSha256'])
+    if limit_source:data['limit']=dict(profile='native-lifetime-magnitude-v1',curve=initial_curve(c['magnitude']),dampen=c['dampen'],proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-limit-curve-native.json').read_bytes()))
+    if color_source:data['colorOverLifePair']=dict(profile='native-two-gradient-bytes-v1',cache=color_source['cache'],proofSha256=w.sha((ROOT/'scripts/fixtures/chibi-color-pair-native.json').read_bytes()))
     if distance['scalar']:
         data['distanceRate']=w.curve(distance)
         data['distanceMode']='stationary-object-layer-v1'
@@ -154,8 +185,9 @@ def model(p, partial=False, stationary=False, spatial_source=None):
                     and i['startSize']['minMaxState']==i['startSpeed']['minMaxState']==i['gravityModifier']['minMaxState']==0
                     and i['gravityModifier']['scalar']==0 and r['alignment']==0 and sr['velocityScale']==0 and sr['cameraVelocityScale']==0,
                     'Spatial stretch exceeds the source-bound profile')
-                data['stretch']={**sr,'profile':'native-source-spatial-v1','binding':dict(arrangements=[SPATIAL_CONTEXT['arrangement']['id']],
+                data['stretch']={**sr,'profile':'native-source-spatial-v1','binding':dict(arrangements=[spatial_source.get('arrangementId',SPATIAL_CONTEXT['arrangement']['id'])],
                     sourceContextSha256=w.sha((ROOT/'scripts/fixtures/chibi-spatial-context-native.json').read_bytes()))}
+                if spatial_source.get('arrangementId'):data['stretch']['binding']['sceneProofSha256']=w.sha((ROOT/'scripts/fixtures/chibi-fire-scene-native.json').read_bytes())
                 marks.append('stretch_preview')
             else:marks.append('stretch_omitted')
         if marks:data['partial']=marks
@@ -197,8 +229,23 @@ def extract(mode='current', only=None, partial=False):
             try: record=a.inspect_asset(env,name,entry,True,dependencies)
             except Exception as error:
                 models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=[],systems=[],deferred=[dict(source={'serializedFile':entry['bundle'],'pathId':None},reasons=[f'asset_inspect_failed: {error}'])],masks=[]);continue
-            records.append(record);systems=[];deferred=[];distance_proof=None
+            records.append(record);systems=[];deferred=[];distance_proof=None;non_emitting=[]
             asset_partial=partial or name in PROMOTIONS.get('previewAssets',{})
+            pair_profile=PROMOTIONS.get('previewAssets',{}).get(name,{}).get('colorPairProfile')
+            pair_model=COLOR_PAIRS['models'].get(name) if pair_profile else None
+            fire_profile=PROMOTIONS.get('previewAssets',{}).get(name,{}).get('fireProfile')
+            fire_model=FIRE_PROOFS['models'].get(name) if fire_profile else None
+            static_model=fire_model or pair_model
+            static_proof_file='chibi-bnckgy-fire-native.json' if fire_model else 'chibi-color-pair-native.json'
+            if fire_profile:
+                w.require(fire_profile=='native-bnckgy-fire-v1' and fire_model and w.sha(path.read_bytes())==fire_model['bundleSha256'] and w.sha(choreopath.read_bytes())==FIRE_PROOFS['choreographySha256'],'Fire source/context binding changed')
+                for dependency,identity in FIRE_SCENE['dependencies'].items():w.require(w.sha((ROOT/'scripts/fixtures'/dependency).read_bytes())==identity,'Fire scene proof dependency changed')
+            if pair_model:
+                w.require(pair_profile=='native-two-gradient-bytes-v1' and w.sha(path.read_bytes())==pair_model['bundleSha256'],'Two-gradient bundle binding changed')
+            if static_model:
+                for component in static_model['staticComponents']:
+                    co=next(o for o in env.objects if str(o.path_id)==component['source']['pathId'])
+                    w.require(a.json_hash(co.read_typetree())==component['treeSha256'],'Static electric hierarchy changed')
             if any(p.get('modules',{}).get('EmissionModule',{}).get('rateOverDistance',{}).get('scalar',0) for p in record['particles']):
                 try:distance_proof=stationary_distance_proof(record,env,a,choreography)
                 except (ValueError,KeyError):pass # Unproven motion stays explicitly deferred.
@@ -208,11 +255,50 @@ def extract(mode='current', only=None, partial=False):
                 if prenderer.get('renderMode')!=0:reasons.append('native_stretched_billboard_solver')
                 if 'NoiseModule' in (p.get('modules') or {}):reasons.append('unity_noise_displacement')
                 ob=next((o for o in env.objects if str(o.path_id)==p.get('pathId')),None)
+                inactive=next((s for s in static_model['nonEmitting'] if s['source']['pathId']==p['pathId']),None) if static_model else None
+                if inactive:
+                    w.require({k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']}==inactive['source'] and p['transformChain']==inactive['chain'] and not inactive['emission']['enabled'] and not inactive['subEmitters']['enabled'],'Inactive emitter source changed')
+                    non_emitting.append(inactive);continue
                 source=a.source_ref(ob) if ob else {k:p.get(k) for k in ['serializedFile','pathId']}
                 if reasons and not asset_partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
                     spatial_source=SPATIAL_CONES['models'].get(name) if PROMOTIONS.get('previewAssets',{}).get(name,{}).get('spatialProfile') else None
-                    system=model(p,asset_partial,bool(distance_proof),spatial_source)
+                    if fire_model and prenderer.get('renderMode')==1:
+                        spatial_source=next(s for s in fire_model['stretchSystems'] if s['system']['source']['pathId']==p['pathId'])
+                        spatial_source={**spatial_source,'arrangementId':FIRE_PROOFS['arrangement']['id']}
+                    parent_source=None
+                    limit_source=None
+                    limit_profile=PROMOTIONS.get('assets',{}).get(name,{}).get('limitProfile')
+                    if limit_profile:
+                        w.require(limit_profile=='native-lifetime-magnitude-v1','Unknown lifetime limit profile')
+                        w.require(w.sha(choreopath.read_bytes())==LIFETIME_LIMITS['choreographySha256'],'Lifetime limit size envelope changed')
+                        limit_source=next((s for s in LIFETIME_LIMITS['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
+                        w.require(limit_source is not None,'Missing lifetime limit proof')
+                        if prenderer.get('alignment')==2:
+                            parent_source=next((s for s in BLOOM_PARENTS['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
+                            w.require(parent_source is not None,'Missing Bloom local parent proof')
+                            parent_source={**parent_source,'profile':'native-local-orthographic-v1','proofSha256':w.sha((ROOT/'scripts/fixtures/chibi-bloom-parent-native.json').read_bytes())}
+                    parent_profile=PROMOTIONS.get('assets',{}).get(name,{}).get('parentProfile')
+                    if parent_profile:
+                        w.require(parent_profile in ['native-local-orthographic-v1','native-local-size-orthographic-v1'],'Unknown local parent profile')
+                        nonuniform=parent_profile=='native-local-size-orthographic-v1';proof=LOCAL_SIZES if nonuniform else LOCAL_PARENTS
+                        if nonuniform:w.require(w.sha(choreopath.read_bytes())==proof['choreographySha256'],'Nonuniform local parent camera envelope changed')
+                        parent_source=next((s for s in proof['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
+                        w.require(parent_source is not None,'Missing local parent proof')
+                        parent_source={**parent_source,'profile':parent_profile,'proofSha256':w.sha((ROOT/('scripts/fixtures/chibi-local-size-native.json' if nonuniform else 'scripts/fixtures/chibi-local-parent-native.json')).read_bytes())}
+                    torus_source=None
+                    shape_profile=PROMOTIONS.get('assets',{}).get(name,{}).get('shapeProfile')
+                    if shape_profile and p.get('modules',{}).get('ShapeModule',{}).get('type')==17:
+                        w.require(shape_profile=='native-random-torus-v1','Unknown torus source profile')
+                        torus_source=next((s for s in TORUS_SHAPES['models'][name]['systems'] if s['source']['pathId']==p['pathId']),None)
+                        w.require(torus_source is not None,'Missing torus proof')
+                    color_source=next((s for s in pair_model['systems'] if s['source']['pathId']==p['pathId']),None) if pair_model else None
+                    system=model(p,asset_partial,bool(distance_proof),spatial_source,parent_source,torus_source,limit_source,color_source)
+                    if pair_model or (fire_model and prenderer.get('renderMode')==0):
+                        size_proof=FIRE_SIZES if fire_model else UNIFORM_SIZES
+                        bound=next(s for s in size_proof['models'][name]['systems'] if s['source']['pathId']==p['pathId'])
+                        w.require(bound['source']==system['source'] and bound['chain']==system['chain'] and bound['rendererSource']==prenderer['pathId'] and bound['alignment']==system['alignment'] and bound['bounds']==[0,1] and not system['sizeY'] and not system['rotationX'] and not system.get('stretch'),'Uniform renderer bounds source changed')
+                        system['rendererBounds']=dict(profile='native-scaled-uniform-screen-size-v1' if fire_model else 'native-uniform-screen-size-v1',min=0,max=1,proofSha256=w.sha((ROOT/('scripts/fixtures/chibi-fire-uniform-size-native.json' if fire_model else 'scripts/fixtures/chibi-uniform-size-native.json')).read_bytes()))
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')
@@ -233,6 +319,10 @@ def extract(mode='current', only=None, partial=False):
             bound_masks=[{**m,'texture':f'{m["source"]["serializedFile"]}:{m["texture"]}'} for m in masks if m['chain'][-1]['pathId']==root]
             all_masks.extend(bound_masks)
             models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=record['keeper'],systems=systems,deferred=deferred,masks=bound_masks)
+            if static_model:
+                w.require(len(non_emitting)==len(static_model['nonEmitting']) and len(systems)+len(non_emitting)==entry['particleCount'] and not deferred,'Incomplete static source partition')
+                models[name]['nonEmitting']=non_emitting
+                models[name]['nonEmittingProof']=dict(profile='native-static-disabled-emission-v1',proofSha256=w.sha((ROOT/'scripts/fixtures'/static_proof_file).read_bytes()),components=static_model['staticComponents'])
             if any(s.get('distanceRate') for s in systems):models[name]['distanceMotionProof']=distance_proof
             if name in PROMOTIONS['assets']:
                 w.require(not deferred and not any(s.get('partial') for s in systems) and len(systems)==PROMOTIONS['assets'][name]['systems'],'Promoted emitter source no longer passes the bounded profile: '+name)
@@ -242,8 +332,9 @@ def extract(mode='current', only=None, partial=False):
             if name in PROMOTIONS.get('previewAssets',{}):
                 expected=PROMOTIONS['previewAssets'][name]
                 if expected.get('spatialProfile'):
-                    w.require(w.sha(choreopath.read_bytes())==SPATIAL_CONTEXT['choreographySha256']
-                        and all(song['id']==SPATIAL_CONTEXT['arrangement']['id'] for song in choreography['songs'] if any(e['asset']==name for e in song.get('objectLayerEvents',[]))),
+                    context_proof=FIRE_PROOFS if fire_model else SPATIAL_CONTEXT
+                    w.require(w.sha(choreopath.read_bytes())==context_proof['choreographySha256']
+                        and all(song['id']==context_proof['arrangement']['id'] for song in choreography['songs'] if any(e['asset']==name for e in song.get('objectLayerEvents',[]))),
                         'Spatial source needs its bound free-camera choreography')
                 w.require(not deferred and len(systems)==expected['systems'] and models[name]['bundleSha256']==expected['bundleSha256']
                     and [s['source'] for s in systems]==expected['sources']

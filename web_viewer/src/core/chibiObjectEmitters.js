@@ -3,7 +3,10 @@ import { createNoiseClock } from './chibiParticleNoiseClock.js'
 import { samplePlanarStretch, transformStretchVelocity } from './chibiParticleStretch.js'
 import {spatialEmitterQuads,OBJECT_SPATIAL_PROFILE} from './chibiObjectSpatialContext.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
+import { sampleLifetimeLimitDistance } from './chibiParticleLimit.js'
+import { samplePackedColorPair } from './chibiParticleColorPair.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
+import {assertSmokeSystem,smokeMotionAt,SMOKE_BINDING} from './chibiSmokeMotion.js'
 export function sampleObjectCurve(c,t,r) {
   if(c.mode===3)return c.minScalar+(c.scalar-c.minScalar)*r
   if(c.mode===2){const min=sampleParticleCurve({...c,keys:c.minKeys},t);return min+(sampleParticleCurve(c,t)-min)*r}
@@ -56,6 +59,19 @@ export function emitterMatrix(chain) {
   }
   return m
 }
+// Preserve local Z through the complete static hierarchy before projecting XY.
+// Admission is source-bound to Local billboards without 3D particle rotation.
+export function emitterSpatialMatrix(chain) {
+  let m=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]
+  for(const t of chain) {
+    const {x,y,z,w}=t.rotation,s=t.scale,p=t.position
+    const a=[(1-2*(y*y+z*z))*s.x,2*(x*y+w*z)*s.x,2*(x*z-w*y)*s.x,0,
+      2*(x*y-w*z)*s.y,(1-2*(x*x+z*z))*s.y,2*(y*z+w*x)*s.y,0,
+      2*(x*z+w*y)*s.z,2*(y*z-w*x)*s.z,(1-2*(x*x+y*y))*s.z,0,p.x,p.y,p.z,1]
+    m=Array.from({length:16},(_,i)=>{const row=i%4,col=Math.floor(i/4);return [0,1,2,3].reduce((v,k)=>v+a[k*4+row]*m[col*4+k],0)})
+  }
+  return {a:m[0],b:m[1],c:m[4],d:m[5],zx:m[8],zy:m[9],tx:m[12],ty:m[13],full:m}
+}
 // View-aligned billboards use signed native lossy scale, not column lengths.
 // A reflected ancestor conjugates descendant rotations. Local alignment keeps
 // the complete hierarchy matrix, including shear, for both orientation and position.
@@ -93,6 +109,15 @@ export function sampleEmitterShape(shape,rnd) {
   const unit={x:Math.cos(phi),y:Math.sin(phi)}
   let position,direction={x:0,y:0,z:1}
   switch(shape.type) {
+    case 17:{
+      const theta=rnd(2)*Math.PI*2,c=Math.cos(theta),s=Math.sin(theta)
+      // Native random-arc torus uses a linear tube-radius fraction, with the
+      // same 0.001 inner floor as Cone; it does not use sqrt(volume fraction).
+      const inner=Math.max(.001,1-thickness),r=Number(shape.donutRadius||0)*(inner+(1-inner)*rnd(3))
+      const ring=radius+r*c
+      position={x:unit.x*ring,y:unit.y*ring,z:r*s}
+      direction={x:unit.x*c,y:unit.y*c,z:s};break
+    }
     case 12:position={x:(rnd(1)*2-1)*radius,y:0,z:0};direction={x:0,y:1,z:0};break
     case 5:position={x:rnd(1)-.5,y:rnd(2)-.5,z:rnd(3)-.5};break
     case 10:{
@@ -175,6 +200,11 @@ function noiseMotion(system,id,initial,age,born,options) {
   return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:options.clock.timeAt(born+age)}).position:saved.state.position
 }
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,view={}) {
+  const smoke=Boolean(system.smokeBinding)
+  if(smoke)assertSmokeSystem(system)
+  if(system.shape?.type===17 && system.shapeBinding?.profile!=='native-random-torus-v1')throw Error('Unbound torus source')
+  if(system.parentProjection && (!['native-local-orthographic-v1','native-local-size-orthographic-v1'].includes(system.parentProjection.profile) || system.alignment!==2 || system.rotationX || (system.sizeY && system.parentProjection.profile!=='native-local-size-orthographic-v1') || system.noise || system.stretch))
+    throw Error('Unsupported local parent projection')
   // Nonzero distance rates are retained. This profile proves the world emitter
   // stays fixed after placement/Play, so native dt*|velocity| contributes zero.
   // Never apply that reduction to an unproven moving emitter.
@@ -193,7 +223,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
   const maxLife=Math.max(.00001,curveUpperBound(system.lifetime)),period=system.duration
   const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
   const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
-  const matrix=emitterMatrix(system.chain),renderBasis=emitterRenderBasis(system.chain,system.alignment,matrix),out=[]
+  const matrix=system.parentProjection?emitterSpatialMatrix(system.chain):emitterMatrix(system.chain),renderBasis=emitterRenderBasis(system.chain,system.alignment,matrix),out=[]
   const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
   if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
   const timeline=system.noise?noiseTimeline(system,births,last,cutoff,wait,maxLife,seed):null
@@ -207,9 +237,15 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       const t=age/life,shape=system.shape
       const emitted=shape?sampleEmitterShape(shape,rnd):{position:{x:0,y:0,z:0},direction:{x:0,y:0,z:1}}
       let p=shape?euler(emitted.position,shape.m_Rotation):emitted.position
-      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction,d=system.noise?0:distance(sample(system.speed,birthPhase,rnd(4)),system.limit,age)
+      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction
+      const birthSpeed=sample(system.speed,birthPhase,rnd(4))
+      const d=system.noise||smoke?0:system.limit?.curve?sampleLifetimeLimitDistance(birthSpeed,system.limit,age,life):distance(birthSpeed,system.limit,age)
       const g=(system.gravity?sample(system.gravity,birthPhase,rnd(19)):0)*-9.81
-      if(system.noise) {
+      if(smoke) {
+        p=smokeMotionAt(system,id,{position:{x:p.x+(shape?.m_Position.x||0),y:p.y+(shape?.m_Position.y||0),z:p.z+(shape?.m_Position.z||0)},
+          velocity:{x:v.x*birthSpeed,y:v.y*birthSpeed,z:v.z*birthSpeed}},
+          {x:0,y:g/SMOKE_BINDING.stageScaleXY,z:0},age,life)
+      } else if(system.noise) {
         const speed=sample(system.speed,birthPhase,rnd(4)),det=matrix.a*matrix.d-matrix.b*matrix.c
         if(Math.abs(det)<1e-12)throw Error('Singular noise emitter gravity plane')
         const initial={position:{x:p.x+(shape?.m_Position.x||0),y:p.y+(shape?.m_Position.y||0),z:p.z+(shape?.m_Position.z||0)},velocity:{x:v.x*speed,y:v.y*speed,z:v.z*speed}}
@@ -219,11 +255,22 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       } else {
         p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.x,age,life,rnd(14)):0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.y,age,life,rnd(15)):0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sampleObjectVelocityDisplacement(system.velocity.z,age,life,rnd(16)):0)}
       }
-      const size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
-      const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
+      let size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
+      let sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
+      if(smoke) {
+        const maximum=(view.height??7.2)*system.rendererBounds.max*100,largest=Math.max(size,sizeY)
+        if(largest>maximum){const ratio=maximum/largest;size*=ratio;sizeY*=ratio}
+      } else if(system.rendererBounds){
+        const bounds=system.rendererBounds,height=view.height??7.2
+        const scale=bounds.profile==='native-scaled-uniform-screen-size-v1'?Math.abs(renderBasis.scaleX):1
+        if(!['native-uniform-screen-size-v1','native-scaled-uniform-screen-size-v1'].includes(bounds.profile)||bounds.min!==0||bounds.max!==1||system.sizeY||system.rotationX||system.stretch||!(height>0)||!(scale>0))throw Error('Unsupported uniform renderer bounds')
+        size=Math.min(size,height*100/scale)
+        sizeY=size
+      }
       // Particle angles are clockwise in Unity's billboard builder. Convert
       // them separately from emitter Transform rotations, which stay unchanged.
-      const rz=-(sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)))
+      const rotationSign=smoke&&rnd(24)<=system.randomizeRotationDirection?-1:1
+      const rz=-(sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)))*rotationSign
       let A,B,C,D
       if(system.rotationX){
         // rotation3D: Unity Euler order Z, then X, then Y; project world axes onto the screen plane.
@@ -236,13 +283,15 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
       } else {
         const c=Math.cos(rz),s=Math.sin(rz)
         A=renderBasis.a*c+renderBasis.c*s;B=-(renderBasis.b*c+renderBasis.d*s);C=renderBasis.a*s-renderBasis.c*c;D=-(renderBasis.b*s-renderBasis.d*c)
+        if(smoke)D=renderBasis.d*c // World alignment keeps the native +Y quad axis before the PNG/screen conversion.
       }
       const mix=system.colorMode===2&&system.colorMin?rnd(12):null
       const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):mix===null?system.color:Object.fromEntries(['r','g','b','a'].map(k=>[k,system.colorMin[k]+(system.color[k]-system.colorMin[k])*mix])),over=system.colorOverLife
-      const color=['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
+      const pairColor=system.colorOverLifePair?samplePackedColorPair(system.colorOverLifePair,t,rnd(23),['r','g','b','a'].map(k=>Math.round(Math.max(0,Math.min(1,rgba[k]))*255))):null
+      const color=pairColor?(pairColor[0]<<16)|(pairColor[1]<<8)|pairColor[2]:['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
       // World gravity (Unity default -9.81 y) after the emitter matrix; screen y is negated.
-      const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+(system.noise?0:0.5*g*age*age)
+      const wx=matrix.a*p.x+matrix.c*p.y+(matrix.zx||0)*p.z+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+(matrix.zy||0)*p.z+matrix.ty+(system.noise||smoke?0:0.5*g*age*age)
       let geometry={x:wx*100,y:-wy*100,a:A*size,b:B*size,c:C*sizeY,d:D*sizeY}
       if(system.stretch) {
         const fp=Math.fround,speed=fp(sample(system.speed,birthPhase,rnd(4)))
@@ -262,7 +311,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,v
           a:(quad[1].x-quad[0].x)*100,b:-(quad[1].y-quad[0].y)*100,
           c:(quad[3].x-quad[0].x)*100,d:-(quad[3].y-quad[0].y)*100}
       }
-      out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:rgba.a*sampleFloorGradient(over.alphas,t),color,...geometry})
+      out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:pairColor?pairColor[3]/255:rgba.a*sampleFloorGradient(over.alphas,t),color,...geometry})
     }
   }
   return out.slice(-system.capacity)
@@ -274,7 +323,13 @@ export function attachObjectEmitters(index,data,hash,choreographyHash) {
   const assets={...index.assets}
   for(const [name,model] of Object.entries(data.assets)) {
     const source=assets[name]
-    if(source?.bundle!==model.bundle || source.particleCount!==model.particleCount || model.systems.length+model.deferred.length!==source.particleCount)throw new Error(`Object emitter identity mismatch ${name}`)
+    const inactive=model.nonEmitting||[]
+    if(source?.bundle!==model.bundle || source.particleCount!==model.particleCount || model.systems.length+model.deferred.length+inactive.length!==source.particleCount)throw new Error(`Object emitter identity mismatch ${name}`)
+    if(inactive.length){
+      const proof=model.nonEmittingProof
+      const ids=[...model.systems,...model.deferred,...inactive].map(s=>s.source.pathId)
+      if(proof?.profile!=='native-static-disabled-emission-v1'||!/^[a-f0-9]{64}$/.test(proof.proofSha256)||!proof.components?.length||new Set(ids).size!==ids.length||inactive.some(s=>s.emission?.enabled!==false||s.subEmitters?.enabled!==false))throw Error(`Unproven inactive emitters ${name}`)
+    }
     if(model.systems.some(s=>s.distanceRate)) {
       const proof=model.distanceMotionProof
       if(!data.choreographyIndexSha256 || proof?.profile!=='stationary-object-layer-v1' || !proof.components?.length || !proof.arrangements?.length || model.systems.some(s=>s.distanceRate && s.distanceMode!==proof.profile))throw new Error(`Unproven distance emitter motion ${name}`)

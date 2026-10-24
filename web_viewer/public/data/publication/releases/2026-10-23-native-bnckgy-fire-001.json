@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-10-23-native-bnckgy-fire-001",
+  "created_at": "2026-10-22T18:08:57.269587+00:00",
+  "prepared_from_commit": "87616418d5dfd21d922d552b520fab59740bb047",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "stage-object-emitters:9530f2442e6cc6e2561ed2c2",
+      "stage-object-emitters:91279b424b690b79d6dcbdc1",
+      "stage-object-emitters:517297414a5a24a2cbcd35e7"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "stage-object-emitters:9530f2442e6cc6e2561ed2c2",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_bnckgy_fire.unity3d",
+        "sha256": "9f2ecb399a684a9d944225d2eb712121d533fe346f8a4113b2e8284da5fc91ec",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "shine",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-9ff1177b698a8cb8c4b6ca474b0ef2d6:8165143235291980510",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 98647b182cd0bf5b75e5e8b399db752a74c184921fa811a3930131021846e2a2; 128x128 RGBA. Source-bound native cone stretch, scaled uniform bounds and disabled emission nodes; Noise remains preview; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/9530f2442e6cc6e2561ed2c2.png",
+          "url": "/data/stage-object-emitters/9530f2442e6cc6e2561ed2c2.png",
+          "bytes": 5113,
+          "sha256": "27958154e97d2bf69526f8c87d75806c72ce306b24118c373d0ff329cd7fd448"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Native stretch1728controlled rays,2400joined scene cases and540scaled uniform size cases;90native camera target poses.",
+          "All111previous models and126texture descriptors unchanged. Fire42nodes partitioned into36emitters and6disabledemission nodes.18Noise and6Stretch preview systems retained; native birth RNG/clock/camera tween/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=bnckgy&stage=bnckgy_live_effect",
+        "tested_at": "2026-10-22T18:25:42.069852+00:00",
+        "tested_commit": "87616418d5dfd21d922d552b520fab59740bb047",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD87616418 plus scoped fire changes; main checkout5213 PID25568, rm-release-20261015, full mode; inherited manual cast in slots2/3, not original-member acceptance.",
+          "41900ms0particles;42600ms308;43600ms0 after hide;44200ms308;102600ms200;rewind42600ms308. Ready=true, unsupported/deferred empty.",
+          "Actual playback from42600ms, observed107600ms; manual pause121200ms. Desktop1280x720 and mobile390x844/scrollWidth390; screenshots fire-bnckgy-42s-desktop.png and fire-bnckgy-42s-mobile.png.",
+          "Independent post-build cold entry and reload/seek42600ms both ready=true/308; console errors empty. SPA switch VIVA clears old assets/particles0, then VIVA ready=true/876 with only VIVA assets; errors empty.",
+          "Native birth RNG, clock, Noise, camera tween, original scene and device parity remain unverified; this is sampled local-dev acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:91279b424b690b79d6dcbdc1",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_bnckgy_fire.unity3d",
+        "sha256": "9f2ecb399a684a9d944225d2eb712121d533fe346f8a4113b2e8284da5fc91ec",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_bnckgy_fire_1",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-9ff1177b698a8cb8c4b6ca474b0ef2d6:-5018633803627157066",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 49c855fb6ece819939a14c199a21f238c4054132bd1112f72536f44f3a6f633e; 1024x1024 RGBA. Source-bound native cone stretch, scaled uniform bounds and disabled emission nodes; Noise remains preview; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/91279b424b690b79d6dcbdc1.png",
+          "url": "/data/stage-object-emitters/91279b424b690b79d6dcbdc1.png",
+          "bytes": 636175,
+          "sha256": "c56134d6a8895611d19e087df6e08a740344c29f79abda2d0e2b559288018712"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Native stretch1728controlled rays,2400joined scene cases and540scaled uniform size cases;90native camera target poses.",
+          "All111previous models and126texture descriptors unchanged. Fire42nodes partitioned into36emitters and6disabledemission nodes.18Noise and6Stretch preview systems retained; native birth RNG/clock/camera tween/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=bnckgy&stage=bnckgy_live_effect",
+        "tested_at": "2026-10-22T18:25:42.148833+00:00",
+        "tested_commit": "87616418d5dfd21d922d552b520fab59740bb047",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD87616418 plus scoped fire changes; main checkout5213 PID25568, rm-release-20261015, full mode; inherited manual cast in slots2/3, not original-member acceptance.",
+          "41900ms0particles;42600ms308;43600ms0 after hide;44200ms308;102600ms200;rewind42600ms308. Ready=true, unsupported/deferred empty.",
+          "Actual playback from42600ms, observed107600ms; manual pause121200ms. Desktop1280x720 and mobile390x844/scrollWidth390; screenshots fire-bnckgy-42s-desktop.png and fire-bnckgy-42s-mobile.png.",
+          "Independent post-build cold entry and reload/seek42600ms both ready=true/308; console errors empty. SPA switch VIVA clears old assets/particles0, then VIVA ready=true/876 with only VIVA assets; errors empty.",
+          "Native birth RNG, clock, Noise, camera tween, original scene and device parity remain unverified; this is sampled local-dev acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    },
+    {
+      "logical_id": "stage-object-emitters:517297414a5a24a2cbcd35e7",
+      "domain": "image",
+      "source": {
+        "archive_relative_path": "asset/liveobjectobjectlayer_fx_in_bnckgy_fire.unity3d",
+        "sha256": "9f2ecb399a684a9d944225d2eb712121d533fe346f8a4113b2e8284da5fc91ec",
+        "objects": [
+          {
+            "type": "Texture2D",
+            "name": "fx_in_bnckgy_fire_2",
+            "container_path": null,
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "Unity Texture2D",
+          "key": "CAB-9ff1177b698a8cb8c4b6ca474b0ef2d6:-1738156022434189484",
+          "evidence": "Exact64-bit PathID in string; RAW object SHA256 09cd1e7440e554313e11d30297e0426dba9121cd0b7c7f56e885d3c5c6ba5d6e; 512x512 RGBA. Source-bound native cone stretch, scaled uniform bounds and disabled emission nodes; Noise remains preview; Web RNG/clock and original scene remain unverified."
+        }
+      ],
+      "transform": {
+        "tool": "scripts/prepare-chibi-object-emitters.py --consume-deferred --write",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/stage-object-emitters/517297414a5a24a2cbcd35e7.png",
+          "url": "/data/stage-object-emitters/517297414a5a24a2cbcd35e7.png",
+          "bytes": 80592,
+          "sha256": "99243ba060f993a16fbce85ed350c9f4984a5b7ce65e15516141fe6057250f67"
+        }
+      ],
+      "consumers": [
+        "ChibiStageViewer",
+        "loadObjectEmitterSelection"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "RAW RGBA pixels matched; texture parity only. Native stretch1728controlled rays,2400joined scene cases and540scaled uniform size cases;90native camera target poses.",
+          "All111previous models and126texture descriptors unchanged. Fire42nodes partitioned into36emitters and6disabledemission nodes.18Noise and6Stretch preview systems retained; native birth RNG/clock/camera tween/device/original scene remain open."
+        ]
+      },
+      "browser_acceptance": {
+        "state": "sample-accepted",
+        "tested_url": "http://127.0.0.1:5213/?maintainer=1&view=chibi_stage&song=bnckgy&stage=bnckgy_live_effect",
+        "tested_at": "2026-10-22T18:25:42.226102+00:00",
+        "tested_commit": "87616418d5dfd21d922d552b520fab59740bb047",
+        "environment": {
+          "browser_name": "Codex In-app Browser",
+          "browser_version": "Version not exposed by Cua",
+          "operating_system": "Windows",
+          "viewer_mode": "local-dev"
+        },
+        "evidence": [
+          "Input HEAD87616418 plus scoped fire changes; main checkout5213 PID25568, rm-release-20261015, full mode; inherited manual cast in slots2/3, not original-member acceptance.",
+          "41900ms0particles;42600ms308;43600ms0 after hide;44200ms308;102600ms200;rewind42600ms308. Ready=true, unsupported/deferred empty.",
+          "Actual playback from42600ms, observed107600ms; manual pause121200ms. Desktop1280x720 and mobile390x844/scrollWidth390; screenshots fire-bnckgy-42s-desktop.png and fire-bnckgy-42s-mobile.png.",
+          "Independent post-build cold entry and reload/seek42600ms both ready=true/308; console errors empty. SPA switch VIVA clears old assets/particles0, then VIVA ready=true/876 with only VIVA assets; errors empty.",
+          "Native birth RNG, clock, Noise, camera tween, original scene and device parity remain unverified; this is sampled local-dev acceptance."
+        ]
+      },
+      "previous_state": {
+        "kind": "absent",
+        "release_id": null,
+        "artifacts": [],
+        "evidence": []
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

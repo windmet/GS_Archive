@@ -1,20 +1,176 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
+import './verify-chibi-limit-curve.mjs'
+import './verify-chibi-color-pair.mjs'
+import './verify-chibi-fire.mjs'
+import './verify-chibi-smoke-edge.mjs'
+import './verify-chibi-smoke.mjs'
 import {execFileSync} from 'node:child_process'
-import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement,emitterRenderBasis} from '../src/core/chibiObjectEmitters.js'
+import {attachObjectEmitters,emitterMatrix,emitterSpatialMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve,sampleObjectVelocityDisplacement,emitterRenderBasis} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
 import {createNoiseClock} from '../src/core/chibiParticleNoiseClock.js'
 import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity,sampleSpatialStretch} from '../src/core/chibiParticleStretch.js'
 import {objectSpatialContext,spatialEmitterQuads,OBJECT_SPATIAL_PROFILE,OBJECT_SPATIAL_BINDING} from '../src/core/chibiObjectSpatialContext.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
+const published=process.argv.includes('--published-assets')
+const colorPairProof=JSON.parse(read('scripts/fixtures/chibi-color-pair-native.json'))
+const uniformSizeProof=JSON.parse(read('scripts/fixtures/chibi-uniform-size-native.json'))
+const electric=data.assets.fx_in_tktkkt_electric,electricBound=colorPairProof.models.fx_in_tktkkt_electric
+assert.equal(electric.bundleSha256,electricBound.bundleSha256)
+assert.equal(electric.bundleSha256,uniformSizeProof.models.fx_in_tktkkt_electric.bundleSha256)
+assert.equal(electric.systems.length,14);assert.equal(electric.nonEmitting.length,3);assert.equal(electric.particleCount,17)
+assert.deepEqual(electric.nonEmitting,electricBound.nonEmitting)
+assert.deepEqual(electric.nonEmittingProof,{profile:'native-static-disabled-emission-v1',proofSha256:sha(read('scripts/fixtures/chibi-color-pair-native.json')),components:electricBound.staticComponents})
+for(const source of electricBound.systems){
+  const system=electric.systems.find(s=>s.source.pathId===source.source.pathId)
+  assert.deepEqual(system.source,source.source);assert.deepEqual(system.chain,source.chain)
+  assert.deepEqual(system.colorOverLifePair,{profile:'native-two-gradient-bytes-v1',cache:source.cache,proofSha256:sha(read('scripts/fixtures/chibi-color-pair-native.json'))})
+}
+for(const source of uniformSizeProof.models.fx_in_tktkkt_electric.systems){
+  const system=electric.systems.find(s=>s.source.pathId===source.source.pathId)
+  assert.deepEqual(system.source,source.source);assert.deepEqual(system.chain,source.chain)
+  assert.deepEqual(system.rendererBounds,{profile:'native-uniform-screen-size-v1',min:0,max:1,proofSha256:sha(read('scripts/fixtures/chibi-uniform-size-native.json'))})
+}
+assert.equal(uniformSizeProof.cases.length,252)
+for(const row of uniformSizeProof.sourceWindows)assert.equal(sha(Buffer.from(row.bytes,'hex')),row.sha256)
+for(const c of uniformSizeProof.cases){
+  const source=electric.systems.find(s=>s.source.pathId===c.source.pathId)
+  const scalar=v=>({mode:0,scalar:v,minScalar:v})
+  const probe={...source,chain:c.chain,alignment:c.alignment,noise:null,stretch:null,velocity:null,gravity:null,limit:null,parentProjection:null,speed:scalar(0),size:scalar(c.size),sizeY:null,sizeOverLife:null,sizeOverLifeY:null,rotation:scalar(c.angle),rotationX:null,rotationY:null,angularVelocity:null,
+    shape:{type:0,radius:{value:0},radiusThickness:0,m_Rotation:{x:0,y:0,z:0},m_Position:{x:.2,y:-.3,z:0}},lifetime:scalar(2),looping:false,duration:2,delay:{mode:0,value:0,min:0},bursts:[{time:0,count:1}],rate:0}
+  const sample=sampleObjectEmitter(probe,0,0,Infinity,{height:c.viewHeight})[0]
+  for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()){
+    assert.ok(Math.abs(sample.x+sample.a*u+sample.c*v-c.expected[i].position[0]*100)<.003,'Native uniform size corner X')
+    assert.ok(Math.abs(sample.y+sample.b*u+sample.d*v+c.expected[i].position[1]*100)<.003,'Native uniform size corner Y')
+  }
+}
+const localParentProof=JSON.parse(read('scripts/fixtures/chibi-local-parent-native.json'))
+const localSizeProof=JSON.parse(read('scripts/fixtures/chibi-local-size-native.json'))
+const bloomParentProof=JSON.parse(read('scripts/fixtures/chibi-bloom-parent-native.json'))
+const limitCurveProof=JSON.parse(read('scripts/fixtures/chibi-limit-curve-native.json'))
+assert.equal(bloomParentProof.cases.length,36)
+assert.equal(limitCurveProof.choreographySha256,data.choreographyIndexSha256)
+if(published){
+  assert.equal(limitCurveProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
+  const limitSong=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs.find(s=>s.id==='pcuslv_live_effect')
+  assert.equal(limitCurveProof.nonbindingSizeEnvelope.minViewHeight,10000/Math.max(...limitSong.cameraEvents.map(e=>e.zoom||1000)))
+  assert.equal(limitCurveProof.nonbindingSizeEnvelope.maxObjectScale,Math.max(...limitSong.objectLayerEvents.filter(e=>e.asset.includes('pcuslv_bloom')&&!e.hide).map(e=>e.scale))/1000)
+}
+for(const [name,bound] of Object.entries(limitCurveProof.models)){
+  assert.equal(data.assets[name].bundleSha256,bound.bundleSha256)
+  for(const [i,s] of data.assets[name].systems.entries()){
+    const raw=bound.systems[i]
+    assert.deepEqual(s.source,raw.source);assert.deepEqual(s.chain,raw.chain)
+    assert.equal(s.limit.profile,'native-lifetime-magnitude-v1')
+    assert.equal(s.limit.proofSha256,sha(read('scripts/fixtures/chibi-limit-curve-native.json')))
+    assert.equal(s.limit.dampen,raw.limit.dampen)
+    assert.equal(s.limit.curve.mode,raw.limit.magnitude.minMaxState)
+    assert.equal(s.limit.curve.scalar,raw.limit.magnitude.scalar)
+    if(s.limit.curve.mode===1)assert.deepEqual(s.limit.curve.keys,raw.limit.magnitude.maxCurve.m_Curve.map(k=>Object.fromEntries(['time','value','inSlope','outSlope'].map(f=>[f,k[f]]))))
+    assert.ok(raw.sizeUpperBound*limitCurveProof.nonbindingSizeEnvelope.maxObjectScale*limitCurveProof.nonbindingSizeEnvelope.stageScaleUpperBound<raw.sizeBounds[1]*limitCurveProof.nonbindingSizeEnvelope.minViewHeight)
+    if(s.alignment===2){
+      const parent=bloomParentProof.models[name].systems[0]
+      assert.deepEqual({source:s.source,chain:s.chain,alignment:s.alignment},parent)
+      assert.deepEqual(s.parentProjection,{profile:'native-local-orthographic-v1',proofSha256:sha(read('scripts/fixtures/chibi-bloom-parent-native.json'))})
+    }
+  }
+}
+for(const c of limitCurveProof.cases.filter(c=>c.dt===1/60&&c.velocity[0]===0&&c.velocity[1]===8&&c.velocity[2]===0)){
+  const source=data.assets[c.asset].systems.find(s=>s.source.pathId===c.source.pathId)
+  const scalar=v=>({mode:0,scalar:v,minScalar:v})
+  const probe={...source,chain:[],alignment:0,parentProjection:null,shape:{type:12,radius:{value:0},m_Rotation:{x:0,y:0,z:0},m_Position:{x:0,y:0,z:0}},speed:scalar(8),lifetime:scalar(1),looping:false,duration:2,delay:{mode:0,value:0,min:0},bursts:[{time:0,count:1}],rate:0}
+  for(const [i,e] of c.expected.entries()){
+    if(i===59)continue // A lifetime-one particle retires exactly at one second.
+    const sample=sampleObjectEmitter(probe,(i+1)*1000/60,0)[0]
+    assert.ok(Math.abs(sample.y+e.position[1]*100)<.001,'Consumer lifetime limit must receive actual particle lifetime')
+  }
+}
+assert.equal(localParentProof.cases.length,90)
+assert.equal(localSizeProof.cases.length,36)
+assert.equal(localSizeProof.choreographySha256,data.choreographyIndexSha256)
+const sizeEnvelope=localSizeProof.nonbindingSizeEnvelope
+assert.equal(sizeEnvelope.minViewHeight,10000/sizeEnvelope.maxZoom)
+if(published){
+  assert.equal(localSizeProof.choreographySha256,sha(read('public/assets/live-chibi/choreography/index.json')))
+  const sizeSong=JSON.parse(read('public/assets/live-chibi/choreography/index.json')).songs.find(s=>s.id===sizeEnvelope.arrangement)
+  assert.equal(sizeEnvelope.maxZoom,Math.max(...sizeSong.cameraEvents.map(e=>e.zoom||1000)))
+  assert.equal(sizeEnvelope.maxObjectScale,Math.max(...sizeSong.objectLayerEvents.filter(e=>e.asset==='fx_in_jfhtmk_panel_1'&&!e.hide).map(e=>e.scale))/1000)
+}
+assert.ok(sizeEnvelope.maxSourceSize*sizeEnvelope.stageScaleUpperBound*sizeEnvelope.maxObjectScale<50*sizeEnvelope.minViewHeight)
+for(const [name,bound] of Object.entries(localSizeProof.models)) {
+  const asset=data.assets[name]
+  assert.equal(asset.bundleSha256,bound.bundleSha256)
+  for(const [i,s] of asset.systems.entries()) {
+    assert.deepEqual({source:s.source,chain:s.chain,alignment:s.alignment},Object.fromEntries(['source','chain','alignment'].map(k=>[k,bound.systems[i][k]])))
+    assert.equal(Boolean(s.sizeY),bound.systems[i].size3D)
+    assert.deepEqual(bound.systems[i].sizeBounds,[0,50])
+    assert.deepEqual(s.parentProjection,{profile:'native-local-size-orthographic-v1',proofSha256:sha(read('scripts/fixtures/chibi-local-size-native.json'))})
+    assert.ok(Math.max(s.size.scalar,s.size.minScalar,s.sizeY?.scalar||0)<=sizeEnvelope.maxSourceSize)
+  }
+}
+for(const [name,bound] of Object.entries(localParentProof.models)) {
+  const asset=data.assets[name]
+  assert.equal(asset.bundleSha256,bound.bundleSha256)
+  assert.deepEqual(asset.systems.map(s=>({source:s.source,chain:s.chain,alignment:s.alignment})),bound.systems)
+  for(const s of asset.systems)assert.deepEqual(s.parentProjection,{profile:'native-local-orthographic-v1',proofSha256:sha(read('scripts/fixtures/chibi-local-parent-native.json'))})
+}
+for(const row of [...localParentProof.sourceWindows,...localSizeProof.sourceWindows,...bloomParentProof.sourceWindows])assert.equal(sha(Buffer.from(row.bytes,'hex')),row.sha256)
+let legacyLocalParentMismatches=0
+for(const c of [...localParentProof.cases,...localSizeProof.cases,...bloomParentProof.cases]) {
+  const matrix=emitterSpatialMatrix(c.chain)
+  for(let i=0;i<16;i++)assert.ok(Math.abs(matrix.full[i]-c.expectedFullMatrix[i])<2e-5,'Native full parent matrix')
+  const scalar=v=>({mode:0,scalar:v,minScalar:v})
+  const s={...data.assets.fx_in_rote77_meter.systems[0],chain:c.chain,alignment:2,
+    parentProjection:{profile:c.nonuniform?'native-local-size-orthographic-v1':'native-local-orthographic-v1'},rotation:scalar(c.angles[2]),rotationX:null,rotationY:null,angularVelocity:null,
+    noise:null,stretch:null,velocity:null,gravity:null,limit:null,speed:scalar(0),size:scalar(c.size[0]),sizeY:c.nonuniform?scalar(c.size[1]):null,sizeOverLife:null,sizeOverLifeY:null,
+    shape:{type:0,radius:{value:0},radiusThickness:0,m_Rotation:{x:0,y:0,z:0},m_Position:Object.fromEntries(['x','y','z'].map((k,i)=>[k,c.position[i]]))},
+    lifetime:scalar(2),looping:false,duration:2,delay:{mode:0,value:0,min:0},bursts:[{time:0,count:1}],rate:0}
+  const sample=sampleObjectEmitter(s,0,0)[0]
+  const legacy=sampleObjectEmitter({...s,parentProjection:null},0,0)[0]
+  if(Math.max(...[[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].flatMap(([u,v],i)=>[
+    Math.abs(legacy.x+legacy.a*u+legacy.c*v-c.expected[i].position[0]*100),
+    Math.abs(legacy.y+legacy.b*u+legacy.d*v+c.expected[i].position[1]*100)]))>.003)legacyLocalParentMismatches++
+  for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
+    assert.ok(Math.abs(sample.x+sample.a*u+sample.c*v-c.expected[i].position[0]*100)<.003,'Local parent native corner X '+JSON.stringify({asset:c.asset,angles:c.angles,pos:c.position,sample,expected:c.expected}))
+    assert.ok(Math.abs(sample.y+sample.b*u+sample.d*v+c.expected[i].position[1]*100)<.003,'Local parent native corner Y including local Z')
+  }
+}
+assert.equal(legacyLocalParentMismatches,102,'Nonzero local Z exposes the old planar parent loss')
 function samplePreviewSystem(system,time,activatedAt,stoppedAt=Infinity) {
-  const spatial=system.stretch?.profile===OBJECT_SPATIAL_PROFILE?objectSpatialContext({verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0},{x:0,y:360,scale:1000},'pfofos_live_effect'):null
+  const spatial=system.stretch?.profile===OBJECT_SPATIAL_PROFILE?objectSpatialContext({verified:true,focusSlot:0,orthoSize:5,x:0,y:360,rotation:0},{x:0,y:360,scale:1000},system.stretch.binding.arrangements[0]):null
   return sampleObjectEmitter(system,time,activatedAt,stoppedAt,{spatial})
 }
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
 const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
+const torusProof=JSON.parse(read('scripts/fixtures/chibi-torus-native.json'))
+assert.equal(torusProof.binarySha256,noiseProof.binarySha256)
+assert.equal(torusProof.cases.length,30)
+let torusParticles=0
+for(const window of torusProof.sourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
+for(const c of torusProof.cases)for(let lane=0;lane<4;lane++) {
+  const actual=sampleEmitterShape(c.shape,channel=>c.uniforms[lane][channel-1])
+  for(const [i,axis] of ['x','y','z'].entries()) {
+    assert.ok(Math.abs(actual.position[axis]-c.expected[lane].position[i])<2e-5,'Native torus birth position including tube fraction and shape scale')
+    assert.ok(Math.abs(actual.direction[axis]-c.expected[lane].rawDirection[i])<2e-5,'Observed native torus raw direction')
+    assert.ok(Math.abs(actual.direction[axis]*c.shape.m_Scale[axis]-c.expected[lane].direction[i])<2e-5,'Retain transformed helper vector evidence, without claiming moving-torus support')
+  }
+  torusParticles++
+}
+assert.equal(torusParticles,120)
+for(const [name,bound] of Object.entries(torusProof.models)) {
+  const asset=data.assets[name]
+  assert.equal(asset.bundleSha256,bound.bundleSha256)
+  assert.deepEqual(asset.systems.map(s=>({source:s.source,chain:s.chain,shape:s.shape,alignment:s.alignment})),bound.systems.map(s=>Object.fromEntries(['source','chain','shape','alignment'].map(k=>[k,s[k]]))))
+  for(const s of asset.systems.filter(s=>s.shape?.type===17)) {
+    assert.deepEqual(s.shapeBinding,{profile:'native-random-torus-v1',proofSha256:sha(read('scripts/fixtures/chibi-torus-native.json'))})
+    assert.ok([0,3].includes(s.speed.mode));assert.equal(s.speed.scalar,0);if(s.speed.mode===3)assert.equal(s.speed.minScalar,0)
+    assert.throws(()=>sampleObjectEmitter({...s,shapeBinding:null},1000,0),/Unbound torus/)
+  }
+}
+assert.equal(localParentProof.binarySha256,noiseProof.binarySha256)
+assert.equal(localSizeProof.binarySha256,noiseProof.binarySha256)
 const velocityProof=JSON.parse(read('scripts/fixtures/chibi-velocity-curve-native.json'))
 assert.equal(velocityProof.binarySha256,noiseProof.binarySha256)
 assert.equal(velocityProof.cases.length,8)
@@ -242,18 +398,22 @@ assert.ok(Math.abs(cone.position.x-2*Math.sqrt(.5005))<1e-12,'Cone area fraction
 assert.ok(cone.direction.x>0&&cone.direction.z>0);assert.ok(Math.abs(Math.hypot(...Object.values(cone.direction))-1)<1e-12)
 assert.ok(Math.abs(cone.direction.x/cone.direction.z-Math.sqrt(.5005))<1e-12,'Cone initial direction uses radius fraction and angle')
 assert.deepEqual(sampleEmitterShape({...shape,type:12},fixed).direction,{x:0,y:1,z:0})
-const published=process.argv.includes('--published-assets')
+if(!published)console.log('Source-only envelope checks use tracked proof bindings; actual choreography envelope checks require --published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,102)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,112)
+for(const change of [m=>m.nonEmitting[0].emission.enabled=true,m=>m.nonEmitting[0].subEmitters.enabled=true,m=>m.nonEmitting[0].source.pathId=m.systems[0].source.pathId,m=>m.nonEmittingProof=null]){
+  const broken=structuredClone(data);change(broken.assets.fx_in_tktkkt_electric)
+  assert.throws(()=>attachObjectEmitters(index,broken,hash,choreographyHash),/inactive emitters/)
+}
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
 assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)
 assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreography binding/)
 const unproven=structuredClone(data)
 delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
 assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),830)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),909)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -383,15 +543,15 @@ assert.equal(data.assets.fx_in_swyrlv_leaf.deferred.length,0)
 assert.equal(data.assets.fx_in_swyrlv_leaf.systems.length,2)
 assert.ok(data.assets.fx_in_swyrlv_leaf.systems.some(s=>s.rotationX&&s.gravity))
 const partial=Object.values(data.assets).flatMap(m=>m.systems).filter(s=>s.partial)
-assert.equal(partial.length,105)
-assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,89)
+assert.equal(partial.length,130)
+assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,108)
 for(const s of partial.filter(s=>s.noise)) {
   assert.equal(s.noise.profile,'native-high-curl-v1')
   assert.equal(s.noise.octaveCount,1)
   assert.equal(s.noise.quality,2)
 }
 assert.equal(partial.filter(s=>s.partial.includes('stretch_omitted')).length,7)
-assert.equal(partial.filter(s=>s.partial.includes('stretch_preview')).length,9)
+assert.equal(partial.filter(s=>s.partial.includes('stretch_preview')).length,15)
 for(const asset of ['fire_1','fire_2','fire_3','turbo_1','turbo_2'].map(s=>'fx_in_rote77_'+s)) {
   const system=data.assets[asset].systems.find(s=>s.partial?.includes('stretch_omitted'))
   assert.equal(system.shape.type,4)
@@ -412,7 +572,7 @@ for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
   assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
   assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
 }
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,102)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,112)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const r of stretchProof.renderers) {
   const source=rawObjects.find(o=>o.asset===r.asset)
@@ -446,8 +606,8 @@ for(const [name,count] of Object.entries({fx_in_pavetl_crystal_1:15,fx_in_pavetl
 }
 const promotions=JSON.parse(read('scripts/fixtures/chibi-object-emitter-promotions.json'))
 assert.equal(promotions.objectIndexSha256,data.objectIndexSha256)
-assert.equal(Object.keys(promotions.assets).length,33)
-assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),180)
+assert.equal(Object.keys(promotions.assets).length,41)
+assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),209)
 for(const [name,expected] of Object.entries(promotions.assets)) {
   const model=data.assets[name]
   assert.equal(model.systems.length,expected.systems,name)
@@ -470,9 +630,9 @@ function previewRetirementMs(system) {
 }
 function previewActivationMs(system) {
   assert.ok([0,3].includes(system.delay.mode),'Preview activation requires a bounded start delay')
-  return Math.max(system.delay.value,system.delay.min)*1000+(system.looping?500:Math.min(...system.bursts.map(b=>b.time))*1000+Math.min(system.lifetime.scalar,system.lifetime.minScalar)*500)
+  return Math.max(system.delay.value,system.delay.min)*1000+(system.rate>0?500:Math.min(...system.bursts.map(b=>b.time))*1000+Math.min(system.lifetime.scalar,system.lifetime.minScalar)*500)
 }
-assert.equal(Object.keys(promotions.previewAssets).length,21)
+assert.equal(Object.keys(promotions.previewAssets).length,23)
 for(const [name,expected] of Object.entries(promotions.previewAssets)) {
   const model=data.assets[name]
   assert.equal(model.bundleSha256,expected.bundleSha256)
@@ -529,7 +689,7 @@ if(published) {
       }
     }
   }
-  assert.equal(windows,164,'All21 preview assets actual show/restart commands across every referencing arrangement')
+  assert.equal(windows,191,'All23 preview assets actual show/restart commands across every referencing arrangement')
   for(const name of ['fx_in_mainha_panel_1','fx_in_mainha_panel_2']) {
     const model=data.assets[name],events=songs.find(s=>s.id==='mainha_live_effect').objectLayerEvents.filter(e=>e.asset===name)
     assert.equal(events.length,1);assert.equal(events[0].time,-2000);assert.equal(events[0].hide,false)
@@ -580,4 +740,4 @@ if(published) {
   }
 }
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 102 provenance-bound resources / 830 consumed (105 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
+console.log('Object emitters: 112 provenance-bound resources / 909 consumed (130 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')

@@ -7,7 +7,7 @@ import io
 import json
 from pathlib import Path
 import UnityPy
-from live_chibi_foot_colors import foot_color_events
+from live_chibi_foot_colors import foot_color_events, addressed_foot_color_events
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('prepare', ROOT / 'scripts/prepare-live-chibi-assets.py')
@@ -21,10 +21,17 @@ sources = prepare.load_archive_sources(args.sources_config)
 records = prepare.load_raw_live_semantics(sources.raw_root / 'asset')['choreography']
 path = ROOT / 'public/assets/live-chibi/choreography/index.json'
 index = json.loads(path.read_text(encoding='utf-8'))
-count = erased = 0
+count = erased = solo_count = 0
+solo_data = json.loads((ROOT/'public/data/stage-foot-solo.json').read_text(encoding='utf8'))
 for song in index['songs']:
     rows = list(csv.reader(io.StringIO(records[song['id']]['payload'].decode('utf-8-sig'))))
     expected = foot_color_events(rows)
+    addressed = addressed_foot_color_events(rows)
+    assert addressed == addressed_foot_color_events([list(reversed(row)) for row in rows])
+    solo_count += sum(event['solo'] for event in addressed)
+    if any(event['solo'] for event in addressed):
+        track=solo_data['songs'][song['id']]
+        assert track['events']==addressed and track['raw']['sha256']==records[song['id']]['sha256']
     assert expected == foot_color_events([list(reversed(row)) for row in rows]), song['id']
     assert len(expected) == len(song['characterLightEvents']), song['id']
     if args.write:
@@ -51,3 +58,5 @@ for item in fixture['bodies']:
 if args.write:
     path.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
 print(f'PASS RAW Foot_Color: {count} commands, {erased} immediate erases, five skeleton scale/hash bindings')
+assert solo_count==solo_data['soloEventCount']==241
+print('PASS 241 solo foot rows, same-time source order, reordered columns and published RAW identities')
