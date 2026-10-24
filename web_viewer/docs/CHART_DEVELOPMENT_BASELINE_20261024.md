@@ -45,3 +45,12 @@
 - master同步后的实际Browser：5231/PID67724；桌面1440×900冷加载Café Parade! EXPERT tick22000播放，暂停时audio44.645021秒、轨道78575.14896、控制台78575。手机尺寸390×844倒退tick22000、长轨图Combo816加载、返回`/songs/cfprde/`后新歌曲详情与难度卡片实际加载。控制台error/warn为空，视口已恢复；截图`.analysis/chart-native/pr-baseline-mobile.png`。该检查验证新master的集成旅程，不把前一批三轮20秒持续采样冒充本次重新测量。
 - 三份本轮基线/入口文档的本地Markdown链接与`git diff --check`通过。
 - GitHub完整Source Gate由PR触发；本地178项批次与构建不冒充GitHub CI已通过。当前PR进度以本分支关联的GitHub PR为准。
+
+## PR #98 首轮 CI 修正
+
+首轮Source Gate运行`40073740740`，输入`52ccbc8e`，失败项只有两处：
+
+- `Check patch whitespace`发现`audit-song-track-native-hold-geometry.py:28`的空白行带尾随空格。提PR前的工作区`git diff --check`未覆盖早先提交的整条PR差异。现移除该空格，并改用CI同范围的`git diff --check origin/master...HEAD`检查整个PR。
+- `Verify current archive baseline report`报`tracked_binaries drifted`。新增四张flick来源PNG共40,876字节已进入tracked-binary inventory，但`archive_baseline_report.json`仍是437张/77,157,611字节。现通过既有source-only collector读取Git跟踪集合，只同步该报告的`tracked_binaries`段为441张/77,198,487字节；没有刷新其他语料、发布记录或原始来源状态。
+
+修复后`npm run verify:archive-baseline:source-only`通过：10,420个compiled JSON、441张PNG；Python源码内存语法编译及PR完整diff whitespace检查通过。该修正不改变播放器或原生算法，不重新打包public、不部署。GitHub复跑结果仍以PR当前head的Source Gate为准。

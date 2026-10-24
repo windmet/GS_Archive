@@ -25,7 +25,7 @@ class Probe(m.NativeProbe):
         self.setf(self.r.UC_ARM64_REG_S10,target['leftX']+(target['rightX']-target['leftX'])/4);self.setf(self.r.UC_ARM64_REG_S11,target['leftX'])
         self.cpu.emu_start(0x1afe7c4,0x1afe89c,count=10000)
         self.metrics=dict(timeFactor=struct.unpack('<d',self.cpu.mem_read(0x10090408,8))[0],laneWidth=struct.unpack('<f',self.cpu.mem_read(0x10090418,4))[0],radius=44)
-        
+
         self.w64(0x10090410,0x10000000)
         self.lists={}
         for field, obj, array, stride in [(0x28,0x10091000,0x10092000,8),(0x20,0x10093000,0x10094000,60),
