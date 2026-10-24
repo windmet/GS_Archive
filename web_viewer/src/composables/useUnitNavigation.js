@@ -5,7 +5,7 @@ export function useUnitNavigation({
   currentEventId, eventParentView, currentCategoryId, currentCharacterId,
   loading, navigation, archiveBootstrap, readModelClient,
   prepareArchivePage, captureDetailSource, commitView, openIdolReadModel,
-  loadScenario, openEventDetail,
+  loadScenario, openEventDetail, openProjectedCollection,
 }) {
   let pendingUnitNavigation = 0
 
@@ -89,6 +89,13 @@ export function useUnitNavigation({
   }
 
   function openUnitStory(story) {
+    if (story?.domain === 'unit_story') {
+      return openProjectedCollection?.({
+        domain: 'unit_story',
+        section: String(story.section || story.unit_id || story.unitId || currentArchiveUnit.value?.unit_id || ''),
+        parent: 'unit_detail',
+      })
+    }
     if (story?.file && story.exists) return loadScenario(story.file, 'unit_detail')
   }
 

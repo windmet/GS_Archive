@@ -63,6 +63,7 @@ const source = compileScript(descriptor, { id: 'lyrics-regression', inlineTempla
 const module = new vm.SourceTextModule(source, { context })
 const imports = {
   vue: Vue,
+  '@lucide/vue': { ScrollText: { render: () => null } },
   '../../utils/songPerformanceData.js': { fetchSongBaseTimeline: fetchTimeline },
   '../../utils/songLyrics.js': { authoredSongLyrics, activeSongLyric, sharesSongAudio },
 }

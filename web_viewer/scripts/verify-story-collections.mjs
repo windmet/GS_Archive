@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
-import { buildStoryCollections } from '../src/data/storyCollections.js'
+import { buildStoryCollections, unitStoryBannerUrl } from '../src/data/storyCollections.js'
 import { buildBirthdayStoryDomainIdentity, buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 import { extraStorySeriesDefinition } from '../src/data/extraStoryTaxonomy.js'
 import { storyLiveLink } from '../src/data/storyLiveLinks.js'
@@ -104,5 +104,8 @@ const kirioShared = kirioBirthday.chapters.find(chapter => chapter.canonicalRela
 assert.equal(kirioShared.file, '1_x_017kir_2_1_2_017_12.json')
 assert.equal(kirioShared.canonicalRelation.sectionId, 21702)
 assert.deepEqual(kirioShared.canonicalRelation.episodeNames, ['スモールトーク1', 'スモールトーク2', 'スモールトーク3'])
+
+assert.equal(unitStoryBannerUrl('07sai'), '/assets/stories/units/image_unit_story_button_07sai.png')
+assert.equal(unitStoryBannerUrl(''), '')
 
 console.log('Story collections: main 3, unit 16, extra 10 works/47 chapters; birthday canonical relations and shared playback boundaries verified')

@@ -1265,6 +1265,7 @@ const {
   loading, navigation, archiveBootstrap, readModelClient,
   prepareArchivePage, captureDetailSource, commitView, openIdolReadModel,
   loadScenario, openEventDetail: (...args) => openEventDetail(...args),
+  openProjectedCollection,
 })
 
 const {

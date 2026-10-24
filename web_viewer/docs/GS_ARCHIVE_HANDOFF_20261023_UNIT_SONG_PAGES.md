@@ -69,9 +69,7 @@
 2. **难度表压缩成 4 格**——采纳。`repeat(4,1fr)`，每格是「EASY / 等级 / Combo」。解锁条件和历史放在下面一行，保持不变。
    - ⚠ **不要搬进右侧 sticky 栏**。右栏只有在高度不超过视口时才 sticky，再加 64px 以上的内容，会让更多歌曲（尤其是有分轨编成面板的）超高、失去 sticky，播放器反而跟不住页面。难度条放在左栏，位置在演唱者/音源之后。
 3. **右栏加卡片容器**——采纳。用 `--gs-surface` + `--gs-line` 圆角边框（不要写方案里的 `#f8fafc` / `#e2e8f0` 硬编码色值，要用 token），并把「2D 舞台演出」按钮移到播放器标题行。
-4. ⚠ **歌词搬到左栏——不能直接搬**。`ArchiveSongLyrics` 不是独立的区块，它在三个播放器里各被实例化一次（`ArchiveSongSinglePlayer.vue:24`、`ArchiveSongExperimentalPlayer.vue:76`、`ArchiveSongLineupPlayer.vue:80`）。它吃播放器内部的 `currentTime` / `stage-clock` / `ready`，五槽编成模式还要吃 `selectedArrangement` 时间轴，点击歌词会 `@seek` 回播放器。直接移动模板会断掉同步和跳转。
-   - 要搬的话，需要先把三个播放器的时钟统一，经由 `songPlayer` ref 或 provide/inject 暴露出来（`{ currentTime, ready, seek, timeline }`），再由 `ArchiveSongDetail` 在左栏只渲染**一份**歌词。这是另一批（H5），要单独验收：三种模式下歌词都高亮正确、点击能跳转、切换声部后时间轴正确。
-   - 现在放在右栏也有道理：歌词跟着 sticky 播放器走，边听边看。H5 做完以后，右栏只剩控制区，sticky 更容易放得下。所以 H5 和第 2 点是配套的。
+4. ⚠ **歌词搬到左栏（H5）——已取消**。v2 方案确认歌词留在右侧 sticky 栏，因此三个播放器统一时钟的工作不再进行。保持歌词在右栏跟随 sticky 播放器。`ArchiveSongLyrics` 的视觉优化已在 I1 批完成。
 
 > 第二版方案又提了一次「歌词搬到左栏」和「难度表放进右栏 sticky」。结论不变，原因见上面第 4.2 点和第 4.4 点。
 

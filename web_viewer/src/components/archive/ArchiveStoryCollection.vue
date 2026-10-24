@@ -6,7 +6,18 @@
       </div>
       <ArchiveIdolAvatar v-else-if="collection.subject?.kind === 'idol'" class="collection-avatar" :idol-code="collection.subject.code" :size="72" decorative />
       <div class="collection-copy">
-        <h2>{{ collectionTitle }}</h2>
+        <div class="collection-title-row">
+          <h2>{{ collectionTitle }}</h2>
+          <button
+            v-if="collection.domain === 'unit_story' && unitCode"
+            type="button"
+            class="story-more collection-unit-link"
+            :data-archive-focus-id="`collection-unit:${unitCode}`"
+            @click="emit('open-unit', { unit_code: unitCode })"
+          >
+            组合资料 <ChevronRight :size="15" aria-hidden="true" />
+          </button>
+        </div>
         <ul v-if="collection.domain === 'birthday'" class="story-footprint" aria-label="收录">
           <li><b>{{ collection.independentChapterCount }}</b>篇生日剧情</li>
           <li v-if="collection.sharedChapterCount">另有<b class="inline-count">{{ collection.sharedChapterCount }}</b>篇在个人剧情</li>
@@ -21,6 +32,20 @@
         <p v-if="['extra', 'unit_story'].includes(collection.domain) && collection.description" class="story-lede">{{ collection.description }}</p>
         <p v-if="collection.subject?.kind === 'shared'" class="story-note">该篇由山村贤登场引导，内容为制作人生日问候，归入公共篇。</p>
         <p v-else-if="collection.domain === 'birthday' && collection.sharedChapterCount" class="story-note">生日同期开放的个人剧情收在个人剧情页，这里只保留入口。</p>
+        <div
+          v-if="collection.domain === 'unit_story' && memberReferences.length"
+          class="hero-members"
+          role="group"
+          aria-label="成员"
+        >
+          <ArchiveIdolReference
+            v-for="reference in memberReferences"
+            :key="reference.idolCode"
+            :reference="reference"
+            density="identity"
+            @open="emit('open-idol', $event)"
+          />
+        </div>
         <div v-if="collection.gasha || relatedSong || collection.sourceUrl" class="collection-relations">
           <button v-if="collection.gasha" type="button" class="story-row" @click="emit('open-gasha', collection.gasha)">
             <span class="story-row-thumb"><img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" /></span>
@@ -46,7 +71,7 @@
       </div>
     </header>
 
-    <section v-if="memberReferences.length" class="story-section" aria-labelledby="collection-members">
+    <section v-if="collection.domain !== 'unit_story' && memberReferences.length" class="story-section" aria-labelledby="collection-members">
       <div class="story-section-head">
         <h3 id="collection-members">成员</h3>
         <button v-if="unitCode" type="button" class="story-more" @click="emit('open-unit', { unit_code: unitCode })">组合资料 <ChevronRight :size="15" /></button>
@@ -166,7 +191,7 @@ const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play
 const expandedChapterId = ref('')
 const memberReferences = computed(() => props.members.map(code =>
   buildIdolReference(code, props.identity, props.manifest, `collection:${props.collection?.id || ''}`))
-  .map(reference => reference.actionable ? { ...reference, displayName: props.idolName(reference.idolCode) || reference.displayName } : reference))
+  .map(reference => reference.actionable ? { ...reference, displayName: props.idolName(reference.idolCode) || reference.displayName, unitName: props.collection?.domain === 'unit_story' ? '' : reference.unitName } : reference))
 // The April Fools series link the song their story leads into (extraStoryTaxonomy.js); read models stay unchanged.
 const relatedSong = computed(() => props.collection?.domain === 'extra' ? extraStorySeriesDefinition(props.collection.sectionId).song : null)
 const readingByFile = computed(() => { const map = new Map(); for (const entry of props.readingEntries) { if (!entry.source_file) continue; const existing = map.get(entry.source_file); map.set(entry.source_file, existing === undefined ? entry : null) } return map })
@@ -241,9 +266,13 @@ function externalResourcesForChapter(chapterId) {
 .collection-hero:not(:has(.collection-visual, .collection-avatar)) { grid-template-columns: minmax(0, 1fr); }
 .collection-hero:has(.collection-avatar) { grid-template-columns: auto minmax(0, 1fr); gap: var(--gs-space-6); }
 .collection-visual { overflow: hidden; border-radius: var(--gs-radius-media); }
+.collection-visual.domain-unit_story { padding: 0; border: 0; background: none; box-shadow: none; }
 .collection-visual img { display: block; width: 100%; height: auto; }
 .collection-copy { min-width: 0; }
+.collection-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gs-space-4); flex-wrap: wrap; }
 .collection-copy h2 { overflow-wrap: anywhere; }
+.hero-members { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-3); margin-top: var(--gs-space-4); }
+.hero-members :deep(.idol-reference-arrow) { display: none; }
 .story-footprint .inline-count { margin-inline: var(--gs-space-2); }
 .collection-copy .story-note { margin-top: var(--gs-space-4); }
 .collection-relations { display: grid; justify-items: start; gap: var(--gs-space-2); margin-top: var(--gs-space-4); }

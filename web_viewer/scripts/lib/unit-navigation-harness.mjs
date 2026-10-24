@@ -24,7 +24,7 @@ export function bindUnitNavigation(app, context = {}) {
     unitReadModelCatalog: ref(null), unitReadModelDetail: ref(null), unitReadModelStatus: ref(''),
     loading: ref(false),
   }
-  for (const name of ['prepareArchivePage', 'captureDetailSource', 'commitView', 'openIdolReadModel', 'loadScenario', 'openEventDetail'])
+  for (const name of ['prepareArchivePage', 'captureDetailSource', 'commitView', 'openIdolReadModel', 'loadScenario', 'openEventDetail', 'openProjectedCollection'])
     defaults[name] = unexpected(name)
   Object.assign(context, { ...defaults, ...context, useUnitNavigation })
   for (const [key, value] of Object.entries(context)) {

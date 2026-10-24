@@ -347,6 +347,14 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       commitView('song_detail')
       return
     }
+    if (parent === 'unit_detail') {
+      currentStoryDomain.value = ''
+      currentStorySection.value = ''
+      currentStoryFile.value = ''
+      storyCollectionParentView.value = ''
+      commitView('unit_detail')
+      return
+    }
     const domain = currentStoryDomain.value
     const returnsToDomainLanding = DOMAIN_LANDINGS.includes(domain) && parent !== 'external_story_resources'
     storyCollectionParentView.value = ''

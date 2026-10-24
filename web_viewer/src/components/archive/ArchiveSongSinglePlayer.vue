@@ -13,7 +13,7 @@
       @error="audioError = '暂时无法播放，请稍后重试。'"
     />
     <ArchiveMediaTransport music :playing="['playing', 'waiting'].includes(clockSnapshot.phase)" :duration="clockSnapshot.duration" :current-time="clockSnapshot.currentTime" @toggle="togglePlayback" @restart="clock.seek(0)" @seek="clock.seek">
-      <details><summary>音量</summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume * masterVolume; centerLine.setVolume(volume * masterVolume)" /></label></details>
+      <details><summary aria-label="音量"><Volume2 :size="16" aria-hidden="true" /></summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume * masterVolume; centerLine.setVolume(volume * masterVolume)" /></label></details>
     </ArchiveMediaTransport>
     <!-- Unit_serif: the mix leaves one line silent; the game plays the deck center card's take there. -->
     <div v-if="songCenterLine && centerLineAvailable" class="center-line-slot">
@@ -28,6 +28,7 @@
 </template>
 
 <script setup>
+import { Volume2 } from '@lucide/vue'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
@@ -99,7 +100,9 @@ watch(() => props.track, () => { audioError.value = '' })
 
 <style scoped>
 .single-song-player audio { display: none; }
-.single-song-player :deep(details) summary { display: flex; align-items: center; min-height: var(--gs-control-touch); color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; }
+.single-song-player :deep(details) summary { display: flex; align-items: center; justify-content: center; min-height: var(--gs-control-touch); color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; list-style: none; }
+.single-song-player :deep(details) summary::-webkit-details-marker { display: none; }
+.single-song-player :deep(details) summary:hover { color: var(--gs-ink); }
 .single-song-player :deep(details) input { accent-color: var(--gs-mint-ink); }
 .center-line-slot { display: grid; gap: var(--gs-space-2); margin-top: var(--gs-space-3); }
 .center-line-slot label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }

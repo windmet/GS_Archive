@@ -3,8 +3,15 @@
     <header class="unit-hero" :style="{ backgroundImage: `url(${getBgUrl(unit.representative_bg)})` }">
       <span class="unit-hero-shade" aria-hidden="true"></span>
       <div class="unit-hero-copy">
-        <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-        <h2>{{ unit.unit_name }}</h2>
+        <h2>
+          <span
+            class="unit-swatch"
+            :style="{ backgroundColor: unit.unit_color || 'var(--gs-mint)' }"
+            :title="unit.unit_color"
+            aria-hidden="true"
+          ></span>
+          {{ unit.unit_name }}
+        </h2>
         <p lang="ja" class="unit-hero-kana">{{ unit.unit_kana }}</p>
         <p v-if="unitDescription" class="unit-hero-desc gs-flow">{{ unitDescription }}</p>
         <button
@@ -19,7 +26,9 @@
           <ChevronRight :size="14" aria-hidden="true" />
         </button>
       </div>
-      <span class="unit-swatch" :style="{ backgroundColor: unit.unit_color || '#23a99f' }" :title="unit.unit_color"></span>
+      <div class="unit-hero-logo-wrap">
+        <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
+      </div>
     </header>
 
     <section v-if="unitDescription" class="unit-description">
@@ -69,6 +78,15 @@
           <h3 id="unit-stories-title">组合剧情</h3>
           <span>{{ stories.length }}</span>
         </div>
+        <button
+          v-if="unitStoryBanner && !bannerError"
+          type="button"
+          class="unit-story-banner-btn"
+          :data-archive-focus-id="`unit-story-banner:${unit.unit_code}`"
+          @click="emit('open-story', { domain: 'unit_story', section: String(unit.unit_id) })"
+        >
+          <img :src="unitStoryBanner" alt="组合前传" @error="bannerError = true" />
+        </button>
         <div class="unit-stories">
           <button
             v-for="story in stories"
@@ -130,6 +148,7 @@ import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { reflowText } from '../../../shared/reading/ReadingTypography.js'
+import { unitStoryBannerUrl } from '../../data/storyCollections.js'
 
 const props = defineProps({
   unit: { type: Object, default: null },
@@ -217,9 +236,13 @@ const allEventItems = computed(() => [
   ...mixedEventItems.value,
 ])
 
+const bannerError = ref(false)
+const unitStoryBanner = computed(() => unitStoryBannerUrl(props.unit?.unit_code))
+
 const activeEventCategory = ref('all')
 watch(() => props.unit?.unit_code, () => {
   activeEventCategory.value = 'all'
+  bannerError.value = false
 })
 
 const eventCategories = computed(() => {
@@ -244,17 +267,21 @@ const displayedEventItems = computed(() => {
 /* Unit detail: the unit's own stage art as a cover image, then flat sections on paper. */
 .unit-detail { display: grid; align-content: start; gap: var(--gs-space-section); container: unit-detail / inline-size; height: 100%; padding: var(--gs-space-8); overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
 .unit-detail > * { width: 100%; max-width: var(--gs-content-width); margin-inline: auto; }
-.unit-hero { position: relative; display: flex; align-items: flex-end; min-height: 280px; padding: var(--gs-space-8); overflow: hidden; border-radius: var(--gs-radius-media); background-position: center; background-size: cover; color: #fff; }
+.unit-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-6); min-height: 280px; padding: var(--gs-space-8); overflow: hidden; border-radius: var(--gs-radius-media); background-position: center; background-size: cover; color: var(--gs-media-ink); }
 .unit-hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(15 23 42 / 92%) 0%, rgb(15 23 42 / 84%) 48%, rgb(15 23 42 / 28%) 80%), linear-gradient(0deg, rgb(15 23 42 / 80%) 0%, transparent 60%); }
-.unit-hero-copy { position: relative; z-index: 1; min-width: 0; max-width: min(640px, 62%); }
-.unit-hero-logo { display: block; width: min(220px, 55vw); height: 74px; margin-bottom: var(--gs-space-4); object-fit: contain; object-position: left center; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 45%)); }
-.unit-hero h2 { margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
+.unit-hero-copy { position: relative; z-index: 1; min-width: 0; }
+.unit-hero-logo-wrap { position: relative; z-index: 1; align-self: center; display: flex; align-items: center; justify-content: center; }
+.unit-hero-logo { display: block; max-width: 200px; max-height: 110px; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 45%)); }
+.unit-hero h2 { display: flex; align-items: center; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
 .unit-hero p.unit-hero-kana { margin: 0; color: rgb(255 255 255 / 78%); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
 .unit-hero-desc { margin: var(--gs-space-3) 0 var(--gs-space-5); color: rgb(255 255 255 / 88%); font-size: var(--gs-text-ui); line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
 .unit-card-pill { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 24%); border-radius: var(--gs-radius-pill); background: rgb(255 255 255 / 16%); backdrop-filter: blur(8px); color: var(--gs-media-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; transition: background var(--gs-transition-fast), border-color var(--gs-transition-fast); }
 .unit-card-pill svg { flex: none; }
 .unit-card-pill:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-.unit-swatch { position: absolute; z-index: 1; top: var(--gs-space-6); right: var(--gs-space-6); width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.unit-swatch { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgb(255 255 255); }
+.unit-story-banner-btn { display: block; width: 100%; max-width: 446px; padding: 0; border: 0; border-radius: var(--gs-radius-media); background: none; cursor: pointer; margin-bottom: var(--gs-space-4); transition: opacity var(--gs-transition-fast); }
+.unit-story-banner-btn img { display: block; width: 100%; height: auto; aspect-ratio: 446 / 150; border-radius: var(--gs-radius-media); object-fit: cover; }
+.unit-story-banner-btn:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .unit-description { display: none; }
 .unit-description p { max-width: 70ch; margin: 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.9; overflow-wrap: anywhere; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
@@ -286,6 +313,7 @@ const displayedEventItems = computed(() => {
 .unit-detail button:focus-visible, .unit-detail :deep(button.archive-idol-reference:focus-visible), .unit-detail :deep(.relation-row:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (hover: hover) {
   .unit-card-pill:hover { background: rgb(255 255 255 / 26%); border-color: rgb(255 255 255 / 40%); }
+  .unit-story-banner-btn:hover { opacity: 0.88; }
   .event-filter-chip:hover { background: var(--gs-mint-wash); border-color: var(--gs-mint-line); }
   .unit-songs button:hover strong, .unit-stories button:hover strong { color: var(--gs-mint-ink); }
 }
@@ -294,8 +322,10 @@ const displayedEventItems = computed(() => {
 }
 @media (max-width: 760px) {
   .unit-detail { gap: var(--gs-space-8); padding: var(--gs-space-5); }
-  .unit-hero { min-height: 180px; padding: var(--gs-space-6); }
+  .unit-hero { grid-template-columns: 1fr; min-height: 180px; padding: var(--gs-space-6); }
   .unit-hero-copy { max-width: 100%; }
+  .unit-hero-logo-wrap { order: -1; justify-content: flex-start; }
+  .unit-hero-logo { max-width: 140px; max-height: 54px; }
   .unit-hero h2 { font-size: var(--gs-text-section); }
   .unit-hero-desc { display: none; }
   .unit-description { display: block; }

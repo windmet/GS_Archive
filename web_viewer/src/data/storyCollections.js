@@ -25,6 +25,10 @@ export function buildStoryChapterEpisodes(story, rows) {
   })
 }
 
+export function unitStoryBannerUrl(assetCode) {
+  return assetCode ? `/assets/stories/units/image_unit_story_button_${assetCode}.png` : ''
+}
+
 function buildCollection(structure, catalog) {
   const { domain, sectionId, assetCode } = structure
   const chapterModels = structure.chapters
@@ -54,7 +58,7 @@ function buildCollection(structure, catalog) {
 
   const visualUrl = domain === 'main'
     ? (['01', '02'].includes(assetCode) ? `/assets/stories/main/main_chapter_banner_${assetCode}.png` : '')
-    : (assetCode ? `/assets/stories/units/image_unit_story_button_${assetCode}.png` : '')
+    : unitStoryBannerUrl(assetCode)
 
   return {
     id: `${domain}:${sectionId}`,
