@@ -1,6 +1,10 @@
 <template>
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
-    <div class="song-block-heading"><h3 id="song-experimental-player-title">演唱试听</h3><small v-if="maintainer">分轨混音 · 实验</small></div>
+    <div class="song-block-heading">
+      <h3 id="song-experimental-player-title">演唱试听</h3>
+      <small v-if="maintainer">分轨混音 · 实验</small>
+      <slot name="header-action" />
+    </div>
     <p class="song-block-note">分轨试听与原游戏混音可能不同。</p>
     <label class="song-mode-selector" data-vocal-setting-selector>
       <span>试听模式</span>
@@ -113,10 +117,23 @@ const props = defineProps({
   idolName: { type: Function, default: () => '' },
   idolSearch: { type: Function, default: () => '' },
 })
-const emit = defineEmits(['open-stage', 'request-play'])
+const emit = defineEmits(['open-stage', 'request-play', 'version-change'])
 const lineupPlayer = ref(null)
 // How the audition is decoded and clocked is a maintainer note, not reader copy.
 const maintainer = isMaintainerMode()
+function playAllStars() {
+  if (hasVocalSetting('all_stars')) {
+    mode.value = 'all_stars'
+  } else if (auditedOptions.value.some(option => option.key === 'full_mix')) {
+    selectedSingleKey.value = 'full_mix'
+    mode.value = 'single'
+  }
+}
+function playBacking() {
+  if (!props.audioExperiment?.backing) return
+  selectedSingleKey.value = 'backing'
+  mode.value = 'single'
+}
 defineExpose({
   pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() },
   // Entry points for the song page's 音源收录 list.
@@ -126,6 +143,8 @@ defineExpose({
     selectedUnitKey.value = `unit:${unitCode}`
     mode.value = 'unit'
   },
+  playAllStars,
+  playBacking,
   async addToLineup(id) {
     if (!hasVocalSetting('formation') || !props.audioExperiment?.solo_tracks?.[id]) return 0
     mode.value = 'lineup'
@@ -366,6 +385,13 @@ async function reloadSources() {
 }
 
 watch([mode, selectedSingleKey, selectedUnitKey, selectedIdolCode], reloadSources)
+watch([mode, selectedUnitKey, selectedSingleKey], () => {
+  emit('version-change', {
+    mode: mode.value,
+    unitKey: selectedUnitKey.value,
+    singleKey: selectedSingleKey.value,
+  })
+}, { immediate: true })
 watch(() => props.audioExperiment, async experiment => {
   selectedIdolCode.value = Object.keys(experiment?.solo_tracks || {})[0] || ''
   selectedUnitKey.value = unitOptions.value[0]?.key || ''
@@ -388,7 +414,7 @@ onBeforeUnmount(() => resetPlayback())
 .experimental-mix-controls input { accent-color: var(--gs-mint-ink); }
 .experimental-evidence { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
 .experimental-error { margin: var(--gs-space-3) 0 0; color: var(--gs-critical); font-size: var(--gs-text-ui); }
-.song-block-heading { display: flex; gap: var(--gs-space-3); align-items: baseline; }
+.song-block-heading { display: flex; gap: var(--gs-space-3); align-items: center; }
 .song-block-heading small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .song-mode-selector { display: grid; gap: var(--gs-space-2); min-width: 0; margin-top: var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .song-mode-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }

@@ -232,3 +232,93 @@ export function formatArchiveDate(timestamp) {
     year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Tokyo',
   }).format(new Date(numeric(timestamp) * 1000))
 }
+
+export function extractProgressiveMissionTemplate(text) {
+  if (typeof text !== 'string') return null
+  let masked = text
+  const entities = []
+  masked = masked.replace(/([『「].*?[』」])/g, match => {
+    entities.push(match)
+    return `\uE000${entities.length - 1}\uE001`
+  })
+  const match = masked.match(/(?:^|[^\uE000-\uE001\d])(\d[\d,]*)/)
+  if (!match) return null
+  const value = match[1]
+  const idx = masked.indexOf(value, match.index)
+  const templateWithMarkers = masked.slice(0, idx) + '{n}' + masked.slice(idx + value.length)
+  const template = templateWithMarkers.replace(/\uE000(\d+)\uE001/g, (_, i) => entities[Number(i)])
+  return { template, value }
+}
+
+export function consolidateProgressiveUnlocks(unlocks, { formatText = text => text } = {}) {
+  const list = unlocks || []
+  if (!list.length) return []
+
+  const items = []
+  const candidates = []
+
+  for (const unlock of list) {
+    const isRelated = Boolean(
+      unlock.kind?.startsWith('card_') ||
+      unlock.kind === 'idol_story_episode_finished',
+    )
+    if (isRelated || unlock.kind !== 'scenario_title_mission') {
+      items.push({ type: 'direct', unlock })
+      continue
+    }
+    const formatted = formatText(unlock.text || '')
+    const parsed = extractProgressiveMissionTemplate(formatted)
+    if (!parsed) {
+      items.push({ type: 'direct', unlock })
+      continue
+    }
+    candidates.push({ unlock, formatted, ...parsed })
+  }
+
+  if (!candidates.length) {
+    return items.map(entry => entry.unlock)
+  }
+
+  const templateMap = new Map()
+  for (const cand of candidates) {
+    const group = templateMap.get(cand.template) || []
+    group.push(cand)
+    templateMap.set(cand.template, group)
+  }
+
+  const progressiveGroups = []
+  for (const [, group] of templateMap.entries()) {
+    if (group.length <= 1) {
+      for (const item of group) {
+        items.push({ type: 'direct', unlock: item.unlock })
+      }
+    } else {
+      progressiveGroups.push({
+        template: group[0].template,
+        values: group.map(g => g.value),
+        group,
+      })
+    }
+  }
+
+  if (!progressiveGroups.length) {
+    return items.map(entry => entry.unlock)
+  }
+
+  const formattedTemplates = progressiveGroups.map(pg =>
+    pg.template.replace('{n}', pg.values.join(' / ')),
+  )
+  const totalStages = progressiveGroups.reduce((sum, pg) => sum + pg.values.length, 0)
+  const mergedText = `${formattedTemplates.join(' · ')}（共 ${totalStages} 阶段）`
+  const allIds = progressiveGroups.flatMap(pg => pg.group.map(g => g.unlock.id))
+
+  const mergedUnlock = {
+    id: `progressive:${allIds.join('-')}`,
+    kind: 'progressive_mission',
+    isProgressive: true,
+    text: mergedText,
+    stageCount: totalStages,
+  }
+
+  return [...items.map(entry => entry.unlock), mergedUnlock]
+}

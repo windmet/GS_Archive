@@ -2,6 +2,7 @@
   <section class="song-block single-song-player" aria-labelledby="song-single-player-title" :data-clock-phase="clockSnapshot.phase">
     <div class="song-block-heading">
       <h3 id="song-single-player-title">歌曲播放</h3>
+      <slot name="header-action" />
     </div>
     <p class="song-block-note">完整混音试听</p>
     <audio
@@ -105,4 +106,5 @@ watch(() => props.track, () => { audioError.value = '' })
 .center-line-slot select { min-width: 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; }
 .single-song-player .center-line-slot .song-block-note { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
 .single-song-error { margin: var(--gs-space-3) 0 0; color: var(--gs-critical); font-size: var(--gs-text-ui); }
+.song-block-heading { display: flex; gap: var(--gs-space-3); align-items: center; }
 </style>

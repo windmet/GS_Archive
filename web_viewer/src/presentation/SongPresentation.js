@@ -10,6 +10,28 @@ export const SONG_PERFORMER_SCOPES = Object.freeze({
   unspecified_special: ['特别演出', '演唱成员尚未明确收录。'],
 })
 
+// Canonical song lineup taxonomy shared between song catalog and portal overview.
+export const SONG_LINEUP_TAXONOMY = Object.freeze([
+  { id: 'all', label: '全部' },
+  { id: 'configurable_formation', label: '代表曲' },
+  { id: 'fixed_unit', label: '组合曲' },
+  { id: 'fixed_special_lineup', label: '特别编成' },
+])
+
+/**
+ * Classifies a song into one of the three primary lineup categories:
+ * - 'configurable_formation' (代表曲, 5 songs)
+ * - 'fixed_unit' (组合曲, 47 songs)
+ * - 'fixed_special_lineup' (特别编成, 8 songs: 7 fixed_special_lineup + 1 unspecified_special)
+ */
+export function classifySongLineup(song) {
+  const scope = song?.performance_mapping?.performer_scope || song?.performance?.scope || song?.performanceKind
+  if (scope === 'configurable_formation') return 'configurable_formation'
+  if (scope === 'fixed_unit') return 'fixed_unit'
+  if (scope === 'fixed_special_lineup' || scope === 'unspecified_special') return 'fixed_special_lineup'
+  return 'fixed_special_lineup'
+}
+
 export function buildSongPresentation(song, identity, { playbackTrack = null, audioExperiment = null, manifest = null } = {}) {
   if (!song) return null
   const units = new Map((identity?.units || []).map(entry => [entry.unit_code, entry]))
