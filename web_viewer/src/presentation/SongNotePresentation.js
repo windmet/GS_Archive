@@ -1,3 +1,4 @@
+import nativeEffects from '../../config/song-track-native-effects.v1.json' with { type: 'json' }
 import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
 import rendering from '../../config/song-note-rendering.v1.json' with { type: 'json' }
 import { nativeSongHoldMiddlePoints } from './SongTrackNativeMiddleNodes.js'
@@ -44,7 +45,7 @@ export async function embedSongChartImages(svg, fetcher = fetch) {
   const urls = [...new Set([...snapshot.querySelectorAll('image')].map(im => im.getAttribute('href')))]
   const embedded = new Map()
   await Promise.all(urls.map(async url => {
-    const expected = rendering.assets[url]
+    const expected = rendering.assets[url] || nativeEffects.assets[url]
     if (!expected) throw new Error('导出含有未核实的贴图地址')
     const response = await fetcher(url)
     if (!response.ok) throw new Error(`贴图加载失败（${response.status}）`)

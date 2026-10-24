@@ -27,7 +27,7 @@
       </g>
       <g v-for="n in scene.glyphs" :key="n.id" :data-track-note="n.sourceIndex" :data-endpoint="n.endpoint" :data-tick="n.tick" :data-note-role="n.role" :data-note-speed="n.speed" :data-note-fraction="n.fraction">
         <g :clip-path="`url(#${uid}-note-${n.id})`"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
-        <ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="n.width" :show-body="false" />
+        <ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="n.width" :show-body="false" :hint="n.hint" />
       </g>
     </svg>
   </div>

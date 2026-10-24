@@ -7,6 +7,7 @@ services. Native coordinate/timing/scale/type/hold-end bodies execute ARM64.
 import argparse
 import hashlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import struct
@@ -102,6 +103,22 @@ class Probe(base.NativeProbe):
             return self.captured
         return [self.getf(register) for register in
                 [self.r.UC_ARM64_REG_S0, self.r.UC_ARM64_REG_S1, self.r.UC_ARM64_REG_S2, self.r.UC_ARM64_REG_S3]]
+
+    def transform_point(self, transform, point):
+        # Controlled authored local point and root TRS. The actual MultiplyPoint
+        # body runs ARM64; this does not emulate Unity's ParticleSystem renderer.
+        matrix = [0.] * 16
+        matrix[0], matrix[5], matrix[10] = transform['scale']
+        matrix[15] = 1
+        matrix[12:15] = transform['position']
+        self.cpu.mem_write(0x100d0000, struct.pack('<16f', *matrix))
+        self.setup_call()
+        self.cpu.reg_write(self.r.UC_ARM64_REG_X0, 0x100d0000)
+        registers = [self.r.UC_ARM64_REG_S0, self.r.UC_ARM64_REG_S1, self.r.UC_ARM64_REG_S2]
+        for register, value in zip(registers, point):
+            self.setf(register, value)
+        self.cpu.emu_start(0x2ae6238, 0x1003f000, count=100)
+        return [self.getf(register) for register in registers]
 
 
 def native_string(probe, metadata, slot):
@@ -201,6 +218,48 @@ def prefab_evidence(args, probe):
             width=texture.m_Width, height=texture.m_Height,
             objectSha256=sha(objects[path_id].get_raw_data()),
             rgbaSha256=sha(texture.image.convert('RGBA').tobytes())))
+    # Static direction markers use the authored outline/fill cells. Blur,
+    # prewarm, emission, velocity and randomized particle phases stay separate.
+    layouts, assets = {}, {}
+    for type_number, role in [('2', 'swipe_left'), ('3', 'swipe_up'), ('4', 'swipe_right')]:
+        layers = []
+        for layer in result['layers'][type_number]:
+            if 'blur' in layer['chain'][-1]['name']:
+                continue
+            parent, child = layer['chain'][1:]
+            if child['position'] != dict(x=0., y=0., z=0.):
+                raise ValueError('Nonzero particle child origin needs a new layout adapter')
+            for node in layer['chain']:
+                if any(node['rotation'][key] != 0 for key in ['x', 'y', 'z']) or node['rotation']['w'] != 1:
+                    raise ValueError('Rotated emitter hierarchy needs a new adapter')
+            uv = layer['uv']
+            if uv['tilesX'] != 2 or uv['tilesY'] != 2 or uv['frameOverTime']['scalar'] != 0:
+                raise ValueError('Animated/different marker cells need a new adapter')
+            frame = int(uv['startFrame']['scalar'] * 4)
+            crop = [frame % 2 * 512, frame // 2 * 512, (frame % 2 + 1) * 512, (frame // 2 + 1) * 512]
+            png = io.BytesIO()
+            objects[630].read().image.crop(tuple(crop)).save(png, format='PNG')
+            image = png.getvalue()
+            url = f'/assets/song-chart-hints/native2/frame-{frame}.png'
+            path = ROOT / 'public' / url.lstrip('/')
+            if args.write:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(image)
+            elif path.read_bytes() != image:
+                raise ValueError('Native direction-marker PNG drift')
+            assets[url] = dict(bytes=len(image), sha256=sha(image), texturePathId=630, crop=crop)
+            size = layer['initial']['startSize']
+            if size['minMaxState'] != 0:
+                raise ValueError('Randomized marker size needs a new adapter')
+            authored_size = {key: base.f(base.f(size['scalar'] * child['scale'][key]) * parent['scale'][key]) for key in ['x', 'y']}
+            layers.append(dict(particlePathId=layer['pathId'], offset=parent['position'],
+                authoredSize=authored_size, rotation=layer['initial']['startRotation']['scalar'],
+                color=layer['initial']['startColor']['maxColor'], url=url))
+        if len(layers) != 2:
+            raise ValueError('Missing static outline/fill layers')
+        layouts[role] = layers
+    result['staticMarkerLayouts'] = layouts
+    result['staticMarkerAssets'] = assets
     return result
 
 
@@ -218,6 +277,7 @@ def run(args):
         ('NoteInfo.get_holdEndAbsTime', 0x1edd560, 148), ('EventNoteData.GetHoldEndNoteTime', 0x1f471ec, 28),
         ('NoteEffectManager.LateUpdateLambda', 0x20b967c, 444), ('LiveSettingsData.get_noteScale', 0x1c1b4a4, 24),
         ('RhythmGameDef.GetNoteScaleRateByNoteTime', 0x1afc78c, 36),
+        ('Matrix4x4.MultiplyPoint3x4', 0x2ae6238, 88),
         ('NoteFlickEffectDebug.get_noteEffectIndex', 0x20b8b9c, 76), ('NoteEffectPrefabSet.GetPrefabDict', 0x20b8c9c, 208)]
     cases = []
     for note_type in [0, 2, 3, 4, 5, 6, 7, 8, 9]:
@@ -231,6 +291,11 @@ def run(args):
                 sample['transform'] = probe.point(*values, late=True)
                 cases.append(sample)
     prefabs = prefab_evidence(args, probe)
+    for sample in cases:
+        sample['staticEmitterCenters'] = {}
+        for role, layers in prefabs['staticMarkerLayouts'].items():
+            offset = layers[0]['offset']
+            sample['staticEmitterCenters'][role] = probe.transform_point(sample['transform'], [offset[k] for k in ['x', 'y', 'z']])
     result = dict(schemaVersion=1, source=dict(elfSha256=sha(binary), metadataSha256=base.METADATA_SHA,
         dataSha256=base.DATA_SHA, methods=[dict(name=name, rva=hex(a), bytes=n, sha256=sha(probe.read(a, n)))
             for name, a, n in methods], controlledServices=[hex(a) for a in probe.stubs + probe.services],
@@ -243,6 +308,14 @@ def run(args):
         path.write_text(json.dumps(result, indent=2) + '\n', encoding='utf8', newline='\n')
     elif json.loads(path.read_bytes()) != result:
         raise ValueError('Native effect evidence drift')
+    runtime = dict(schemaVersion=1, source=result['source'], defaultIndex=prefabs['defaultIndex'],
+        layouts=prefabs['staticMarkerLayouts'], assets=prefabs['staticMarkerAssets'],
+        boundary='Static emitter indicators from default prefab outline/fill. Not original particles: blur, emission/prewarm, velocity, random spawn, shaders and GPU compositing are not simulated.')
+    runtime_path = ROOT / 'config/song-track-native-effects.v1.json'
+    if args.write:
+        runtime_path.write_text(json.dumps(runtime, indent=2) + '\n', encoding='utf8', newline='\n')
+    elif json.loads(runtime_path.read_bytes()) != runtime:
+        raise ValueError('Native static marker contract drift')
     print(f'Native effects: {len(cases)} point/transform cases, default prefab index {prefabs["defaultIndex"]}, '
           f'{sum(len(p) for p in prefabs["layers"].values())} serialized particle layers verified; no particle simulation claim')
 

@@ -2,7 +2,29 @@
 
 日期：2026-10-23。输入 `origin/master` / `2bdd3de44582ef3ce79cad1ec8c014f38118a6d9`；分支 `chart/20261023-native-projection`，LF worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023`。先建立台账，未修改运行时代码。范围仅谱面预览及其来源核查；无舞台修改、R2 上传或部署。
 
-当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格，第六批已接原生middle生成并核实判定核心谓词，第七批核实Special共用读取时长并修正非hold的伪尾点。首表保留输入提交的审计状态；完整窗口/按压/已判定节点调度、flick连线与效果呈现仍开放，不把坐标合同通过写成原机渲染完成。
+当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格，第六批已接原生middle生成并核实判定核心谓词，第七批核实Special共用读取时长并修正非hold的伪尾点，第八/九批核实并接入flick效果根节点与默认prefab静态提示。首表保留输入提交的审计状态；完整窗口/按压/已判定节点调度、flick连线与完整粒子呈现仍开放，不把坐标合同通过写成原机渲染完成。
+
+## 当前证据对照（第九批后）
+
+下表区分原生输入/运算、默认设置与Web呈现。原生数学通过不等于原机完整渲染通过；后面的首张审计表是输入提交的历史快照。
+
+| 项 | 当前结论 | 当前消费者 / 证据 |
+| --- | --- | --- |
+| 61首RAW、catalog消费244档、PB等级/Combo | 原生数据；Android/iOS客户端均2.6.10，RAW authoring ver不是客户端build ID | 版本/RAW回执；244档公开数据回归；本轮没有改RAW |
+| 配速与逐音符speed，含Special | 原生float32读取时长与double时钟，替代24000/speed；Special没有凭按钮名添加固定时长 | SongTrackNativeTiming.js:4/25/33；233组timing、72组Special fixture |
+| 五轨、21/880、Z200/100、时间→位置 | 原生坐标曲线与默认IPA面板目标点，替代depthRatio2/top8/judge570 | SongTrackNativeProjection.js:6/16、SongTrackPresentation.js:21；180组ARM64；序列化相机orthographic=true |
+| centerX640与1280×720 | Web规范画布中心/坐标适配；不再把640说成原机相机常量 | SongTrackPresentation.js:21；native-geometry viewport合同 |
+| 音符贴图语义、皮肤、312、尺寸 | 原生enum/literal/packed rect与四角，替代148；默认皮肤/尺寸来自构造器，不是原玩家设置 | SongTrackNativeNoteGeometry.js:8；21 Sprite、1080组ARM64四角 |
+| 长条带宽、细分、UV | 给定绘图平面点的原生parts/mesh数学；半宽.375 lane来自44/176×1.5，替代148×.72 | SongTrackNativeHoldGeometry.js:10；36组/22650顶点、精确UV/indices |
+| 长条未来窗口裁切与活跃点集合 | 仍为Web预览规则；未执行原生按压、lastTouch、已删middle状态机 | SongTrackPresentation.js:122-127；已分段BPM秒数裁切，不能称原机调度 |
+| middle生成 / 核心判定 | VariableHold内部poly索引生成有原生依据；Perfect严格边界、位置谓词/TimeMargin getter已核实 | SongTrackNativeMiddleNodes.js:4；72组生成/2285库内节点；judgement fixture与第六批条件说明 |
+| flick静态提示 | 根节点/尾点时钟/缩放及默认第2套prefab发射器锚点、轮廓/填色有原生依据，旧四个估计比例无消费者 | SongTrackNativeEffects.js:15/31；162组ARM64根节点、486个Matrix4x4中心；静态图形宽高是作者尺寸的Web表示 |
+| flick粒子完整画面 | 未复现prewarm/发射/速度/随机Shape/blur/原shader与GPU；静态指示符不是某一帧原机粒子快照 | native-effects配置boundary、ArchiveSongChartPreview谱面信息；不会用静态截图升级证据 |
+| 原生nextFlickNote连线 | 方法体已发现独立分支，当前未接；不再用非hold的RAW duration伪造 | 第七批说明；所有275个非hold正duration对象验证无伪尾点/伪hold |
+| 判定线纹理厚度、圆环/光晕、边界线笔触 | 仍为Web绘制/估计，不是原生相机/mesh证明的一部分 | ArchiveSongTrackPreview.vue:13/20-26，±12/±10、24/20高度、半径10/9等装饰值 |
+| 长轨图 | Web阅读示意布局；素材与语义共享原生来源，坐标比例不称原生透视 | SongChartPresentation.js / SongTrackNativeEffects.js:48 |
+
+`config/song-track-reference.v1.json:389`保留10-01的screenshotEstimates及当时边界，作为来源历史；运行时不再读取这些估计字段。当前数学合同是各个song-track-native配置与共享函数。源码搜索无24000/normalVisibleWidth/holdWidthRatio/depthRatio/screenshotEstimates消费者；长轨同刻线opacity=.65与旧flick宽比无关。
 
 ## 审计时的消费者与证据等级
 
@@ -203,3 +225,22 @@ LateUpdate的正常模式写position=原生PointInfo.xyz，scale=PointInfo.scale
 当前 `ArchiveSongNoteGlyph.vue` 仍消费第1套静态mask及`.65/.28/.57/1.12`估计，证据等级**仍为估计**；本批只准备证据，没有改运行时或谎称第2套已展示。后续接线必须同时处理根节点scale、正确默认素材、prefab内部布局，并明确区分静态发射器指示与带速度/prewarm/随机出生偏移的原机粒子。不能只换一个偏移值后把整条效果称为原生。
 
 验证：producer重新不带--write执行，ELF/IPA/metadata、162组输出与9层serialized记录全部一致。最初重放比较因UnityPy材质tuple与JSON数组类型差异报drift，已在序列化边界统一为JSON形态后重读通过，未改原生数值或放宽容差。反编译/指令保存于.analysis；本批没有前端接线或渲染变更，按构建政策不重复Vite/Browser，不把上一批截图当成新效果验收。
+
+
+## 第九批（2026-10-24）：默认flick静态提示接线与真实页面验收
+
+输入 `5df18777`。`SongTrackNativeEffects.js`由运行时与verifier共同import。`nativeSongEffectRoot`严格复现普通/hold/VariableHold的lane来源、首尾时钟、float32 speed、PointInfo.scale×原生尺寸曲线、hold早于-1时的0缩放、noteSize/100；162组ARM64 PointInfo与实际Transform setter输出逐项相等。调用者仍使用预览音频时钟/当前可见窗口，不冒充原生效果对象的出现、销毁或按压状态。
+
+producer增加实际执行 `Matrix4x4.MultiplyPoint3x4` 0x2ae6238（88字节，现共13个方法hash），以已捕获的根节点TRS和序列化发射器localPosition为输入，得到486个中心。旧Ghidra把该HFA返回方法显示成空return；已用实际指令/ARM64执行，不能把空C文本当成方法没有计算。原生矩阵中心与共享静态布局函数的float32乘加逐项一致。只证明给定TRS下发射器原点，不宣称原生ParticleSystem billboard顶点也被执行。
+
+新增小型运行时配置 `config/song-track-native-effects.v1.json`，默认2、3方向的作者设置、方法hash/来源及边界；完整9层粒子记录仍留fixture、不进入bundle。读取IPA Texture2D630，按2×2轮廓/填色cell导出4个完整512×512 PNG（保留透明边，不按alpha裁切决定几何），合计40876字节。上/左右作者size与180×.5的层级缩放作为静态提示全quad尺寸；left保留原生startRotation，使用本套outline/fill的原始startColor。没有增加blur层、粒子运动/相位，也没有用旧第1套mask假装第2套。
+
+`ArchiveSongNoteGlyph.vue`删除`.65/.28/.57/1.12`估计，透视从Scene接入原生效果根节点与静态marker。长轨按该皮肤判定线普通音符可见宽度归一化到其30单位示意宽，明确是Web适配。导出素材白名单加入新配置hash，保持只接受已核实PNG、全部嵌入后离线可用。页面谱面信息明确“原生默认prefab发射器锚点与静态轮廓/填色”，同时列出未模拟粒子/预热/随机相位/shader的限制。
+
+verifier拒绝实际模块变异：hold错用head clock、漏掉pre-window清零、漏乘尺寸曲线、旧148×.57横偏、旧1.12上偏、旧148×.65/.28宽度。244档首个划向窗口共689个实际consumer glyph均连接默认2/两层静态素材；四PNG SHA和字节长度通过，producer不带--write重读一致。233组timing、72组Special、180组projection、1080组quad、36组hold、72组middle/判定回执，以及244档/732窗口、11195尾点、chart timing/presentation全部通过。最终build:check通过（23.31秒、2996模块）；仍只有.analysis/build-check且无public复制，保留既有背景未解析/大chunk warning。
+
+首次Browser检查发现新文件请求为200 text/html，SVG有节点但箭头未显示；原因是现有Vite public文件集合未收录新目录，不能记作画面通过。触发本worktree Vite配置重载后，端口5231、PID67724与启动命令不变，bootstrap release仍为1accd9d0aa698ec03ec6d0b80211939f914940abac105d51021b36a8fb321081。四个URL均重新得到200 image/png，并与本地逐字节SHA一致；没有把图片复制到主checkout，也没有改服务器端口或候选版本。
+
+真实应用：Café Parade! EXPERT Lv28 / tick22000，桌面1440×900可见5个静态提示，覆盖左/上/右和hold tail；DOM每个default=2、两张图。圆形桌面截图 `flick-native-desktop.png`；切横条皮肤后手机尺寸390×844仍为5提示、scrollWidth390，截图 `flick-native-mobile.png`。冷刷新后重新选择EXPERT/透视/tick22000仍显示5提示；播放从tick22010推进到54378后主动暂停，证明更新旅程，非全曲/原机GPU验收。返回按钮完成导航后URL为 `/songs/cfprde/`，标题、难度表与内容实际加载，控制台error/warn为空；viewport已恢复。为桌面Browser模拟手机尺寸，无真机对照声明。
+
+实际页面“导出SVG”得到 `D:/Files/Downloads/cfprde-EXPERT.svg`，719684字节；XML中12张唯一PNG全部内嵌，包含四个新cell的精确hash，未残留/assets外链。4个新PNG属于已有bounded song-chart-hints治理分类，因新增Git跟踪二进制，同步生成policies/tracked-binary-assets.v1.json（只有四条记录、汇总及生成元数据变化），verify:tracked-binary-inventory通过：423文件/74843662字节。本库存group沿用既有owner_release分类标识，不代表本轮R2上传。除必要资产库存记录外无谱面外改动；未上传R2、未部署。

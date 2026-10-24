@@ -1,3 +1,4 @@
+import { nativeSongEffectRoot, songStaticFlickHint } from './SongTrackNativeEffects.js'
 import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
 import nativeGeometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
@@ -106,6 +107,7 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000, skin = 'N
     glyphs.push({ id: `${n.sourceIndex}-${endpoint}`, sourceIndex: n.sourceIndex, type,
       endpoint, tick, lane, speed, fraction: p.fraction, x: p.x, y: p.y,
       width: image.visibleWidth, image,
+      hint: role.startsWith('swipe_') ? songStaticFlickHint(role, nativeSongEffectRoot(n, startSeconds, toSeconds(n.tick), toSeconds(n.tick + n.duration), duration, nativeGeometry.target)) : null,
       special: type === 'SPECIAL',
       role })
   }
