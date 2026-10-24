@@ -512,7 +512,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
   .overview-content-grid:not(.is-global-grid) .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 }
-.overview-stat { display:flex;flex-direction:column;justify-content:space-between;gap:var(--gs-space-3);min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer;transition:border-color var(--gs-motion-fast); }
+.overview-stat { display:flex;flex-direction:column;justify-content:space-between;gap:var(--gs-space-3);min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer;transition:border-color var(--gs-motion-feedback) var(--gs-ease-out); }
 .overview-stat:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
 .overview-stat:hover { border-color:var(--gs-rule); }
 .overview-stat:hover .overview-stat-arrow { color:var(--idol-ink,var(--gs-mint-ink)); }
