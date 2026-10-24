@@ -184,7 +184,7 @@ function classify(relativePath) {
     }
   }
 
-  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos|stage-new-suspension-sprites|stage-built-in-objects)\//)
+  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos|stage-new-suspension-sprites|stage-built-in-objects|stage-smoke)\//)
   if (stageNativeTexture) {
     return {
       category: 'stable-promoted-asset',
@@ -225,7 +225,9 @@ function classify(relativePath) {
         : stageNativeTexture[1]==='stage-object-emitters' && logicalStem==='eb3a3173cac5f7665d31638a'
         ? '2026-10-20-native-rehobe-smoke-001'
         : stageNativeTexture[1]==='stage-object-emitters' && ['866092bffcd833f1041a2e7d','e192ddf6239b66e93c672199','e6daf431ce6a295fa54a79b8'].includes(logicalStem)
-          ? '2026-10-19-native-mtples-formula-001' : '2026-10-17-native-stage-textures-001',
+          ? '2026-10-19-native-mtples-formula-001'
+        : stageNativeTexture[1]==='stage-smoke'
+          ? '2026-10-23-native-smoke-preview-001' : '2026-10-17-native-stage-textures-001',
       grandfathered: false,
     }
   }

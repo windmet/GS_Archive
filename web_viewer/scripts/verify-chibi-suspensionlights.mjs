@@ -59,7 +59,7 @@ assert.ok([...runtimes.values()].every(r=>!r.sprite.visible))
 // native PreloadEffect rather than discovering a custom texture on its frame.
 const prepared=[]
 renderer.prepare=async model=>{prepared.push(model.layers[0].asset);return true}
-Object.assign(context,{objectLayersEnabled:{value:false},lightingEnabled:{value:true},stageDisposed:false})
+Object.assign(context,{objectLayersEnabled:{value:false},lightingEnabled:{value:true},stageDisposed:false,prepareSmoke:async()=>true})
 context.selectedSong.value={id:'cgtocc_live_effect'}
 vm.runInContext(sfc.match(/async function prepareStageLighting\([^]*?\n\}/)[0],context)
 assert.equal(await context.prepareStageLighting(),true)
