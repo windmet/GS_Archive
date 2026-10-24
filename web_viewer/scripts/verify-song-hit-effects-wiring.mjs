@@ -3,6 +3,15 @@ import { readFileSync } from 'node:fs'
 
 const receipt = JSON.parse(readFileSync(new URL('./fixtures/song-hit-effects-wiring.json', import.meta.url)))
 const native = JSON.parse(readFileSync(new URL('../config/song-track-native-effects.v1.json', import.meta.url)))
+const assets = JSON.parse(readFileSync(new URL('./fixtures/song-hit-effect-assets.json', import.meta.url)))
+assert.equal(assets.dataSha256, receipt.source.dataSha256)
+const textureIds = new Set(Object.values(receipt.prefabs).flatMap(nodes => nodes.flatMap(node =>
+  node.components.flatMap(component => (component.materials || []).flatMap(material => material.textures.map(t => t.pathId))))).filter(Boolean))
+assert.deepEqual(assets.textures.map(t => t.pathId).sort((a,b) => a-b), [...textureIds].sort((a,b) => a-b))
+assert.equal(assets.evaluation.sprite.pathId, 2068)
+assert.equal(assets.evaluation.sprite.atlas.pathId, 106487)
+assert.equal(assets.evaluation.animation.pathId, 1090)
+assert.equal(assets.defaultAutoPrefabs.length, 7)
 for (const key of ['elfSha256', 'metadataSha256', 'dataSha256']) assert.equal(receipt.source[key], native.source[key])
 assert.equal(receipt.selection.showHitEffect.length, 96)
 for (const c of receipt.selection.showHitEffect) {

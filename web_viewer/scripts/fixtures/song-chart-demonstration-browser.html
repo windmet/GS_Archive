@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>Song chart demonstration integration</title>
+<style>body{font:16px system-ui;margin:16px}#app{max-width:960px}pre{white-space:pre-wrap}</style></head>
+<body><h1>自动演示组件回归</h1><p>受控媒体与 rAF；检查实际 Vue 接线，不代表真实音频或设备 FPS。</p>
+<button id="run" disabled>运行接线回归</button><pre id="result" role="status">加载中</pre><div id="app"></div>
+<script type="module">
+import { createApp, nextTick } from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
+import Chart from '/src/components/archive/ArchiveSongChartPreview.vue'
+import { buildSongChartTiming } from '/src/presentation/SongChartTiming.js'
+import { playableSongChart } from '/src/presentation/SongChartPresentation.js'
+import { songNoteEndpoints, songHoldMiddleNodes } from '/src/presentation/SongNotePresentation.js'
+import { nativeSongNoteIsHold } from '/src/presentation/SongTrackNativeNoteTypes.js'
+const result=document.querySelector('#result'),run=document.querySelector('#run')
+const songs=(await(await fetch('/data/song_catalog.json')).json()).songs
+const audioManifest=(await(await fetch('/data/song_playback_audio.json')).json()).songs
+const media={time:0,paused:true,seeking:false,ended:false,ready:4,rate:1},frames=new Map()
+let sequence=0,now=0,app,chart,timing,events,counts
+window.requestAnimationFrame=callback=>{frames.set(++sequence,callback);return sequence}
+window.cancelAnimationFrame=id=>frames.delete(id)
+for(const [key,getter] of Object.entries({currentTime:()=>media.time,paused:()=>media.paused,seeking:()=>media.seeking,
+  ended:()=>media.ended,duration:()=>150,readyState:()=>media.ready,error:()=>null})){
+  Object.defineProperty(HTMLMediaElement.prototype,key,{configurable:true,get:getter,...(key==='currentTime'?{set(value){
+    media.time=value;media.ended=false;media.seeking=true;this.dispatchEvent(new Event('seeking'))
+    queueMicrotask(()=>{media.seeking=false;this.dispatchEvent(new Event('seeked'))})
+  }}:{})})
+}
+HTMLMediaElement.prototype.play=async function(){media.paused=false;this.dispatchEvent(new Event('play'));this.dispatchEvent(new Event('playing'))}
+HTMLMediaElement.prototype.pause=function(){media.paused=true;this.dispatchEvent(new Event('pause'))}
+HTMLMediaElement.prototype.load=function(){}
+const check=(condition,message)=>{if(!condition)throw Error(message)}
+const button=label=>document.querySelector(`[aria-label="${label}"]`)
+const state=()=>document.querySelector('.chart-demonstration')
+async function settle(){await nextTick();await nextTick()}
+async function pulse(seconds){
+  media.time=seconds;now+=1000/60
+  const pending=[...frames.values()];frames.clear();for(const callback of pending)callback(now)
+  await settle()
+  if(sequence%120===0)await new Promise(resolve=>setTimeout(resolve,0))
+}
+async function enable(value=true){
+  const control=document.querySelector('[aria-label="自动演示事件统计"][type="checkbox"]')
+  control.checked=value;control.dispatchEvent(new Event('change',{bubbles:true}));await settle()
+}
+async function seek(seconds){
+  const slider=document.querySelector('[aria-label="谱面时间轴"]');slider.value=String(seconds)
+  slider.dispatchEvent(new Event('input',{bubbles:true}));await settle()
+}
+async function mount(code){
+  app?.unmount();frames.clear();Object.assign(media,{time:0,paused:true,seeking:false,ended:false,ready:4})
+  const song=songs[code],difficulty=song.gameplay.difficulties.find(d=>d.type===4)
+  chart=playableSongChart(await(await fetch(difficulty.chart.url)).json(),audioManifest[code].source.duration_seconds)
+  timing=buildSongChartTiming(chart)
+  events=[...songNoteEndpoints(chart),...songHoldMiddleNodes(chart)].map(e=>({...e,seconds:timing.tickToSeconds(e.tick)}))
+  counts={parent:0,track:0}
+  app=createApp(Chart,{standalone:true,songCode:code,title:song.title,difficulties:song.gameplay.difficulties,
+    audioTrack:{url:'data:audio/wav;base64,',source:audioManifest[code].source}})
+  app.mixin({updated(){if(this.$options.__name==='ArchiveSongChartPreview')counts.parent++;if(this.$options.__name==='ArchiveSongTrackPreview')counts.track++}})
+  app.mount('#app')
+  for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
+  check(document.querySelector('.track-svg'),'chart mount')
+  const expert=[...document.querySelectorAll('.chart-difficulties button')].find(b=>b.textContent.includes('EXPERT'))
+  expert.click();await settle()
+  for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
+  button('视图设置')?.click()
+  // Settings button has visible text rather than aria-label.
+  if(!document.querySelector('[type="checkbox"]'))[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click()
+  await settle();await enable();button('关闭视图设置').click();await settle()
+}
+function checkPosition(seconds){
+  check(Number(state().dataset.count)===events.filter(e=>e.seconds<=seconds).length,`count at ${seconds}`)
+  const expected=chart.notes.filter(n=>nativeSongNoteIsHold(n)&&n.duration>0&&timing.tickToSeconds(n.tick)<=seconds&&timing.tickToSeconds(n.tick+n.duration)>seconds)
+  check(document.querySelectorAll('[data-hold-fx]').length===expected.length,`holds at ${seconds}`)
+}
+run.disabled=false;result.textContent='就绪'
+run.onclick=async()=>{
+  run.disabled=true
+  try{
+    const reports=[]
+    for(const code of ['cfprde','remasq']){
+      result.textContent=`回放 ${code}…`;await mount(code)
+      await seek(10);button('播放').click();await settle()
+      const initial={...counts}
+      for(let i=0;i<600;i++)await pulse(10+i/60)
+      check(counts.parent-initial.parent<130,'parent rerenders at track cadence')
+      check(counts.track-initial.track>580,'track cadence regression')
+      // Land just after a hit, then stop between control refreshes.
+      const hit=events.find(e=>e.seconds>20.1)
+      await seek(Math.floor((hit.seconds-.03)*100)/100)
+      await pulse(hit.seconds+.02);button('暂停').click();await settle()
+      check(document.querySelectorAll('[data-hit-fx]').length>0,'paused hit present')
+      const frozen=document.querySelector('.track-hit-effects').outerHTML,epoch=state().dataset.epoch
+      button('播放').click();await settle();await pulse(media.time)
+      check(state().dataset.epoch===epoch,'resume must preserve epoch')
+      check(document.querySelector('.track-hit-effects')?.outerHTML===frozen,'resume must preserve frozen hit instances')
+      const audio=document.querySelector('audio');audio.dispatchEvent(new Event('waiting'));await settle()
+      const waiting=document.querySelector('.track-hit-effects')?.outerHTML
+      for(let i=0;i<30;i++)await pulse(media.time)
+      check(document.querySelector('.track-hit-effects')?.outerHTML===waiting,'buffer must freeze effect age')
+      audio.dispatchEvent(new Event('playing'));await settle()
+      await seek(5);checkPosition(5);check(!document.querySelector('[data-hit-fx]'),'seek must not replay skipped hits')
+      // Entire media timeline at 10Hz, including BPM boundaries and all tails.
+      for(let i=50;i<=Math.ceil(timing.duration*10);i++){
+        await pulse(i/10)
+        if(i%37===0){button('暂停').click();await settle();checkPosition(media.time);button('播放').click();await settle()}
+      }
+      media.time=150;media.ended=true;media.paused=true;audio.dispatchEvent(new Event('ended'));await settle()
+      check(Number(state().dataset.count)===events.length,'ended must consume final chart events')
+      check(!document.querySelector('[data-hold-fx]'),'ended retires holds')
+      await seek(12);checkPosition(12)
+      document.querySelector('.chart-modes button:last-child').click();await settle()
+      document.querySelector('.chart-modes button:first-child').click();await settle();checkPosition(12)
+      // Difficulty reset must not retain the old chart's count or effect pool.
+      document.querySelector('.chart-difficulties button').click();await settle()
+      for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
+      check(Number(state().dataset.count)===0,'difficulty must reset demonstration')
+      check(!document.querySelector('[data-hit-fx]'),'difficulty must clear transients')
+      reports.push({code,events:events.length,updates:counts,status:'passed'})
+    }
+    result.textContent=JSON.stringify({status:'passed',reports},null,2)
+  }catch(error){result.textContent=JSON.stringify({status:'failed',error:error.message});console.error(error)}
+  finally{run.disabled=false}
+}
+</script></body></html>
