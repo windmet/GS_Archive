@@ -26,9 +26,9 @@
 - 自动演示不是触摸判定；不增加分数、生命值、Perfect/Great或技能状态机。可先显示演示命中数；即使当前总数对齐PB Combo，也需明确其是演示统计。
 - 原生nextFlickNote连线、完整ParticleSystem/GPU与真机验收分别保留任务边界，不作为事件调度第一版的前置依赖。
 
-## 帧率现状
+## 审阅输入时的帧率（历史状态）
 
-ArchiveSongChartPreview.updatePlayback使用requestAnimationFrame，但仅在now-lastPaint>=33时更新cursor，约30Hz上限；注释说明这是为避免iPad 120Hz屏幕导致整套谱面/工具栏高频失效。rAF本身没有锁在30Hz，实际设备帧率也未在本次测量，负载与rAF采样可能进一步降低更新频率。
+以下描述仅对应审阅输入 `dba5b8f1`，已被后续帧率批次取代。ArchiveSongChartPreview.updatePlayback当时使用requestAnimationFrame，但仅在now-lastPaint>=33时更新cursor，约30Hz上限；注释说明这是为避免iPad 120Hz屏幕导致整套谱面/工具栏高频失效。rAF本身没有锁在30Hz，实际设备帧率也未在本次测量，负载与rAF采样可能进一步降低更新频率。
 
 审计提出轻量特效层是合理方向，但CSS/Web Animations不能无条件自由播放：其年龄仍须绑定媒体时间，处理暂停、缓冲、倍速与seek。建议下一批先实测长条较多窗口的几何/提交开销，再决定轨道60Hz及特效层更新策略，不把33直接改成16便宣称稳定60fps。本次没有改该限制。
 
@@ -41,3 +41,7 @@ ArchiveSongChartPreview.updatePlayback使用requestAnimationFrame，但仅在now
 真实Browser复用本worktree5231/PID67724：手机390×844冷刷新Change to Chance，加载完成时tick0、透视轨道aria-pressed=true，手动切长轨aria-pressed=true；桌面1440×900从歌曲详情打开Café Parade预览，也默认透视。截图.analysis/chart-native/default-perspective-mobile.png及default-perspective-desktop.png。返回来源页实际为先前入口Café Parade（切曲后仍回到原来源），标题/难度表已加载，URL为/songs/cfprde/；随后恢复用户原来的cgtocc预览URL，重置viewport。控制台error/warn为空。仅桌面Browser手机尺寸模拟，没有测量或承诺设备FPS。
 
 改动仅移除默认模式的手机覆盖，未修改33ms更新限制。未实现Autoplay、未复制素材库、未上传R2、未部署。
+
+## 后续开发基线
+
+本页是Autoplay接线前的历史评估。后续 `0972a349` 已完成轨道60Hz/控制台10Hz隔离与静态数据预计算，真实媒体20秒窗口的轨道更新约59.00/59.28/59.90Hz；详情见[帧率验收](CHART_FRAME_RATE_20261024.md)及[当前开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)。这些是当前Browser组件更新频率，不是GPU呈现帧数或物理手机验收。本页关于Autoplay尚未实现、原生命中特效资源/生命周期仍需补证的边界继续有效。
