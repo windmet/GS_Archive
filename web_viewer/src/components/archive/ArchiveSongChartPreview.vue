@@ -119,7 +119,7 @@ async function loadChart() {
 }
 watch([opened, selected, () => props.songCode], loadChart)
 onMounted(() => {
-  if (props.standalone) { if (window.matchMedia('(max-width: 760px)').matches) mode.value = 'long'; void loadChart() }
+  if (props.standalone) void loadChart()
   document.addEventListener('pointerdown', onOutsideSettings)
   document.addEventListener('keydown', onSettingsEscape)
   window.addEventListener('resize', positionSettings)
