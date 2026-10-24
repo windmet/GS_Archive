@@ -17,7 +17,7 @@
         <span class="step-counter">{{ current }} / {{ total }}</span>
       </div>
       <div class="progress-track" aria-hidden="true">
-        <div class="progress-fill" :style="{ width: progressPercent }" />
+        <div class="progress-fill" :style="{ transform: `scaleX(${progressScale})` }" />
       </div>
     </div>
 
@@ -53,6 +53,10 @@ defineEmits(['back', 'language', 'menu'])
 const progressPercent = computed(() => {
   if (!props.total) return '0%'
   return `${Math.min(100, Math.max(0, (props.current / props.total) * 100))}%`
+})
+const progressScale = computed(() => {
+  if (!props.total) return 0
+  return Math.min(1, Math.max(0, props.current / props.total))
 })
 </script>
 
@@ -125,11 +129,19 @@ const progressPercent = computed(() => {
 }
 
 .progress-fill {
+  width: 100%;
   height: 100%;
+  transform-origin: left;
   border-radius: inherit;
   background: var(--player-accent);
   box-shadow: 0 0 8px rgba(56, 184, 167, 0.32);
-  transition: width var(--player-motion-base) var(--player-ease-standard);
+  transition: transform var(--player-motion-base) var(--player-ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill {
+    transition: none;
+  }
 }
 
 .bar-right {
@@ -159,10 +171,20 @@ const progressPercent = computed(() => {
 }
 .lang-btn:hover {
   background: var(--player-control-surface-hover);
-  transform: translateY(-2px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lang-btn:hover {
+    transform: translateY(-2px);
+  }
 }
 .lang-btn:active {
   transform: scale(0.98);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lang-btn:hover,
+  .lang-btn:active {
+    transform: none;
+  }
 }
 .lang-btn:focus-visible {
   outline: 2px solid var(--player-focus-outer);
