@@ -1,4 +1,4 @@
-﻿import hitEffectsConfig from '../../config/song-hit-effects.v1.json' with { type: 'json' }
+import hitEffectsConfig from '../../config/song-hit-effects.v1.json' with { type: 'json' }
 
 export { hitEffectsConfig }
 
@@ -164,7 +164,7 @@ export function createSongChartHitEffectPool({ setIndex = 1 } = {}) {
     }
 
     const evalAge = seconds - autoEvalLastSpawn
-    const evalDuration = 0.6
+    const evalDuration = hitEffectsConfig.evaluation?.animation?.duration ?? 1.0
     const autoEvalActive = evalAge >= 0 && evalAge < evalDuration
     const autoEvalAlpha = autoEvalActive ? Math.max(0, 1.0 - evalAge / evalDuration) : 0
 

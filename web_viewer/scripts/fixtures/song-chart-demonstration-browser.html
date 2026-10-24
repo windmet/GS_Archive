@@ -30,6 +30,26 @@ HTMLMediaElement.prototype.load=function(){}
 const check=(condition,message)=>{if(!condition)throw Error(message)}
 const button=label=>document.querySelector(`[aria-label="${label}"]`)
 const state=()=>document.querySelector('.chart-demonstration')
+function effectPixels(){
+  const canvas=document.querySelector('.track-effects-canvas')
+  check(canvas,'effect canvas exists')
+  const data=canvas.getContext('2d').getImageData(0,0,1280,720).data
+  let hash=2166136261,visible=0
+  for(let i=0;i<data.length;i++){hash=Math.imul(hash^data[i],16777619);if(i%4===3&&data[i])visible++}
+  return {hash,visible,data}
+}
+function pixelDifference(reference){
+  const current=effectPixels()
+  let maximum=0,changed=0,total=0
+  for(let i=0;i<current.data.length;i++){const delta=Math.abs(current.data[i]-reference.data[i]);maximum=Math.max(maximum,delta);total+=delta;if(delta>2)changed++}
+  return {maximum,changed,mean:total/current.data.length,visible:current.visible}
+}
+async function waitForImages(){
+  for(let i=0;i<300&&Number(document.querySelector('.track-effects-canvas')?.dataset.assetsPending)>0;i++)await new Promise(r=>setTimeout(r,10))
+  check(Number(document.querySelector('.track-effects-canvas')?.dataset.assetsPending)===0,'images loaded')
+  check(Number(document.querySelector('.track-effects-canvas')?.dataset.assetsFailed)===0,'images decoded')
+  await settle()
+}
 async function settle(){await nextTick();await nextTick()}
 async function pulse(seconds){
   media.time=seconds;now+=1000/60
@@ -88,14 +108,22 @@ run.onclick=async()=>{
       await seek(Math.floor((hit.seconds-.03)*100)/100)
       await pulse(hit.seconds+.02);button('暂停').click();await settle()
       check(document.querySelectorAll('[data-hit-fx]').length>0,'paused hit present')
+      await waitForImages()
+      const frozenPixels=effectPixels()
+      check(frozenPixels.visible>0,'paused canvas contains visible pixels')
       const frozen=document.querySelector('.track-hit-effects').outerHTML,epoch=state().dataset.epoch
       button('播放').click();await settle();await pulse(media.time)
       check(state().dataset.epoch===epoch,'resume must preserve epoch')
       check(document.querySelector('.track-hit-effects')?.outerHTML===frozen,'resume must preserve frozen hit instances')
+      const resumedDifference=pixelDifference(frozenPixels)
+      // Canvas readback/redraw may round an 8-bit channel by one. A state or
+      // animation-age change is much larger; retain the observed difference.
+      check(resumedDifference.maximum<=1,`resume preserves rendered pixels: ${JSON.stringify(resumedDifference)}`)
       const audio=document.querySelector('audio');audio.dispatchEvent(new Event('waiting'));await settle()
       const waiting=document.querySelector('.track-hit-effects')?.outerHTML
       for(let i=0;i<30;i++)await pulse(media.time)
       check(document.querySelector('.track-hit-effects')?.outerHTML===waiting,'buffer must freeze effect age')
+      check(pixelDifference(frozenPixels).maximum<=1,'buffer freezes rendered pixels')
       audio.dispatchEvent(new Event('playing'));await settle()
       await seek(5);checkPosition(5);check(!document.querySelector('[data-hit-fx]'),'seek must not replay skipped hits')
       // Entire media timeline at 10Hz, including BPM boundaries and all tails.
@@ -109,12 +137,16 @@ run.onclick=async()=>{
       await seek(12);checkPosition(12)
       document.querySelector('.chart-modes button:last-child').click();await settle()
       document.querySelector('.chart-modes button:first-child').click();await settle();checkPosition(12)
+      const hold=chart.notes.find(n=>nativeSongNoteIsHold(n)&&n.duration>480)
+      const midpoint=Math.round(timing.tickToSeconds(hold.tick+hold.duration/2)*100)/100
+      await seek(midpoint);checkPosition(midpoint);await waitForImages()
+      check(effectPixels().visible>0,'paused seek redraws loaded hold textures')
       // Difficulty reset must not retain the old chart's count or effect pool.
       document.querySelector('.chart-difficulties button').click();await settle()
       for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
       check(Number(state().dataset.count)===0,'difficulty must reset demonstration')
       check(!document.querySelector('[data-hit-fx]'),'difficulty must clear transients')
-      reports.push({code,events:events.length,updates:counts,status:'passed'})
+      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,resumedDifference,status:'passed'})
     }
     result.textContent=JSON.stringify({status:'passed',reports},null,2)
   }catch(error){result.textContent=JSON.stringify({status:'failed',error:error.message});console.error(error)}
