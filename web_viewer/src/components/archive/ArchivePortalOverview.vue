@@ -481,7 +481,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 /* The chip row keeps a focus-ring margin inside its scroller but adds no height: a heading with chips is
    exactly as tall as one without, so the lists under two side-by-side headings start on one line. */
 .overview-heading-chips { display:flex;flex:1;gap:var(--gs-space-2);min-width:0;overflow-x:auto;margin-block:calc(-1 * var(--gs-space-1));padding:var(--gs-space-1);scrollbar-width:none; }
-.overview-heading-chips.has-overflow { -webkit-mask-image:linear-gradient(to right, #000 calc(100% - var(--gs-space-6)), transparent 100%);mask-image:linear-gradient(to right, #000 calc(100% - var(--gs-space-6)), transparent 100%); }
+.overview-heading-chips.has-overflow { -webkit-mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%);mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%); }
 .overview-heading-chips::-webkit-scrollbar { display:none; }
 .overview-section-heading .overview-heading-chips.overview-story-tabs { margin:calc(-1 * var(--gs-space-1)) 0; }
 /* One pill for every chip: the heading chips share the story tabs' look (below). */
@@ -516,16 +516,16 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-stat:hover { border-color:var(--gs-rule); }
 .overview-stat:hover .overview-stat-arrow { color:var(--idol-ink,var(--gs-mint-ink)); }
 .overview-stat-header { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-2);min-width:0; }
-.overview-stat-title { display:inline-flex;align-items:center;gap:var(--gs-space-2);color:var(--gs-ink-2);font-size:15px;font-weight:600; }
+.overview-stat-title { display:inline-flex;align-items:center;gap:var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-stat-title svg { flex:none;color:var(--idol-ink,var(--gs-mint-ink)); }
 .overview-stat-figure { display:inline-flex;align-items:baseline;gap:2px;white-space:nowrap; }
-.overview-stat-figure strong { font-family:var(--gs-font-stage);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;color:var(--gs-ink); }
-.overview-stat-total { margin-left:4px;color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:13px;font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-stat-figure strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-title);font-weight:var(--gs-weight-bold);font-variant-numeric:tabular-nums;line-height:1;color:var(--gs-ink); }
+.overview-stat-total { margin-left:4px;color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
 .overview-stat-arrow { flex:none;color:var(--gs-ink-3);margin-left:4px;align-self:center; }
 .overview-stat-bricks { display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;width:100%;margin-top:var(--gs-space-3); }
 .overview-stat-brick { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--idol-soft-bg);border-radius:var(--gs-radius-control);padding:8px 6px;text-align:center;min-width:0; }
-.overview-stat-brick-value { font-size:16px;font-weight:700;color:var(--gs-ink,#1e293b);font-variant-numeric:tabular-nums;line-height:1.2; }
-.overview-stat-brick-label { font-size:12px;color:var(--gs-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2; }
+.overview-stat-brick-value { font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-bold);color:var(--gs-ink);font-variant-numeric:tabular-nums;line-height:1.2; }
+.overview-stat-brick-label { font-size:var(--gs-text-caption);color:var(--gs-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2; }
 .overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
@@ -773,7 +773,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
   .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button, .overview-hub-links button { min-height:var(--gs-control-touch); }
-  @media (max-width:420px) { .overview-hub-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @container portal (max-width:420px) { .overview-hub-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 }
 @media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }
 </style>

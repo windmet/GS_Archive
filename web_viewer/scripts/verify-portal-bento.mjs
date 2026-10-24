@@ -161,4 +161,3 @@ for (const card of sampleCards) {
   assert.ok(glob.eyebrow.includes(card.idolName), `global caption eyebrow must contain idolName ${card.idolName}`)
   assert.ok(glob.title.includes(card.title), `global caption title must contain card title ${card.title}`)
 }
-
