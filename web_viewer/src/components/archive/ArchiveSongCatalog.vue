@@ -20,16 +20,31 @@
 
     <div class="song-toolbar">
       <div class="song-filters" role="group" aria-label="曲目过滤">
-        <button
-          v-for="filter in filters"
-          :key="filter.id"
-          :class="{ active: activeFilter === filter.id }"
-          :aria-pressed="activeFilter === filter.id"
-          @click="activeFilter = filter.id"
-        >
-          {{ filter.label }}
-          <span>{{ catalog ? filterCount(filter.id) : '—' }}</span>
-        </button>
+        <div class="song-filter-segment" role="group" aria-label="编制筛选">
+          <button
+            v-for="cat in lineupFilters"
+            :key="cat.id"
+            :class="{ active: activeLineup === cat.id }"
+            :aria-pressed="activeLineup === cat.id"
+            @click="setLineup(cat.id)"
+          >
+            {{ cat.label }}
+            <span>{{ catalog ? filterCount(cat.id) : '—' }}</span>
+          </button>
+        </div>
+        <span class="song-filter-divider" aria-hidden="true"></span>
+        <div class="song-filter-segment" role="group" aria-label="技术标签筛选">
+          <button
+            v-for="tag in techFilters"
+            :key="tag.id"
+            :class="{ active: activeTech === tag.id }"
+            :aria-pressed="activeTech === tag.id"
+            @click="setTech(tag.id)"
+          >
+            {{ tag.label }}
+            <span>{{ catalog ? filterCount(tag.id) : '—' }}</span>
+          </button>
+        </div>
       </div>
       <label class="song-search">
         <Search :size="16" aria-hidden="true" />
@@ -56,17 +71,18 @@
         </span>
         <span v-else class="song-card-code">封面未收录</span>
         <span class="song-card-copy">
-          <!-- The reading stays searchable and shows on the song's own page; on the shelf it crowded every title. -->
-          <strong :title="song.title">{{ song.title }}</strong>
+          <div class="song-card-head">
+            <strong :title="song.title">{{ song.title }}</strong>
+            <span v-if="songBadges(song).length" class="song-badges">
+              <span
+                v-for="badge in songBadges(song)"
+                :key="badge.key"
+                :class="['badge', badge.cls]"
+              >{{ badge.label }}</span>
+            </span>
+          </div>
           <span class="song-performers" :title="performerLabel(song)">{{ performerSummary(song) }}</span>
-          <span v-if="song.credits" class="song-credits">{{ song.credits }}</span>
-          <span class="song-badges">
-            <span v-if="hasSpecialVariant(song)" class="badge badge-special">含特殊版本</span>
-            <span v-if="hasMovie(song, '3dmv')" class="badge badge-movie">3DMV</span>
-            <span v-if="hasMovie(song, 'mvlive')" class="badge badge-movie">MV LIVE</span>
-            <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分轨演唱</span>
-            <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">Center 台词</span>
-          </span>
+          <span v-if="song.credits" class="song-credits" :title="song.credits">{{ songCreditsSingleLine(song.credits) }}</span>
         </span>
       </button>
     </div>
@@ -80,6 +96,29 @@ import { Search } from '@lucide/vue'
 
 import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
 import { songMatchesIdol } from '../../presentation/CatalogIdolScope.js'
+import { SONG_LINEUP_TAXONOMY as SHARED_SONG_LINEUP_TAXONOMY, classifySongLineup as sharedClassifySongLineup } from '../../presentation/SongPresentation.js'
+
+const SONG_LINEUP_TAXONOMY = typeof SHARED_SONG_LINEUP_TAXONOMY !== 'undefined' ? SHARED_SONG_LINEUP_TAXONOMY : [
+  { id: 'all', label: '全部' },
+  { id: 'configurable_formation', label: '代表曲' },
+  { id: 'fixed_unit', label: '组合曲' },
+  { id: 'fixed_special_lineup', label: '特别编成' },
+]
+
+function classifySongLineup(song) {
+  if (typeof sharedClassifySongLineup === 'function') return sharedClassifySongLineup(song)
+  const scope = song?.performance_mapping?.performer_scope
+  if (scope === 'configurable_formation') return 'configurable_formation'
+  if (scope === 'fixed_unit') return 'fixed_unit'
+  if (scope === 'fixed_special_lineup' || scope === 'unspecified_special') return 'fixed_special_lineup'
+  return 'fixed_special_lineup'
+}
+
+const activeFilter = computed({
+  get: () => props.scope || 'all',
+  set: (val) => emit('update:scope', val),
+})
+
 const props = defineProps({
   scopeIdol: { type: Object, default: null },
   catalog: { type: Object, default: null },
@@ -91,10 +130,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['open', 'retry', 'update:scope', 'update:query', 'clear-idol'])
 
-const activeFilter = computed({
-  get: () => props.scope,
-  set: value => emit('update:scope', value),
-})
 const query = computed({
   get: () => props.query,
   set: value => emit('update:query', value),
@@ -106,18 +141,58 @@ const songs = computed(() => {
     .filter(song => song.variant_kind === 'primary' && songMatchesIdol(song, props.scopeIdol))
     .sort((a, b) => (a.song_id || 0) - (b.song_id || 0))
 })
+
 const summary = computed(() => props.scopeIdol ? {
-  three_d_movie_count: filterCount('movie'), mvlive_count: filterCount('mvlive'), layered_song_count: filterCount('layered'),
+  three_d_movie_count: techCount('movie'), mvlive_count: techCount('mvlive'), layered_song_count: techCount('layered'),
 } : props.catalog?.summary || {})
 
-const filters = [
-  { id: 'all', label: '全部' },
+const lineupFilters = SONG_LINEUP_TAXONOMY
+
+const techFilters = [
   { id: 'movie', label: '3DMV' },
   { id: 'mvlive', label: 'MV LIVE' },
   { id: 'layered', label: '分轨演唱' },
   { id: 'oneshot', label: 'Center 台词' },
   { id: 'special', label: '特殊版本' },
 ]
+
+const TECH_TAG_IDS = new Set(['movie', 'mvlive', 'layered', 'oneshot', 'special'])
+const LINEUP_IDS = new Set(['configurable_formation', 'fixed_unit', 'fixed_special_lineup'])
+
+const activeLineup = computed(() => {
+  const raw = props.scope || 'all'
+  const parts = raw.split('+')
+  const found = parts.find(p => LINEUP_IDS.has(p))
+  return found || 'all'
+})
+
+const activeTech = computed(() => {
+  const raw = props.scope || 'all'
+  const parts = raw.split('+')
+  const found = parts.find(p => TECH_TAG_IDS.has(p))
+  return found || 'all'
+})
+
+function setLineup(id) {
+  emitScope(id, activeTech.value)
+}
+
+function setTech(id) {
+  const nextTech = activeTech.value === id ? 'all' : id
+  emitScope(activeLineup.value, nextTech)
+}
+
+function emitScope(lineup, tech) {
+  if (lineup !== 'all' && tech !== 'all') {
+    emit('update:scope', `${lineup}+${tech}`)
+  } else if (lineup !== 'all') {
+    emit('update:scope', lineup)
+  } else if (tech !== 'all') {
+    emit('update:scope', tech)
+  } else {
+    emit('update:scope', 'all')
+  }
+}
 
 function performerLabel(song) {
   const performance = song.performance || {}
@@ -140,8 +215,25 @@ function hasSpecialVariant(song) {
   return (song.variants || []).some(variant => variant.archive_status === 'special')
 }
 
+function songBadges(song) {
+  const list = []
+  if (hasSpecialVariant(song)) list.push({ key: 'special', label: '含特殊版本', cls: 'badge-special' })
+  if (hasMovie(song, '3dmv')) list.push({ key: '3dmv', label: '3DMV', cls: 'badge-movie' })
+  if (hasMovie(song, 'mvlive')) list.push({ key: 'mvlive', label: 'MV LIVE', cls: 'badge-movie' })
+  if (song.audio_form === 'layered') list.push({ key: 'layered', label: '分轨演唱', cls: 'badge-layered' })
+  if (song.audio_form === 'oneshot') list.push({ key: 'oneshot', label: 'Center 台词', cls: 'badge-oneshot' })
+  return list
+}
+
+function songCreditsSingleLine(credits) {
+  return String(credits || '').replace(/\r?\n+/g, ' · ').trim()
+}
+
 function filterCount(id) {
   if (id === 'all') return songs.value.length
+  if (LINEUP_IDS.has(id)) {
+    return songs.value.filter(song => classifySongLineup(song) === id).length
+  }
   if (id === 'movie') return songs.value.filter(song => hasMovie(song, '3dmv')).length
   if (id === 'mvlive') return songs.value.filter(song => hasMovie(song, 'mvlive')).length
   if (id === 'layered') return songs.value.filter(song => song.audio_form === 'layered').length
@@ -153,11 +245,12 @@ function filterCount(id) {
 const filteredSongs = computed(() => {
   const q = query.value.trim().toLowerCase()
   return songs.value.filter(song => {
-    if (activeFilter.value === 'movie' && !hasMovie(song, '3dmv')) return false
-    if (activeFilter.value === 'mvlive' && !hasMovie(song, 'mvlive')) return false
-    if (activeFilter.value === 'layered' && song.audio_form !== 'layered') return false
-    if (activeFilter.value === 'oneshot' && song.audio_form !== 'oneshot') return false
-    if (activeFilter.value === 'special' && !hasSpecialVariant(song)) return false
+    if (activeLineup.value !== 'all' && classifySongLineup(song) !== activeLineup.value) return false
+    if (activeTech.value === 'movie' && !hasMovie(song, '3dmv')) return false
+    if (activeTech.value === 'mvlive' && !hasMovie(song, 'mvlive')) return false
+    if (activeTech.value === 'layered' && song.audio_form !== 'layered') return false
+    if (activeTech.value === 'oneshot' && song.audio_form !== 'oneshot') return false
+    if (activeTech.value === 'special' && !hasSpecialVariant(song)) return false
     const variants = song.variants || []
     if (q && !(
       song.title?.toLowerCase().includes(q) ||
@@ -187,7 +280,9 @@ const filteredSongs = computed(() => {
 .song-hero dt { color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
 .song-hero dd { margin: 0; font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
 .song-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-4); flex-wrap: wrap; padding: var(--gs-space-5) 0 var(--gs-space-4); }
-.song-filters { display: flex; gap: var(--gs-space-3); flex-wrap: wrap; }
+.song-filters { display: flex; align-items: center; gap: var(--gs-space-2, 8px); flex-wrap: wrap; }
+.song-filter-segment { display: flex; align-items: center; gap: var(--gs-space-2, 8px); flex-wrap: wrap; }
+.song-filter-divider { width: 1px; height: 18px; background: var(--gs-line); margin: 0 var(--gs-space-2, 8px); align-self: center; flex: none; }
 .song-filters button {
   display: inline-flex;
   align-items: center;
@@ -224,50 +319,55 @@ const filteredSongs = computed(() => {
 .song-grid.empty { display: block; }
 .song-card {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-columns: 72px minmax(0, 1fr);
   align-items: center;
-  gap: var(--gs-space-4);
-  height: auto;
-  min-height: 72px;
-  padding: var(--gs-space-4);
+  gap: var(--gs-space-4, 12px);
+  min-height: 88px;
+  padding: var(--gs-space-3, 10px) var(--gs-space-4, 12px);
   border: 0;
   border-bottom: 1px solid var(--gs-line);
-  border-radius: 0;
+  border-radius: var(--gs-radius-control);
   box-shadow: none;
   background: transparent;
   color: var(--gs-ink);
   cursor: pointer;
   text-align: left;
   font: inherit;
+  transition: background .15s ease;
 }
 .song-card:focus-visible, .song-filters button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint-ink); outline-offset: calc(-1 * var(--gs-focus-ring)); }
 .song-card-code {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 6px;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--gs-radius-control);
   background: var(--gs-mint-wash);
   color: var(--gs-mint-ink);
   font-size: var(--gs-text-caption);
   font-weight: var(--gs-weight-semibold);
   word-break: break-all;
+  padding: 4px;
+  text-align: center;
+  flex: none;
 }
 .song-card-jacket {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--gs-radius-media);
+  width: 72px;
+  height: 72px;
+  border-radius: var(--gs-radius-control);
   overflow: hidden;
   background: var(--gs-line);
+  flex: none;
 }
 .song-card-jacket img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.song-card-copy { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; }
-.song-card-copy strong { font-size: var(--gs-text-subtitle); line-height: 1.4; overflow-wrap: anywhere; white-space: normal; font-weight: var(--gs-weight-semibold); }
-.song-credits { color: var(--gs-ink-3); font-size: var(--gs-text-caption); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-weight: var(--gs-weight-regular); }
-.song-performers { color: var(--gs-ink-2); font-size: var(--gs-text-meta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-regular); }
-.song-badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-1) var(--gs-space-2); }
+.song-card-copy { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-width: 0; }
+.song-card-head { display: flex; align-items: baseline; gap: var(--gs-space-2, 8px); min-width: 0; }
+.song-card-head strong { font-size: var(--gs-text-subtitle, 16px); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-semibold); }
+.song-badges { display: inline-flex; align-items: baseline; gap: var(--gs-space-1, 4px) var(--gs-space-2, 8px); flex-shrink: 0; }
+.song-credits { color: var(--gs-ink-3); font-size: var(--gs-text-caption, 11px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: var(--gs-weight-regular); }
+.song-performers { color: var(--gs-ink-2); font-size: var(--gs-text-meta, 12px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-regular); }
 /* Song forms read as a quiet text list, not coloured pills. */
-.badge { max-width: 100%; color: var(--gs-mint-ink); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); overflow-wrap: anywhere; }
+.badge { color: var(--gs-mint-ink); font-size: var(--gs-text-meta, 12px); font-weight: var(--gs-weight-medium); white-space: nowrap; }
 .badge + .badge::before { content: "·"; margin-right: var(--gs-space-2); color: var(--gs-ink-3); }
 .badge-muted { color: var(--gs-ink-3); }
 .song-empty { color: var(--gs-ink-3); font-size: var(--gs-text-ui); padding: 22px 4px; font-weight: var(--gs-weight-regular); }
@@ -282,16 +382,17 @@ const filteredSongs = computed(() => {
   .song-toolbar { position: sticky; top: 0; z-index: 2; display: grid; gap: var(--gs-space-3); padding: var(--gs-space-3) 0 var(--gs-space-4); background: var(--gs-paper); }
   .song-filters { min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
   .song-filters::-webkit-scrollbar { display: none; }
+  .song-filter-segment { flex-wrap: nowrap; flex: none; }
   .song-filters button { flex: 0 0 auto; min-height: var(--gs-control-touch); white-space: nowrap; }
   .song-search { min-width: 0; height: var(--gs-control-touch); }
   .song-grid { gap: 0; }
-  .song-card { grid-template-columns: 52px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; }
-  .song-card-jacket, .song-card-code { width: 52px; height: 52px; border-radius: 7px; }
-  .song-card-copy { gap: var(--gs-space-1); }
+  .song-card { grid-template-columns: 60px minmax(0, 1fr); gap: var(--gs-space-3); padding: var(--gs-space-3) 0; }
+  .song-card-jacket, .song-card-code { width: 60px; height: 60px; border-radius: var(--gs-radius-control); }
+  .song-card-copy { gap: 2px; }
   .song-credits { display: none; }
   .song-performers { font-size: var(--gs-text-meta); line-height: 15px; }
   .song-badges { gap: var(--gs-space-2); }
-  .badge { line-height: 1.4; padding: 0 var(--gs-space-2); }
+  .badge { line-height: 1.4; padding: 0; }
 }
 
 @media (hover: hover) and (pointer: fine) {

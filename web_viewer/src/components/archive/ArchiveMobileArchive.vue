@@ -46,10 +46,19 @@
 
     <main class="mobile-content">
       <div class="content-heading">
-        <div>
-          <h3>{{ activeTab.label }}</h3>
-        </div>
+        <h3 class="visually-hidden">{{ activeTab.label }}</h3>
         <strong>{{ contentSummary }}</strong>
+        <label
+          v-if="mode !== 'random'"
+          class="unlock-toggle"
+          title="原游戏开放条件：仅记录原游戏中的开放条件，不影响资料馆内已收录内容的浏览与播放。"
+        >
+          <input
+            v-model="showUnlockConditions"
+            type="checkbox"
+          />
+          <span>显示开放条件</span>
+        </label>
       </div>
 
       <aside v-if="mode === 'random'" class="random-explainer">
@@ -61,10 +70,6 @@
         </ul>
       </aside>
 
-      <details v-if="mode !== 'random'" class="unlock-explainer">
-        <summary>原游戏开放条件</summary>
-        <p>仅记录原游戏中的开放条件，不影响资料馆内已收录内容的浏览与播放。</p>
-      </details>
       <div v-if="mode !== 'random'" class="conversation-list">
         <article
           v-for="bundle in bundles"
@@ -79,9 +84,9 @@
             <MessageSquareText v-else :size="19" />
           </span>
           <div class="conversation-copy">
-            <small>{{ formatDate(bundle.releaseAt) || kindLabel(bundle.kind) }}</small>
-            <div class="unlock-list">
-              <template v-for="unlock in bundle.unlocks" :key="unlock.id">
+            <small v-if="formatDate(bundle.releaseAt)">{{ formatDate(bundle.releaseAt) }}</small>
+            <div v-if="showUnlockConditions && consolidatedUnlocks(bundle).length" class="unlock-list">
+              <template v-for="unlock in consolidatedUnlocks(bundle)" :key="unlock.id">
                 <button v-if="isRelatedUnlock(unlock)" class="related" type="button" :title="unlockTitle(unlock)" @click="openUnlock(unlock)">
                   <CreditCard v-if="unlock.kind.startsWith('card_')" :size="13" aria-hidden="true" />
                   <BookOpen v-else :size="13" aria-hidden="true" />
@@ -98,7 +103,7 @@
                 <p class="call-line" :lang="line.locale" :class="{ 'is-pending': line.pending }"><template v-for="(part, index) in projectCommunicationInlineContent(line.text)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></p>
               </StoryLineText>
             </template>
-            <h4 v-else :lang="chatText(bundle.title).lang" :class="{ 'is-pending': chatText(bundle.title).pending }"><template v-for="(part, index) in projectCommunicationInlineContent(chatText(bundle.title).text)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4>
+            <h4 v-else :lang="chatText(bundle.title).lang" :class="{ 'is-pending': chatText(bundle.title).pending }"><template v-for="(part, index) in projectCommunicationInlineContent(chatText(bundle.title).text /* projectCommunicationInlineContent(bundle.title) */)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4>
             <p v-if="bundle.guests?.length" class="call-guests"><span class="call-guest-faces" aria-hidden="true"><ArchiveIdolAvatar v-for="code in bundle.guests" :key="code" :idol-code="code" :size="22" :ring-width="0" :gap="0" decorative /></span>{{ guestNames(bundle) }} 也在通话中</p>
           </div>
           <div v-if="!bundle.exists" class="conversation-meta"><span>暂未收录</span></div>
@@ -148,13 +153,13 @@ import { archiveLineText, archiveNamedText, loadArchiveNames } from './useArchiv
 import { presentMissionText } from '../../presentation/missionText.js'
 import { uiLocale } from '../../localization/ui/UiLocaleStore.js'
 import { chapterLabel } from '../../presentation/chapterLabel.js'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveCardFullTitle} from './useArchiveCardTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
 import { communicationUnlockAction } from '../../presentation/communicationUnlock.js'
-import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
+import { formatArchiveDate, consolidateProgressiveUnlocks } from '../../data/idolCommunicationSelectors.js'
 import { getEmojiUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { projectCommunicationInlineContent } from '../../presentation/communicationInlineContent.js'
@@ -244,8 +249,37 @@ function moveSelection(delta) {
 function changeSelection(value) {
   emit(props.mode === 'unit' ? 'select-unit' : 'select-idol', value)
 }
+const UNLOCK_STORAGE_KEY = 'gs_archive_show_unlock_conditions'
+
+function readUnlockPreference() {
+  try {
+    const val = localStorage.getItem(UNLOCK_STORAGE_KEY)
+    if (val === null) return true
+    return val === 'true'
+  } catch {
+    return true
+  }
+}
+
+const showUnlockConditions = ref(readUnlockPreference())
+
+watch(showUnlockConditions, val => {
+  try {
+    localStorage.setItem(UNLOCK_STORAGE_KEY, String(val))
+  } catch {
+    // Ignore storage errors in private browsing / iframe environments
+  }
+})
+
+function consolidatedUnlocks(bundle) {
+  return consolidateProgressiveUnlocks(bundle?.unlocks, {
+    formatText: text => presentMissionText(text, { locale: uiLocale.value, name: props.idolNameFromSource }),
+  })
+}
+
 function isRelatedUnlock(unlock) {
-  return unlock.kind.startsWith('card_') || unlock.kind === 'idol_story_episode_finished'
+  if (unlock?.isProgressive) return false
+  return unlock?.kind?.startsWith('card_') || unlock?.kind === 'idol_story_episode_finished'
 }
 function openUnlock(unlock) {
   const targetId = Number(unlock.condition?.param_a || 0)
@@ -259,6 +293,7 @@ function unlockAction(unlock) {
   return communicationUnlockAction(unlock.condition)
 }
 function unlockText(unlock) {
+  if (unlock?.isProgressive) return unlock.text
   const card = unlockCard(unlock)
   if (card) return `${archiveCardFullTitle(card) || '卡名待确认'} ${unlockAction(unlock)}`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
@@ -269,6 +304,7 @@ function unlockText(unlock) {
     ? presentMissionText(unlock.text, { locale: uiLocale.value, name: props.idolNameFromSource }) : '开放条件待确认'
 }
 function unlockTitle(unlock) {
+  if (unlock?.isProgressive) return unlock.text
   const card = unlockCard(unlock)
   if (card) return `卡片 · ${archiveCardFullTitle(card)} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
@@ -353,12 +389,14 @@ function timeWindow(topic) {
 .mobile-tabs button.active { border-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .mobile-tabs small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
 .mobile-content { box-sizing: border-box; max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-6) var(--gs-space-7) calc(var(--gs-space-8) + var(--gs-safe-bottom)); }
-.content-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-3); }
-.content-heading h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
-.content-heading > strong { flex: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.unlock-explainer { margin: 0 0 var(--gs-space-3); color: var(--gs-ink-2); }
-.unlock-explainer summary { display: list-item; box-sizing: border-box; min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); cursor: pointer; }
-.unlock-explainer p { margin: 0; padding: 0 0 var(--gs-space-3); font-size: var(--gs-text-ui); line-height: 1.7; }
+.content-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); }
+.content-heading .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+.content-heading > strong { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.unlock-toggle { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); cursor: pointer; user-select: none; }
+.unlock-toggle input[type="checkbox"] { cursor: pointer; accent-color: var(--gs-mint); }
+@container mobile-archive (max-width: 390px) {
+  .unlock-toggle { margin-left: auto; }
+}
 .conversation-list, .random-list { border-top: 1px solid var(--gs-rule); }
 .conversation-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto var(--gs-control-touch); align-items: start; gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
 .conversation-row.focused { background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }

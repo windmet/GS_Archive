@@ -1,4 +1,5 @@
 import { sectionLabel } from '../core/archiveSections.js'
+import { SONG_LINEUP_TAXONOMY } from './SongPresentation.js'
 
 // The Portal's two cross-link blocks: 通信 (personal chats, unit rooms, phone calls) and 图鉴
 // (items, honors, currencies, costumes, photography, other voices). They carry a count only when
@@ -68,7 +69,7 @@ export function portalPreferredStatTiles({ cardCounts, storyCounts, songCounts, 
         .filter(part => typeof part.count === 'number' && part.count > 0)
     : []
 
-  const songDefs = [['configurable_formation', '代表曲'], ['fixed_unit', '组合曲'], ['fixed_special_lineup', '特别编成']]
+  const songDefs = SONG_LINEUP_TAXONOMY.filter(entry => entry.id !== 'all').map(entry => [entry.id, entry.label])
   const songParts = count(songCounts?.all) !== null
     ? songDefs
         .map(([key, label]) => ({ id: key, label, count: count(songCounts?.[key]) }))
@@ -93,8 +94,8 @@ export function portalPreferredStatTiles({ cardCounts, storyCounts, songCounts, 
         .filter(([key]) => count(storyCounts?.[key]) !== null).map(([key, label]) => `${label} ${storyCounts[key]}`)) },
     { id: 'songs', label: '参与歌曲', action: 'songs', icon: 'songs', value: count(songCounts?.all),
       total: totalFor('songs'), parts: songParts,
-      meta: joined([['configurable_formation', '代表曲'], ['fixed_unit', '组合曲'], ['fixed_special_lineup', '特别编成']]
-        .filter(([key]) => count(songCounts?.[key]) !== null).map(([key, label]) => `${label} ${songCounts[key]}`)) },
+      meta: joined(SONG_LINEUP_TAXONOMY.filter(entry => entry.id !== 'all')
+        .filter(entry => count(songCounts?.[entry.id]) !== null).map(entry => `${entry.label} ${songCounts[entry.id]}`)) },
     { id: 'communication', label: '通信', action: 'mobile', icon: 'interactions',
       value: chats !== null && phones !== null ? chats + phones : null,
       total: null, parts: commParts,
