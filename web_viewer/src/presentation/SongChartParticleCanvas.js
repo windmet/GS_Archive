@@ -30,6 +30,8 @@ function createPipeline() {
   }
   gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
   // Store valid premultiplied coverage for the transparent Canvas2D copy.
+  // Its SVG foreignObject must also use plus-lighter against the scene:
+  // source-over would turn black additive coverage into a dark backdrop.
   gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE)
   gl.clearColor(0, 0, 0, 0); gl.viewport(0, 0, 1280, 720)
   const state = { canvas, gl, program, buffer, textures: new Map(), lost: false }

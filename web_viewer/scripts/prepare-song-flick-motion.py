@@ -14,10 +14,20 @@ for k,role in [('2','swipe_left'),('3','swipe_up'),('4','swipe_right')]:
   material=renderer.read().m_Materials[0].read()
   shader=material.m_Shader.deref()
   blend=shader.read_typetree()['m_ParsedForm']['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
-  tex=l['materials'][0]['properties']['m_TexEnvs'][0][1]['m_Texture']['m_PathID'];frame=round(l['uv']['startFrame']['scalar']*4)
-  url=f'/assets/song-chart-hints/native2/'+(f'blur-{frame}.png'if tex==876 else f'frame-{frame}.png')
+  tex=l['materials'][0]['properties']['m_TexEnvs'][0][1]['m_Texture']['m_PathID']
+  uv=obj[l['pathId']].read_typetree()['UVModule']
+  nx,ny=uv['tilesX'],uv['tilesY']
+  advance=uv['frameOverTime'];progress=advance['scalar']*(advance['maxCurve']['m_Curve'][0]['value'] if advance['minMaxState']==1 else 1)
+  frame=int(((uv['startFrame']['scalar']+progress*uv['cycles'])%1)*nx*ny)
+  im=obj[tex].read().image;w,h=im.width//nx,im.height//ny
+  urls=[f'/assets/song-chart-hints/native2/'+(f'blur-{i}.png'if tex==876 else f'frame-{i}.png') for i in range(nx*ny)]
+  url=urls[frame]
   if tex==876:
-   im=obj[tex].read().image;w,h=im.width//2,im.height//2;dst=root/'public'/url.lstrip('/');im.crop((frame%2*w,frame//2*h,(frame%2+1)*w,(frame//2+1)*h)).save(dst)
+   for i,path in enumerate(urls):
+    left=i%nx*w;top=i//nx*h
+    dst=root/'public'/path.lstrip('/');im.crop((left,top,left+w,top+h)).save(dst)
   rows.append(dict(nodeId=l['pathId'],sha256=l['sha256'],chain=l['chain'],period=l['settings']['lengthInSec'],prewarm=l['settings']['prewarm'],lifetime=l['initial']['startLifetime']['scalar'],size=l['initial']['startSize']['scalar'],rotation=l['initial']['startRotation']['scalar'],startColor=l['initial']['startColor']['maxColor'],gradient=l['color']['gradient'],velocity=l['velocity'],bursts=l['emission']['m_Bursts'],shape=l['shape'],url=url,sortingOrder=renderer.read_typetree()['m_SortingOrder'],rendererSha256=hashlib.sha256(renderer.get_raw_data()).hexdigest(),shaderPathId=shader.path_id,shaderSha256=hashlib.sha256(shader.get_raw_data()).hexdigest(),blend=dict(src=blend['srcBlend']['val'],dst=blend['destBlend']['val'])))
+  rows[-1]['textureCell']=dict(textureId=tex,tilesX=nx,tilesY=ny,frame=frame,width=w,height=h)
+  rows[-1]['uv']=uv;rows[-1]['urls']=urls
  r['layers'][role]=sorted(rows,key=lambda row:row['sortingOrder'])
 (root/'config/song-flick-motion.v1.json').write_text(json.dumps(r,separators=(',',':'))+'\n',encoding='utf8')

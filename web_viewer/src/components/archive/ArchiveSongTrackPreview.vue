@@ -45,6 +45,8 @@
         width="1280"
         height="720"
         pointer-events="none"
+        style="mix-blend-mode:plus-lighter"
+        data-additive-hit-layer
       >
         <ArchiveSongHitEffectPreview
           :hits="hits"
@@ -53,6 +55,7 @@
           :judge-y="scene.judgeY"
         />
       </foreignObject>
+      <ArchiveSongAutoEvaluationPreview v-if="demonstrationEnabled" :state="autoEval" />
       <g v-if="demonstrationEnabled && holds.length" class="track-hold-effects" pointer-events="none" aria-hidden="true">
           <g v-for="h in holds" :key="'hold-fx-' + h.sourceIndex" :data-hold-fx="h.sourceIndex" />
       </g>
@@ -73,6 +76,7 @@ import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
 import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
 import ArchiveSongHitEffectPreview from './ArchiveSongHitEffectPreview.vue'
+import ArchiveSongAutoEvaluationPreview from './ArchiveSongAutoEvaluationPreview.vue'
 import ArchiveSongComboPreview from './ArchiveSongComboPreview.vue'
 
 const props = defineProps({

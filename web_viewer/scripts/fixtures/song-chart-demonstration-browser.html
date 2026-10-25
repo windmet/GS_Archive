@@ -125,6 +125,10 @@ run.onclick=async()=>{
       await seek(Math.floor((hit.seconds-.03)*100)/100)
       await pulse(hit.seconds+.02);button('暂停').click();await settle()
       check(document.querySelectorAll('[data-hit-fx]').length>0,'paused hit present')
+      check(document.querySelector('[data-additive-hit-layer]')?.style.mixBlendMode==='plus-lighter','additive particle surface must blend with the actual track backdrop')
+      check(document.querySelector('[data-auto-layer="EvaluationImage"]'),'Auto base must remain separate from additive particles')
+      check(document.querySelector('[data-auto-layer="EvaluationImage"]').style.mixBlendMode==='normal','Auto base keeps native source-over')
+      const frozenAuto=document.querySelector('[data-auto-evaluation]').outerHTML
       await waitForImages()
       const frozenPixels=effectPixels()
       check(frozenPixels.visible>0,'paused canvas contains visible pixels')
@@ -137,6 +141,7 @@ run.onclick=async()=>{
       check(state().dataset.epoch===epoch,'resume must preserve epoch')
       check(document.querySelector('.track-hit-effects')?.outerHTML===frozen,'resume must preserve frozen hit instances')
       check(document.querySelector('[data-chart-combo]')?.outerHTML===frozenCombo,'pause/resume freezes the actual Combo clip')
+      check(document.querySelector('[data-auto-evaluation]')?.outerHTML===frozenAuto,'pause/resume freezes all Auto UI layers')
       const resumedDifference=pixelDifference(frozenPixels)
       // Canvas readback/redraw may round an 8-bit channel by one. A state or
       // animation-age change is much larger; retain the observed difference.

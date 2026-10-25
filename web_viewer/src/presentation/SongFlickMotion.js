@@ -3,6 +3,12 @@ import { sampleMinMax, sampleNativeColor } from './SongChartHitEffectRenderer.js
 import { rotateParticleEuler } from './SongChartHitProjection.js'
 export { motion as songFlickMotion }
 
+export function flickTextureFrame(layer, age) {
+  const uv=layer.uv
+  const start=sampleMinMax(uv.startFrame),advance=sampleMinMax(uv.frameOverTime,age/layer.lifetime)*(uv.cycles??1)
+  return Math.floor((((start+advance)%1+1)%1)*uv.tilesX*uv.tilesY)
+}
+
 // Integrate the authored velocity-over-lifetime curve (not a CSS sine/bounce).
 // Simpson integrates an unweighted cubic exactly between its source keys.
 export function flickDisplacement(curve, age, lifetime) {
@@ -39,7 +45,8 @@ export function songAnimatedFlickHint(role, root, elapsed, seed = 0) {
           ...['x','y','z'].map(axis=>l.shape.m_Rotation[axis]*Math.PI/180))
         const cx = root.position[0] + (parent.position.x + (dx+birth[0]+l.shape.m_Position.x)*scale('x'))*root.scale[0]
         const cy = root.position[1] + (parent.position.y + (dy+birth[1]+l.shape.m_Position.y)*scale('y'))*root.scale[1]
-        layers.push({ url:l.url, cx:640+cx, cy:360-cy,
+        const textureFrame=flickTextureFrame(l,age)
+        layers.push({ url:l.urls[textureFrame], textureFrame, cx:640+cx, cy:360-cy,
           width:l.size*scale('x')*root.scale[0],height:l.size*scale('y')*root.scale[1],rotation:-l.rotation*180/Math.PI,
           alpha:l.startColor.a*gradient.a,
           sortingOrder:l.sortingOrder, blendMode:l.blend?.dst===1?'lighter':'source-over',

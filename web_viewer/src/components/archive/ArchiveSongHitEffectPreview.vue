@@ -19,7 +19,6 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   sampleHitEffectFrame,
   sampleHoldEffectFrame,
-  sampleAutoEvaluationFrame,
 } from '../../presentation/SongChartHitEffectRenderer.js'
 import { drawParticleCanvas } from '../../presentation/SongChartParticleCanvas.js'
 import hitEffectsConfig from '../../../config/song-hit-effects.v1.json'
@@ -94,24 +93,9 @@ function draw() {
     }
   }
 
-  // 3. Draw native Auto UI badge (3-layer EvalAnimationAuto)
-  if (props.autoEval.active) {
-    const evalData = sampleAutoEvaluationFrame(props.autoEval.age)
-    if (evalData) {
-      const autoImg = images.get(2068)
-      if (autoImg && autoImg.complete && autoImg.naturalWidth) {
-        for (const layer of evalData.layers) {
-          ctx.save()
-          ctx.globalCompositeOperation = layer.blendMode || 'source-over'
-          ctx.globalAlpha = Math.max(0, Math.min(1, layer.alpha))
-          ctx.translate(layer.x, layer.y)
-          ctx.scale(layer.scaleX, layer.scaleY)
-          drawEffectTexture(ctx, autoImg, { sx: 0, sy: 0, sw: 136, sh: 63, colorTint: layer.colorTint }, [-68, -31.5, 136, 63])
-          ctx.restore()
-        }
-      }
-    }
-  }
+  // Auto UI uses a separate SVG sibling: its base is source-over, while
+  // this particle surface adds to the real track backdrop.
+
 }
 
 watch([() => props.hits, () => props.holds, () => props.autoEval], draw, { deep: false })
