@@ -11,6 +11,7 @@ import { playableSongChart } from '/src/presentation/SongChartPresentation.js'
 import { songNoteEndpoints, songHoldMiddleNodes } from '/src/presentation/SongNotePresentation.js'
 import { nativeSongNoteIsHold } from '/src/presentation/SongTrackNativeNoteTypes.js'
 import { drawEffectTexture } from '/src/presentation/SongChartEffectTextures.js'
+import { delayedChartSeconds } from '/src/presentation/SongComboTiming.js'
 const result=document.querySelector('#result'),run=document.querySelector('#run')
 const songs=(await(await fetch('/data/song_catalog.json')).json()).songs
 const audioManifest=(await(await fetch('/data/song_playback_audio.json')).json()).songs
@@ -129,9 +130,13 @@ run.onclick=async()=>{
       check(frozenPixels.visible>0,'paused canvas contains visible pixels')
       check(frozenPixels.colored>100,'authored particle colors reach actual Canvas pixels')
       const frozen=document.querySelector('.track-hit-effects').outerHTML,epoch=state().dataset.epoch
+      const frozenCombo=document.querySelector('[data-chart-combo]')?.outerHTML
+      const comboScale=Number(document.querySelector('[data-chart-combo]')?.dataset.scale)
+      check(comboScale>1,'native Combo clip reaches the actual SVG scale after a hit')
       button('播放').click();await settle();await pulse(media.time)
       check(state().dataset.epoch===epoch,'resume must preserve epoch')
       check(document.querySelector('.track-hit-effects')?.outerHTML===frozen,'resume must preserve frozen hit instances')
+      check(document.querySelector('[data-chart-combo]')?.outerHTML===frozenCombo,'pause/resume freezes the actual Combo clip')
       const resumedDifference=pixelDifference(frozenPixels)
       // Canvas readback/redraw may round an 8-bit channel by one. A state or
       // animation-age change is much larger; retain the observed difference.
@@ -154,6 +159,21 @@ run.onclick=async()=>{
       check(!document.querySelector('[data-track-note]'),'ended removes final note body')
       check(!document.querySelector('[data-hold-middle]'),'ended removes final middle')
       check(!document.querySelector('[data-direction-hint]'),'ended removes final arrow')
+      await seek(12)
+      ;[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click();await settle()
+      const timingInput=document.querySelector('[aria-label="音符时机调整"]')
+      timingInput.value='6';timingInput.dispatchEvent(new Event('input',{bubbles:true}));await settle()
+      check(Math.abs(media.time-12)<1e-6,'timing setting must not seek or alter the audio')
+      check(Math.abs(Number(button('编辑谱面 tick 位置').dataset.tick)-Math.round(timing.secondsToTick(11.9)))<=1,'positive setting delays chart by six native ticks')
+      check(Number(document.querySelector('[data-chart-combo]').dataset.count)===events.filter(e=>e.seconds<=delayedChartSeconds(12,6)).length,'Combo follows adjusted chart time')
+      const comboToggle=document.querySelector('[aria-label="Combo 提示动画"]')
+      comboToggle.checked=false;comboToggle.dispatchEvent(new Event('change',{bubbles:true}));await settle()
+      check(!document.querySelector('[data-chart-combo]'),'Combo toggle removes the visual')
+      timingInput.value='-6';timingInput.dispatchEvent(new Event('input',{bubbles:true}));await settle()
+      check(Math.abs(Number(button('编辑谱面 tick 位置').dataset.tick)-Math.round(timing.secondsToTick(12.1)))<=1,'negative setting advances chart')
+      timingInput.value='0';timingInput.dispatchEvent(new Event('input',{bubbles:true}))
+      comboToggle.checked=true;comboToggle.dispatchEvent(new Event('change',{bubbles:true}));await settle()
+      button('关闭视图设置').click();await settle();checkPosition(12)
       await seek(12);checkPosition(12)
       document.querySelector('.chart-modes button:last-child').click();await settle()
       document.querySelector('.chart-modes button:first-child').click();await settle();checkPosition(12)
@@ -166,7 +186,7 @@ run.onclick=async()=>{
       for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
       check(Number(state().dataset.count)===0,'difficulty must reset demonstration')
       check(!document.querySelector('[data-hit-fx]'),'difficulty must clear transients')
-      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,coloredPixels:frozenPixels.colored,resumedDifference,status:'passed'})
+      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,coloredPixels:frozenPixels.colored,resumedDifference,comboScale,comboPauseResume:true,timingAdjustment:true,comboToggle:true,status:'passed'})
     }
     result.textContent=JSON.stringify({status:'passed',textureMultiplication,reports},null,2)
   }catch(error){result.textContent=JSON.stringify({status:'failed',error:error.message});console.error(error)}

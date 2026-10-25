@@ -1,4 +1,5 @@
 import nativeEffects from '../../config/song-track-native-effects.v1.json' with { type: 'json' }
+import flickMotion from '../../config/song-flick-motion.v1.json' with { type: 'json' }
 import nativeNotes from '../../config/song-track-native-note-geometry.v1.json' with { type: 'json' }
 import nativeGeometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
 import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
@@ -35,12 +36,13 @@ export function songStaticFlickHint(role, root, viewport = nativeGeometry.viewpo
     const cx = f(root.position[0] + f(layer.offset.x * root.scale[0]))
     const cy = f(root.position[1] + f(layer.offset.y * root.scale[1]))
     return { url: layer.url, color: layer.color,
+      sortingOrder:flickMotion.layers[role].find(source=>source.nodeId===layer.particlePathId).sortingOrder,
       cx: viewport.width / 2 + cx, cy: viewport.height / 2 - cy,
       width: Math.abs(f(layer.authoredSize.x * root.scale[0])),
       height: Math.abs(f(layer.authoredSize.y * root.scale[1])),
       rotation: -layer.rotation * 180 / Math.PI }
   })
-  return { defaultIndex: nativeEffects.defaultIndex, layers }
+  return { defaultIndex: nativeEffects.defaultIndex, layers:layers.sort((a,b)=>a.sortingOrder-b.sortingOrder) }
 }
 
 // The long chart remains a schematic. Scale the same authored marker to its

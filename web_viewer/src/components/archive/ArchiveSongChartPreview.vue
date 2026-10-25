@@ -21,6 +21,9 @@
           <label>打击音 <select v-model="soundSet" aria-label="谱面打击音套装"><option value="off">关闭</option><option value="se1">SE1</option><option value="se2">SE2</option><option value="se3">SE3</option><option value="president">社长愚人节</option></select></label>
           <label>音效音量 <input v-model.number="soundVolume" type="range" min="0" max="1" step="0.01" aria-label="谱面音效音量" /></label>
           <p class="setting-note">所有套装均可用于任意歌曲，播放时独立于自动演示开关。</p>
+          <label>音符时机 <input v-model.number="noteTiming" type="number" min="-30" max="30" step="1" aria-label="音符时机调整" @change="noteTiming = Math.max(-30,Math.min(30,Math.round(Number(noteTiming)||0)))" /></label>
+          <p class="setting-note">{{ noteTimingMilliseconds }} ms · 原作刻度 -30～30，每格约16.67ms。正值延后、负值提前谱面与打击音，0为关闭；歌曲音频不变。</p>
+          <label>Combo 提示 <input v-model="comboEnabled" type="checkbox" aria-label="Combo 提示动画" /></label><p class="setting-note">显示已过谱面事件的 Combo，数字动画随播放暂停，不进行评分。</p>
         </div>
       </Teleport>
       <p v-if="exportError" role="alert">{{ exportError }} <button type="button" :disabled="exporting" @click="download(exportFormat)">重试导出</button></p>
@@ -29,7 +32,7 @@
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
-        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" :effects="trackEffects" :demonstration-enabled="demonstrationEnabled" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
+        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" :effects="trackEffects" :combo="trackCombo" :combo-enabled="comboEnabled" :demonstration-enabled="demonstrationEnabled" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase" :data-sound-set="soundSet" :data-sound-scheduled="soundStats.scheduled" :data-sound-active="soundStats.active" :data-sound-decoded="soundStats.decoded" :data-sound-context="soundStats.context">
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
@@ -56,6 +59,7 @@ import { createSongChartPlaybackCadence } from '../../presentation/SongChartPlay
 import { compileSongChartDemonstration, createSongChartDemonstration } from '../../presentation/SongChartDemonstration.js'
 import { createSongChartHitEffectPool } from '../../presentation/SongChartHitEffectSelection.js'
 import { createSongChartSoundPlayer } from '../../presentation/SongChartSoundPlayer.js'
+import { createSongComboPresentation, delayedChartSeconds, noteTimingSeconds } from '../../presentation/SongComboTiming.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
@@ -89,6 +93,11 @@ const chart = shallowRef(null), error = ref(''), loading = ref(false), cursor = 
 // parent template never reads its value, so a track frame cannot rerender it.
 const trackPosition = Object.freeze({ tick: shallowRef(0), ended: shallowRef(false) })
 const trackEffects = Object.freeze({ state: shallowRef(null) })
+const trackCombo = Object.freeze({ state: shallowRef(null) })
+const comboEnabled = ref(true), noteTiming = ref(0), transportSeconds = ref(0)
+const noteTimingMilliseconds = computed(() => (noteTimingSeconds(noteTiming.value)*1000).toFixed(1))
+const chartSeconds = seconds => delayedChartSeconds(seconds,noteTiming.value)
+let comboPresentation = createSongComboPresentation()
 let effectPool = null
 const exporting = ref(false), exportError = ref(''), audio = ref(null), audioError = ref(''), starting = ref(false)
 const exportFormat = ref('svg'), exportProgress = ref(0)
@@ -99,23 +108,25 @@ const soundStats = shallowRef(sounds.stats)
 watch(soundSet, async set => {
   soundError.value = ''; sounds.cancel()
   if (!playing.value) return
-  try { if (await sounds.prepare(set) === false) return; sounds.seek(audio.value?.currentTime || 0) }
+  try { if (await sounds.prepare(set) === false) return; sounds.seek(chartSeconds(audio.value?.currentTime || 0)) }
   catch { soundError.value = '打击音加载失败，请重新选择套装重试。' }
 })
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const timing = computed(() => chart.value ? buildSongChartTiming(chart.value) : null)
 const safeCursor = computed(() => Math.min(chart.value?.maxTick || 0, Math.max(0, Number(cursor.value) || 0)))
 const safeSpeed = computed(() => Math.round(Math.max(1, Math.min(11, Number(speed.value) || 5)) * 10) / 10)
-const currentSeconds = computed(() => Math.max(0, timing.value?.tickToSeconds(Math.max(0, Number(cursor.value) || 0)) || 0))
+const currentSeconds = computed(() => Math.max(0,transportSeconds.value))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 const demonstrationEnabled = ref(false), demonstrationState = shallowRef(null)
 let demonstration = null, demonstrationFrame = null
 function sampleDemonstration(seconds, discontinuity = false) {
-  if (!demonstrationEnabled.value || !demonstration) return
+  if (!demonstration) return
+  seconds = chartSeconds(seconds)
   demonstrationFrame = discontinuity ? demonstration.seek(seconds) : demonstration.advance(seconds)
-  if (effectPool) {
+  trackCombo.state.value = comboPresentation.sample(demonstrationFrame,discontinuity)
+  if (demonstrationEnabled.value && effectPool) {
     trackEffects.state.value = discontinuity
       ? effectPool.seek(seconds, demonstrationFrame?.holds || [])
       : effectPool.advance(seconds, demonstrationFrame?.crossed || [], demonstrationFrame?.holds || [])
@@ -139,12 +150,13 @@ const nextNote = computed(() => endpoints.value.find(n => n.tick > safeCursor.va
 let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0
 const cadence = createSongChartPlaybackCadence({
   track: seconds => {
-    if (timing.value) trackPosition.tick.value = timing.value.secondsToTick(seconds)
+    if (timing.value) trackPosition.tick.value = timing.value.secondsToTick(chartSeconds(seconds))
     sampleDemonstration(seconds)
   },
   controls: seconds => {
+    transportSeconds.value = seconds
     soundStats.value = sounds.stats
-    if (timing.value) cursor.value = timing.value.secondsToTick(seconds)
+    if (timing.value) cursor.value = timing.value.secondsToTick(chartSeconds(seconds))
     if (demonstrationEnabled.value) demonstrationState.value = demonstrationFrame
   },
 })
@@ -155,14 +167,18 @@ watch(mode, () => {
 const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
   trackPosition.ended.value = snapshot.phase === 'ended'
-  if (['seeking', 'waiting', 'ready', 'paused', 'ended', 'error'].includes(snapshot.phase)) sounds.seek(snapshot.currentTime)
+  if (['seeking', 'waiting', 'ready', 'paused', 'ended', 'error'].includes(snapshot.phase)) sounds.seek(chartSeconds(snapshot.currentTime))
   soundStats.value = sounds.stats
   if (snapshot.phase === 'seeking') seekDemonstration(snapshot.currentTime)
   if (snapshot.phase === 'ended') syncMediaPosition()
   if (snapshot.phase === 'error') { audioError.value = '歌曲音频加载失败，请点击播放重试。'; stopPlayback() }
 })
 watch(audio, element => { clock.bind(element); if (element) { element.playbackRate = playbackRate.value; element.volume = volume.value * masterVolume } })
-watch(playbackRate, value => { sounds.seek(audio.value?.currentTime || 0); if (audio.value) audio.value.playbackRate = value })
+watch(playbackRate, value => { sounds.seek(chartSeconds(audio.value?.currentTime || 0)); if (audio.value) audio.value.playbackRate = value })
+watch(noteTiming, () => {
+  const seconds = audio.value?.readyState >= 1 ? audio.value.currentTime : pendingSeconds
+  sounds.seek(chartSeconds(seconds)); seekDemonstration(seconds); cadence.sync(seconds)
+})
 watch(volume, value => { if (audio.value) audio.value.volume = value * masterVolume })
 async function loadChart() {
   stopPlayback(); const current = ++generation; controller?.abort()
@@ -184,6 +200,7 @@ async function loadChart() {
       chart.value = playableSongChart(parsed, props.audioTrack?.source?.duration_seconds)
       const timeline = compileSongChartDemonstration(chart.value)
       demonstration = createSongChartDemonstration(timeline)
+      comboPresentation = createSongComboPresentation()
       sounds.setTimeline(timeline)
       effectPool = createSongChartHitEffectPool({ setIndex: 1 })
       loading.value = false; seekSeconds(0)
@@ -210,11 +227,11 @@ function applyPendingSeek() { clock.seek(pendingSeconds) }
 function seekSeconds(seconds) {
   trackPosition.ended.value = false
   const time = Math.max(0, Math.min(totalSeconds.value, Number(seconds) || 0))
-  pendingSeconds = time; sounds.seek(time); seekDemonstration(time); cadence.sync(time); locateMessage.value = ''
+  pendingSeconds = time; sounds.seek(chartSeconds(time)); seekDemonstration(time); cadence.sync(time); locateMessage.value = ''
   if (audio.value?.readyState >= 1) clock.seek(time)
   void nextTick(() => longPreview.value?.scrollToTick())
 }
-function seek(tick) { seekSeconds(timing.value.tickToSeconds(Math.max(0, Math.min(chart.value.maxTick, Number(tick) || 0)))) }
+function seek(tick) { seekSeconds(timing.value.tickToSeconds(Math.max(0, Math.min(chart.value.maxTick, Number(tick) || 0))) + noteTimingSeconds(noteTiming.value)) }
 function step(direction) {
   syncMediaPosition()
   const note = direction > 0 ? nextNote.value : previousNote.value
@@ -246,7 +263,7 @@ function updatePlayback(now = 0) {
   // rebuilds holds; the first playing sample resumes from that new position.
   if (!element.seeking && clockSnapshot.value.phase === 'playing') {
     cadence.paint(now, pendingSeconds, mode.value === 'perspective')
-    if (soundSet.value !== 'off') sounds.paint(pendingSeconds, playbackRate.value, soundVolume.value * masterVolume)
+    if (soundSet.value !== 'off') sounds.paint(chartSeconds(pendingSeconds), playbackRate.value, soundVolume.value * masterVolume)
   }
   frame = requestAnimationFrame(updatePlayback)
 }
@@ -265,7 +282,7 @@ async function togglePlayback() {
     try { await sounds.prepare(soundSet.value) }
     catch { soundError.value = '打击音加载失败，歌曲仍可播放；请重新选择套装重试。' }
     if (current !== playGeneration) return
-    sounds.seek(element.currentTime)
+    sounds.seek(chartSeconds(element.currentTime))
     await element.play()
     if (current !== playGeneration) { element.pause(); return }
     starting.value = false; frame = requestAnimationFrame(updatePlayback)

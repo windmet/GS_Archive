@@ -1,5 +1,6 @@
 import motion from '../../config/song-flick-motion.v1.json' with { type: 'json' }
 import { sampleMinMax, sampleNativeColor } from './SongChartHitEffectRenderer.js'
+import { rotateParticleEuler } from './SongChartHitProjection.js'
 export { motion as songFlickMotion }
 
 // Integrate the authored velocity-over-lifetime curve (not a CSS sine/bounce).
@@ -34,11 +35,14 @@ export function songAnimatedFlickHint(role, root, elapsed, seed = 0) {
         const scale = key => parent.scale[key]*child.scale[key]
         const dx = flickDisplacement(l.velocity.x,age,l.lifetime)
         const dy = flickDisplacement(l.velocity.y,age,l.lifetime)
-        const cx = root.position[0] + (parent.position.x + (dx+random(1)*l.shape.m_Scale.x)*scale('x'))*root.scale[0]
-        const cy = root.position[1] + (parent.position.y + (dy+random(2)*l.shape.m_Scale.y)*scale('y'))*root.scale[1]
+        const birth=rotateParticleEuler(['x','y','z'].map((axis,i)=>random(i+1)*l.shape.m_Scale[axis]),
+          ...['x','y','z'].map(axis=>l.shape.m_Rotation[axis]*Math.PI/180))
+        const cx = root.position[0] + (parent.position.x + (dx+birth[0]+l.shape.m_Position.x)*scale('x'))*root.scale[0]
+        const cy = root.position[1] + (parent.position.y + (dy+birth[1]+l.shape.m_Position.y)*scale('y'))*root.scale[1]
         layers.push({ url:l.url, cx:640+cx, cy:360-cy,
           width:l.size*scale('x')*root.scale[0],height:l.size*scale('y')*root.scale[1],rotation:-l.rotation*180/Math.PI,
           alpha:l.startColor.a*gradient.a,
+          sortingOrder:l.sortingOrder, blendMode:l.blend?.dst===1?'lighter':'source-over',
           color:{r:l.startColor.r*gradient.r,g:l.startColor.g*gradient.g,b:l.startColor.b*gradient.b,a:1} })
       }
     }

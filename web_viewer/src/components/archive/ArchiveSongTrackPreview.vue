@@ -59,6 +59,7 @@
       <g v-if="demonstrationEnabled && hits.length" class="track-hit-effects" pointer-events="none" aria-hidden="true">
           <g v-for="hit in hits" :key="hit.instanceId" :data-hit-fx="hit.instanceId" :data-hit-type="hit.hitType" />
       </g>
+      <ArchiveSongComboPreview v-if="comboEnabled" :state="combo?.state?.value" />
     </svg>
   </div>
 </template>
@@ -72,8 +73,11 @@ import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
 import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
 import ArchiveSongHitEffectPreview from './ArchiveSongHitEffectPreview.vue'
+import ArchiveSongComboPreview from './ArchiveSongComboPreview.vue'
 
 const props = defineProps({
+  combo: { type: Object, default: null },
+  comboEnabled: { type: Boolean, default: true },
   chart: { type: Object, required: true },
   title: { type: String, required: true },
   skin: { type: String, default: 'Note1SpriteAtlas' },

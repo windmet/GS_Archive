@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { songAnimatedFlickHint, flickDisplacement, songFlickMotion } from '../src/presentation/SongFlickMotion.js'
+import { songStaticFlickHint } from '../src/presentation/SongTrackNativeEffects.js'
 const root={position:[0,0,0],scale:[1,1,1]}
 for(const role of ['swipe_left','swipe_right','swipe_up']) {
  const a=songAnimatedFlickHint(role,root,.05,7),b=songAnimatedFlickHint(role,root,.25,7)
@@ -7,6 +8,10 @@ for(const role of ['swipe_left','swipe_right','swipe_up']) {
  assert.notDeepEqual(a,b,'arrows must move relative to the body')
  assert.deepEqual(a,songAnimatedFlickHint(role,root,.05,7),'seek/pause reproducible')
  const source=songFlickMotion.layers[role][1],axis=role==='swipe_up'?'y':'x'
+ assert.deepEqual(songFlickMotion.layers[role].map(l=>l.sortingOrder),[1,2,3],'native fill then outline then additive blur')
+ assert.deepEqual(songStaticFlickHint(role,root).layers.map(l=>l.sortingOrder),[1,2],'long schematic cannot cover its outline either')
+ assert.deepEqual(songFlickMotion.layers[role].map(l=>l.blend.dst),[10,10,1])
+ assert.deepEqual(b.layers.map(l=>l.sortingOrder),[1,1,2,2,3,3],'actual consumer must preserve renderer sorting')
  const d=flickDisplacement(source.velocity[axis],.25,.5)
  assert.ok(Math.abs(Math.abs(d)-.4375)<1e-6,'integrated source velocity at apex')
  assert.ok(Math.abs(flickDisplacement(source.velocity[axis],.5,.5))<1e-6,'returns before next burst')

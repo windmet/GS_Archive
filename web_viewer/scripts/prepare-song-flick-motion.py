@@ -9,10 +9,15 @@ assert hashlib.sha256(data).hexdigest()==src['source']['dataSha256'], 'Different
 for k,role in [('2','swipe_left'),('3','swipe_up'),('4','swipe_right')]:
  rows=[]
  for l in src['defaultPrefabs']['layers'][k]:
+  go=obj[l['pathId']].read().m_GameObject.read()
+  renderer=next(c.component.deref() for c in go.m_Component if c.component.type.name=='ParticleSystemRenderer')
+  material=renderer.read().m_Materials[0].read()
+  shader=material.m_Shader.deref()
+  blend=shader.read_typetree()['m_ParsedForm']['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
   tex=l['materials'][0]['properties']['m_TexEnvs'][0][1]['m_Texture']['m_PathID'];frame=round(l['uv']['startFrame']['scalar']*4)
   url=f'/assets/song-chart-hints/native2/'+(f'blur-{frame}.png'if tex==876 else f'frame-{frame}.png')
   if tex==876:
    im=obj[tex].read().image;w,h=im.width//2,im.height//2;dst=root/'public'/url.lstrip('/');im.crop((frame%2*w,frame//2*h,(frame%2+1)*w,(frame//2+1)*h)).save(dst)
-  rows.append(dict(nodeId=l['pathId'],sha256=l['sha256'],chain=l['chain'],period=l['settings']['lengthInSec'],prewarm=l['settings']['prewarm'],lifetime=l['initial']['startLifetime']['scalar'],size=l['initial']['startSize']['scalar'],rotation=l['initial']['startRotation']['scalar'],startColor=l['initial']['startColor']['maxColor'],gradient=l['color']['gradient'],velocity=l['velocity'],bursts=l['emission']['m_Bursts'],shape=l['shape'],url=url))
- r['layers'][role]=rows
+  rows.append(dict(nodeId=l['pathId'],sha256=l['sha256'],chain=l['chain'],period=l['settings']['lengthInSec'],prewarm=l['settings']['prewarm'],lifetime=l['initial']['startLifetime']['scalar'],size=l['initial']['startSize']['scalar'],rotation=l['initial']['startRotation']['scalar'],startColor=l['initial']['startColor']['maxColor'],gradient=l['color']['gradient'],velocity=l['velocity'],bursts=l['emission']['m_Bursts'],shape=l['shape'],url=url,sortingOrder=renderer.read_typetree()['m_SortingOrder'],rendererSha256=hashlib.sha256(renderer.get_raw_data()).hexdigest(),shaderPathId=shader.path_id,shaderSha256=hashlib.sha256(shader.get_raw_data()).hexdigest(),blend=dict(src=blend['srcBlend']['val'],dst=blend['destBlend']['val'])))
+ r['layers'][role]=sorted(rows,key=lambda row:row['sortingOrder'])
 (root/'config/song-flick-motion.v1.json').write_text(json.dumps(r,separators=(',',':'))+'\n',encoding='utf8')
