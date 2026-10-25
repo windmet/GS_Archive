@@ -10,6 +10,7 @@
     :data-auto-active="autoEval.active"
     :data-assets-pending="assetsPending"
     :data-assets-failed="assetsFailed"
+    :data-particle-renderer="particleRenderer"
   />
 </template>
 
@@ -20,7 +21,7 @@ import {
   sampleHoldEffectFrame,
   sampleAutoEvaluationFrame,
 } from '../../presentation/SongChartHitEffectRenderer.js'
-import { projectTrackPoint } from '../../presentation/SongTrackPresentation.js'
+import { drawParticleCanvas } from '../../presentation/SongChartParticleCanvas.js'
 import hitEffectsConfig from '../../../config/song-hit-effects.v1.json'
 import { subscribeEffectTexture, drawEffectTexture } from '../../presentation/SongChartEffectTextures.js'
 
@@ -34,6 +35,7 @@ const props = defineProps({
 const canvasRef = ref(null)
 const images = new Map()
 const assetsPending = ref(0), assetsFailed = ref(0)
+const particleRenderer = ref('pending')
 let disposed = false
 
 const subscriptions = []
@@ -51,14 +53,25 @@ function preloadImages() {
     }))
   }
 }
-function drawParticle(ctx, img, inst, x, y) {
-  ctx.save()
-  ctx.globalCompositeOperation = inst.blendMode
-  ctx.globalAlpha = Math.max(0, Math.min(1, inst.alpha))
-  ctx.translate(x + inst.dx, y + inst.dy)
-  ctx.transform(...inst.basis, 0, 0)
-  drawEffectTexture(ctx, img, inst, [-.5, -.5, 1, 1])
-  ctx.restore()
+// Canvas2D fallback uses each projected triangle; GPU path retains exact
+// homogeneous depth for UV interpolation. No guessed global ellipse scaling.
+function drawParticleFallback(ctx, img, inst) {
+  const uv = [[0,0],[1,0],[0,1],[1,1]]
+  for (const indices of [[0,2,1],[1,2,3]]) {
+    const [i,j,k]=indices, a=uv[i],b=uv[j],c=uv[k],p=inst.quad[i],q=inst.quad[j],r=inst.quad[k]
+    const determinant=(b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1])
+    const axis=key=>{
+      const m=((q[key]-p[key])*(c[1]-a[1])-(r[key]-p[key])*(b[1]-a[1]))/determinant
+      const n=((r[key]-p[key])*(b[0]-a[0])-(q[key]-p[key])*(c[0]-a[0]))/determinant
+      return [m,n,p[key]-m*a[0]-n*a[1]]
+    }
+    const [m,n,tx]=axis('x'),[o,v,ty]=axis('y')
+    if(![m,n,tx,o,v,ty].every(Number.isFinite))continue
+    ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=inst.alpha
+    ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.lineTo(r.x,r.y);ctx.closePath();ctx.clip()
+    ctx.transform(m,o,n,v,tx,ty)
+    drawEffectTexture(ctx,img,inst,[0,0,1,1]);ctx.restore()
+  }
 }
 
 function draw() {
@@ -69,25 +82,15 @@ function draw() {
 
   ctx.clearRect(0, 0, 1280, 720)
 
-  // 1. Draw continuous hold effects (Additive blending)
-  for (const hold of props.holds) {
-    const pt = projectTrackPoint(hold.lane, 0)
-    const instructions = sampleHoldEffectFrame(hold, hold.age)
-    for (const inst of instructions) {
-      const img = images.get(inst.textureId)
-      if (!img || !img.complete || !img.naturalWidth) continue
-      drawParticle(ctx, img, inst, pt.x, props.judgeY)
-    }
-  }
-
-  // 2. Draw transient hit effects (Additive blending)
-  for (const hit of props.hits) {
-    const pt = projectTrackPoint(hit.targetLane, 0)
-    const instructions = sampleHitEffectFrame(hit, hit.age)
-    for (const inst of instructions) {
-      const img = images.get(inst.textureId)
-      if (!img || !img.complete || !img.naturalWidth) continue
-      drawParticle(ctx, img, inst, pt.x, props.judgeY)
+  const particles = []
+  for (const hold of props.holds) particles.push(...sampleHoldEffectFrame(hold, hold.age))
+  for (const hit of props.hits) particles.push(...sampleHitEffectFrame(hit, hit.age))
+  if (drawParticleCanvas(ctx, particles, images)) particleRenderer.value = 'webgl-perspective'
+  else {
+    particleRenderer.value = 'canvas2d-fallback'
+    for(const inst of particles) {
+      const img=images.get(inst.textureId)
+      if(img?.complete&&img.naturalWidth)drawParticleFallback(ctx,img,inst)
     }
   }
 

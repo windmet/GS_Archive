@@ -1,5 +1,7 @@
 # Auto 原生模块接线与 V4 验收
 
+> 后续勘误见 [V5 尺寸、透视与滑键接线](CHART_PROJECTION_WIRING_V5_20261025.md)：本页的局部正交投影、prefab 根缩放消费和200档/2859条 raw-group连接统计已被替换。V4记录保留为当时证据，不代表当前几何验收。
+
 输入：`chart/20261024-autoplay-timeline` / `8258b424`；实际工作目录 `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023/web_viewer`。本批落实第二份审计中的资源消费缺口，并更正 [V3](CHART_AUTO_ACCEPTANCE_AUDIT_V3_20261025.md) 的过度验收结论。
 
 ## 实施结果

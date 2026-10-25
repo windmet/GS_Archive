@@ -1,9 +1,23 @@
 import assert from 'node:assert/strict'
+import { projection, particleRuntimeScale, rotateParticleEuler, projectParticleQuad } from '../src/presentation/SongChartHitProjection.js'
 import {
   hitEffectsConfig as cfg, sampleHitEffectFrame as hit, sampleHoldEffectFrame as hold,
   sampleAutoEvaluationFrame as auto, evaluateNativeCurve, sampleMinMax,
 } from '../src/presentation/SongChartHitEffectRenderer.js'
 const clone = x => structuredClone(x)
+assert.equal(projection.noteRadius,64,'native .cctor executes base radius 64')
+assert.equal(projection.connectorRadius,44,'subtract 20 once, not twice')
+for(const c of projection.cases)for(const scale of c.playedScale)
+  assert.ok(Math.abs(scale-c.noteScale*(c.useParseCamera?1.5:1))<1e-6,'native Initialize/Play captured scale')
+assert.equal(particleRuntimeScale(false),1.5,'runtime transient root replaces serialized .65')
+assert.equal(particleRuntimeScale(true),100,'FloatingTarget resets hold root in UI units')
+const euler=rotateParticleEuler([1,0,0],Math.PI/2,0,Math.PI/2)
+assert.ok(Math.abs(euler[2]-1)<1e-12&&Math.abs(euler[1])<1e-12,'Unity ZXY order')
+const left=projectParticleQuad([0,0,0],[2,0,0],[0,1,1],0)
+const right=projectParticleQuad([0,0,0],[2,0,0],[0,1,1],4)
+assert.ok(left[0].depth!==left[2].depth,'tilted plane retains depth for perspective UVs')
+assert.ok(left[0].x+left[1].x>left[2].x+left[3].x,'left ring recedes toward screen center')
+assert.ok(right[0].x+right[1].x<right[2].x+right[3].x,'right ring has opposite perspective lean')
 const contract = cfg.defaultContracts['14650'], ordinary={hitType:0,sourceIndex:12}
 const frame=hit(ordinary,.15)
 assert.equal(hit(ordinary,.15,{}).length,0,'missing source contract must not synthesize effects')

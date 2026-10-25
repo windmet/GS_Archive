@@ -1,5 +1,5 @@
 <template>
-  <canvas ref="canvas" width="1280" height="720" aria-hidden="true" data-native-hold-canvas :data-hold-count="holds.length" :data-vertex-count="vertexCount" @webglcontextlost.prevent="emit('unavailable')" />
+  <canvas ref="canvas" width="1280" height="720" aria-hidden="true" data-native-hold-canvas :data-hold-count="holds.length" :data-flick-count="holds.filter(h => h.flickConnector).length" :data-vertex-count="vertexCount" @webglcontextlost.prevent="emit('unavailable')" />
 </template>
 
 <script setup>

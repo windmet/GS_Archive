@@ -1,3 +1,4 @@
+import { compileSongFlickConnectors } from './SongTrackFlickConnectors.js'
 import { nativeSongEffectRoot, songStaticFlickHint } from './SongTrackNativeEffects.js'
 import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
@@ -97,31 +98,7 @@ export function createSongTrackRenderer(chart) {
   const links = [...groups.entries()].flatMap(([speed, notes]) =>
     songSimultaneousLinks({ notes }).map(link => ({ ...link, speed })))
 
-  // Native flickgroup connector pairs (RhythmGameNoteManager.OnNewNote & HoldMesh.Create 0x21cf544)
-  const flickGroups = new Map()
-  for (const note of chart.notes) {
-    const fg = note.flickgroup ?? 0
-    if (fg > 0) {
-      if (!flickGroups.has(fg)) flickGroups.set(fg, [])
-      flickGroups.get(fg).push(note)
-    }
-  }
-  const flickConnectors = []
-  for (const [fg, notes] of flickGroups.entries()) {
-    notes.sort((a, b) => a.tick - b.tick)
-    for (let i = 0; i < notes.length - 1; i++) {
-      const a = notes[i], b = notes[i + 1]
-      flickConnectors.push({
-        id: 'flick-' + fg + '-' + a.sourceIndex + '-' + b.sourceIndex,
-        flickgroup: fg,
-        fromNote: a,
-        toNote: b,
-        fromTick: a.tick,
-        toTick: b.tick,
-        speed: a.speed ?? 1,
-      })
-    }
-  }
+  const flickConnectors = compileSongFlickConnectors(chart)
 
   const prepared = { timing, speeds, links, middleNodes: songHoldMiddleNodes(chart), flickConnectors }
   return (cursor = 0, span = 6000, skin = 'Note1SpriteAtlas') => renderSongTrackGeometry(chart, cursor, span, skin, prepared)
@@ -203,10 +180,10 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
       return triangles
     } })
   }
-  // Native flick connectors: HoldMesh.Create radius = baseRadius - 20 = 24.0 (0x21cf5f0)
-  const flickHoldMetrics = { ...nativeHolds.metrics, radius: 24 }
+  // NoteDrawManager radius is 64; HoldMesh.Create subtracts 20 once: 44.
+  const flickHoldMetrics = nativeHolds.metrics
   for (const fc of (prepared.flickConnectors || [])) {
-    const { fromNote, toNote, fromTick, toTick, speed } = fc
+    const { fromLane, toLane, fromTick, toTick, speed } = fc
     const windowEnd = endForSpeed(speed)
     if (toTick < cursor || fromTick > windowEnd) continue
     const from = Math.max(fromTick, cursor), to = Math.min(toTick, windowEnd)
@@ -216,7 +193,7 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
     const secDiff = toSec - fromSec
     const samples = [...ticks].sort((a, b) => a - b).map(tick => {
       const pRatio = secDiff > 0 ? (toSeconds(tick) - fromSec) / secDiff : 0
-      const lane = fromNote.start + (toNote.start - fromNote.start) * pRatio
+      const lane = fromLane + (toLane - fromLane) * pRatio
       const p = project(lane, tick, speed)
       return { tick, lane, fraction: p.fraction }
     })

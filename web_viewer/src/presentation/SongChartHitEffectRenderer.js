@@ -1,14 +1,12 @@
 import hitEffectsConfig from '../../config/song-hit-effects.v1.json' with { type: 'json' }
 import geometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
+import { rotateParticleEuler as euler, particleRuntimeScale, projectParticlePoint, projectParticleQuad } from './SongChartHitProjection.js'
 export { hitEffectsConfig }
 
 const clamp = x => Math.max(0, Math.min(1, x))
 const mix = (a, b, t) => a + (b - a) * t
 const mod = (a, b) => ((a % b) + b) % b
 const WHITE = { r: 1, g: 1, b: 1, a: 1 }
-// Native PreCamera is orthographic with size 5. Center positioning uses the
-// existing track projection; this local orthographic adapter is not GPU parity.
-const PIXELS_PER_UNIT = geometry.viewport.height / (2 * geometry.source.serializedPanel.camera.orthographicSize)
 const DEFAULT_IDS = [14650, 37973, 19171, 34995, 32265, 11316, 15053]
 const textureSizes = Object.fromEntries(Object.values(hitEffectsConfig.assets).map(a => [a.pathId, a]))
 
@@ -94,12 +92,6 @@ function rotate(v, q) {
   const c=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]]
   const d=[u[1]*c[2]-u[2]*c[1],u[2]*c[0]-u[0]*c[2],u[0]*c[1]-u[1]*c[0]]
   return v.map((x,i)=>x+2*(w*c[i]+d[i]))
-}
-function euler(v, x=0,y=0,z=0) {
-  const cx=Math.cos(x),sx=Math.sin(x),cy=Math.cos(y),sy=Math.sin(y),cz=Math.cos(z),sz=Math.sin(z)
-  const a=[v[0],v[1]*cx-v[2]*sx,v[1]*sx+v[2]*cx]
-  const b=[a[0]*cy+a[2]*sy,a[1],-a[0]*sy+a[2]*cy]
-  return [b[0]*cz-b[1]*sz,b[0]*sz+b[1]*cz,b[2]]
 }
 function shapeBirth(shape, seed) {
   if (!shape) return {position:[0,0,0],direction:[0,0,0]}
@@ -189,7 +181,9 @@ function birthLaneOffset(event, layer, born) {
 }
 function sampleContract(event, age, contract) {
   if(!event || !contract || age<0) return []
-  const instructions=[], root=contract.rootTransform
+  const instructions=[], held=contract.field==='_hold'
+  const lane=held ? (event.lane??2) : (event.targetLane??Math.round(event.lane??2))
+  const runtimeScale=particleRuntimeScale(held,event.noteScale??1)
   for(const layer of contract.layers) {
     const m=layer.modules, initial=m?.InitialModule
     if(!initial) continue
@@ -212,11 +206,21 @@ function sampleContract(event, age, contract) {
       const rz=sampleMinMax(initial.startRotation,born.time,random(16))
         + integratedRotation(rotation?.curve,particleAge,lifetime,random(46))
       const motion=sampleMotion(layer,particleAge,lifetime,seed,born.time), trs=layer.transform
-      const scale=root.m_LocalScale, ls=trs.m_LocalScale
-      const world=v=>rotate(rotate(v.map((v,i)=>v*ls[['x','y','z'][i]]),layer.rotation).map((v,i)=>
-        (v+trs.m_LocalPosition[['x','y','z'][i]])*scale[['x','y','z'][i]]),root.m_LocalRotation)
+      const ls=trs.m_LocalScale
+      // Initialize/Play and FloatingTarget.Init reset the prefab root TRS.
+      // The serialized .65 scale is not the live root scale.
+      const world=v=>rotate(v.map((v,i)=>v*ls[['x','y','z'][i]]),layer.rotation).map((v,i)=>
+        (v+trs.m_LocalPosition[['x','y','z'][i]])*runtimeScale)
       const center=world(motion.position), origin=world([0,0,0])
-      const axis=v=>world(euler(v,rx,ry,rz)).map((v,i)=>v-origin[i])
+      const axis=v=>{
+        const billboard=euler(v,rx,ry,rz)
+        // Billboard vertices face the camera (-Z); emitter positions use +Z.
+        // View-aligned quads do not inherit the emitter's X/Y rotation (e.g.
+        // flick glitter's -90deg emitter would otherwise turn every star edge-on).
+        billboard[2]*=-1
+        if(layer.renderer.m_RenderAlignment===0) return billboard.map((v,i)=>v*ls[['x','y','z'][i]]*runtimeScale)
+        return world(billboard).map((v,i)=>v-origin[i])
+      }
       let x=axis([sx,0,0]),y=axis([0,sy,0])
       if(layer.renderMode===1) {
         const speed=Math.hypot(...motion.speed), stretch=sx*layer.lengthScale+speed*layer.renderer.m_VelocityScale
@@ -227,12 +231,15 @@ function sampleContract(event, age, contract) {
       const progress=sheet?sampleMinMax(sheet.frameOverTime,p,random(17))*(sheet.cycles??1):0
       const frame=mod(Math.floor(mod(layer.uv.startFrame+progress,1)*total),total)
       const texture=textureSizes[layer.texture.pathId],sw=texture.width/nx,sh=texture.height/ny
+      const pixelOffset=birthLaneOffset(event,layer,born.time)
+      const quad=projectParticleQuad(center,x,y,lane,held,pixelOffset)
+      const originScreen=projectParticlePoint([0,0,0],lane,held)
+      const projectedCenter=projectParticlePoint(center,lane,held,pixelOffset)
+      const basis=[quad[1].x-quad[0].x,quad[1].y-quad[0].y,quad[2].x-quad[0].x,quad[2].y-quad[0].y]
       instructions.push({textureId:layer.texture.pathId,nodeId:layer.nodeId,subName:layer.subName,particleId:born.ordinal,birthTime:born.time,
-        sx:frame%nx*sw,sy:Math.floor(frame/nx)*sh,sw,sh,frame,
-        dx:center[0]*PIXELS_PER_UNIT+birthLaneOffset(event,layer,born.time),dy:-center[1]*PIXELS_PER_UNIT,
-        // Project both 3D billboard axes; Canvas consumes their affine basis.
-        basis:[x[0]*PIXELS_PER_UNIT,-x[1]*PIXELS_PER_UNIT,-y[0]*PIXELS_PER_UNIT,y[1]*PIXELS_PER_UNIT],
-        w:Math.hypot(...x)*PIXELS_PER_UNIT,h:Math.hypot(...y)*PIXELS_PER_UNIT,
+        sx:frame%nx*sw,sy:Math.floor(frame/nx)*sh,sw,sh,frame,quad,
+        dx:projectedCenter.x-originScreen.x,dy:projectedCenter.y-originScreen.y,
+        basis,w:Math.hypot(basis[0],basis[1]),h:Math.hypot(basis[2],basis[3]),
         rotation:-rz,alpha:clamp(tint.a),colorTint:tint,blendMode:'lighter'})
     }
   }
