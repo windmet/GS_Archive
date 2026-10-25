@@ -11,6 +11,7 @@
   <p>使用真实音频、真实 rAF 与实际播放器组件；保持此页位于前台。统计的是回调与组件更新，不等同于 GPU 呈现帧或手机实机帧率。</p>
   <label>歌曲 <select id="song"><option value="cfprde">Café Parade!</option><option value="knwonl">K.now O.nly</option><option value="remasq">Reversed Masquerade</option></select></label>
   <button id="run" disabled>采样 20 秒</button>
+  <label><input id="auto-effects" type="checkbox" checked>自动演示特效</label>
   <pre id="result" role="status">正在加载…</pre>
   <div id="app"></div>
   <script type="module">
@@ -47,7 +48,7 @@
       const span = (sample.finished - sample.started)/1000
       const intervals = sample.callbacks.slice(1).map((t,i) => t-sample.callbacks[i])
       const report = {
-        code: sample.code, seconds: span, viewport: { width: innerWidth, height: innerHeight },
+        code: sample.code, autoEnabled: sample.autoEnabled, seconds: span, viewport: { width: innerWidth, height: innerHeight },
         mediaFrom: sample.mediaFrom, mediaTo: sample.mediaTo,
         rafCallbacks: sample.callbacks.length, rafHz: sample.callbacks.length/span,
         callbackIntervalsMs: summary(intervals),
@@ -87,6 +88,13 @@
       player = app.mount('#app')
       for (let i=0; i<500 && !document.querySelector('.track-svg'); i++) await new Promise(resolve=>setTimeout(resolve,10))
       if (!document.querySelector('.track-svg')) throw new Error('谱面加载失败')
+      if (document.querySelector('#auto-effects').checked) {
+        [...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click()
+        await nextTick()
+        const toggle=document.querySelector('[aria-label="自动演示事件统计"][type="checkbox"]')
+        toggle.checked=true; toggle.dispatchEvent(new Event('change',{bubbles:true}))
+        await nextTick(); document.querySelector('[aria-label="关闭视图设置"]').click(); await nextTick()
+      }
       const chart = await (await fetch(difficulty.chart.url)).json()
       const timing = buildSongChartTiming(chart)
       const tick = code === 'knwonl' ? 123406 : code === 'remasq' ? 30720 : 22000
@@ -116,7 +124,7 @@
         for (let i=0; i<500 && (audio.paused || audio.readyState < 3); i++) await new Promise(resolve=>setTimeout(resolve,10))
         if (audio.paused || audio.readyState < 3) throw new Error('音频未开始播放')
         const started = performance.now()
-        active = { code, started, mediaFrom: audio.currentTime, callbacks: [], trackCpu: [], visibility: [], mediaEvents: [], updates: { parent: 0, track: 0, holds: 0 } }
+        active = { code, autoEnabled: document.querySelector('#auto-effects').checked, started, mediaFrom: audio.currentTime, callbacks: [], trackCpu: [], visibility: [], mediaEvents: [], updates: { parent: 0, track: 0, holds: 0 } }
         recordVisibility()
         result.textContent = '正在采样；请保持前台20秒…'
         observationFrame = requestAnimationFrame(observe)

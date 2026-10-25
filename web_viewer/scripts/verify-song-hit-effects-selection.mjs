@@ -99,4 +99,14 @@ assert.equal(holdPrefab.pathId, 32265)
 assert.equal(holdPrefab.name, 'fx_in_touch_circle_hold')
 assert.ok(holdPrefab.looping)
 
+// Later bursts must finish before the instance is returned to the pool.
+const burstPool = createSongChartHitEffectPool()
+burstPool.advance(0, [{seconds:0,events:[
+  {id:'skill',sourceIndex:8,role:'p_skill',lane:1},
+  {id:'special',sourceIndex:9,role:'sp',lane:3},
+]}])
+assert.equal(burstPool.advance(.6).hits.length,2,'P-skill/Special last bursts survive beyond max startLifetime')
+assert.deepEqual(burstPool.advance(.66).hits.map(h=>h.hitType),[5],'Special retires after .1+.55 seconds')
+assert.equal(burstPool.advance(.71).hits.length,0,'P-skill retires after .2+.5 seconds')
+
 console.log('Hit effect selection & pool verified: 96 ARM64 cases, 224 prefab lookups, multi-event lifecycle, lane flash decay, and hold persistence passed.')

@@ -54,7 +54,8 @@ function holdPosition(hold, seconds) {
   const index = Math.max(0, upperBound(hold.knots, seconds) - 1)
   const a = hold.knots[index], b = hold.knots[index + 1]
   return { sourceIndex: hold.sourceIndex, lane: b ? a.lane + (b.lane - a.lane) * (seconds - a.seconds) / (b.seconds - a.seconds) : a.lane,
-    age: seconds - hold.start, remaining: hold.end - seconds }
+    age: seconds - hold.start, remaining: hold.end - seconds,
+    startSeconds: hold.start, knots: hold.knots }
 }
 
 // This is a demonstration scheduler, not a touch judgement or scoring engine.

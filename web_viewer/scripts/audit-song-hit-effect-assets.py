@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import math
+import struct
 from pathlib import Path
 import zipfile
 
@@ -117,6 +118,45 @@ def extract(args):
                 sourceSha256=sha(obj.get_raw_data()), tree=obj.read_typetree())
     if set(result['evaluation']) != {'sprite', 'animation'}:
         raise ValueError('Auto evaluation sprite/animation missing')
+    # UGUI Image serialized layout for the pinned 2.6.10 IPA, not a generic
+    # MonoBehaviour parser. Retain raw bytes/hash so offsets remain reviewable.
+    ui_names = {'EvaluationImage', 'EvaluationEffectImage', 'EvaluationEffectImage2'}
+    bindings = {}
+    for obj in objects.values():
+        if obj.type.name != 'GameObject':
+            continue
+        go = obj.read()
+        if go.m_Name == 'EvaluationPanel':
+            panel_rect = next(entry.component.deref() for entry in go.m_Component
+                if entry.component.deref().type.name == 'RectTransform')
+            result['evaluation']['panel'] = dict(pathId=obj.path_id,
+                rectTransform=panel_rect.read_typetree(), rectSha256=sha(panel_rect.get_raw_data()))
+        if go.m_Name not in ui_names:
+            continue
+        components = [entry.component.deref() for entry in go.m_Component]
+        rect = next(c for c in components if c.type.name == 'RectTransform')
+        image = next(c for c in components if c.type.name == 'MonoBehaviour'
+            and c.read_typetree(check_read=False)['m_Script']['m_PathID'] == 2305)
+        raw = image.get_raw_data()
+        if len(raw) != 152:
+            raise ValueError('Pinned UGUI Image layout changed')
+        material_file, material_id = struct.unpack_from('<iq', raw, 32)
+        sprite_file, sprite_id = struct.unpack_from('<iq', raw, 88)
+        if material_file or sprite_file:
+            raise ValueError('External UGUI binding')
+        blend = None
+        if material_id:
+            material = objects[material_id].read_typetree()
+            shader = objects[material['m_Shader']['m_PathID']].read_typetree()
+            blend = shader['m_ParsedForm']['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
+        bindings[go.m_Name] = dict(gameObjectPathId=obj.path_id, rectTransform=rect.read_typetree(),
+            rectSha256=sha(rect.get_raw_data()), imagePathId=image.path_id,
+            imageSha256=sha(raw), imageBytesHex=raw.hex(), initialSpriteId=sprite_id,
+            materialId=material_id, blend=blend,
+            color=dict(zip(['r', 'g', 'b', 'a'], struct.unpack_from('<4f', raw, 44))))
+    if set(bindings) != ui_names:
+        raise ValueError('Evaluation UI targets missing')
+    result['evaluation']['bindings'] = bindings
     (args.output / 'source-assets.json').write_text(json.dumps(json_value(result), ensure_ascii=False, indent=2,
         allow_nan=False) + '\n', encoding='utf8')
     manifest = {key: result[key] for key in ['schemaVersion', 'dataSha256', 'wiringReceiptSha256', 'boundary', 'textures']}
@@ -141,7 +181,7 @@ def extract(args):
     sheet.save(args.output / 'contact-sheet.png')
     print(json.dumps(dict(textures=len(result['textures']), bytes=sum(t['bytes'] for t in result['textures']),
         materials=len(result['materials']), defaultPrefabs=len(result['defaultAutoPrefabs']),
-        evaluation={key: value['pathId'] for key, value in result['evaluation'].items()})))
+        evaluation={key: value['pathId'] for key, value in result['evaluation'].items() if 'pathId' in value})))
 
 
 if __name__ == '__main__':

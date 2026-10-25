@@ -22,6 +22,7 @@ import {
 } from '../../presentation/SongChartHitEffectRenderer.js'
 import { projectTrackPoint } from '../../presentation/SongTrackPresentation.js'
 import hitEffectsConfig from '../../../config/song-hit-effects.v1.json'
+import { subscribeEffectTexture, drawEffectTexture } from '../../presentation/SongChartEffectTextures.js'
 
 const props = defineProps({
   hits: { type: Array, default: () => [] },
@@ -35,25 +36,29 @@ const images = new Map()
 const assetsPending = ref(0), assetsFailed = ref(0)
 let disposed = false
 
+const subscriptions = []
+const status = new Map()
 function preloadImages() {
-  const assets = Object.values(hitEffectsConfig.assets || {})
+  const assets = [...Object.values(hitEffectsConfig.assets), hitEffectsConfig.evaluation.sprite]
   for (const a of assets) {
-    if (typeof Image === 'undefined') break
-    const img = new Image()
-    images.set(a.pathId, img)
-    assetsPending.value++
-    img.onload = () => { if (!disposed) { assetsPending.value--; draw() } }
-    img.onerror = () => { if (!disposed) { assetsPending.value--; assetsFailed.value++ } }
-    img.src = a.url
+    subscriptions.push(subscribeEffectTexture(a.pathId, a.url, entry => {
+      if (disposed) return
+      images.set(a.pathId, entry.image)
+      status.set(a.pathId, entry.status)
+      assetsPending.value = [...status.values()].filter(s => s === 'pending').length
+      assetsFailed.value = [...status.values()].filter(s => s === 'failed').length
+      if (entry.status === 'ready') draw()
+    }))
   }
-  if (hitEffectsConfig.evaluation?.sprite?.url && typeof Image !== 'undefined') {
-    const autoImg = new Image()
-    images.set(2068, autoImg)
-    assetsPending.value++
-    autoImg.onload = () => { if (!disposed) { assetsPending.value--; draw() } }
-    autoImg.onerror = () => { if (!disposed) { assetsPending.value--; assetsFailed.value++ } }
-    autoImg.src = hitEffectsConfig.evaluation.sprite.url
-  }
+}
+function drawParticle(ctx, img, inst, x, y) {
+  ctx.save()
+  ctx.globalCompositeOperation = inst.blendMode
+  ctx.globalAlpha = Math.max(0, Math.min(1, inst.alpha))
+  ctx.translate(x + inst.dx, y + inst.dy)
+  ctx.transform(...inst.basis, 0, 0)
+  drawEffectTexture(ctx, img, inst, [-.5, -.5, 1, 1])
+  ctx.restore()
 }
 
 function draw() {
@@ -71,13 +76,7 @@ function draw() {
     for (const inst of instructions) {
       const img = images.get(inst.textureId)
       if (!img || !img.complete || !img.naturalWidth) continue
-      ctx.save()
-      ctx.globalCompositeOperation = inst.blendMode || 'lighter'
-      ctx.globalAlpha = Math.max(0, Math.min(1, inst.alpha))
-      ctx.translate(pt.x + (inst.dx || 0), props.judgeY + (inst.dy || 0))
-      if (inst.rotation) ctx.rotate(inst.rotation)
-      ctx.drawImage(img, inst.sx, inst.sy, inst.sw, inst.sh, -inst.w / 2, -inst.h / 2, inst.w, inst.h)
-      ctx.restore()
+      drawParticle(ctx, img, inst, pt.x, props.judgeY)
     }
   }
 
@@ -88,13 +87,7 @@ function draw() {
     for (const inst of instructions) {
       const img = images.get(inst.textureId)
       if (!img || !img.complete || !img.naturalWidth) continue
-      ctx.save()
-      ctx.globalCompositeOperation = inst.blendMode || 'lighter'
-      ctx.globalAlpha = Math.max(0, Math.min(1, inst.alpha))
-      ctx.translate(pt.x + (inst.dx || 0), props.judgeY + (inst.dy || 0))
-      if (inst.rotation) ctx.rotate(inst.rotation)
-      ctx.drawImage(img, inst.sx, inst.sy, inst.sw, inst.sh, -inst.w / 2, -inst.h / 2, inst.w, inst.h)
-      ctx.restore()
+      drawParticle(ctx, img, inst, pt.x, props.judgeY)
     }
   }
 
@@ -108,14 +101,9 @@ function draw() {
           ctx.save()
           ctx.globalCompositeOperation = layer.blendMode || 'source-over'
           ctx.globalAlpha = Math.max(0, Math.min(1, layer.alpha))
-          ctx.translate(640, props.judgeY - 45)
+          ctx.translate(layer.x, layer.y)
           ctx.scale(layer.scaleX, layer.scaleY)
-          if (layer.colorTint && typeof ctx.filter === 'string') {
-            const g = Math.round(layer.colorTint.g * 255)
-            const b = Math.round(layer.colorTint.b * 255)
-            ctx.filter = 'drop-shadow(0 0 10px rgba(0, ' + g + ', ' + b + ', 0.85))'
-          }
-          ctx.drawImage(autoImg, 0, 0, 136, 63, -68, -31.5, 136, 63)
+          drawEffectTexture(ctx, autoImg, { sx: 0, sy: 0, sw: 136, sh: 63, colorTint: layer.colorTint }, [-68, -31.5, 136, 63])
           ctx.restore()
         }
       }
@@ -132,6 +120,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   disposed = true
+  for (const unsubscribe of subscriptions) unsubscribe()
 })
 </script>
 

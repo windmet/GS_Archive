@@ -59,6 +59,12 @@ export function lookupSongHitEffectPrefab({ setIndex = 1, hitType = 0, evaluatio
   if (!ref || !ref.pathId) return null
   const prefab = hitEffectsConfig.prefabs[String(ref.pathId)]
   if (!prefab) return null
+  const contract = hitEffectsConfig.defaultContracts[String(ref.pathId)]
+  // IsAlive includes the lifetime of particles born in later bursts. Using
+  // only max startLifetime cuts P-skill at .5s and Special at .55s too early.
+  const maxLifetime = contract ? Math.max(...contract.layers.map(layer =>
+    (Math.max(0, ...layer.bursts.map(burst => burst.time)) + layer.lifetime) / layer.simulationSpeed))
+    : prefab.maxLifetime || 0.7
 
   return Object.freeze({
     setIndex: set.index,
@@ -68,7 +74,7 @@ export function lookupSongHitEffectPrefab({ setIndex = 1, hitType = 0, evaluatio
     name: prefab.name,
     scale: prefab.scale,
     systems: prefab.systems,
-    maxLifetime: prefab.maxLifetime || 0.7,
+    maxLifetime,
     guardTimeout: hitEffectsConfig.guardTimeout || 5.0,
     useParseCamera: Boolean(set.useParseCamera),
   })
@@ -173,6 +179,8 @@ export function createSongChartHitEffectPool({ setIndex = 1 } = {}) {
       lane: h.lane,
       age: h.age,
       remaining: h.remaining,
+      startSeconds: h.startSeconds,
+      knots: h.knots,
       prefab: holdPrefab?.name || null,
       pathId: holdPrefab?.pathId || null,
     }))

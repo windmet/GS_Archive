@@ -10,6 +10,7 @@ import { buildSongChartTiming } from '/src/presentation/SongChartTiming.js'
 import { playableSongChart } from '/src/presentation/SongChartPresentation.js'
 import { songNoteEndpoints, songHoldMiddleNodes } from '/src/presentation/SongNotePresentation.js'
 import { nativeSongNoteIsHold } from '/src/presentation/SongTrackNativeNoteTypes.js'
+import { drawEffectTexture } from '/src/presentation/SongChartEffectTextures.js'
 const result=document.querySelector('#result'),run=document.querySelector('#run')
 const songs=(await(await fetch('/data/song_catalog.json')).json()).songs
 const audioManifest=(await(await fetch('/data/song_playback_audio.json')).json()).songs
@@ -34,15 +35,29 @@ function effectPixels(){
   const canvas=document.querySelector('.track-effects-canvas')
   check(canvas,'effect canvas exists')
   const data=canvas.getContext('2d').getImageData(0,0,1280,720).data
-  let hash=2166136261,visible=0
+  let hash=2166136261,visible=0,colored=0
   for(let i=0;i<data.length;i++){hash=Math.imul(hash^data[i],16777619);if(i%4===3&&data[i])visible++}
-  return {hash,visible,data}
+  for(let i=0;i<data.length;i+=4)if(data[i+3]>32&&Math.max(data[i],data[i+1],data[i+2])-Math.min(data[i],data[i+1],data[i+2])>32)colored++
+  return {hash,visible,colored,data}
 }
 function pixelDifference(reference){
   const current=effectPixels()
   let maximum=0,changed=0,total=0
   for(let i=0;i<current.data.length;i++){const delta=Math.abs(current.data[i]-reference.data[i]);maximum=Math.max(maximum,delta);total+=delta;if(delta>2)changed++}
   return {maximum,changed,mean:total/current.data.length,visible:current.visible}
+}
+async function checkTextureMultiplication(){
+  const source=document.createElement('canvas');source.width=source.height=4
+  const ctx=source.getContext('2d'),pixels=ctx.createImageData(4,4)
+  for(let i=0;i<pixels.data.length;i+=4)pixels.data.set([100,200,50,128],i)
+  ctx.putImageData(pixels,0,0)
+  const image=new Image();image.src=source.toDataURL();await image.decode()
+  const target=document.createElement('canvas');target.width=target.height=4
+  const output=target.getContext('2d')
+  drawEffectTexture(output,image,{sx:0,sy:0,sw:4,sh:4,colorTint:{r:.5,g:.25,b:1}},[0,0,4,4])
+  const rgba=[...output.getImageData(1,1,1,1).data]
+  check(rgba.every((v,i)=>Math.abs(v-[50,50,50,128][i])<=1),'RGB multiplication preserves semi-transparent source alpha')
+  return rgba
 }
 async function waitForImages(){
   for(let i=0;i<300&&Number(document.querySelector('.track-effects-canvas')?.dataset.assetsPending)>0;i++)await new Promise(r=>setTimeout(r,10))
@@ -95,6 +110,7 @@ run.disabled=false;result.textContent='就绪'
 run.onclick=async()=>{
   run.disabled=true
   try{
+    const textureMultiplication=await checkTextureMultiplication()
     const reports=[]
     for(const code of ['cfprde','remasq']){
       result.textContent=`回放 ${code}…`;await mount(code)
@@ -111,6 +127,7 @@ run.onclick=async()=>{
       await waitForImages()
       const frozenPixels=effectPixels()
       check(frozenPixels.visible>0,'paused canvas contains visible pixels')
+      check(frozenPixels.colored>100,'authored particle colors reach actual Canvas pixels')
       const frozen=document.querySelector('.track-hit-effects').outerHTML,epoch=state().dataset.epoch
       button('播放').click();await settle();await pulse(media.time)
       check(state().dataset.epoch===epoch,'resume must preserve epoch')
@@ -146,9 +163,9 @@ run.onclick=async()=>{
       for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
       check(Number(state().dataset.count)===0,'difficulty must reset demonstration')
       check(!document.querySelector('[data-hit-fx]'),'difficulty must clear transients')
-      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,resumedDifference,status:'passed'})
+      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,coloredPixels:frozenPixels.colored,resumedDifference,status:'passed'})
     }
-    result.textContent=JSON.stringify({status:'passed',reports},null,2)
+    result.textContent=JSON.stringify({status:'passed',textureMultiplication,reports},null,2)
   }catch(error){result.textContent=JSON.stringify({status:'failed',error:error.message});console.error(error)}
   finally{run.disabled=false}
 }
