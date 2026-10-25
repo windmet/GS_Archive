@@ -35,7 +35,7 @@
 | 门户 portal | 已合入 #96 门户 v8、#97 组合/歌曲 v2；后续从最新 master 开 | 故事入口一律经 `src/core/StoryOwner.js` 落到归属页，不再新增通用故事页。盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定；关于页联系方式待定。启动 JS 预算已由导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
 | 谱面 chart | `chart/20261023-native-projection`，从 `2bdd3de4` 开，已同步 master `084dcedb`，待合入 master | [开发基线与下一步](CHART_DEVELOPMENT_BASELINE_20261024.md)、[原生证据审计](CHART_ASSUMPTION_AUDIT_20261023.md)、[帧率验收](CHART_FRAME_RATE_20261024.md)。下一批可预计算自动演示事件；原生命中特效需先补选择/资源/生命周期证据。输入判定、完整粒子、nextFlickNote 连线及物理手机验收仍独立保留 |
-| 舞台 stage | 本轮已随 PR #95 合入 master（`a3c03a6e`）；后续从最新 master 新开 | [收口记录](STAGE_PR_CLOSEOUT_20261023.md)：来源参数 Smoke partial、原生面板/粒子补证、Center 嘴型与单人脚光；保留完整原机/GPU、RNG、Noise、参考时钟等边界，不在谱面 PR 内扩展。未因此部署 |
+| 舞台 stage | `stage/20261025-costume-groups`，从 master `d0531dcc`（#99）新开；前轮粒子/Smoke 已随 #95 合入 | 本轮仅接舞台服装：549 个 Live 模型按适用范围→款式→普通/另一款→逐人 ID→当前出演位覆盖分层，个人衣装下拉分组；全员/组合/属性/跨组合套服可按可用成员应用，缺版本者保留原装。设计、来源和验收见 [STAGE_COSTUME_FAMILIES_20261025.md](STAGE_COSTUME_FAMILIES_20261025.md)。摄影/图鉴 comu 预览留待办；141 个 comu-only 模型不加入舞台舞蹈资源。旧轮 Smoke 证据与原机等价待办继续保留；本轮未部署 |
 
 舞台 Smoke 补证（同分支，输入 `91f61d32` / `8290ec28` / `84350bde`）：6系统/120个受控出生位置与单位方向、+1.5/+7/−7原生startSpeed及down两系统的6条无外力轨迹已核对。side四系统确认快速缓存拒绝非0/1端点，改走原生通用曲线，双常量重力→限速→积分16轨迹/320粒子检查点同新增JS运动核对照，最大误差1.06e−5。对照已纳入object-emitter门禁，见[Smoke来源记录](NATIVE_SMOKE_SOURCE_20261023.md)。此段为当时补证边界；随后已接入确定性 Web 场景预览，原机时钟/退休调度及完整场景等价仍开放。
 
