@@ -1,5 +1,7 @@
 # 谱面效果音资源与套装审计
 
+> 后续接线见 [V6 末尾清场与通用打击音](CHART_LIFECYCLE_SOUND_V6_20261025.md)：四套打击音已成为任意歌曲可选项；本页“尚无打击音消费者”为审计输入时状态。共享ACB声音及原生完整播放链的缺口仍保留。
+
 输入 `chart/20261024-autoplay-timeline` / `cdc0cc84`，工作目录 `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023/web_viewer`。本批只查来源与接线条件，不修改播放器，不部署或发布媒体。
 
 ## 结论

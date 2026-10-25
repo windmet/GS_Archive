@@ -1,5 +1,6 @@
 import { compileSongFlickConnectors } from './SongTrackFlickConnectors.js'
-import { nativeSongEffectRoot, songStaticFlickHint } from './SongTrackNativeEffects.js'
+import { songAnimatedFlickHint } from './SongFlickMotion.js'
+import { nativeSongEffectRoot } from './SongTrackNativeEffects.js'
 import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
 import nativeGeometry from '../../config/song-track-native-geometry.v1.json' with { type: 'json' }
@@ -138,7 +139,8 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
     glyphs.push({ id: `${n.sourceIndex}-${endpoint}`, sourceIndex: n.sourceIndex, type,
       endpoint, tick, lane, speed, fraction: p.fraction, x: p.x, y: p.y,
       width: image.visibleWidth, image,
-      hint: role.startsWith('swipe_') ? songStaticFlickHint(role, nativeSongEffectRoot(n, startSeconds, toSeconds(n.tick), toSeconds(n.tick + n.duration), duration, nativeGeometry.target)) : null,
+      hint: role.startsWith('swipe_') ? songAnimatedFlickHint(role, nativeSongEffectRoot(n, startSeconds, toSeconds(n.tick), toSeconds(n.tick + n.duration), duration, nativeGeometry.target),
+        startSeconds - toSeconds(tick) + songTrackNoteReadTime(duration,speed), n.sourceIndex) : null,
       special: type === 'SPECIAL',
       role })
   }

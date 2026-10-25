@@ -85,13 +85,18 @@ const props = defineProps({
 
 const uid = `track-${getCurrentInstance().uid}`
 const holdCanvasUnavailable = ref(false)
-const safeCursor = computed(() => Math.min(props.chart.maxTick, Math.max(0, props.position.tick.value)))
+// The media clock continues through the outro. Clamping to maxTick leaves the
+// final note sitting exactly on its inclusive draw boundary forever.
+const safeCursor = computed(() => Math.max(0, props.position.tick.value))
 const timing = computed(() => buildSongChartTiming(props.chart))
 // Integrate from this frame's cursor, including a BPM transition in the read
 // window. A slower transport cursor must never determine the track window.
 const span = computed(() => songTrackSpanForSpeed(props.speed, timing.value, safeCursor.value))
 const renderTrack = computed(() => createSongTrackRenderer(props.chart))
-const scene = computed(() => renderTrack.value(safeCursor.value, span.value, props.skin))
+const scene = computed(() => {
+  const result = renderTrack.value(safeCursor.value, span.value, props.skin)
+  return props.position.ended?.value ? { ...result, glyphs: [], holds: [], middleNodes: [], links: [] } : result
+})
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)
 const laneOutline = computed(() => {
   const a = scene.value.lanes[0], b = scene.value.lanes[5]

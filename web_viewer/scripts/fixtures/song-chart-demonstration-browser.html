@@ -99,7 +99,7 @@ async function mount(code){
   button('视图设置')?.click()
   // Settings button has visible text rather than aria-label.
   if(!document.querySelector('[type="checkbox"]'))[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click()
-  await settle();await enable();button('关闭视图设置').click();await settle()
+  await settle();const sound=document.querySelector('[aria-label="谱面打击音套装"]');sound.value='off';sound.dispatchEvent(new Event('change',{bubbles:true}));await settle();await enable();button('关闭视图设置').click();await settle()
 }
 function checkPosition(seconds){
   check(Number(state().dataset.count)===events.filter(e=>e.seconds<=seconds).length,`count at ${seconds}`)
@@ -151,6 +151,9 @@ run.onclick=async()=>{
       media.time=150;media.ended=true;media.paused=true;audio.dispatchEvent(new Event('ended'));await settle()
       check(Number(state().dataset.count)===events.length,'ended must consume final chart events')
       check(!document.querySelector('[data-hold-fx]'),'ended retires holds')
+      check(!document.querySelector('[data-track-note]'),'ended removes final note body')
+      check(!document.querySelector('[data-hold-middle]'),'ended removes final middle')
+      check(!document.querySelector('[data-direction-hint]'),'ended removes final arrow')
       await seek(12);checkPosition(12)
       document.querySelector('.chart-modes button:last-child').click();await settle()
       document.querySelector('.chart-modes button:first-child').click();await settle();checkPosition(12)

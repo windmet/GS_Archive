@@ -3,10 +3,10 @@
     <svg v-if="showBody" :x="x - width / 2" :y="y - bodyHeight / 2" :width="width" :height="bodyHeight" :viewBox="viewBox(sprite)" overflow="hidden">
       <image :href="sprite.url" :width="sprite.width" :height="sprite.height" />
     </svg>
-    <g v-if="marker" :data-direction-hint="role" :data-effect-prefab="marker.defaultIndex" data-effect-presentation="static-emitter">
+    <g v-if="marker" :data-direction-hint="role" :data-effect-prefab="marker.defaultIndex" :data-effect-presentation="marker.presentation || 'static-emitter'">
       <template v-for="(layer, i) in marker.layers" :key="i">
         <defs><filter :id="`${uid}-${i}`" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" :values="tintMatrix(layer.color)" /></filter></defs>
-        <image :href="layer.url" :x="layer.cx - layer.width / 2" :y="layer.cy - layer.height / 2" :width="layer.width" :height="layer.height" :transform="`rotate(${layer.rotation} ${layer.cx} ${layer.cy})`" :filter="`url(#${uid}-${i})`" preserveAspectRatio="none" />
+        <image :href="layer.url" :x="layer.cx - layer.width / 2" :y="layer.cy - layer.height / 2" :width="layer.width" :height="layer.height" :opacity="layer.alpha ?? 1" :transform="`rotate(${layer.rotation} ${layer.cx} ${layer.cy})`" :filter="`url(#${uid}-${i})`" preserveAspectRatio="none" />
       </template>
     </g>
   </g>
