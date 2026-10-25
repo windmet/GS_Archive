@@ -183,7 +183,8 @@ function sampleContract(event, age, contract) {
   if(!event || !contract || age<0) return []
   const instructions=[], held=contract.field==='_hold'
   const lane=held ? (event.lane??2) : (event.targetLane??Math.round(event.lane??2))
-  const runtimeScale=particleRuntimeScale(held,event.noteScale??1)
+  const ui=contract.space==='ui'
+  const runtimeScale=ui?contract.rootTransform.m_LocalScale.x:particleRuntimeScale(held,event.noteScale??1)
   for(const layer of contract.layers) {
     const m=layer.modules, initial=m?.InitialModule
     if(!initial) continue
@@ -230,17 +231,18 @@ function sampleContract(event, age, contract) {
       const sheet=m.UVModule, nx=layer.uv.tilesX,ny=layer.uv.tilesY,total=nx*ny
       const progress=sheet?sampleMinMax(sheet.frameOverTime,p,random(17))*(sheet.cycles??1):0
       const frame=mod(Math.floor(mod(layer.uv.startFrame+progress,1)*total),total)
-      const texture=textureSizes[layer.texture.pathId],sw=texture.width/nx,sh=texture.height/ny
+      const texture=(contract.assets??textureSizes)[layer.texture.pathId],sw=texture.width/nx,sh=texture.height/ny
       const pixelOffset=birthLaneOffset(event,layer,born.time)
-      const quad=projectParticleQuad(center,x,y,lane,held,pixelOffset)
-      const originScreen=projectParticlePoint([0,0,0],lane,held)
-      const projectedCenter=projectParticlePoint(center,lane,held,pixelOffset)
+      const project=point=>ui?{x:contract.rootTransform.m_LocalPosition.x+point[0],y:-contract.rootTransform.m_LocalPosition.y-point[1],depth:1}:projectParticlePoint(point,lane,held,pixelOffset)
+      const quad=ui?[[-.5,.5],[.5,.5],[-.5,-.5],[.5,-.5]].map(([u,v])=>project(center.map((c,i)=>c+x[i]*u+y[i]*v))):projectParticleQuad(center,x,y,lane,held,pixelOffset)
+      const originScreen=ui?project([0,0,0]):projectParticlePoint([0,0,0],lane,held)
+      const projectedCenter=project(center)
       const basis=[quad[1].x-quad[0].x,quad[1].y-quad[0].y,quad[2].x-quad[0].x,quad[2].y-quad[0].y]
       instructions.push({textureId:layer.texture.pathId,nodeId:layer.nodeId,subName:layer.subName,particleId:born.ordinal,birthTime:born.time,
         sx:frame%nx*sw,sy:Math.floor(frame/nx)*sh,sw,sh,frame,quad,
         dx:projectedCenter.x-originScreen.x,dy:projectedCenter.y-originScreen.y,
         basis,w:Math.hypot(basis[0],basis[1]),h:Math.hypot(basis[2],basis[3]),
-        rotation:-rz,alpha:clamp(tint.a),colorTint:tint,blendMode:'lighter'})
+        rotation:-rz,alpha:clamp(tint.a),colorTint:tint,blendMode:ui&&layer.blend.dst!==1?'source-over':'lighter'})
     }
   }
   return instructions
@@ -250,6 +252,9 @@ export function sampleHitEffectFrame(hit, age, contracts=hitEffectsConfig.defaul
 }
 export function sampleHoldEffectFrame(hold, age, contracts=hitEffectsConfig.defaultContracts) {
   return sampleContract(hold,age,contracts?.[hold?.pathId??32265])
+}
+export function sampleUIEffectFrame(age, contract) {
+  return sampleContract({eventId:'combo315',lane:2},age,contract)
 }
 export function sampleAutoEvaluationFrame(age, animData=hitEffectsConfig.evaluation.animation) {
   if(age<0 || age>=animData.duration) return null

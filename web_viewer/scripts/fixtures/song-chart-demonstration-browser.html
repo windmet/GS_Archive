@@ -164,6 +164,17 @@ run.onclick=async()=>{
       check(!document.querySelector('[data-track-note]'),'ended removes final note body')
       check(!document.querySelector('[data-hold-middle]'),'ended removes final middle')
       check(!document.querySelector('[data-direction-hint]'),'ended removes final arrow')
+      const milestoneSeconds=[...events].sort((a,b)=>a.seconds-b.seconds)[314]?.seconds
+      if(milestoneSeconds!=null) {
+        await seek(milestoneSeconds+.2)
+        check(document.querySelector('[data-combo-315]'),'seek inside native 315 milestone restores its effect')
+        check(document.querySelector('[data-combo-system="logo_315"]')&&document.querySelector('[data-combo-system="logo_315_2"]'),'both native 315 logo systems reach the SVG')
+        const frozen315=document.querySelector('[data-combo-315]').outerHTML
+        await pulse(media.time)
+        check(document.querySelector('[data-combo-315]').outerHTML===frozen315,'paused 315 effect freezes')
+        await seek(milestoneSeconds+1.01)
+        check(!document.querySelector('[data-combo-315]'),'315 effect retires after its native one-second window')
+      }
       await seek(12)
       ;[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click();await settle()
       const timingInput=document.querySelector('[aria-label="音符时机调整"]')
@@ -191,7 +202,7 @@ run.onclick=async()=>{
       for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
       check(Number(state().dataset.count)===0,'difficulty must reset demonstration')
       check(!document.querySelector('[data-hit-fx]'),'difficulty must clear transients')
-      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,coloredPixels:frozenPixels.colored,resumedDifference,comboScale,comboPauseResume:true,timingAdjustment:true,comboToggle:true,status:'passed'})
+      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,coloredPixels:frozenPixels.colored,resumedDifference,comboScale,comboPauseResume:true,timingAdjustment:true,comboToggle:true,milestoneSeconds,special315:true,status:'passed'})
     }
     result.textContent=JSON.stringify({status:'passed',textureMultiplication,reports},null,2)
   }catch(error){result.textContent=JSON.stringify({status:'failed',error:error.message});console.error(error)}

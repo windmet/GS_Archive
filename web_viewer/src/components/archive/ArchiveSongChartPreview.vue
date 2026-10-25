@@ -200,7 +200,7 @@ async function loadChart() {
       chart.value = playableSongChart(parsed, props.audioTrack?.source?.duration_seconds)
       const timeline = compileSongChartDemonstration(chart.value)
       demonstration = createSongChartDemonstration(timeline)
-      comboPresentation = createSongComboPresentation()
+      comboPresentation = createSongComboPresentation(timeline)
       sounds.setTimeline(timeline)
       effectPool = createSongChartHitEffectPool({ setIndex: 1 })
       loading.value = false; seekSeconds(0)

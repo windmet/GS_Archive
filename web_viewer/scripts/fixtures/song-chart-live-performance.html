@@ -12,6 +12,7 @@
   <label>歌曲 <select id="song"><option value="cfprde">Café Parade!</option><option value="knwonl">K.now O.nly</option><option value="remasq">Reversed Masquerade</option></select></label>
   <button id="run" disabled>采样 20 秒</button>
   <label><input id="auto-effects" type="checkbox" checked>自动演示特效</label>
+  <label><input id="milestone" type="checkbox">315 附近采样</label>
   <pre id="result" role="status">正在加载…</pre>
   <div id="app"></div>
   <script type="module">
@@ -19,6 +20,7 @@
     import Chart from '/src/components/archive/ArchiveSongChartPreview.vue'
     import { getSongFullMixUrl } from '/src/utils/AssetResolver.js'
     import { buildSongChartTiming } from '/src/presentation/SongChartTiming.js'
+    import { compileSongChartDemonstration } from '/src/presentation/SongChartDemonstration.js'
 
     const result = document.querySelector('#result'), run = document.querySelector('#run'), select = document.querySelector('#song')
     const songs = (await (await fetch('/data/song_catalog.json')).json()).songs
@@ -28,6 +30,7 @@
     function observe(now) {
       if (!active) return
       active.callbacks.push(now)
+      if (active.milestone && document.querySelector('[data-combo-315]')) active.milestoneFrames++
       observationFrame = requestAnimationFrame(observe)
     }
     function recordVisibility() {
@@ -49,7 +52,7 @@
       const intervals = sample.callbacks.slice(1).map((t,i) => t-sample.callbacks[i])
       const report = {
         code: sample.code, autoEnabled: sample.autoEnabled, seconds: span, viewport: { width: innerWidth, height: innerHeight },
-        mediaFrom: sample.mediaFrom, mediaTo: sample.mediaTo,
+        mediaFrom: sample.mediaFrom, mediaTo: sample.mediaTo, milestone: sample.milestone, milestoneFrames: sample.milestoneFrames,
         rafCallbacks: sample.callbacks.length, rafHz: sample.callbacks.length/span,
         callbackIntervalsMs: summary(intervals),
         over50ms: intervals.filter(t=>t>50).length, over250ms: intervals.filter(t=>t>250).length,
@@ -110,7 +113,8 @@
       const slider = document.querySelector('[aria-label="谱面时间轴"]')
       // Keep the complete observation inside both the chart and the audio.
       // An outro or ended media would otherwise undercount component updates.
-      const start = Math.min(timing.tickToSeconds(tick), Math.max(0, Math.min(timing.duration, audio.duration) - 25))
+      const requestedStart=document.querySelector('#milestone').checked?Math.max(0,(compileSongChartDemonstration(chart).events[314]?.seconds??1)-1):timing.tickToSeconds(tick)
+      const start = Math.min(requestedStart, Math.max(0, Math.min(timing.duration, audio.duration) - 25))
       slider.value = String(start); slider.dispatchEvent(new Event('input',{bubbles:true}))
       await nextTick()
       return audio
@@ -124,7 +128,7 @@
         for (let i=0; i<500 && (audio.paused || audio.readyState < 3); i++) await new Promise(resolve=>setTimeout(resolve,10))
         if (audio.paused || audio.readyState < 3) throw new Error('音频未开始播放')
         const started = performance.now()
-        active = { code, autoEnabled: document.querySelector('#auto-effects').checked, started, mediaFrom: audio.currentTime, callbacks: [], trackCpu: [], visibility: [], mediaEvents: [], updates: { parent: 0, track: 0, holds: 0 } }
+        active = { code, autoEnabled: document.querySelector('#auto-effects').checked, milestone:document.querySelector('#milestone').checked, milestoneFrames:0, started, mediaFrom: audio.currentTime, callbacks: [], trackCpu: [], visibility: [], mediaEvents: [], updates: { parent: 0, track: 0, holds: 0 } }
         recordVisibility()
         result.textContent = '正在采样；请保持前台20秒…'
         observationFrame = requestAnimationFrame(observe)
