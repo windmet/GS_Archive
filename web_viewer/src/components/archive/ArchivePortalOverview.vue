@@ -11,7 +11,7 @@
 
 
 
-      <section ref="searchPanel" class="overview-search" @keydown.esc.prevent="searchOpen = false" aria-labelledby="portal-search-title">
+      <section ref="searchPanel" class="overview-search" @keydown.esc.prevent="collapseSearch" aria-labelledby="portal-search-title">
         <h2 id="portal-search-title" class="overview-visually-hidden">搜索全站档案</h2>
         <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; setSearchCollapsed(false); emit('search', query)">
           <Search :size="21" aria-hidden="true" />
