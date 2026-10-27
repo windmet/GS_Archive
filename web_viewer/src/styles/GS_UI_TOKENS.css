@@ -51,7 +51,6 @@
   --gs-attr-icon-intelli: url("/assets/attributes/icon_attribute_intelli.png");
   --gs-attr-icon-mental: url("/assets/attributes/icon_attribute_mental.png");
   --gs-attr-icon-all: url("/assets/attributes/icon_attribute_all.png");
-  --gs-idol: #12c48b;             /* overridden per idol where content is about that idol */
   /* Difficulty semantics: game canonical colors for Easy, Normal, Hard, Expert */
   --gs-diff-easy: #247145;
   --gs-diff-normal: #24649c;
@@ -151,3 +150,67 @@
 /* Reading flow: prose whose game-textbox wraps were joined by reflowText. Only paragraph
    edges survive as newlines; the container decides every other break. */
 .gs-flow { white-space: pre-line; overflow-wrap: break-word; word-break: normal; line-break: strict; text-wrap: pretty; }
+
+/* 节目册 2.0（2026-10-27）：只增不改。表面层级、节奏、宽度、控件族、担当色、工具深色六组。 */
+:root {
+  /* 表面层级：纸面 → 凹槽 → 控台 → 浮层 */
+  --gs-paper-2: #eceff3;              /* 凹槽：模式开关轨道、图片占位、进度底槽 */
+  --gs-console: var(--gs-surface);   /* 每个区域唯一的操作台 */
+  --gs-shadow-1: 0 1px 2px rgb(19 33 58 / 12%);
+  --gs-shadow-console: 0 1px 3px rgb(19 33 58 / 6%), 0 6px 20px rgb(19 33 58 / 7%);
+
+  /* 节奏 */
+  --gs-gap-inline: 8px;
+  --gs-gap-stack: 12px;
+  --gs-gap-group: 24px;
+  --gs-gap-section: var(--gs-space-section);  /* 48；手机 32 */
+  --gs-pad-panel: 20px;
+  --gs-row: var(--gs-control-touch);         /* 44 */
+  --gs-gutter: 32px;
+
+  /* 宽度 */
+  --gs-reading-width: 680px;
+  --gs-rail-width: 168px;
+  --gs-tool-panel: 360px;
+  --gs-tool-panel-compact: 292px;
+  --gs-tool-bar: 56px;
+
+  /* 字 */
+  --gs-text-figure: 32px;
+  --gs-leading-body: 1.75;
+  --gs-leading-ui: 1.45;
+  --gs-track-label: .04em;
+
+  /* 控件族：模式开关 = 凹槽 + 白滑块 + 墨色字；筛选片 = 薄荷浅底；标签 = 下划线 */
+  --gs-mode-track: var(--gs-paper-2);
+  --gs-mode-thumb: var(--gs-surface);
+  --gs-mode-ink: var(--gs-ink);
+  --gs-radius-segment: 6px;
+  --gs-switch-on: var(--gs-mint);
+  --gs-switch-off: var(--gs-rule);
+
+  /* 当前项：比所在底面高一级的一块面，不画竖条、不加粗 */
+  --gs-current-bg: var(--gs-surface);
+  --gs-current-shadow: 0 0 0 1px rgb(19 33 58 / 7%), 0 1px 3px rgb(19 33 58 / 10%);
+  --gs-current-bg-inset: var(--gs-paper-2);  /* 白底面板里 */
+  --gs-current-motion: 180ms cubic-bezier(.2, .7, .2, 1);
+  --gs-hover: rgb(19 33 58 / 5%);    /* 纸面与白底上的悬停，替代 mint-wash */
+
+  /* 担当色：运行时由 idolStageLight(担当原色) 写入；未设担当时是中性色 */
+  --gs-idol: var(--gs-rule);              /* 原色：头像环、名牌、3px 色条 */
+  --gs-idol-light: var(--gs-chrome-ink);  /* 舞台光跟随时的状态色 */
+  --gs-idol-ink: var(--gs-ink-2);        /* 浅底上的文字，≥ 4.5:1 */
+  --gs-idol-wash: var(--gs-paper-2);      /* 担当横幅、偶像详情人物幕 */
+
+  /* 工具深色舞台 */
+  --gs-stage-bg: #0b1424;
+  --gs-stage-raise: #142037;
+  --gs-stage-line: rgb(255 255 255 / 10%);
+  --gs-stage-ink: #e8edf5;
+  --gs-stage-ink-2: #9ba7ba;
+  --gs-stage-track: rgb(255 255 255 / 8%);
+  --gs-stage-thumb: rgb(255 255 255 / 16%);
+}
+@media (max-width: 760px) {
+  :root { --gs-gap-section: 32px; --gs-pad-panel: 16px; --gs-gutter: 16px; --gs-text-figure: 26px; }
+}

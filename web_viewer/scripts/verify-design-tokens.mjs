@@ -18,10 +18,30 @@ function walk(dir) {
   })
 }
 
-const METRICS = ['raw', 'tiny', 'hex', 'radius', 'breakpoint']
+const METRICS = ['raw', 'tiny', 'hex', 'radius', 'breakpoint', 'nestedWhite']
 // Viewport tiers: phone <=760 (where the sidebar becomes the bottom nav), middle 761-1100,
 // wide >1100. Anything finer belongs to the component as an @container query.
 const TIER_WIDTHS = { max: ['760', '1100'], min: ['761', '1101'] }
+
+// Box budget: one white console per area. A white-filled rule whose selector sits under another
+// white-filled rule's element (same file) is a white box inside a white box. Static approximation:
+// rules are matched by their last compound selector, so nesting across files is not seen.
+const WHITE_FILL = /(?:^|[;\s])background(?:-color)?\s*:\s*(?:var\(--gs-(?:surface|console|current-bg)\)|#fff(?:fff)?\b|white\b)/
+const compound = token => token.replace(/::?[a-z-]+(?:\([^)]*\))?/gi, '')
+export function nestedWhite(source) {
+  const styles = [...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(match => match[1]).join('\n')
+  const css = styles || (source.includes('<template') ? '' : source)
+  const whites = []
+  for (const [, selectors, body] of css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!WHITE_FILL.test(`;${body}`)) continue
+    for (const selector of selectors.split(',')) {
+      const tokens = selector.trim().split(/\s*[>+~]\s*|\s+/).map(compound).filter(Boolean)
+      if (tokens.length) whites.push(tokens)
+    }
+  }
+  const owners = new Set(whites.map(tokens => tokens.at(-1)))
+  return whites.filter(tokens => tokens.slice(0, -1).some(ancestor => owners.has(ancestor))).length
+}
 
 export function measure(source) {
   let raw = 0, tiny = 0, radius = 0, breakpoint = 0
@@ -44,7 +64,7 @@ export function measure(source) {
     const widths = [...prelude.matchAll(/\((max|min)-width\s*:\s*([^)]+)\)/g)]
     if (widths.some(([, kind, value]) => !TIER_WIDTHS[kind].includes(value.trim().replace(/px$/, '')))) breakpoint++
   }
-  return { raw, tiny, hex, radius, breakpoint }
+  return { raw, tiny, hex, radius, breakpoint, nestedWhite: nestedWhite(source) }
 }
 
 // Hard rule, not a ratchet: --gs-ink is for text. Fills, borders and rules use the role
@@ -55,9 +75,14 @@ export function inkFills(source) {
 }
 assert.deepEqual(inkFills('a{color:var(--gs-ink);--x:var(--gs-ink)}b{background:var(--gs-ink)}c{border-bottom:1px solid var(--gs-ink);border-color:var(--gs-ink-2)}d{box-shadow:inset 0 0 0 1px var(--gs-ink)}'), ['background', 'border-bottom', 'box-shadow'])
 
-// Self-check so the counter cannot silently pass everything.
-assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--gs-text-meta)}d{font-size:13px}e{font-size:inherit}'), { raw: 3, tiny: 2, hex: 0, radius: 0, breakpoint: 0 })
-assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2, breakpoint: 0 })
+// Self-check so the counters cannot silently pass everything.
+assert.equal(nestedWhite('<style>.panel{background:var(--gs-surface)}.panel .cell{background:#fff}.panel .tag{background:var(--gs-paper)}</style>'), 1)
+assert.equal(nestedWhite('<style>.panel{background:var(--gs-surface)}.cell{background:var(--gs-surface)}.panel>.row:hover{background:white}</style>'), 1)
+assert.equal(nestedWhite('<style>.a{background:var(--gs-surface)}.b .c{background:var(--gs-paper-2)}@media (max-width:760px){.a .d{background:var(--gs-current-bg)}}</style>'), 1)
+assert.equal(nestedWhite('<style>.a{background:var(--gs-surface)}.b{background:var(--gs-surface)}</style>'), 0)
+assert.equal(nestedWhite('<template><div style="background:#fff"></div></template>'), 0)
+assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--gs-text-meta)}d{font-size:13px}e{font-size:inherit}'), { raw: 3, tiny: 2, hex: 0, radius: 0, breakpoint: 0, nestedWhite: 0 })
+assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2, breakpoint: 0, nestedWhite: 0 })
 assert.deepEqual(measure('@media (max-width: 760px), (pointer:coarse){}@media(min-width:761px) and (max-width:1100px){}@media (max-height: 600px){}@container (max-width: 520px){}@media (max-width: 700px){}@media (min-width:1101px) and (max-width:40em){}').breakpoint, 2)
 
 const current = {}
