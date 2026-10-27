@@ -118,7 +118,8 @@ try {
   // Every page that shows these lines goes through the shared path.
   const home = read('src/components/archive/ArchiveImmersiveHome.vue')
   // A card cue reads its touch voice; an idol (general) cue reads the idol's home voice.
-  assert.match(home, /archiveLineText\('card-lines', \[\[cue\?\.source === 'idol' \? 'home-voice' : 'card-touch', 'text'\]\], cue\?\.text\)/)
+  // The dialogue box carries its own B-level language (原文 | 译文), passed as the fourth argument.
+  assert.match(home, /archiveLineText\('card-lines', \[\[cue\?\.source === 'idol' \? 'home-voice' : 'card-touch', 'text'\]\], cue\?\.text, dialogueLocale\.value\)/)
   assert.match(home, /const cueLine = computed\(\(\) => cueText\(activeCue\.value\)\)/)
   const idolDetail = read('src/components/archive/ArchiveIdolDetail.vue')
   assert.match(idolDetail, /archiveLineText\('card-lines', \[\['home-voice', 'self-intro'\]\], props\.selfIntroduction\?\.text/)

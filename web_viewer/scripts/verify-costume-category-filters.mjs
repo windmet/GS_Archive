@@ -39,7 +39,14 @@ assert.deepEqual(costumeCategoryCounts(options).map(row=>[row.id,row.count]),[['
 assert.deepEqual(costumeCategoryCounts([{modelId:'unknown'}]).map(row=>row.id),['other'])
 const home=fs.readFileSync(new URL('../src/components/archive/ArchiveImmersiveHome.vue',import.meta.url),'utf8')
 const studio=fs.readFileSync(new URL('../src/components/archive/PictureStudio.vue',import.meta.url),'utf8')
-assert.equal((home.match(/<CostumeCategoryFilter /g)||[]).length,3,'desktop, mobile and settings share one filter')
-assert.equal((home.match(/v-if="filteredCostumes.pinned"/g)||[]).length,3,'current model remains visibly pinned in each picker')
+const consolePanel=fs.readFileSync(new URL('../src/components/archive/ArchiveHomeConsole.vue',import.meta.url),'utf8')
+// The 事务所 console (desktop panel and phone sheet are one component) draws the same exact-model categories as chips;
+// the scene settings keep the select. Both read the shared helpers, and both keep the current model visibly pinned.
+assert.equal((home.match(/<CostumeCategoryFilter /g)||[]).length,1,'scene settings keep the shared filter')
+assert.match(consolePanel,/costumeCategoryCounts\(props\.activeIdol\.costumes\)/,'console chips use the shared category counts')
+assert.match(consolePanel,/@click="emit\('update:costumeCategory', group\.id\)"/)
+assert.match(home,/:filtered-costumes="filteredCostumes"/,'console rows come from the shared filter view')
+assert.equal((home.match(/v-if="filteredCostumes.pinned"/g)||[]).length,1,'current model remains visibly pinned in the settings picker')
+assert.match(consolePanel,/v-if="filteredCostumes\.pinned"/,'current model remains visibly pinned in the console')
 assert(studio.includes('label="摄影服装类别"') && studio.includes('v-if="filteredCostumes.pinned"'))
 console.log('Costume filters: 690 native models, 549 Live +141 story-only, exact-model categories, pinned selection and all home/photo entry points passed')
