@@ -121,9 +121,9 @@ onMounted(() => {
 /* 图鉴 rows: names run two to four characters, so each sits in a filled cell; the cells' edges, not the
    ragged text, carry the column lines, and they share the sheet's outer edges with the tool cards below. */
 .archive-drawer .is-collection button { padding: 0 var(--gs-space-3); background: var(--gs-paper); }
-/* Tool cards: a tinted glyph, the name, and what it opens. */
+/* Tool cards: a glyph on the recessed level, the name, and what it opens. */
 .archive-drawer .is-tools button { gap: var(--gs-space-2); min-height: 60px; padding: var(--gs-space-2) var(--gs-space-3); border: 1px solid var(--gs-line); background: var(--gs-paper); }
-.archive-drawer .is-tools .archive-drawer-icon { box-sizing: content-box; padding: 6px; border-radius: var(--gs-radius-control); background: var(--gs-mint-wash); color: var(--gs-mint-ink); }
+.archive-drawer .is-tools .archive-drawer-icon { box-sizing: content-box; padding: 6px; border-radius: var(--gs-radius-control); background: var(--gs-paper-2); color: var(--gs-ink-2); }
 .archive-drawer-tool-copy { display: grid; gap: 1px; }
 .archive-drawer-tool-copy b { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; }
 .archive-drawer .archive-drawer-tool-copy small { overflow: visible; color: var(--gs-ink-3); font-size: var(--gs-text-caption); line-height: 1.35; white-space: normal; }
