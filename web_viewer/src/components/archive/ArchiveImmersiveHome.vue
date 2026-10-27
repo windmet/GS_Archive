@@ -841,7 +841,7 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .cue-index-card ol { margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px; }
 .cue-index-card li button { display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font:inherit;text-align:left;cursor:pointer; }
 .cue-index-card li button:hover { background:var(--gs-paper); }
-.cue-index-card li button[aria-current="true"] { background:var(--gs-selected-bg);box-shadow:inset 3px 0 0 var(--gs-selected-line); }
+.cue-index-card li button[aria-current="true"] { background:var(--gs-current-bg-inset); }
 .cue-index-now { flex:none;display:inline-flex;align-items:flex-end;gap:2px;width:14px;height:14px;margin-top:5px; }
 .cue-index-now i { flex:1;height:100%;transform-origin:bottom;transform:scaleY(0.4);background:var(--gs-mint); }
 .cue-index-now.is-playing i { animation:cue-now 0.9s ease-in-out infinite; }

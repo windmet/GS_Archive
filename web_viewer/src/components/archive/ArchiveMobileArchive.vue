@@ -412,7 +412,7 @@ function timeWindow(topic) {
 }
 .conversation-list, .random-list { border-top: 1px solid var(--gs-rule); }
 .conversation-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto var(--gs-control-touch); align-items: start; gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
-.conversation-row.focused { background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }
+.conversation-row.focused { background: var(--gs-current-bg-inset); }
 .conversation-type { display: grid; place-items: center; padding-top: 2px; color: var(--gs-ink-3); }
 .conversation-copy { display: grid; gap: var(--gs-space-2); min-width: 0; }
 .conversation-copy > small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
