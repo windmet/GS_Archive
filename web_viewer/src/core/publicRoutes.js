@@ -1,0 +1,39 @@
+// Public addresses shared by the locator, document titles and static head shells.
+// Internal routes remain query-based. Add a public view only after auditing and enforcing its schema.
+export const PUBLIC_ROUTES = Object.freeze([
+  Object.freeze({ kind: 'entity', view: 'idol_detail', prefix: 'idols', param: 'idol', implied: { category: 'idol' }, pattern: /^[0-9]{3}[a-z]{3}$/ }),
+  Object.freeze({ kind: 'entity', view: 'unit_detail', prefix: 'units', param: 'unit', implied: {}, pattern: /^[0-9]{2}[a-z0-9]{3}$/ }),
+  // Cards are addressed by resource_id (001tom_n01), the id every card link and read-model row carries.
+  Object.freeze({ kind: 'entity', view: 'card_detail', prefix: 'cards', param: 'card', implied: {}, pattern: /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/ }),
+  // Songs are addressed by their six-character song_code (brndnf, drv999), primaries and variants alike.
+  Object.freeze({ kind: 'entity', view: 'song_detail', prefix: 'songs', param: 'song', implied: {}, pattern: /^[a-z0-9]{6}$/ }),
+  // Events keep their read-model id: theater and tour events are 4 + event code (410001, 430001), every
+  // other event is `event:<code>` (event:10019, event:20001). The path drops that prefix, so both forms map
+  // to a path and back without the catalogue: six digits are the legacy id, five digits are a code.
+  Object.freeze({ kind: 'entity', view: 'event_detail', prefix: 'events', param: 'event', implied: {}, pattern: /^(4[0-9]{5}|[1-9][0-9]{4})$/,
+    fromPath: segment => segment.length === 5 ? `event:${segment}` : segment, toPath: id => id.replace(/^event:(?=[0-9]{5}$)/, '') }),
+  // Gashas: announcement ids (210003, 1300012, 12007210) and ticket-only pools (ticket-<16 hex>).
+  Object.freeze({ kind: 'entity', view: 'gasha_detail', prefix: 'gashas', param: 'gasha', implied: {}, pattern: /^([0-9]{6,8}|ticket-[0-9a-f]{16})$/ }),
+  // An idol's 事务所 and 通信 are addressed by the idol; the cue and costume, or the mode, unit and open call, stay in the query.
+  Object.freeze({ kind: 'place', section: 'home', view: 'home', prefix: 'office', param: 'home_idol', implied: {}, pattern: /^[0-9]{3}[a-z]{3}$/ }),
+  Object.freeze({ kind: 'place', section: 'interactions', view: 'mobile_archive', prefix: 'mobile', param: 'idol', implied: {}, pattern: /^[0-9]{3}[a-z]{3}$/ }),
+  // Directory roots retain their filters in the query.
+  Object.freeze({ kind: 'section', view: 'idols', prefix: 'idols', section: 'idols', implied: { category: 'idol' } }),
+  Object.freeze({ kind: 'section', view: 'unit_catalog', prefix: 'units', section: 'units', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'cards', prefix: 'cards', section: 'cards', implied: { category: 'cards' } }),
+  Object.freeze({ kind: 'section', view: 'song_catalog', prefix: 'songs', section: 'songs', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'event_catalog', prefix: 'events', section: 'events', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'gashas', prefix: 'gashas', section: 'gashas', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'story_catalog', prefix: 'stories', section: 'stories', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'collection_catalog', prefix: 'items', section: 'collections', implied: { collection_kind: 'items' } }),
+  Object.freeze({ kind: 'section', view: 'collection_catalog', prefix: 'honors', section: 'honors', implied: { collection_kind: 'honors' } }),
+  Object.freeze({ kind: 'section', view: 'collection_catalog', prefix: 'currencies', section: 'currencies', implied: { collection_kind: 'currencies' } }),
+  Object.freeze({ kind: 'section', view: 'collection_catalog', prefix: 'costumes', section: 'costumes', implied: { collection_kind: 'costumes' } }),
+  Object.freeze({ kind: 'section', view: 'photo_catalog', prefix: 'photos', section: 'photos', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'unused_archive', prefix: 'unused', section: 'unused', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'score_archive', prefix: 'scores', section: 'scores', implied: {} }),
+])
+
+export const PUBLIC_PATH_ROUTES = Object.freeze(PUBLIC_ROUTES.filter(route => route.kind !== 'section'))
+export const SECTION_PATH_ROUTES = Object.freeze(PUBLIC_ROUTES.filter(route => route.kind === 'section'))
+export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(route => route.prefix))

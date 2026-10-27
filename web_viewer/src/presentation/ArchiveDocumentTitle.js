@@ -1,3 +1,4 @@
+import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES } from '../core/publicRoutes.js'
 import { collectionKindLabel } from '../core/CollectionRouteState.js'
 import { sectionLabel } from '../core/archiveSections.js'
 // Browser tab titles. Pages published at a path locator (idol, unit, card, song, event and gasha detail, and an idol's
@@ -7,13 +8,10 @@ import { sectionLabel } from '../core/archiveSections.js'
 // page keeps the site title from index.html.
 const COLLECTION_PAGE_LABEL = '图鉴'
 export const ARCHIVE_SITE_TITLE = 'GROWING STARS 资料馆 · 偶像大师 SideM'
-export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_detail', 'card_detail', 'song_detail', 'event_detail', 'gasha_detail',
-  'home', 'mobile_archive']))
-// An idol's 事务所 (/office/<idol>/) and 通信 (/mobile/<idol>/) are named for the idol and the section.
-const IDOL_PLACE_SECTIONS = Object.freeze({ home: 'home', mobile_archive: 'interactions' })
-export const SECTION_TITLES = Object.freeze(Object.fromEntries(Object.entries({ idols: 'idols', unit_catalog: 'units', cards: 'cards',
-  song_catalog: 'songs', event_catalog: 'events', gashas: 'gashas', story_catalog: 'stories', photo_catalog: 'photos', unused_archive: 'unused', score_archive: 'scores' })
-  .map(([view, section]) => [view, sectionLabel(section)])))
+export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(PUBLIC_PATH_ROUTES.map(route => route.view)))
+const IDOL_PLACE_SECTIONS = Object.freeze(Object.fromEntries(PUBLIC_PATH_ROUTES.filter(route => route.kind === 'place').map(route => [route.view, route.section])))
+export const SECTION_TITLES = Object.freeze(Object.fromEntries(SECTION_PATH_ROUTES.filter(route => route.view !== 'collection_catalog')
+  .map(route => [route.view, sectionLabel(route.section)])))
 
 // The collection catalogue is four sections, /items/, /honors/, /currencies/ and /costumes/.
 export function archiveSectionTitle(view, collectionKind = 'items') {

@@ -1,8 +1,27 @@
-// Route schema consistency (report-only: nothing prunes URLs against ROUTE_SCHEMA yet) and the stale player-return guard.
+import { readFileSync, readdirSync } from 'node:fs'
+import { PUBLIC_ROUTES } from '../src/core/publicRoutes.js'
+// Route ownership, public-address enforcement and the stale player-return guard.
 import assert from 'node:assert/strict'
 import { ENFORCED_ROUTE_VIEWS, ROUTE_SCHEMA, ownedRouteParams } from '../src/core/routeSchema.js'
 import { ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
+
+// Temporary audited migration exceptions; remove entries as their directory schemas are enforced.
+const PUBLIC_ROUTE_EXCEPTIONS = new Set(['idols', 'cards', 'song_catalog', 'event_catalog', 'gashas', 'story_catalog', 'collection_catalog', 'photo_catalog'])
+for (const route of PUBLIC_ROUTES) assert.ok(ENFORCED_ROUTE_VIEWS.has(route.view) || PUBLIC_ROUTE_EXCEPTIONS.has(route.view), `${route.view}: public address requires enforced schema`)
+for (const view of PUBLIC_ROUTE_EXCEPTIONS) {
+  assert.ok(PUBLIC_ROUTES.some(route => route.view === view), `${view}: exception has a public address`)
+  assert.ok(!ENFORCED_ROUTE_VIEWS.has(view), `${view}: remove obsolete public route exception`)
+}
+// Components must use navigation helpers rather than hard-coded query addresses.
+function checkComponents(directory) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const file = new URL(entry.name, directory)
+    if (entry.isDirectory()) checkComponents(new URL(entry.name + '/', directory))
+    else if (/\.(vue|[cm]?js|tsx?)$/.test(entry.name)) assert.ok(!readFileSync(file, 'utf8').includes('?view='), `${file.pathname}: use public route/navigation helpers`)
+  }
+}
+checkComponents(new URL('../src/components/', import.meta.url))
 
 // Every view is covered; player is covered per audited return view.
 for (const view of VALID_VIEWS) assert.ok(ownedRouteParams(view, ''), `schema covers ${view}`)

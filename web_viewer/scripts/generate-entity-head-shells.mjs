@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { archiveCardName, archiveEntityTitle, archiveIdolPlaceName, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
-import { ARCHIVE_SECTION_PATHS } from '../src/core/archiveRoute.js'
+import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES, ARCHIVE_SECTION_PATHS } from '../src/core/publicRoutes.js'
 import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
 import { eventKindLabels, historicalDate } from '../src/presentation/DomainPresentation.mjs'
@@ -23,31 +23,35 @@ import { PORTAL_PRELOAD } from './lib/portal-preload.mjs'
 
 export const DEFAULT_ORIGIN = 'https://gs-archive-preview.pages.dev'
 const SITE = 'GS Archive'
-const IDOL_ID = /^[0-9]{3}[a-z]{3}$/
-const UNIT_CODE = /^[0-9]{2}[a-z0-9]{3}$/  // W is 05w00
-const CARD_ID = /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/
-const SONG_CODE = /^[a-z0-9]{6}$/
-// Read-model event ids and their path segment (archiveRoute.js PUBLIC_PATH_ROUTES).
-const EVENT_ID = /^(4[0-9]{5}|event:[1-9][0-9]{4})$/
-export const eventPathSegment = id => id.replace(/^event:/, '')
-const GASHA_ID = /^([0-9]{6,8}|ticket-[0-9a-f]{16})$/
+const routeFor = view => PUBLIC_PATH_ROUTES.find(route => route.view === view)
+const accepts = (view, id) => {
+  const route = routeFor(view)
+  const segment = route.toPath ? route.toPath(id) : id
+  return route.pattern.test(segment) && (route.fromPath ? route.fromPath(segment) : segment) === id
+}
+export const eventPathSegment = routeFor('event_detail').toPath
 // Section roots (archiveRoute.js SECTION_PATH_ROUTES): the view whose section name titles the page, and what it lists.
-export const SECTION_SHELLS = Object.freeze({
-  idols: { view: 'idols', description: 'SideM GROWING STARS 全部偶像一览：按组合浏览档案、卡片与剧情。' },
-  units: { view: 'unit_catalog', description: 'SideM GROWING STARS 全部组合一览：成员、团体剧情、活动与歌曲。' },
-  cards: { view: 'cards', description: 'SideM GROWING STARS 全部卡片一览：按偶像、稀有度与属性筛选，查看卡面、技能与获得方式。' },
-  songs: { view: 'song_catalog', description: 'SideM GROWING STARS 全部歌曲一览：演唱成员、试听、谱面与相关活动。' },
-  events: { view: 'event_catalog', description: 'SideM GROWING STARS 历史活动一览：活动剧情、报酬卡与参加偶像。' },
-  gashas: { view: 'gashas', description: 'SideM GROWING STARS 历史卡池一览：开放时间、Pickup 卡片与抽取道具。' },
-  stories: { view: 'story_catalog', description: 'SideM GROWING STARS 剧情一览：主线、活动、个人剧情、生日与季节企划。' },
-  items: { view: 'collection_catalog', kind: 'items', description: 'SideM GROWING STARS 道具图鉴：用途、获得来源与相关卡片。' },
-  honors: { view: 'collection_catalog', kind: 'honors', description: 'SideM GROWING STARS 称号图鉴：获得条件与相关偶像、组合。' },
-  currencies: { view: 'collection_catalog', kind: 'currencies', description: 'SideM GROWING STARS 货币：星钻、金币、记忆之星等的获得来源与用途。' },
-  costumes: { view: 'collection_catalog', kind: 'costumes', description: 'SideM GROWING STARS 服装图鉴：全部衣装缩略图、所属偶像与穿着的卡片。' },
-  photos: { view: 'photo_catalog', description: 'SideM GROWING STARS 摄影资源：服装、背景、滤镜与贴纸素材。' },
-  scores: { view: 'score_archive', description: 'SideM GROWING STARS 剧情配乐：剧情中的背景音乐、剧中歌曲、环境音与音效，以及使用它们的剧情。' },
-  unused: { view: 'unused_archive', description: 'SideM GROWING STARS 其他语音：事务所系统语音、登录标题呼号，以及游戏内留有音频但未使用的语音。' },
+const SECTION_DESCRIPTIONS = Object.freeze({
+  idols: { description: 'SideM GROWING STARS 全部偶像一览：按组合浏览档案、卡片与剧情。' },
+  units: { description: 'SideM GROWING STARS 全部组合一览：成员、团体剧情、活动与歌曲。' },
+  cards: { description: 'SideM GROWING STARS 全部卡片一览：按偶像、稀有度与属性筛选，查看卡面、技能与获得方式。' },
+  songs: { description: 'SideM GROWING STARS 全部歌曲一览：演唱成员、试听、谱面与相关活动。' },
+  events: { description: 'SideM GROWING STARS 历史活动一览：活动剧情、报酬卡与参加偶像。' },
+  gashas: { description: 'SideM GROWING STARS 历史卡池一览：开放时间、Pickup 卡片与抽取道具。' },
+  stories: { description: 'SideM GROWING STARS 剧情一览：主线、活动、个人剧情、生日与季节企划。' },
+  items: { description: 'SideM GROWING STARS 道具图鉴：用途、获得来源与相关卡片。' },
+  honors: { description: 'SideM GROWING STARS 称号图鉴：获得条件与相关偶像、组合。' },
+  currencies: { description: 'SideM GROWING STARS 货币：星钻、金币、记忆之星等的获得来源与用途。' },
+  costumes: { description: 'SideM GROWING STARS 服装图鉴：全部衣装缩略图、所属偶像与穿着的卡片。' },
+  photos: { description: 'SideM GROWING STARS 摄影资源：服装、背景、滤镜与贴纸素材。' },
+  scores: { description: 'SideM GROWING STARS 剧情配乐：剧情中的背景音乐、剧中歌曲、环境音与音效，以及使用它们的剧情。' },
+  unused: { description: 'SideM GROWING STARS 其他语音：事务所系统语音、登录标题呼号，以及游戏内留有音频但未使用的语音。' },
 })
+export const SECTION_SHELLS = Object.freeze(Object.fromEntries(SECTION_PATH_ROUTES.map(route => {
+  const description = SECTION_DESCRIPTIONS[route.prefix]?.description
+  if (!description) throw new Error(`Section ${route.prefix} has no head shell`)
+  return [route.prefix, Object.freeze({ view: route.view, kind: route.implied.collection_kind, description })]
+})))
 
 export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch])
@@ -91,7 +95,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
   const shells = []
   const units = new Map()
   for (const idol of idols) {
-    if (!IDOL_ID.test(idol.id)) throw new Error(`Unexpected idol id ${idol.id}`)
+    if (!accepts('idol_detail', idol.id)) throw new Error(`Unexpected idol id ${idol.id}`)
     const name = display(idol)
     const aside = [idol.name && idol.name.replace(/\s+/g, '') !== name.replace(/\s+/g, '') ? idol.name : '', idol.unitName || ''].filter(Boolean)
     const location = `/idols/${idol.id}/`
@@ -130,7 +134,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
     }
   }
   for (const unit of units.values()) {
-    if (!UNIT_CODE.test(unit.code)) throw new Error(`Unexpected unit code ${unit.code}`)
+    if (!accepts('unit_detail', unit.code)) throw new Error(`Unexpected unit code ${unit.code}`)
     const location = `/units/${unit.code}/`
     shells.push({
       path: `units/${unit.code}/index.html`,
@@ -146,7 +150,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
   }
   const idolById = new Map(idols.map(idol => [idol.id, idol]))
   for (const card of cards) {
-    if (!CARD_ID.test(card.resource_id)) throw new Error(`Unexpected card id ${card.resource_id}`)
+    if (!accepts('card_detail', card.resource_id)) throw new Error(`Unexpected card id ${card.resource_id}`)
     const idol = idolById.get(card.character_id)
     if (!idol) throw new Error(`Card ${card.resource_id} has no idol ${card.character_id}`)
     const title = cardTitles[card.title] || card.title
@@ -165,7 +169,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
     })
   }
   for (const song of songs) {
-    if (!SONG_CODE.test(song.song_code)) throw new Error(`Unexpected song code ${song.song_code}`)
+    if (!accepts('song_detail', song.song_code)) throw new Error(`Unexpected song code ${song.song_code}`)
     if (!song.title) throw new Error(`Song ${song.song_code} has no title`)
     if (!/^\/assets\/songs\/[a-z0-9_]+\.png$/.test(song.jacket_url || '')) throw new Error(`Song ${song.song_code} has no jacket`)
     // Same performer label as the song catalogue: the confirmed unit, else the special-lineup scope.
@@ -186,7 +190,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
     })
   }
   for (const event of events) {
-    if (!EVENT_ID.test(event.id)) throw new Error(`Unexpected event id ${event.id}`)
+    if (!accepts('event_detail', event.id)) throw new Error(`Unexpected event id ${event.id}`)
     if (!event.title) throw new Error(`Event ${event.id} has no title`)
     if (!/^\/assets\/domain-images\/event\/[a-z0-9_/]+\.png$/.test(event.image || '')) throw new Error(`Event ${event.id} has no image`)
     const location = `/events/${eventPathSegment(event.id)}/`
@@ -204,7 +208,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
     })
   }
   for (const gasha of gashas) {
-    if (!GASHA_ID.test(gasha.id)) throw new Error(`Unexpected gasha id ${gasha.id}`)
+    if (!accepts('gasha_detail', gasha.id)) throw new Error(`Unexpected gasha id ${gasha.id}`)
     if (!gasha.name) throw new Error(`Gasha ${gasha.id} has no name`)
     if (!/^\/assets\/[a-z0-9_/.-]+\.(png|jpg|webp)$/i.test(gasha.image || '')) throw new Error(`Gasha ${gasha.id} has no image`)
     const location = `/gashas/${gasha.id}/`
