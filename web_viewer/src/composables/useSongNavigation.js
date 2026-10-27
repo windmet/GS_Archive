@@ -133,9 +133,16 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
     }
   }
 
-  function openChartLab() { captureDetailSource(); filterQuery.value = ''; commitView('chart_lab') }
+  // A song page's difficulty column opens the tool on that difficulty. It is a starting point for this
+  // visit only, not part of the address: a refresh or another song starts from the first difficulty.
+  const chartDifficulty = shallowRef(null)
+  function openChartLab(difficulty = null) {
+    chartDifficulty.value = Number.isInteger(difficulty) ? difficulty : null
+    captureDetailSource(); filterQuery.value = ''; commitView('chart_lab')
+  }
   // The tools entry opens the chart picker without carrying a previously selected song.
   function openChartTool() {
+    chartDifficulty.value = null
     captureDetailSource(); filterQuery.value = ''; currentSongId.value = ''
     commitView('chart_lab')
   }
@@ -166,6 +173,7 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
   // Replacing the history entry makes Back leave the tool after any number of selections.
   async function selectChartSong(songCode) {
     if (!songCode || view.value !== 'chart_lab') return
+    chartDifficulty.value = null
     const request = ++pendingSongNavigation
     const revision = navigation.getRevision()
     songReadModelStatus.value = '正在读取谱面…'
@@ -236,7 +244,7 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
   })
 
   return {
-    currentSong, currentSongPresentation, chartSongs,
+    currentSong, currentSongPresentation, chartSongs, chartDifficulty,
     loadSongCatalog, ensureSongCatalog, loadSongDetail,
     openSongCatalog, openSong, openSongUnit, openSongIdol, openSongRelatedStory,
     openChartLab, openChartTool, openChartSong, selectChartSong, closeChartTool, goBackFromSong,

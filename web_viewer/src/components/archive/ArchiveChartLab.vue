@@ -12,7 +12,7 @@
         <strong>{{ song.title }}</strong>
         <button type="button" class="chart-lab-switch" :aria-expanded="pickerOpen" @click="pickerOpen = true"><ListMusic :size="17" aria-hidden="true" />切换曲目</button>
       </div>
-      <ArchiveSongChartPreview :key="song.id" standalone :song-code="song.id" :title="song.title" :difficulties="song.gameplay.difficulties" :audio-track="song.playback.track" />
+      <ArchiveSongChartPreview :key="song.id" standalone :song-code="song.id" :title="song.title" :difficulties="song.gameplay.difficulties" :initial-difficulty="difficulty" :audio-track="song.playback.track" />
       <ArchiveTerminalDialog class="chart-song-drawer" :open="pickerOpen" title="切换曲目" title-id="chart-song-drawer-title" @close="pickerOpen = false">
         <ArchiveChartSongPicker :songs="songs" :selected="song.id" @select="choose" />
       </ArchiveTerminalDialog>
@@ -27,7 +27,8 @@ import ArchiveChartSongPicker from './ArchiveChartSongPicker.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 // The chart tool picks its own song (like the Chibi stage): with none chosen it opens on the picker,
 // and a chosen song can be switched in place without leaving for the song page.
-defineProps({ song: { type: Object, default: null }, songs: { type: Array, default: () => [] }, status: { type: String, default: '' } })
+// difficulty: the difficulty type a song page's column asked for; the preview starts there.
+defineProps({ song: { type: Object, default: null }, songs: { type: Array, default: () => [] }, difficulty: { type: Number, default: null }, status: { type: String, default: '' } })
 const emit = defineEmits(['select-song'])
 const pickerOpen = ref(false), selectedCode = ref('')
 function choose(code) { pickerOpen.value = false; selectedCode.value = code; emit('select-song', code) }

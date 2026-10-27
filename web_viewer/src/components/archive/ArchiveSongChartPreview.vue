@@ -81,7 +81,7 @@ import GsSwitch from '../gs/GsSwitch.vue'
 import { isMaintainerMode } from '../../core/maintainerMode.js'
 import ArchiveSongLongPreview from './ArchiveSongLongPreview.vue'
 import { embedSongChartImages, songNoteEndpoints } from '../../presentation/SongNotePresentation.js'
-const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true }, audioTrack: { type: Object, default: null }, standalone: Boolean })
+const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true }, initialDifficulty: { type: Number, default: null }, audioTrack: { type: Object, default: null }, standalone: Boolean })
 const emit = defineEmits(['request-play'])
 // 沉浸查看: the track fills the screen and owns every touch, so several fingers on it neither
 // scroll nor zoom the page. Fullscreen is asked for inside the tap; where the browser refuses it
@@ -99,7 +99,9 @@ function leaveImmersive() {
 }
 watch(fullscreenActive, (active, was) => { if (was && !active) immersive.value = false })
 const uid = `chart-viewer-${getCurrentInstance().uid}`
-const opened = ref(props.standalone), selected = ref(props.difficulties[0]?.type || 1), mode = ref('perspective')
+// Start on the difficulty the song page asked for when this song has it, otherwise the first.
+const startDifficulty = props.difficulties.some(d => d.type === props.initialDifficulty) ? props.initialDifficulty : props.difficulties[0]?.type || 1
+const opened = ref(props.standalone), selected = ref(startDifficulty), mode = ref('perspective')
 const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(5), longLayout = ref('auto'), followPlayback = ref(false)
 const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })

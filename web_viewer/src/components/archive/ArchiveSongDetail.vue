@@ -52,7 +52,7 @@
             type="button"
             @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })"
           ><Clapperboard :size="16" aria-hidden="true" />{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D 舞台' }}</button>
-          <button v-if="song.gameplay" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart"><Music :size="16" aria-hidden="true" />谱面</button>
+          <button v-if="song.gameplay" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart()"><Music :size="16" aria-hidden="true" />谱面</button>
         </div>
       </div>
       <div class="song-record-column">
@@ -144,18 +144,15 @@
           </details>
         </section>
         <section v-if="song.gameplay" class="song-block song-gameplay">
-          <div class="song-block-heading"><h3>难度与解锁</h3></div>
+          <div class="song-block-heading"><h3>难度与谱面</h3><small>点一列打开该难度谱面</small></div>
+          <!-- One column per difficulty; the whole column opens that difficulty's chart. -->
           <ul class="song-difficulty-grid" role="list" aria-label="谱面难度与最大 Combo">
-            <li
-              v-for="d in song.gameplay.difficulties"
-              :key="d.id"
-              class="difficulty-card"
-              :data-difficulty="d.label.toLowerCase()"
-            >
-              <i class="difficulty-dot" aria-hidden="true"></i>
-              <span class="difficulty-label">{{ d.label }}</span>
-              <strong class="difficulty-level">Lv {{ d.levelLabel }}</strong>
-              <span class="difficulty-combo">{{ d.maxCombo }} Combo</span>
+            <li v-for="d in song.gameplay.difficulties" :key="d.id" class="difficulty-card" :data-difficulty="d.label.toLowerCase()">
+              <button type="button" :aria-label="`打开 ${d.label} 谱面，Lv ${d.levelLabel}，${d.maxCombo} Combo`" @click="openChart(d.type)">
+                <span class="difficulty-name"><i class="difficulty-dot" aria-hidden="true"></i><span class="difficulty-label">{{ d.label }}</span><span class="difficulty-short" aria-hidden="true">{{ d.label === 'EXPERT' ? 'EX' : d.label.charAt(0) }}</span></span>
+                <strong class="difficulty-level">{{ d.levelLabel }}</strong>
+                <span class="difficulty-combo">{{ d.maxCombo }} Combo</span>
+              </button>
             </li>
           </ul>
           <p class="song-block-note">解锁条件：<button v-if="song.unlockStory" type="button" class="song-unlock-link" :data-archive-focus-id="`song-unlock:${song.id}`" @click="openUnlockStory">{{ song.unlockStory.label }}</button><template v-else>{{ releaseConditionLabel }}</template></p>
@@ -408,7 +405,8 @@ function performerReference(reference) {
     : reference
 }
 function openStage(target) { songPlayer.value?.pause(); emit('open-stage', target) }
-function openChart() { songPlayer.value?.pause(); emit('open-chart') }
+// difficulty: a difficulty column's type; the console's 谱面 button opens on the first one.
+function openChart(difficulty = null) { songPlayer.value?.pause(); emit('open-chart', difficulty) }
 </script>
 
 <style scoped>
@@ -461,12 +459,25 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .version-pill[aria-pressed="true"] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); border-color: var(--gs-selected-line); font-weight: var(--gs-weight-semibold); }
 
 /* Difficulties as a hairline table: dot, name, level, max Combo; one row each. */
-.song-difficulty-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: var(--gs-space-4) 0 var(--gs-space-2); padding: 0; border-top: 1px solid var(--gs-line); list-style: none; }
-.difficulty-card { display: grid; grid-template-columns: 10px 96px 72px minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); min-height: var(--gs-row); padding: 0; border: 0; border-bottom: 1px solid var(--gs-line); background: transparent; text-align: left; }
+.song-block :deep(.song-block-heading small) { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+/* A hairline table: one column per difficulty, the dot and name, the level as a figure, the Combo; each column is one button. */
+.song-difficulty-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: var(--gs-space-4) 0 var(--gs-space-2); padding: 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); list-style: none; }
+.difficulty-card { min-width: 0; border-right: 1px solid var(--gs-line); }
+.difficulty-card:last-child { border-right: 0; }
+.difficulty-card button { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gs-space-1); width: 100%; padding: var(--gs-space-4); border: 0; background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+@media (hover: hover) { .difficulty-card button:hover { background: var(--gs-hover); } }
+.difficulty-name { display: flex; align-items: center; gap: 6px; }
 .difficulty-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--diff-color, var(--gs-ink-3)); }
-.difficulty-label { font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-bold); letter-spacing: .04em; color: var(--diff-color, var(--gs-ink)); }
-.difficulty-level { font-family: var(--gs-font-stage); font-size: var(--gs-text-body); font-weight: var(--gs-weight-bold); line-height: 1.1; color: var(--gs-ink); }
-.difficulty-combo { font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); color: var(--gs-ink-3); text-align: right; }
+.difficulty-label, .difficulty-short { font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); letter-spacing: .04em; color: var(--gs-ink-2); }
+.difficulty-short { display: none; }
+.difficulty-level { font-family: var(--gs-font-stage); font-size: var(--gs-text-figure); font-weight: var(--gs-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; }
+.difficulty-combo { font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); color: var(--gs-ink-3); }
+/* Narrow: four equal columns keep only the initial. */
+@container song-detail (max-width: 519px) {
+  .difficulty-card button { padding: var(--gs-space-3); }
+  .difficulty-label { display: none; }
+  .difficulty-short { display: inline; }
+}
 .difficulty-card[data-difficulty="easy"] { --diff-color: var(--gs-diff-easy); }
 .difficulty-card[data-difficulty="normal"] { --diff-color: var(--gs-diff-normal); }
 .difficulty-card[data-difficulty="hard"] { --diff-color: var(--gs-diff-hard); }
