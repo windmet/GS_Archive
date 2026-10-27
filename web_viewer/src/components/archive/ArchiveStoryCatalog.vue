@@ -197,24 +197,54 @@
           <h2 id="main-story-title">主线剧情 <small>{{ domainCount('main') }} 篇</small></h2>
           <button class="story-more" @click="openDomain('main')">查看全部 <ArrowRight :size="15" /></button>
         </div>
-        <div class="story-tiles">
+        <!-- A chapter band: two 250-wide covers, then where to start reading. -->
+        <div class="main-band">
           <button
             v-for="(chapter, index) in mainSections"
             :key="chapter.id"
-            class="story-tile"
+            class="story-tile main-cover"
             @click="browse('main', chapter.id)"
           >
             <span class="story-tile-media">
-              <img v-if="index < 2" :src="mainVisual(index)" :alt="chapter.label" class="main-art" :style="mainArtStyle(index)"
+              <img v-if="index < 2" :src="mainVisual(index)" :alt="chapter.label" class="main-art" :style="mainBandArtStyle(index)"
                 loading="eager" :fetchpriority="index === 0 ? 'high' : 'auto'" width="1456" height="553" />
               <span v-else aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
             </span>
             <span class="story-tile-copy">
               <strong>{{ chapterLabel(chapter.label) }}</strong>
-              <small>{{ chapter.entries.length }} 篇剧情</small>
+              <small>{{ chapter.entries.length }} 篇</small>
             </span>
           </button>
+          <div v-if="mainStart" class="main-start">
+            <small>从头读起</small>
+            <strong>{{ chapterLabel(mainSections[0].label) }} · {{ presentProducerAddressingText(mainStart.title) }}</strong>
+            <button type="button" class="main-start-action" @click="emit('select', mainStart)">开始阅读 <ChevronRight :size="15" aria-hidden="true" /></button>
+          </div>
         </div>
+      </section>
+
+      <section class="story-section event-section" aria-labelledby="event-story-title">
+        <div class="story-section-head">
+          <h2 id="event-story-title">活动剧情 <small>{{ eventCount }} 部</small></h2>
+          <div class="story-chips event-year-chips" role="group" aria-label="年份">
+            <button type="button" :aria-pressed="!eventYear" @click="eventYear = ''">全部</button>
+            <button v-for="year in recentEventYears" :key="year" type="button" :aria-pressed="eventYear === year" @click="eventYear = year">{{ year }}</button>
+          </div>
+          <button class="story-more" @click="openDomain('event')">查看全部 {{ eventCount }} 部 <ArrowRight :size="15" /></button>
+        </div>
+        <!-- The newest four, the same size: they read as "latest", not as one recommended event. -->
+        <div v-if="featuredEvents.length" class="event-four">
+          <button v-for="entry in featuredEvents" :key="entry.id" type="button" class="event-four-item"
+            :data-archive-focus-id="`event:${entry.id}`" @click="emit('select', entry)">
+            <EventResourceImage :binding="eventPlate(entry)" :name="storyEventTitle(entry)" />
+            <strong>{{ storyEventTitle(entry) }}</strong>
+            <small>{{ eventDate(entry) }}</small>
+          </button>
+        </div>
+        <button type="button" class="story-row no-thumb event-browse-row" @click="openDomain('event')">
+          <span class="story-row-copy"><strong>按年份浏览全部 {{ eventCount }} 部</strong></span>
+          <ChevronRight :size="18" aria-hidden="true" />
+        </button>
       </section>
 
       <section class="story-section unit-section" aria-labelledby="unit-story-title">
@@ -222,32 +252,18 @@
           <h2 id="unit-story-title">组合前传 <small>{{ unitGateways.length }} 组</small></h2>
           <button class="story-more" @click="openDomain('unit_story')">查看全部 <ArrowRight :size="15" /></button>
         </div>
-        <div class="unit-grid" aria-label="组合前传">
-          <button v-for="unit in unitGateways" :key="unit.id" @click="browse('unit_story', unit.id)">
-            <img :src="unitVisual(unit.id)" alt="" loading="lazy" decoding="async" width="446" height="150" />
-            <span><strong>{{ unit.label }}</strong><small>{{ unit.entries.length }} 篇</small></span>
+        <!-- Logos only, in hairline cells; the member banners wait on each unit's own page. -->
+        <div class="unit-logos" aria-label="组合前传">
+          <button v-for="unit in unitGateways" :key="unit.id" type="button" :aria-label="`${unit.label} · ${unit.entries.length} 篇`" @click="browse('unit_story', unit.id)">
+            <img :src="unitLogo(unit.id)" alt="" loading="lazy" decoding="async" />
           </button>
-        </div>
-      </section>
-
-      <section class="story-section event-section" aria-labelledby="event-story-title">
-        <div class="story-section-head">
-          <h2 id="event-story-title">活动剧情 <small>{{ eventCount }} 部</small></h2>
-          <button class="story-more" @click="openDomain('event')">查看全部 {{ eventCount }} 部 <ArrowRight :size="15" /></button>
-        </div>
-        <div v-if="featuredEvents.length" class="event-feature">
-          <EventStoryCard :entry="featuredEvents[0]" :idol-name="idolName" @read="emit('read-event',$event)" @event="emit('open-event',$event)" />
-          <div class="event-feature-rows">
-            <EventStoryRow v-for="entry in featuredEvents.slice(1)" :key="entry.id" :entry="entry" :idol-name="idolName" @open="emit('select',$event)" />
-          </div>
         </div>
       </section>
 
       <section class="story-section" aria-labelledby="quick-archives-title">
         <div class="story-section-head"><h2 id="quick-archives-title">更多故事</h2></div>
-        <div class="story-rows">
-          <button v-for="gateway in secondaryGateways" :key="gateway.id" class="story-row gateway-row" @click="openGateway(gateway)">
-            <span class="gateway-icon" aria-hidden="true"><component :is="gateway.icon" :size="20" /></span>
+        <div class="story-rows gateway-rows">
+          <button v-for="gateway in secondaryGateways" :key="gateway.id" class="story-row no-thumb gateway-row" @click="openGateway(gateway)">
             <span class="story-row-copy"><strong>{{ gateway.label }}</strong><small>{{ gatewayCount(gateway) }} {{ gateway.unit || '篇' }}<template v-if="storyGatewayNote(gateway, props)"> · {{ storyGatewayNote(gateway, props) }}</template></small></span>
             <ChevronRight :size="18" aria-hidden="true" />
           </button>
@@ -309,14 +325,15 @@
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { ArrowRight, BookOpen, Cake, ChevronRight, LayoutGrid, Search, X } from '@lucide/vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
-import EventStoryCard from './EventStoryCard.vue'
 import EventStoryRow from './EventStoryRow.vue'
-import { storyEventResources } from '../../data/eventResourceGraph.js'
+import EventResourceImage from './EventResourceImage.vue'
+import { storyEventResources, storyEventTitle } from '../../data/eventResourceGraph.js'
+import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { STORY_KINDS } from '../../core/archiveSections.js'
 import StoryDiscovery from './StoryDiscovery.vue'
 import '../../styles/archive-story.css'
@@ -360,10 +377,17 @@ const groupEntries = domain => {
 }
 const mainSections = computed(() => groupEntries('main'))
 const unitGateways = computed(() => groupEntries('unit_story'))
-// The newest event leads with its key visual; the next four follow as compact rows.
+// The chapter band starts at chapter 1's first published entry (there is no reading history to resume from).
+const mainStart = computed(() => mainSections.value[0]?.entries.find(entry => entry.exists !== false) || null)
+// The newest four events, equal width, narrowed by one of the three latest years.
 const eventEntries = computed(() => props.allEntries.filter(entry => entry.domain === 'event'))
 const eventCount = computed(() => eventEntries.value.length)
-const featuredEvents = computed(() => [...eventEntries.value].sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 5))
+const eventYear = ref('')
+const yearOf = entry => entry.releaseAt ? new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Asia/Tokyo' }).format(new Date(entry.releaseAt * 1000)) : ''
+const recentEventYears = computed(() => [...new Set(eventEntries.value.map(yearOf).filter(Boolean))].sort().reverse().slice(0, 3))
+const featuredEvents = computed(() => [...eventEntries.value]
+  .filter(entry => !eventYear.value || yearOf(entry) === eventYear.value)
+  .sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 4))
 const eventEpisodeCount = computed(() => props.allEntries.length
   ? eventEntries.value.reduce((sum, entry) => sum + (storyEventResources(entry)?.episodeCount || 0), 0) : null)
 // The event landing: newest year first, each year's events newest first, under the chosen event type.
@@ -371,7 +395,7 @@ const eventYears = computed(() => {
   const years = new Map()
   const entries = eventEntries.value.filter(entry => props.eventScope === 'all' || entry.eventScope === props.eventScope)
   for (const entry of [...entries].sort((a, b) => b.releaseAt - a.releaseAt)) {
-    const year = entry.releaseAt ? new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Asia/Tokyo' }).format(new Date(entry.releaseAt * 1000)) : ''
+    const year = yearOf(entry)
     const group = years.get(year) || { id: year || 'undated', label: year ? `${year} 年` : '开放日期未记录', entries: [] }
     group.entries.push(entry)
     years.set(year, group)
@@ -421,9 +445,22 @@ function mainArtStyle(index) {
   const windowLeft = Math.min(1456 - 1138, Math.max(0, left + width / 2 - 1138 / 2))
   return { objectPosition: `${(windowLeft / (1456 - 1138) * 100).toFixed(2)}% 50%`, scale: String(Math.max(1, 1138 / width).toFixed(4)) }
 }
+// The band's 250:95 tile shows the whole 1456-wide button, flanks included; scale the art area up to fill it
+// and shift so the art area, not the button, is centred.
+function mainBandArtStyle(index) {
+  const [left, width] = MAIN_ART[index] || [0, 1456]
+  const scale = 1456 / width
+  const shift = (728 - (left + width / 2)) / 1456 * scale * 100
+  return { scale: scale.toFixed(4), translate: `${shift.toFixed(2)}% 0` }
+}
+function eventPlate(entry) { const resource = storyEventResources(entry); return resource?.storyCover || resource?.hero || null }
+function eventDate(entry) {
+  return entry.releaseAt ? new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date(entry.releaseAt * 1000)) : '开放日期未记录'
+}
+const UNIT_CODES = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
+function unitLogo(id) { return getUnitLogoUrl(UNIT_CODES[Number(id) - 1] || UNIT_CODES[0]) }
 function unitVisual(id) {
-  const codes = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
-  return `/assets/stories/units/image_unit_story_button_${codes[Number(id) - 1] || codes[0]}.png`
+  return `/assets/stories/units/image_unit_story_button_${UNIT_CODES[Number(id) - 1] || UNIT_CODES[0]}.png`
 }
 function formatExtraDate(timestamp) {
   if (!Number(timestamp)) return '开放日期未记录'
@@ -458,9 +495,41 @@ function formatExtraDate(timestamp) {
 .unit-grid small { flex: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 @media (hover: hover) { .unit-grid button:hover strong { color: var(--gs-mint-ink); } }
 
-/* Events: the newest leads at 1.5 parts, four compact rows beside it. */
-.event-feature { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; gap: var(--gs-space-7); }
-.event-feature-rows { display: flex; flex-direction: column; border-top: 1px solid var(--gs-line); }
+/* Main: one band about 140px tall — two 250×95 covers, then where to start. */
+.main-band { display: grid; grid-template-columns: 250px 250px minmax(0, 1fr); align-items: start; gap: var(--gs-space-5); }
+.main-cover .story-tile-media { aspect-ratio: 250 / 95; }
+.main-cover .story-tile-copy { flex-direction: row; align-items: baseline; gap: var(--gs-space-3); }
+.main-start { display: flex; flex-direction: column; align-self: stretch; justify-content: center; gap: var(--gs-space-1); min-width: 0; padding-left: var(--gs-space-5); border-left: 1px solid var(--gs-line); }
+.main-start small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.main-start strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.main-start-action { display: inline-flex; align-items: center; align-self: flex-start; gap: var(--gs-space-1); min-height: var(--gs-control-normal); margin-top: var(--gs-space-2); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); box-shadow: inset 0 0 0 1px var(--gs-rule); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); }
+
+/* Events: year chips sit in the heading; the newest four share one row at the same size. */
+.event-section .story-section-head { justify-content: flex-start; }
+.event-section .story-more { margin-left: auto; }
+.event-year-chips { margin: 0 0 0 var(--gs-space-4); padding: 0; }
+.event-year-chips button { min-height: 26px; padding: 0 var(--gs-space-3); font-size: var(--gs-text-meta); }
+.event-four { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-5); }
+.event-four-item { display: flex; flex-direction: column; min-width: 0; padding: 0; border: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; }
+.event-four-item :deep(.resource-image) { aspect-ratio: 940 / 510 !important; }
+.event-four-item :deep(img) { object-fit: cover; }
+.event-four-item strong { display: -webkit-box; overflow: hidden; margin-top: var(--gs-space-3); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.event-four-item small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
+.event-browse-row { margin-top: var(--gs-space-4); border-top: 1px solid var(--gs-line); }
+.event-browse-row .story-row-copy strong { font-weight: var(--gs-weight-regular); color: var(--gs-ink-2); }
+
+/* Unit prequels: sixteen logos, eight to a row, in hairline cells. */
+.unit-logos { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); border-top: 1px solid var(--gs-line); }
+.unit-logos button { display: grid; place-items: center; height: 60px; padding: 0; border: 0; border-right: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); background: none; cursor: pointer; }
+.unit-logos button:nth-child(8n) { border-right: 0; }
+.unit-logos img { width: 76%; height: 36px; object-fit: contain; }
+
+/* 更多故事: three columns of text rows. */
+.gateway-rows { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (hover: hover) {
+  .event-four-item:hover strong, .main-start-action:hover { color: var(--gs-ink-2); }
+  .unit-logos button:hover { background: var(--gs-paper-2); }
+}
 
 .catalog-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--gs-space-4); }
 .catalog-toolbar label { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 120px; }
@@ -473,18 +542,22 @@ function formatExtraDate(timestamp) {
 /* Clear the bottom navigation the shell shows on phones. */
 @media (max-width: 760px) { .story-catalog { padding-bottom: 70px; } }
 @container story-page (max-width: 900px) {
-  /* Sixteen units stay four to a row (three would orphan one); chapters sit two-up. */
-  .main-story-section .story-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The start column drops below; the two covers share the width. Events and logos go 2 × 2 and 4 to a row. */
+  .main-band { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .main-start { grid-column: 1 / -1; padding: var(--gs-space-3) 0 0; border-top: 1px solid var(--gs-line); border-left: 0; }
   .unit-grid { gap: var(--gs-space-5) var(--gs-space-4); }
-  .event-feature { grid-template-columns: 1fr; gap: var(--gs-space-5); }
+  .event-four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5) var(--gs-space-4); }
+  .gateway-rows { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container story-page (max-width: 560px) {
-  /* Phones: the units become a two-row strip that scrolls sideways; events show one lead and three rows. */
-  .unit-grid { grid-auto-columns: 160px; grid-auto-flow: column; grid-template-columns: none; grid-template-rows: repeat(2, auto); gap: var(--gs-space-5) var(--gs-space-4); overflow-x: auto; margin-right: calc(-1 * var(--gs-space-5)); padding: 0 var(--gs-space-5) var(--gs-space-2) 0; overscroll-behavior-x: contain; scrollbar-width: none; }
-  /* The unit landing lists every unit, two to a row, instead of the strip. */
-  .unit-grid-full { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; overflow-x: visible; margin-right: 0; padding: 0; }
-  .main-story-section .story-tiles { grid-template-columns: 1fr; }
-  .event-feature-rows > :nth-child(n+4) { display: none; }
+  /* Phones: chapters half-width each, no start column; the year chips leave the heading; the logos become one sideways row. */
+  .main-start, .event-year-chips { display: none; }
+  .unit-logos { grid-auto-columns: 96px; grid-auto-flow: column; grid-template-columns: none; overflow-x: auto; margin-right: calc(-1 * var(--gs-space-5)); overscroll-behavior-x: contain; scrollbar-width: none; }
+  .unit-logos button, .unit-logos button:nth-child(8n) { height: 54px; border-right: 1px solid var(--gs-line); }
+  .unit-logos img { width: 72px; height: 32px; }
+  .gateway-rows { grid-template-columns: 1fr; }
+  /* The unit landing lists every unit, two to a row. */
+  .unit-grid-full { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-toolbar label { min-width: 0; }
 }
