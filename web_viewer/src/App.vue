@@ -527,7 +527,7 @@
 
     <ArchiveExperimentFrame v-if="view === 'chart_lab'" title="谱面预览" :back-label="detailSourceRoute ? '返回来源页' : currentSongId ? '返回歌曲' : '返回 LIVE'" @back="closeFullScreenExperiment">
       <ArchiveChartLab v-if="!currentSongId || currentSongPresentation?.gameplay" :song="currentSongPresentation?.gameplay ? currentSongPresentation : null"
-        :songs="chartSongs" :status="songReadModelStatus" @select-song="selectChartSong" />
+        :songs="chartSongs" :difficulty="chartDifficulty" :status="songReadModelStatus" @select-song="selectChartSong" />
       <p v-else role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
     </ArchiveExperimentFrame>
     <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :restore-on-open="studioRestorePending" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
@@ -1372,7 +1372,7 @@ watch(() => Boolean(playbackError.value || playbackReadiness.value?.status === '
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage', 'chart_lab', 'picture_studio'].includes(view.value))
 
 const {
-  currentSong, currentSongPresentation, chartSongs,
+  currentSong, currentSongPresentation, chartSongs, chartDifficulty,
   loadSongCatalog, ensureSongCatalog, loadSongDetail,
   openSongCatalog, openSong, openSongUnit, openSongIdol, openSongRelatedStory,
   openChartLab, openChartTool, openChartSong, selectChartSong, closeChartTool, goBackFromSong,

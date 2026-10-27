@@ -83,6 +83,18 @@ try {
     t.closeChartTool(); assert.deepEqual(t.calls.at(-1), ['restore', '?view=live'])
     t.scope.stop()
   }
+  // A song page's difficulty column opens the tool on that difficulty for this visit only; the 谱面
+  // button, the tools entry and choosing another song all start from the first difficulty.
+  {
+    const t = fixture('song_detail')
+    t.state.currentSongId.value = 'brndnf'
+    t.openChartLab(3); await flush()
+    assert.equal(t.state.view.value, 'chart_lab'); assert.equal(t.chartDifficulty.value, 3)
+    t.openChartLab({ type: 'click' }); assert.equal(t.chartDifficulty.value, null, 'an event object is not a difficulty')
+    t.openChartLab(2); t.openChartTool(); assert.equal(t.chartDifficulty.value, null)
+    t.openChartLab(2); await t.selectChartSong('drv999'); assert.equal(t.chartDifficulty.value, null)
+    t.scope.stop()
+  }
   // A chart selection supersedes an openSong request before either commits a new revision.
   for (const failure of [false, true]) {
     const t = fixture(), old = deferred(), newest = deferred()
