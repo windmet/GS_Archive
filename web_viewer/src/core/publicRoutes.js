@@ -31,6 +31,11 @@ export const PUBLIC_ROUTES = Object.freeze([
   Object.freeze({ kind: 'section', view: 'collection_catalog', prefix: 'costumes', section: 'costumes', implied: { collection_kind: 'costumes' } }),
   Object.freeze({ kind: 'section', view: 'photo_catalog', prefix: 'photos', section: 'photos', implied: {} }),
   Object.freeze({ kind: 'section', view: 'unused_archive', prefix: 'unused', section: 'unused', implied: {} }),
+  // Tool entry names confirmed in D1; portal and experimental pages keep query addresses.
+  Object.freeze({ kind: 'section', view: 'live', prefix: 'live', section: 'live', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'studio', prefix: 'studio', section: 'studio', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'about', prefix: 'about', section: 'about', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'archive_status', prefix: 'status', section: 'resources', implied: {} }),
   Object.freeze({ kind: 'section', view: 'score_archive', prefix: 'scores', section: 'scores', implied: {} }),
 ])
 

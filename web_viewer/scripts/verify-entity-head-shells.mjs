@@ -177,7 +177,11 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   // Section roots carry their section name, as their shells do; other pages keep the site title.
   assert.equal(archiveDocumentTitle('cards'), '卡片 · GROWING STARS 资料馆')
   assert.equal(archiveDocumentTitle('collection_catalog', '称号'), '称号 · GROWING STARS 资料馆')
-  assert.equal(archiveDocumentTitle('about', 'x'), ARCHIVE_SITE_TITLE)
+  assert.equal(archiveDocumentTitle('about'), '关于本站 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('live'), 'LIVE · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('studio'), '摄影工作台 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('archive_status'), '资源 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('spine_lab'), ARCHIVE_SITE_TITLE)
   assert.ok(template.includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'the site title constant matches index.html')
   assert.ok(readFileSync(path.join(root, 'index.html'), 'utf8').includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'index.html still ships the site title')
 }

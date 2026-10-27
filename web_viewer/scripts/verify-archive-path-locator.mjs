@@ -139,6 +139,24 @@ for (const [route, href] of [
   same(read(href), read(buildArchiveUrl('http://x/', route).href), href)
   same(read(href.replace(/\/(\?|$)/, '$1')), read(href), `${href} without its trailing slash`)
 }
+// Audited directory filters survive path -> query -> path; stale story context does not.
+for (const location of ['/songs/?idol=001tom&q=x', '/events/?idol=001tom&q=x&event_kind=theater', '/stories/?story_type=main&story_section=101', '/items/?q=x', '/photos/?q=x']) {
+  const url = new URL(location, 'http://x/')
+  const roundTrip = buildPublicArchiveUrl('http://x/', read(url))
+  assert.equal(roundTrip.pathname, url.pathname, location)
+  assert.deepEqual([...roundTrip.searchParams].sort(), [...url.searchParams].sort(), location)
+}
+assert.equal(buildPublicArchiveUrl('http://x/', read('http://x/?view=cards&story_type=main&rarity=SSR')).href, 'http://x/cards/?rarity=SSR')
+
+// Tool roots are explicit destinations, independent of startup preference.
+for (const [view, prefix] of [['live', 'live'], ['studio', 'studio'], ['about', 'about'], ['archive_status', 'status']]) {
+  const href = `http://x/${prefix}/`
+  assert.equal(read(href).view, view)
+  assert.equal(buildPublicArchiveUrl('http://x/', { view }).href, href)
+  assert.equal(isBareArchiveEntry(href), false, `${prefix} is not a bare entry`)
+  assert.equal(read(`http://x/${prefix}/?view=cards`).view, 'cards', 'legacy query wins on tool paths too')
+}
+
 // Other query parameters on a path still read (e.g. a debug flag); a path never adds a second identity.
 assert.equal(read('http://x/idols/001tom/?q=x').idol, '001tom')
 
@@ -159,7 +177,7 @@ assert.equal(buildPublicArchiveUrl('http://x/', { ...song, category: 'idol', ido
   const url = buildPublicArchiveUrl('http://x/idols/001tom/', { view: 'cards', idol: '001tom' })
   assert.equal(url.pathname, '/cards/'); assert.equal(url.searchParams.get('view'), null); assert.equal(url.searchParams.get('idol'), '001tom')
 }
-assert.equal(buildPublicArchiveUrl('http://x/units/01jup/', { view: 'about' }).href, 'http://x/?view=about')
+assert.equal(buildPublicArchiveUrl('http://x/units/01jup/', { view: 'about' }).href, 'http://x/about/')
 // An id outside the locator pattern keeps the query form rather than inventing a path.
 assert.equal(buildPublicArchiveUrl('http://x/', { view: 'idol_detail', idol: 'idol-1' }).pathname, '/')
 
@@ -222,7 +240,7 @@ assert.equal(isBareArchiveEntry('http://x/idols/xyz/?view=cards'), false, 'a que
   writeArchiveRoute({ view: 'cards', idol: '001tom' })
   assert.equal(entries.at(-1).url, 'http://x/cards/?idol=001tom')
   writeArchiveRoute({ view: 'about' })
-  assert.equal(entries.at(-1).url, 'http://x/?view=about')
+  assert.equal(entries.at(-1).url, 'http://x/about/')
   writeArchiveRoute(unit, { replace: true })
   assert.equal(entries.at(-1).url, 'http://x/units/01jup/'); assert.equal(entries.at(-1).replace, true)
   // An event's address is its id; where it was opened from rides history state, so refresh keeps the cold return.

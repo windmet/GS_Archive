@@ -6,13 +6,8 @@ import { ENFORCED_ROUTE_VIEWS, ROUTE_SCHEMA, ownedRouteParams } from '../src/cor
 import { ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 
-// Temporary audited migration exceptions; remove entries as their directory schemas are enforced.
-const PUBLIC_ROUTE_EXCEPTIONS = new Set(['idols', 'cards', 'song_catalog', 'event_catalog', 'gashas', 'story_catalog', 'collection_catalog', 'photo_catalog'])
-for (const route of PUBLIC_ROUTES) assert.ok(ENFORCED_ROUTE_VIEWS.has(route.view) || PUBLIC_ROUTE_EXCEPTIONS.has(route.view), `${route.view}: public address requires enforced schema`)
-for (const view of PUBLIC_ROUTE_EXCEPTIONS) {
-  assert.ok(PUBLIC_ROUTES.some(route => route.view === view), `${view}: exception has a public address`)
-  assert.ok(!ENFORCED_ROUTE_VIEWS.has(view), `${view}: remove obsolete public route exception`)
-}
+// No public view may bypass the audited parameter ownership table.
+for (const route of PUBLIC_ROUTES) assert.ok(ENFORCED_ROUTE_VIEWS.has(route.view), `${route.view}: public address requires enforced schema`)
 // Components must use navigation helpers rather than hard-coded query addresses.
 function checkComponents(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -70,15 +65,18 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
   }
   for (const view of ENFORCED_ROUTE_VIEWS) {
     const owned = new Set(ownedRouteParams(view))
+    for (const route of PUBLIC_ROUTES.filter(route => route.kind === 'section' && route.view === view)) for (const key of Object.keys(route.implied)) owned.add(key)
     const read = readArchiveRoute(stale(view, { category: 'idol', story_type: 'main', pick: 'profile', collection_kind: 'items', from: '?view=story_catalog' }))
-    assert.equal(read.view, view, `${view}: an old URL with extras still opens the page`)
+    assert.equal(read.view, view === 'idols' ? 'idol_detail' : view, `${view}: an old URL with extras still opens the page`)
     const written = buildArchiveUrl('http://localhost/', read)
+    const writtenOwned = read.view === 'idol_detail' ? new Set(ownedRouteParams(read.view)) : owned
     const keys = [...new Set([...written.searchParams.keys()])].filter(key => key !== 'view' && key !== 'from')
-    assert.deepEqual(keys.filter(key => !owned.has(key)), [], `${view}: no non-owned parameter is written`)
+    assert.deepEqual(keys.filter(key => !writtenOwned.has(key)), [], `${view}: no non-owned parameter is written`)
     const state = useArchiveNavigationState(); state.view.value = view; state.currentCardId.value = 'card1'; state.currentEventId.value = '10001'; state.currentGashaId.value = '210003'
     state.currentStoryDomain.value = 'main'; state.filterQuery.value = 'q'; state.currentCharacterId.value = '001tom'; state.currentSongId.value = 'song1'
     const emitted = buildArchiveUrl('http://localhost/', state.currentArchiveRoute())
-    assert.deepEqual([...emitted.searchParams.keys()].filter(key => key !== 'view' && !owned.has(key)), [], `${view}: dirty state writes only the view and its own parameters`)
+    const emittedOwned = emitted.searchParams.get('view') === 'idol_detail' ? new Set(ownedRouteParams('idol_detail')) : owned
+    assert.deepEqual([...emitted.searchParams.keys()].filter(key => key !== 'view' && !emittedOwned.has(key)), [], `${view}: dirty state writes only the view and its own parameters`)
   }
   // The source context a page returns through is not pruned (it moves to history state on write).
   assert.equal(buildArchiveUrl('http://localhost/', { view: 'about', sourceRoute: '?view=cards' }).searchParams.get('from')?.startsWith('?view=cards'), true)
@@ -121,7 +119,7 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     state.view.value = 'cards'
     assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).searchParams.has('sound'), false)
   }
-  // A view outside the enforced set is unchanged by pruning.
+  // A story directory keeps its audited story filter.
   assert.ok(buildArchiveUrl('http://localhost/', { view: 'story_catalog', storyType: 'main', query: 'x' }).searchParams.has('story_type'))
   // An event_detail without an event falls back to the catalog without throwing.
   assert.doesNotThrow(() => buildArchiveUrl('http://localhost/', { view: 'event_detail' }))

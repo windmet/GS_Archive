@@ -1,3 +1,4 @@
+import { SECTION_PATH_ROUTES } from './publicRoutes.js'
 // Per-view route ownership: which URL query parameters each view is expected to serialize. Entries are a DRAFT
 // except for the views in ENFORCED_ROUTE_VIEWS, which buildArchiveUrl prunes to this table (see
 // docs/GS_ARCHIVE_ROUTE_SCHEMA_AUDIT_20261011.md). Each entry was
@@ -6,14 +7,14 @@
 // live in the history NavigationContext. Player entries are keyed by `player:<returnView>`.
 export const ROUTE_SCHEMA = Object.freeze({
   welcome: [], idol_picker: ['pick'], portal: ['portal_scope', 'q'], home: ['home_idol', 'home_cue', 'home_costume'],
-  idols: ['category', 'idol', 'unit_filter', 'q'], idol_detail: ['category', 'idol'],
+  idols: ['unit_filter', 'q'], idol_detail: ['category', 'idol'],
   cards: ['idol', 'q', 'rarity', 'card_attribute', 'asset_state', 'relation_state'], card_detail: ['card'],
-  event_catalog: ['event_kind', 'event_sort', 'event_page'], event_detail: ['event', 'parent', 'category', 'unit', 'card', 'idol'],
-  collection_catalog: ['entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
-  photo_catalog: ['photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type'], gasha_detail: ['gasha', 'parent', 'story_type', 'story_section'],
-  song_catalog: ['song_scope'], song_detail: ['song'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
+  event_catalog: ['idol', 'q', 'event_kind', 'event_sort', 'event_page'], event_detail: ['event', 'parent', 'category', 'unit', 'card', 'idol'],
+  collection_catalog: ['q', 'entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
+  photo_catalog: ['q', 'photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type'], gasha_detail: ['gasha', 'parent', 'story_type', 'story_section'],
+  song_catalog: ['idol', 'q', 'song_scope'], song_detail: ['song'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
   experiments: [], live: [], studio: [], about: [], unused_archive: ['voices'], score_archive: ['sound'], archive_status: [], spine_lab: [],
-  story_catalog: ['story_mode', 'story_type', 'event_scope', 'availability', 'sort', 'idol', 'q'],
+  story_catalog: ['story_mode', 'story_type', 'story_section', 'event_scope', 'availability', 'sort', 'idol', 'q'],
   external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'idol'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
   seasonal_campaign: ['story_type', 'story_section', 'idol'], work_archive: ['idol', 'story', 'work_mode', 'story_type'],
   idol_story_archive: ['idol', 'story_type', 'story_section', 'episode'], mobile_archive: ['idol', 'unit', 'mobile_mode', 'mobile_scenario'],
@@ -45,6 +46,8 @@ export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
   'event_detail', 'gasha_detail',
   // Published at /office/<idol>/ and /mobile/<idol>/; App.vue applyRoute reads only their entries' fields.
   'home', 'mobile_archive',
+  // Audited directory props; section identity is supplied by the public registry.
+  'idols', 'cards', 'song_catalog', 'event_catalog', 'gashas', 'story_catalog', 'collection_catalog', 'photo_catalog',
 ]))
 
 // Context parameters are moved into history state by writeArchiveRoute; the builder may still carry them.
@@ -53,6 +56,7 @@ const CONTEXT_PARAMS = new Set(['view', 'from', 'portal_from', 'home_from'])
 export function pruneToRouteSchema(url, view, returnView = '', routeKeys = []) {
   if (!ENFORCED_ROUTE_VIEWS.has(view)) return url
   const owned = new Set(ownedRouteParams(view, returnView) || [])
+  for (const route of SECTION_PATH_ROUTES) if (route.view === view) for (const key of Object.keys(route.implied)) owned.add(key)
   for (const key of routeKeys) if (!owned.has(key) && !CONTEXT_PARAMS.has(key)) url.searchParams.delete(key)
   return url
 }
