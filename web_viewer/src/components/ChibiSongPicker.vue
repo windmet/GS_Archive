@@ -167,7 +167,7 @@ function chooseVersion(id) {
 .song-row-title { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .song-row-title > strong { flex: 1; min-width: 0; }
 .song-current-badge { position: relative; display: inline-flex; flex: none; align-items: flex-end; gap: 2px; height: 14px; }
-.song-current-badge i { width: 3px; border-radius: 1px; background: var(--gs-mint); }
+.song-current-badge i { width: 3px; border-radius: var(--gs-radius-media); background: var(--gs-mint); }
 .song-current-badge i:nth-child(1) { height: 6px; }
 .song-current-badge i:nth-child(2) { height: 12px; }
 .song-current-badge i:nth-child(3) { height: 9px; }
