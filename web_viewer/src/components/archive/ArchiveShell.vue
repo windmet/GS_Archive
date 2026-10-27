@@ -3,11 +3,12 @@
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
         <img :src="getBrandMarkUrl()" alt="" />
-        <span class="archive-brand-name">{{ ARCHIVE_BRAND.mark }}</span>
-        <span class="archive-brand-sub">{{ ARCHIVE_BRAND.sub }}</span>
+        <span class="archive-brand-text"><span class="archive-brand-name">{{ ARCHIVE_BRAND.mark }}</span><span class="archive-brand-sub">{{ ARCHIVE_BRAND.sub }}</span></span>
       </button>
       <slot name="sidebar-identity" />
-      <nav class="archive-nav" aria-label="档案栏目">
+      <nav ref="navRef" class="archive-nav" aria-label="档案栏目">
+        <!-- One white slice marks the current destination and slides to the next one (selection, rule A). -->
+        <span class="archive-nav-indicator" :class="{ 'is-ready': indicator.ready }" :style="{ width: indicator.width + 'px', height: indicator.height + 'px', transform: `translate(${indicator.left}px, ${indicator.top}px)`, opacity: indicator.show ? 1 : 0 }" aria-hidden="true"></span>
         <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'home' }" :aria-current="activeSection === 'home' ? 'page' : undefined" @click="emit('navigate', 'home')">
           <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ sectionLabel('home') }}</span>
         </button>
@@ -54,7 +55,7 @@
       <template #before-title>
         <div class="archive-mobile-brand">
           <img :src="getBrandMarkUrl()" alt="" />
-          <span>{{ ARCHIVE_BRAND.english }}</span>
+          <span>{{ ARCHIVE_BRAND.mark }}</span><span class="archive-mobile-brand-sub">{{ ARCHIVE_BRAND.sub }}</span>
         </div>
       </template>
       <template #title>
@@ -134,7 +135,7 @@ import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, ARCHIVE_SECTIONS, sectionLabel } from '../../core/archiveSections.js'
-import { computed, defineAsyncComponent, nextTick, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
@@ -213,13 +214,34 @@ function navigateFromDrawer(id) {
   emit('navigate', id)
 }
 watch(() => props.activeSection, () => { drawerOpen.value = false })
+
+// The sliding current-item slice: measured from whichever visible destination is active (the icon rail's
+// duplicate links are display:none and skipped). Re-measured when the route, a fold or the nav's size changes.
+const navRef = ref(null)
+const indicator = ref({ show: false, ready: false, left: 0, top: 0, width: 0, height: 0 })
+function measureIndicator() {
+  const nav = navRef.value
+  const el = nav && [...nav.querySelectorAll('.archive-nav-link.active, .archive-nav-cells button.active')].find(node => node.offsetParent)
+  if (!el) { indicator.value = { ...indicator.value, show: false }; return }
+  indicator.value = { ...indicator.value, show: true, left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight }
+  if (!indicator.value.ready) requestAnimationFrame(() => { indicator.value = { ...indicator.value, ready: true } })
+}
+let navObserver
+watch([() => props.activeSection, navigationSection, openFolds], () => nextTick(measureIndicator), { flush: 'post' })
+onMounted(() => {
+  measureIndicator()
+  if (typeof ResizeObserver === 'function' && navRef.value) { navObserver = new ResizeObserver(measureIndicator); navObserver.observe(navRef.value) }
+  document.fonts?.ready?.then(measureIndicator)
+})
+onBeforeUnmount(() => navObserver?.disconnect())
 </script>
 
 <style scoped>
 .archive-shell {
   --archive-sidebar: 188px;
   --archive-inspector: 0px;
-  --archive-topbar: 76px;
+  --archive-topbar-row: 60px;
+  --archive-topbar: var(--archive-topbar-row);
   --archive-accent: var(--gs-mint-ink);
   --archive-accent-soft: var(--gs-mint-wash);
   --archive-ink: var(--gs-ink);
@@ -245,36 +267,48 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
 .archive-shell.is-portal .archive-topbar { display: none; }
 .archive-shell.is-portal .archive-content { grid-row: 1 / 3; }
 
-/* Navy chrome: the one dark surface of the archive. */
+/* Paper sidebar: a hairline instead of a navy block. Navy stays on the tools' top bar and the dark stage.
+   Three heights only: recessed paper-2, the paper itself, and the white slice for the current item. */
 .archive-sidebar {
   grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--gs-chrome);
-  color: var(--gs-chrome-ink);
+  /* It spans both rows: without this its content height would be handed to the title row's auto track. */
+  min-height: 0;
+  border-right: 1px solid var(--gs-line);
+  background: var(--gs-paper);
+  color: var(--gs-ink-2);
 }
+/* The brand row is as tall as the page title row beside it, so their bottom hairlines are one line. */
 .archive-brand {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--gs-space-3);
   flex-shrink: 0;
-  margin: var(--gs-space-6) var(--gs-space-3) var(--gs-space-5);
-  padding: var(--gs-space-3) var(--gs-space-4);
+  box-sizing: border-box;
+  height: calc(var(--archive-topbar-row) + 1px);
+  margin: 0 0 var(--gs-space-3);
+  padding: 0 var(--gs-space-5);
   border: 0;
-  border-radius: var(--gs-radius-control);
+  border-bottom: 1px solid var(--gs-line);
+  border-radius: 0;
   background: transparent;
-  color: var(--gs-chrome-ink-active);
+  color: var(--gs-ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
-.archive-brand img { align-self: center; width: 26px; height: 20px; object-fit: contain; filter: brightness(0) invert(1); }
-.archive-brand-name { font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-style: italic; font-weight: var(--gs-weight-bold); letter-spacing: .02em; line-height: 1; }
-.archive-brand-sub { color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
+.archive-brand img { flex: none; width: 26px; height: 20px; object-fit: contain; filter: brightness(0); }
+.archive-brand-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.archive-brand-name { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-weight: var(--gs-weight-bold); letter-spacing: .02em; line-height: 1; white-space: nowrap; }
+.archive-brand-sub { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1; white-space: nowrap; }
 /* The nav fills the sidebar and scrolls only if a short window still cannot hold it; its
    scrollbar is then thin and in the chrome colours (Windows draws a wide light track otherwise). */
-.archive-nav { display: flex; flex: 1 1 auto; flex-direction: column; gap: var(--gs-space-1); min-height: 0; padding: 0 var(--gs-space-3) var(--gs-space-5); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gs-chrome-hover) transparent; }
+.archive-nav { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; gap: var(--gs-space-1); min-height: 0; padding: 0 var(--gs-space-3) var(--gs-space-5); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gs-line) transparent; }
+.archive-nav-indicator { position: absolute; top: 0; left: 0; border-radius: var(--gs-radius-control); background: var(--gs-current-bg); box-shadow: var(--gs-current-shadow); pointer-events: none; }
+.archive-nav-indicator.is-ready { transition: transform var(--gs-current-motion), width var(--gs-current-motion), height var(--gs-current-motion), opacity var(--gs-motion-feedback); }
+@media (prefers-reduced-motion: reduce) { .archive-nav-indicator.is-ready { transition: none; } }
 .archive-nav-link {
   position: relative;
   display: flex;
@@ -292,26 +326,18 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
   text-align: left;
   cursor: pointer;
 }
-.archive-nav-link svg { flex: none; }
-.archive-nav-link.active { color: var(--gs-chrome-ink-active); background: var(--gs-chrome-hover); font-weight: var(--gs-weight-semibold); }
-.archive-nav-link.active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 10px;
-  bottom: 10px;
-  width: 3px;
-  border-radius: var(--gs-radius-pill);
-  background: var(--gs-mint);
-}
+.archive-nav-link svg { flex: none; color: var(--gs-ink-3); }
+/* Current = one level above the paper: ink text and icon, the slice behind it; weight and rules unchanged. */
+.archive-nav-link.active { color: var(--gs-ink); }
+.archive-nav-link.active svg { color: var(--gs-ink); }
 /* Groups are clusters of ordinary links, a little apart from each other. */
 .archive-nav-cluster { display: grid; gap: var(--gs-space-1); }
 .archive-nav-cluster + .archive-nav-cluster, .archive-nav-cluster + .archive-nav-fold { margin-top: var(--gs-space-2); }
 .archive-nav-fold { display: grid; gap: var(--gs-space-1); margin-top: var(--gs-space-2); }
 .archive-nav-fold-caret { margin-left: auto; opacity: .7; transition: transform var(--gs-motion-feedback) var(--gs-motion-ease); }
 .archive-nav-fold > .archive-nav-link[aria-expanded='true'] .archive-nav-fold-caret { transform: rotate(180deg); }
-.archive-nav-fold.is-active > .archive-nav-link { color: var(--gs-chrome-ink-active); cursor: default; }
-.archive-nav-fold.is-active > .archive-nav-link::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: var(--gs-radius-pill); background: var(--gs-mint); }
+.archive-nav-fold.is-active > .archive-nav-link { color: var(--gs-ink); cursor: default; }
+.archive-nav-fold.is-active > .archive-nav-link svg { color: var(--gs-ink); }
 /* 图鉴's sections: filled cells two to a row, starting on the labels' axis (12 + 18 + 12 px). */
 .archive-nav-cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-1) var(--gs-space-2); padding-left: 36px; }
 .archive-nav-cells button {
@@ -320,23 +346,24 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
   padding: 0 var(--gs-space-3);
   border: 0;
   border-radius: var(--gs-radius-control);
-  background: color-mix(in srgb, var(--gs-chrome-hover) 55%, transparent);
-  color: var(--gs-chrome-ink);
+  position: relative;
+  background: transparent;
+  color: var(--gs-ink-2);
   font: inherit;
   font-size: var(--gs-text-meta);
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
 }
-.archive-nav-cells button.active { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); font-weight: var(--gs-weight-semibold); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gs-mint) 55%, transparent); }
+.archive-nav-cells button.active { color: var(--gs-ink); }
 .archive-nav-rail { display: none; }
-.archive-nav-divider { margin: var(--gs-space-4) var(--gs-space-4); border: 0; border-top: 1px solid var(--gs-chrome-hover); }
+.archive-nav-divider { margin: var(--gs-space-4) var(--gs-space-4); border: 0; border-top: 1px solid var(--gs-line); }
 /* 关于本站 sits at the foot of the sidebar, quieter than the destinations above it. */
-.archive-sidebar-about { flex-shrink: 0; margin: auto 0 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-chrome-ink); font: inherit; font-size: var(--gs-text-meta); text-align: left; cursor: pointer; opacity: .78; }
-.archive-sidebar-about:hover, .archive-sidebar-about[aria-current='page'] { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); opacity: 1; }
+.archive-sidebar-about { flex-shrink: 0; margin: auto 0 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-meta); text-align: left; cursor: pointer; }
+.archive-sidebar-about:hover { background: var(--gs-hover); color: var(--gs-ink); }
+.archive-sidebar-about[aria-current='page'] { background: var(--gs-current-bg); box-shadow: var(--gs-current-shadow); color: var(--gs-ink); }
 /* Laptop and tablet heights: the whole sidebar, 图鉴 open, still fits without scrolling. */
 @media (max-height: 880px) {
-  .archive-brand { margin-block: var(--gs-space-4) var(--gs-space-3); }
   .archive-nav-link { min-height: calc(var(--gs-control-compact) + var(--gs-space-2)); }
   .archive-nav-divider { margin-block: var(--gs-space-2); }
   .archive-sidebar-about { min-height: var(--gs-control-compact); }
@@ -348,7 +375,7 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
    width. Labels stay in the accessibility tree; a destination's sections are reached on its page. */
 @media (min-width: 761px) and (max-height: 500px) {
   .archive-shell { --archive-sidebar: 64px; }
-  .archive-brand { justify-content: center; margin: var(--gs-space-3) var(--gs-space-2); padding: var(--gs-space-3) 0; }
+  .archive-brand { justify-content: center; padding: 0; }
   .archive-brand-name, .archive-brand-sub, .archive-nav-link span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .archive-sidebar :deep(.stage-idol-switch) { justify-content: center; width: auto; margin: 0 var(--gs-space-2) var(--gs-space-3); padding: var(--gs-space-2) 0; }
   .archive-sidebar :deep(.stage-idol-copy), .archive-sidebar :deep(.stage-idol-switch > svg) { display: none; }
@@ -360,7 +387,8 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
   .archive-sidebar-about { padding: 0; font-size: var(--gs-text-caption); text-align: center; }
 }
 @media (hover: hover) {
-  .archive-brand:hover, .archive-nav-link:hover, .archive-nav-cells button:hover { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
+  .archive-brand:hover { background: var(--gs-hover); }
+  .archive-nav-link:not(.active):hover, .archive-nav-cells button:not(.active):hover { background: var(--gs-hover); color: var(--gs-ink); }
 }
 .archive-brand:focus-visible, .archive-nav-link:focus-visible, .archive-nav-cells button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 .archive-topbar {
@@ -454,7 +482,8 @@ watch(() => props.activeSection, () => { drawerOpen.value = false })
   }
   .archive-topbar {
     grid-template-columns: auto minmax(0, 1fr) max-content;
-    padding: 12px 18px;
+    /* 44px back button + 2 x 8 = the 60px brand row; a wrapped title still grows the row. */
+    padding: var(--gs-space-3) 18px;
   }
   .archive-topbar:not(:has(.archive-back)) {
     grid-template-columns: minmax(0, 1fr) max-content;

@@ -3,7 +3,7 @@
 // sections (archiveRoute.js); glyphs live with the components (components/archive/archiveNavigationIcons.js),
 // keyed by the same ids. `shortLabel` is for narrow buttons only; `blurb` is the one-line description a
 // tool (not a catalogue) carries where it is offered as a card — what its landing page opens.
-export const ARCHIVE_BRAND = Object.freeze({ name: 'GS 资料馆', mark: 'GS', sub: '资料馆', english: 'GS Archive' })
+export const ARCHIVE_BRAND = Object.freeze({ name: 'GROWING STARS 资料馆', mark: 'GROWING STARS', sub: 'SideM 资料馆', english: 'GROWING STARS 资料馆' })
 
 export const ARCHIVE_SECTIONS = Object.freeze(Object.fromEntries([
   { id: 'home', label: '事务所' },

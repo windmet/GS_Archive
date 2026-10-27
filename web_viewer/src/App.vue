@@ -597,7 +597,7 @@ import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vu
 import { useArchivePortalData } from './components/archive/useArchivePortalData.js'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
-import { STAGE_LIGHT_TOKENS, idolStageLightProperties } from './presentation/idolStageLight.js'
+import { IDOL_THEME_TOKENS, STAGE_LIGHT_TOKENS, idolStageLightProperties, idolThemeProperties } from './presentation/idolStageLight.js'
 import { presentIdolEpisodeLabel, queueEpisodeLabel, playerEpisodeLabel } from './presentation/idolEpisodeLabel.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import {
@@ -1074,6 +1074,15 @@ watch(() => stageLightIdol.value?.color || '', color => {
   const root = document.documentElement
   const properties = idolStageLightProperties(color)
   for (const token of STAGE_LIGHT_TOKENS) {
+    if (properties[token]) root.style.setProperty(token, properties[token])
+    else root.style.removeProperty(token)
+  }
+}, { immediate: true })
+// Layer 2: the 担当 theme (identity colour, ink, wash) follows the 担当 itself, not the stage-light switch.
+watch(() => preferredArchiveIdol.value?.color || '', color => {
+  const root = document.documentElement
+  const properties = idolThemeProperties(color)
+  for (const token of IDOL_THEME_TOKENS) {
     if (properties[token]) root.style.setProperty(token, properties[token])
     else root.style.removeProperty(token)
   }

@@ -6,7 +6,7 @@ import { uiLocale, setUiLocale, syncDocumentLanguage } from '../src/localization
 // whatever the UI locale becomes. The story display mode never changes it.
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 assert.match(html, /<html lang="zh-CN">/, 'index.html declares the default interface language')
-assert.match(html, /<title>GS Archive · SideM GROWING STARS 资料馆<\/title>/, 'index.html carries the archive title')
+assert.match(html, /<title>GROWING STARS 资料馆 · 偶像大师 SideM<\/title>/, 'index.html carries the archive title')
 
 const doc = { documentElement: { lang: '' } }
 const stop = syncDocumentLanguage(doc)

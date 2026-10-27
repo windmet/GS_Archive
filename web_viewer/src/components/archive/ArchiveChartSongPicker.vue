@@ -59,7 +59,7 @@ const matches = computed(() => props.songs.filter(song => (!unitFilter.value || 
 .chart-song-copy strong { display: -webkit-box; overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .chart-song-copy small { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
 .chart-song-row > svg { color: var(--gs-ink-3); }
-.chart-song-row[aria-pressed=true] { background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }
+.chart-song-row[aria-pressed=true] { background: var(--gs-current-bg-inset); }
 .chart-song-row:hover strong { color: var(--gs-mint-ink); }
 .chart-song-picker button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: calc(-1 * var(--gs-focus-ring)); }
 @container chart-song-picker (max-width: 560px) {

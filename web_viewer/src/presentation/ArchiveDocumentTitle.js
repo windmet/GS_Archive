@@ -5,7 +5,7 @@ import { sectionLabel } from '../core/archiveSections.js'
 // section roots (/cards/, /items/, …) their section name, the
 // same title the static head shell for that path ships (scripts/generate-entity-head-shells.mjs); every other
 // page keeps the site title from index.html.
-export const ARCHIVE_SITE_TITLE = 'GS Archive · SideM GROWING STARS 资料馆'
+export const ARCHIVE_SITE_TITLE = 'GROWING STARS 资料馆 · 偶像大师 SideM'
 export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_detail', 'card_detail', 'song_detail', 'event_detail', 'gasha_detail',
   'home', 'mobile_archive']))
 // An idol's 事务所 (/office/<idol>/) and 通信 (/mobile/<idol>/) are named for the idol and the section.
@@ -21,7 +21,7 @@ export function archiveSectionTitle(view, collectionKind = 'items') {
 }
 
 export function archiveEntityTitle(name) {
-  return `${name} · GS Archive`
+  return `${name} · GROWING STARS 资料馆`
 }
 
 export function archiveIdolPlaceName(view, idolName) {

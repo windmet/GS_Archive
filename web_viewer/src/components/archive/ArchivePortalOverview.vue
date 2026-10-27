@@ -6,7 +6,11 @@
           <button v-if="canGoBack" class="overview-icon-button" type="button" aria-label="返回来源页" data-archive-focus-id="portal-back" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
           <h1 id="portal-title" ref="heading" tabindex="-1">资料馆</h1>
           <span class="overview-breadcrumb-divider" aria-hidden="true">/</span>
-          <button class="overview-lens-trigger" type="button" aria-label="切换资料馆视角" :aria-expanded="scopeOpen" @click="scopeOpen = true"><ArchiveIdolAvatar v-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="26" decorative /><Users v-else :size="17" /><span>{{ preferredReference?.actionable ? preferredName : '全站档案' }}</span><ChevronRight :size="15" /></button>
+          <!-- The view switch: the whole archive, or one idol's workbench (the saved 担当, or whoever was opened). -->
+          <GsSegmented class="overview-lens" :model-value="lensValue" :options="lensOptions" aria-label="资料馆视角" @update:model-value="chooseLens">
+            <template #default="{ option }"><ArchiveIdolAvatar v-if="option.code" :idol-code="option.code" :size="20" :ring-width="0" :gap="0" decorative /><span class="overview-lens-name">{{ option.label }}</span></template>
+          </GsSegmented>
+          <button class="overview-icon-button overview-lens-change" type="button" aria-label="更换视角偶像" :aria-expanded="scopeOpen" title="更换视角偶像" @click="scopeOpen = true"><ChevronsUpDown :size="16" aria-hidden="true" /></button>
         </div>
 
 
@@ -88,7 +92,7 @@
               <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
             </p>
           </div>
-          <!-- The banner's right half: four summary tiles, every number already in the scope (no extra request). -->
+          <!-- The banner's right half: four number rows (figure / total, label, a grey breakdown), every number already in the scope. -->
           <div v-if="preferredReference?.actionable" class="overview-personal-stats" aria-label="担当数据">
             <button
               v-for="tile in statTiles"
@@ -99,27 +103,12 @@
               :aria-label="tile.meta ? `${tile.label} ${tile.value}${tile.total ? ` / ${tile.total}` : ''}，${tile.meta}` : `${tile.label} ${tile.value ?? ''}`"
               @click="openStatTile(tile)"
             >
-              <div class="overview-stat-header">
-                <span class="overview-stat-title">
-                  <component :is="archiveNavigationIcons[tile.icon || tile.id]" :size="16" aria-hidden="true" />
-                  <span>{{ tile.label }}</span>
-                </span>
-                <span class="overview-stat-figure">
-                  <strong>{{ formatCount(tile.value) }}</strong>
-                  <small v-if="tile.total" class="overview-stat-total">/ {{ formatCount(tile.total) }}</small>
-                  <ArrowUpRight :size="14" class="overview-stat-arrow" aria-hidden="true" />
-                </span>
-              </div>
-              <div v-if="tile.parts?.length" class="overview-stat-bricks" :style="{ gridTemplateColumns: `repeat(${tile.parts.length}, minmax(0, 1fr))` }" aria-hidden="true">
-                <div
-                  v-for="part in tile.parts"
-                  :key="part.id"
-                  class="overview-stat-brick"
-                >
-                  <strong class="overview-stat-brick-value">{{ formatCount(part.count) }}</strong>
-                  <span class="overview-stat-brick-label">{{ part.label }}</span>
-                </div>
-              </div>
+              <span class="overview-stat-line">
+                <strong>{{ formatCount(tile.value) }}</strong><small v-if="tile.total" class="overview-stat-total">/ {{ formatCount(tile.total) }}</small>
+                <span class="overview-stat-label">{{ tile.label }}</span>
+                <ArrowUpRight :size="14" class="overview-stat-arrow" aria-hidden="true" />
+              </span>
+              <span v-if="tile.meta" class="overview-stat-meta" aria-hidden="true">{{ tile.meta }}</span>
             </button>
           </div>
           <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
@@ -171,7 +160,7 @@
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
           <header class="overview-section-heading" :class="{'overview-chip-heading':almanacMonth}"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : almanacMonth ? `315 岁时记 · ${almanacMonthNumber} 月` : '运营轨迹 · 315 的回忆录' }} <small v-if="!almanacMonth">{{ collectionCount('events') }}</small></h2>
-            <div v-if="almanacMonth" ref="almanacChips" class="overview-heading-chips overview-story-tabs" role="group" aria-label="选择月份"><button v-for="month in ALMANAC_MONTHS" :key="month" type="button" :aria-pressed="almanacMonthNumber === month" @click="almanacMonthNumber = month">{{ month }}月</button></div>
+            <div v-if="almanacMonth" class="overview-month-step" role="group" aria-label="选择月份"><button type="button" aria-label="上个月" @click="stepAlmanacMonth(-1)"><ChevronLeft :size="18" aria-hidden="true" /></button><output aria-live="polite">{{ almanacMonthNumber }} 月</output><button type="button" aria-label="下个月" @click="stepAlmanacMonth(1)"><ChevronRight :size="18" aria-hidden="true" /></button></div>
             <button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <!-- 315 岁时记: the month's birthdays beside every event that opened in that month, reprints included. -->
           <div v-if="almanacMonth" class="overview-almanac">
@@ -203,7 +192,7 @@
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
 import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
+import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronLeft, ChevronRight, ChevronsUpDown, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
@@ -212,6 +201,7 @@ import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
+import GsSegmented from '../gs/GsSegmented.vue'
 import PortalCardBento from './PortalCardBento.vue'
 import { useNearViewportKeys } from './useNearViewport.js'
 import {portalTimeline} from '../../presentation/PortalBento.js'
@@ -302,17 +292,25 @@ function openStatTile(tile){
 // 315 岁时记 opens on this month in Japan time; a scope without it keeps the timeline.
 const almanacMonthNumber=ref(currentJapanMonth())
 const almanacMonth=computed(()=>props.preferredReference?.actionable ? null : portalAlmanacMonth(props.desktopOverview.almanac,almanacMonthNumber.value))
-// A narrow heading scrolls its chip row; keep the chosen month in view without moving the page.
-const almanacChips=ref(null)
-watch([almanacChips,almanacMonthNumber],async([row])=>{
-  await nextTick()
-  const chip=row?.querySelector('[aria-pressed="true"]')
-  if(chip) row.scrollLeft+=chip.getBoundingClientRect().left-row.getBoundingClientRect().left-(row.clientWidth-chip.offsetWidth)/2
-},{flush:'post'})
+// The month is a stepper (‹ 10 月 ›): previous and next wrap around the year.
+const stepAlmanacMonth=delta=>{ const at=ALMANAC_MONTHS.indexOf(almanacMonthNumber.value); almanacMonthNumber.value=ALMANAC_MONTHS[(at+delta+ALMANAC_MONTHS.length)%ALMANAC_MONTHS.length] }
 const almanacIdolName=code=>props.idolName(code,props.idols.find(row=>row.id===code)?.name) || props.idols.find(row=>row.id===code)?.name || code
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
+const lensIdolCode = computed(() => props.preferredReference?.actionable ? props.preferredReference.idolCode : props.savedIdolCode)
+const lensValue = computed(() => props.preferredReference?.actionable ? 'idol' : 'all')
+const lensOptions = computed(() => [
+  { value: 'all', label: '全站' },
+  { value: 'idol', code: lensIdolCode.value, label: lensIdolCode.value
+    ? (props.preferredReference?.actionable ? preferredName.value : props.idolName(lensIdolCode.value, props.idols.find(row => row.id === lensIdolCode.value)?.name))
+    : '选择担当' },
+])
+function chooseLens(value) {
+  if (value === 'all') chooseScope('')
+  else if (lensIdolCode.value) chooseScope(lensIdolCode.value)
+  else scopeOpen.value = true
+}
 function openDirectory(domain, filters = {}) {
   emit('open-directory', { domain, idolCode: props.preferredReference?.actionable ? props.preferredReference.idolCode : '', ...filters })
 }
@@ -440,9 +438,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-brand h1:focus { outline:none; }
 .overview-breadcrumb-divider { color:var(--gs-ink-3); }
 .overview-icon-button { display:grid;place-items:center;flex:none;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
-.overview-lens-trigger { display:flex;align-items:center;gap:var(--gs-space-3);min-width:0;min-height:var(--gs-control-toolbar);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink);font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold); }
-.overview-lens-trigger span { max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.overview-lens-trigger > svg:last-child { color:var(--gs-ink-3); }
+.overview-lens { min-width:0; max-width:100%; }
+.overview-lens :deep(.gs-segmented-option) { gap:var(--gs-space-3); }
+.overview-lens-name { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.overview-lens-change { color:var(--gs-ink-3); }
 .overview-toolbar-actions { display:flex;align-items:center;justify-content:flex-end;gap:var(--gs-space-1); }
 .overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
 
@@ -530,29 +529,25 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
   .overview-content-grid:not(.is-global-grid) .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 }
-.overview-stat { display:flex;flex-direction:column;justify-content:space-between;gap:var(--gs-space-3);min-width:0;padding:var(--gs-space-4) var(--gs-space-5);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink);text-align:left;cursor:pointer;transition:border-color var(--gs-motion-feedback) var(--gs-ease-out); }
+/* Numbers are text: a hairline row, the stage face for the figure, one grey line for the breakdown. No box. */
+.overview-stat { display:flex;flex-direction:column;justify-content:center;gap:var(--gs-space-2);min-width:0;padding:var(--gs-space-3) 0;border:0;border-bottom:1px solid var(--gs-line);border-radius:0;background:transparent;color:var(--gs-ink);text-align:left;cursor:pointer; }
 .overview-stat:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
-.overview-stat:hover { border-color:var(--gs-rule); }
 .overview-stat:hover .overview-stat-arrow { color:var(--idol-ink,var(--gs-mint-ink)); }
-.overview-stat-header { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-2);min-width:0; }
-.overview-stat-title { display:inline-flex;align-items:center;gap:var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
-.overview-stat-title svg { flex:none;color:var(--idol-ink,var(--gs-mint-ink)); }
-.overview-stat-figure { display:inline-flex;align-items:baseline;gap:2px;white-space:nowrap; }
-.overview-stat-figure strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-title);font-weight:var(--gs-weight-bold);font-variant-numeric:tabular-nums;line-height:1;color:var(--gs-ink); }
-.overview-stat-total { margin-left:4px;color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
-.overview-stat-arrow { flex:none;color:var(--gs-ink-3);margin-left:4px;align-self:center; }
-.overview-stat-bricks { display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;width:100%;margin-top:var(--gs-space-3); }
-.overview-stat-brick { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--idol-soft-bg);border-radius:var(--gs-radius-control);padding:8px 6px;text-align:center;min-width:0; }
-.overview-stat-brick-value { font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-bold);color:var(--gs-ink);font-variant-numeric:tabular-nums;line-height:1.2; }
-.overview-stat-brick-label { font-size:var(--gs-text-caption);color:var(--gs-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2; }
+.overview-stat-line { display:flex;align-items:baseline;gap:var(--gs-space-2);min-width:0; }
+.overview-stat-line strong { font-family:var(--gs-font-stage);font-size:var(--gs-text-title);font-weight:var(--gs-weight-bold);font-variant-numeric:tabular-nums;line-height:1;color:var(--gs-ink); }
+.overview-stat-label { color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-medium); }
+.overview-stat-meta { color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:var(--gs-leading-ui); }
+.overview-stat:hover { background:var(--gs-hover); }
+.overview-stat-total { color:var(--gs-ink-3);font-family:var(--gs-font-stage);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
+.overview-stat-arrow { flex:none;margin-left:auto;color:var(--gs-ink-3);align-self:center; }
 .overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
 .overview-identity { position:relative;height:228px;overflow:hidden;border-radius:var(--gs-radius-media);background:radial-gradient(circle at 76% 62%,var(--gs-surface) 0,var(--hero-wash,var(--gs-paper)) 58%); }
 .overview-identity::before { content:'';position:absolute;inset:0 0 auto;z-index:3;height:3px;background:var(--hero-light,var(--gs-mint)); }
 .overview-portrait-slot { position:absolute;inset:0; }
-.overview-idol-art { position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;max-width:none;height:300px;object-fit:contain;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent); }
-.overview-signature { position:absolute;top:10px;right:12px;z-index:1;display:block;width:250px;height:232px;opacity:.28;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance; }
+.overview-idol-art { position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;max-width:none;height:300px;object-fit:contain;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent);filter:drop-shadow(14px 8px 0 color-mix(in oklab,var(--hero-ink,var(--gs-ink)) 24%,transparent)); }
+.overview-signature { position:absolute;top:86px;left:148px;z-index:3;display:block;width:130px;height:52px;opacity:.8;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance; }
 .overview-identity-copy { position:relative;z-index:3;display:flex;flex-direction:column;width:170px;padding:var(--gs-space-6) var(--gs-space-5); }
 .overview-eyebrow { order:0;margin:0;color:var(--hero-ink,var(--gs-ink-3));font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
 .overview-unit-name { order:1;display:flex;align-items:center;margin:var(--gs-space-3) 0 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
@@ -577,14 +572,16 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* Global view: the unit matrix, in each unit's own colour. */
 .overview-unit-hub { margin-top:var(--gs-space-7); }
-.overview-unit-matrix { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gs-space-3); }
-.overview-unit-tile { position:relative;container:unit-tile / inline-size;min-width:0;height:100px;overflow:hidden;border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface)); }
+/* 16 units as an 8 x 2 hairline grid: logo and the members' group-ring faces, no per-unit background colour. */
+.overview-unit-matrix { display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:0;border-top:1px solid var(--gs-line);border-left:1px solid var(--gs-line); }
+@media (max-width:1100px) { .overview-unit-matrix { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+.overview-unit-tile { position:relative;container:unit-tile / inline-size;min-width:0;height:104px;overflow:hidden;border-right:1px solid var(--gs-line);border-bottom:1px solid var(--gs-line);background:transparent; }
 .overview-unit-tile.is-placeholder { --unit-color:var(--gs-ink-3); }
 .overview-unit-logo { display:grid;place-items:center;width:100%;height:100%;padding:10px 12px 40px;border:0;border-radius:inherit;background:transparent; }
 .overview-unit-logo img { grid-area:1 / 1;width:100%;height:100%;max-width:118px;object-fit:contain; }
 /* The unit name holds the logo's place until the logo arrives (imageReveal keeps it transparent
    till then), so a cold first screen reads as sixteen named units rather than empty frames. */
-.overview-unit-title { grid-area:1 / 1;max-width:100%;overflow:hidden;color:color-mix(in srgb,var(--unit-color) 55%,var(--gs-ink));font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);text-overflow:ellipsis;white-space:nowrap;transition:opacity var(--gs-motion-enter) var(--gs-ease-out); }
+.overview-unit-title { grid-area:1 / 1;max-width:100%;overflow:hidden;color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);text-overflow:ellipsis;white-space:nowrap;transition:opacity var(--gs-motion-enter) var(--gs-ease-out); }
 .overview-unit-logo:has(img[data-gs-loaded]) .overview-unit-title { opacity:0; }
 .overview-unit-members { position:absolute;right:0;bottom:8px;left:0;display:flex;justify-content:center;gap:3px; }
 .overview-unit-members button { padding:0;border:0;border-radius:50%;background:transparent; }
@@ -593,7 +590,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-unit-members { --idol-avatar-override-size:24px; }
   .overview-unit-members:has(> :nth-child(4)) { gap:0;--idol-avatar-override-size:22px; }
   .overview-unit-members:has(> :nth-child(4)) button + button { margin-left:-6px; }
-  .overview-unit-members:has(> :nth-child(4)) button { box-shadow:0 0 0 1.5px color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface)); }
 }
 
 /* Content sections. Stories and music share a row on wide pages; 通信/图鉴 and the events follow full width. */
@@ -601,18 +597,19 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-hub, .overview-events { grid-column:1 / -1; }
 
 /* 通信 and 图鉴: one block of quiet link pills, each group titled by the section dictionary. */
-.overview-hub-groups { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-7); }
-.overview-hub-group { min-width:0; }
-.overview-hub-group > h3 { margin:0 0 var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
-.overview-hub-links { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-2); }
-.overview-hub-links button { display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-height:58px;padding:var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink-2);text-align:left;box-sizing:border-box; }
-.overview-hub-links button:hover { border-color:var(--gs-rule);background:var(--gs-surface-raised,var(--gs-surface)); }
-.overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-mint-ink); }
-.overview-hub-links button:hover .overview-hub-card-head > svg { color:var(--gs-mint-ink); }
-.overview-hub-card-head { display:flex;align-items:center;gap:var(--gs-space-2);width:100%;min-width:0; }
+/* 通信 and 图鉴 are one table: the label in the first column, three entries per row, hairlines straight across. */
+.overview-hub-groups { display:block;border-bottom:1px solid var(--gs-line); }
+.overview-hub-group { display:grid;grid-template-columns:88px minmax(0,1fr);gap:var(--gs-space-4);min-width:0;border-top:1px solid var(--gs-line); }
+.overview-hub-group > h3 { margin:0;padding-top:var(--gs-space-4);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);letter-spacing:var(--gs-track-label); }
+.overview-hub-links { display:grid;grid-template-columns:repeat(3,minmax(0,1fr)); }
+.overview-hub-links button { display:flex;flex-direction:row;align-items:center;gap:var(--gs-space-3);min-height:var(--gs-row);padding:0 var(--gs-space-3);border:0;border-radius:0;background:transparent;color:var(--gs-ink-2);text-align:left;box-sizing:border-box; }
+.overview-hub-links button:hover { background:var(--gs-hover); }
+.overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-ink); }
+.overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-ink); }
+.overview-hub-card-head { display:flex;align-items:center;gap:var(--gs-space-3);flex:1;min-width:0; }
 .overview-hub-card-head > svg { flex:none;color:var(--gs-ink-3); }
 .overview-hub-card-head > strong { flex:1;min-width:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.overview-hub-card-count { margin-top:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
+.overview-hub-card-count { margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
 .overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
@@ -675,6 +672,11 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-story-gateways small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 
 /* 315 岁时记: birthdays and events of one month on the page's 50:50 axis; the events reuse the event rows. */
+.overview-month-step { display:inline-flex;align-items:center;gap:var(--gs-space-2);margin-left:auto; }
+.overview-month-step output { min-width:56px;color:var(--gs-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);text-align:center;font-variant-numeric:tabular-nums; }
+.overview-month-step button { display:grid;place-items:center;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2);cursor:pointer; }
+.overview-month-step button:hover { background:var(--gs-hover); }
+.overview-month-step button:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
 .overview-almanac { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 .overview-almanac-column { min-width:0;container:almanac-col / inline-size; }
 .overview-almanac-column > h3 { margin:0 0 var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
@@ -716,16 +718,14 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 @media (hover:hover) and (pointer:fine) {
   .overview-heading-chips button:not(:disabled):hover { border-color:var(--gs-selected-line); }
   .overview-birthdays button:hover strong { color:var(--gs-mint-ink); }
-  .overview-stat:hover { border-color:var(--gs-selected-line); }
-  .overview-stat:hover strong { color:var(--gs-mint-ink); }
-  .overview-icon-button:hover, .overview-lens-trigger:hover { background:var(--gs-mint-wash); }
+  .overview-icon-button:hover { background:var(--gs-mint-wash); }
   .overview-preferred-actions button:hover { background:color-mix(in srgb, var(--gs-surface) 70%, transparent); }
   .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
   .overview-section-heading button:hover, .overview-personal-meta button:hover, .overview-search-results li > button:hover,
   .overview-story-gateways button:hover strong, .overview-main-index button:hover strong { color:var(--gs-mint-ink); }
   .overview-song-detail:hover strong, .overview-story > button:hover strong, .overview-event > button:hover strong, .overview-timeline button:hover strong { color:var(--gs-mint-ink); }
   .overview-stage-button:hover, .overview-home-action:hover { color:var(--gs-mint-ink); }
-  .overview-unit-tile:hover { background:color-mix(in srgb,var(--unit-color) 20%,var(--gs-surface)); }
+  .overview-unit-tile:hover { background:var(--gs-hover); }
 }
 
 /* Narrow page (the shell's middle tier or a phone): the hero spans the row above the cards. */
@@ -747,9 +747,11 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 }
 @container portal (max-width:640px) {
   .overview-personal { display:flex;align-items:stretch; }
-  .overview-unit-matrix { grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-2); }
+  .overview-unit-matrix { grid-template-columns:repeat(4,minmax(0,1fr)); }
   .overview-unit-tile { height:84px; }
-  .overview-event-grid, .overview-hub-groups, .is-global-grid .overview-song-list { grid-template-columns:minmax(0,1fr); }
+  .overview-event-grid, .is-global-grid .overview-song-list { grid-template-columns:minmax(0,1fr); }
+  .overview-hub-group { grid-template-columns:minmax(0,1fr);gap:0; }
+  .overview-hub-group > h3 { padding-bottom:var(--gs-space-2); }
   .overview-event-image { width:112px;height:63px; }
   .overview-scope-actions { grid-template-columns:minmax(0,1fr); }
   .overview-section-heading h2, .overview-section-heading h3 { font-size:var(--gs-text-subtitle); }
@@ -774,8 +776,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-brand { display:contents; }
   .overview-breadcrumb-divider { display:none; }
   .overview-toolbar-actions { grid-column:3;grid-row:1; }
-  .overview-lens-trigger { grid-column:1 / -1;grid-row:2;justify-self:start;max-width:100%;border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface); }
-  .overview-lens-trigger span { max-width:none; }
+  .overview-lens { grid-column:1 / -1;grid-row:2;justify-self:start; }
+  .overview-lens-change { grid-row:2;justify-self:start; }
   .overview-toolbar > .overview-search { grid-row:3; }
   .overview-search-results { width:100%; }
   /* Counts are links: two rows of two, each a full touch target, numbers aligned in a column. */

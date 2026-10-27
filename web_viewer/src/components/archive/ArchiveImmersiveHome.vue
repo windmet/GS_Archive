@@ -56,115 +56,14 @@
       </button>
     </header>
 
-    <div class="home-context" aria-label="首页偶像与服装">
-      <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
-      <label class="context-select context-idol">
-        <span>首页偶像</span>
-        <select v-model="selectedId" aria-label="首页偶像">
-          <option v-for="idol in idols" :key="idol.id" :value="idol.id">
-            {{ displayName(idol) }}
-          </option>
-        </select>
-      </label>
-      <span v-if="homeMode === 'spine'" class="context-divider" aria-hidden="true"></span>
-      <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="首页服装类别" compact />
-      <label v-if="homeMode === 'spine'" class="context-select context-costume">
-        <span>服装</span>
-        <select
-          :value="activeCostume?.modelId || ''"
-          aria-label="首页服装"
-          @change="emit('update:selectedCostume', $event.target.value)"
-        >
-          <option v-if="filteredCostumes.pinned" :value="filteredCostumes.pinned.modelId">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（分类外）</option>
-          <option v-for="costume in filteredCostumes.rows" :key="costume.modelId" :value="costume.modelId">
-            {{ archiveText('costume',costume.name) }}
-          </option>
-        </select>
-      </label>
-      <button
-        class="settings-trigger"
-        type="button"
-        aria-label="场景设置"
-        aria-haspopup="dialog"
-        :aria-expanded="settingsOpen"
-        title="场景设置"
-        @click="openSettings"
-      >
-        <SlidersHorizontal :size="17" />
-      </button>
-    </div>
-
-    <label class="mobile-idol-switch" title="选择首页偶像">
-      <span>选择首页偶像</span>
-      <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
-      <select v-model="selectedId" aria-label="选择首页偶像">
-        <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option>
-      </select>
-    </label>
-
-    <button
-      class="mobile-settings-trigger"
-      type="button"
-      aria-haspopup="dialog"
-      :aria-expanded="settingsOpen"
-      aria-label="场景设置"
-      title="场景设置"
-      @click="openSettings"
-    >
-      <SlidersHorizontal :size="20" />
-    </button>
-
-    <button
-      v-if="homeMode === 'spine' && activeIdol.costumes.length"
-      class="mobile-costume-trigger"
-      type="button"
-      aria-haspopup="dialog"
-      :aria-expanded="costumePickerOpen"
-      aria-label="选择首页服装"
-      title="选择首页服装"
-      @click="toggleCostumePicker"
-    >
-      <Shirt :size="20" />
-    </button>
-
-    <button
-      v-if="costumePickerOpen"
-      class="costume-picker-scrim"
-      type="button"
-      aria-label="关闭服装选择"
-      @click="costumePickerOpen = false"
-    ></button>
-    <aside
-      v-if="costumePickerOpen"
-      class="mobile-costume-picker"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="costume-picker-title"
-    >
-      <header>
-        <div>
-          <span>首页服装</span>
-          <strong id="costume-picker-title">{{ activeIdolName }}</strong>
-        </div>
-        <button type="button" aria-label="关闭服装选择" @click="costumePickerOpen = false">
-          <X :size="18" />
-        </button>
-      </header>
-      <div class="costume-picker-filter"><CostumeCategoryFilter v-model="costumeCategory" :costumes="activeIdol.costumes" label="首页服装列表类别" /><p v-if="filteredCostumes.pinned" class="costume-filter-note">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（不在此类别）</p></div>
-      <div class="costume-grid">
-        <button
-          v-for="costume in filteredCostumes.rows"
-          :key="costume.modelId"
-          type="button"
-          :class="{ active: activeCostume?.modelId === costume.modelId }"
-          :aria-pressed="activeCostume?.modelId === costume.modelId"
-          @click="selectCostume(costume.modelId)"
-        >
-          <span><Shirt :size="18" /></span>
-          <small>{{ archiveText('costume',costume.name) }}</small>
-        </button>
-      </div>
-    </aside>
+    <ArchiveHomeConsole
+      :idols="idols" :active-idol="activeIdol" :selected-id="selectedId" :home-mode="homeMode"
+      :active-costume="activeCostume" :costume-category="costumeCategory" :filtered-costumes="filteredCostumes"
+      :cards="idolCards" :card-key="preferences.cardKey" :active-card="selectedCard" :settings-open="settingsOpen"
+      :idol-label="displayName" :costume-label="costume => archiveText('costume', costume.name)"
+      @update:selected-id="selectedId = $event" @update:selected-costume="selectCostume" @update:home-mode="emit('update:homeMode', $event)"
+      @update:card-key="preferences.cardKey = $event" @update:costume-category="costumeCategory = $event" @settings="openSettings"
+    />
 
     <button v-if="focusMode" class="exit-focus" type="button" @click="focusMode = false">退出专注</button>
 
@@ -178,7 +77,9 @@
           <span>{{ cueCardLabel }}</span><ChevronRight :size="14" aria-hidden="true" />
         </button>
         <span v-else class="dialogue-card">{{ cueCardLabel }}</span>
-        <ArchiveLanguageSwitch class="home-language-switch" inline />
+        <!-- C-level status, not a button: the translation was asked for and this line has none. -->
+        <span v-if="dialogueLocale === 'zh-CN' && cueLine.lang === 'ja' && !cueLine.pending" class="dialogue-status">仅原文</span>
+        <GsSegmented class="home-language-switch" v-model="dialogueLocale" :options="DIALOGUE_LOCALES" aria-label="台词语言" />
       </header>
       <div class="dialogue-text"><Transition name="dialogue-fade" mode="out-in"><p :key="cueLine.text" class="dialogue-line gs-flow" :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p></Transition></div>
       <div class="dialogue-actions">
@@ -347,7 +248,8 @@
 </template>
 
 <script setup>
-import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
+import ArchiveHomeConsole from './ArchiveHomeConsole.vue'
+import GsSegmented from '../gs/GsSegmented.vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
   ArrowLeft,
@@ -374,7 +276,7 @@ import { archiveLineText, archiveNamedBackground, archiveNamedBackgroundSearch, 
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
-import { producerName } from '../../utils/LanguageStore.js'
+import { producerName, uiLocale } from '../../utils/LanguageStore.js'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 import {archiveText} from './useArchiveCostumeText.js'
 import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
@@ -459,7 +361,10 @@ const displayName = idol => props.idolName?.(idol.id, idol.name) || idol.name
 const activeIdolName = computed(() => activeIdol.value ? displayName(activeIdol.value) : '')
 // A card cue is that card's touch voice, the same translated line as on the card page; an idol cue
 // is the idol's general home voice.
-const cueText = cue => archiveLineText('card-lines', [[cue?.source === 'idol' ? 'home-voice' : 'card-touch', 'text']], cue?.text)
+// B-level language: this box shows the line in the original or the translation without touching the archive's A-level language.
+const dialogueLocale = ref(uiLocale.value)
+const DIALOGUE_LOCALES = [{ value: 'ja-JP', label: '原文', lang: 'ja' }, { value: 'zh-CN', label: '译文', lang: 'zh-CN' }]
+const cueText = cue => archiveLineText('card-lines', [[cue?.source === 'idol' ? 'home-voice' : 'card-touch', 'text']], cue?.text, dialogueLocale.value)
 const cueLine = computed(() => cueText(activeCue.value))
 const cueRows = computed(() => (activeIdol.value?.cues || []).map((cue, index) => ({
   cue, index,
@@ -936,7 +841,7 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .cue-index-card ol { margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px; }
 .cue-index-card li button { display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font:inherit;text-align:left;cursor:pointer; }
 .cue-index-card li button:hover { background:var(--gs-paper); }
-.cue-index-card li button[aria-current="true"] { background:var(--gs-selected-bg);box-shadow:inset 3px 0 0 var(--gs-selected-line); }
+.cue-index-card li button[aria-current="true"] { background:var(--gs-current-bg-inset); }
 .cue-index-now { flex:none;display:inline-flex;align-items:flex-end;gap:2px;width:14px;height:14px;margin-top:5px; }
 .cue-index-now i { flex:1;height:100%;transform-origin:bottom;transform:scaleY(0.4);background:var(--gs-mint); }
 .cue-index-now.is-playing i { animation:cue-now 0.9s ease-in-out infinite; }
@@ -953,6 +858,10 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .cue-index-condition { display:block;margin-top:2px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;white-space:normal; }
 .cue-index-empty { margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
 .home-language-switch { pointer-events:auto;margin-left:auto; }
+.dialogue-status { flex:none; padding:1px var(--gs-space-3); border:1px solid var(--gs-line); border-radius:var(--gs-radius-pill); color:var(--gs-ink-3); font-size:var(--gs-text-meta); white-space:nowrap; }
+.dialogue-status + .home-language-switch { margin-left:var(--gs-space-3); }
+.dialogue-head:has(.dialogue-status) .dialogue-status { margin-left:auto; }
+.dialogue-head:has(.dialogue-status) .home-language-switch { margin-left:var(--gs-space-3); }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
 .home-office { margin-bottom:0;pointer-events:auto;cursor:pointer; }
 @media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }

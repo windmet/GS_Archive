@@ -4,28 +4,14 @@
     <template v-else>
       <header class="chart-toolbar">
         <div class="chart-difficulties" role="group" aria-label="谱面难度"><button v-for="d in difficulties" :key="d.type" type="button" :class="`difficulty-${d.type}`" :aria-pressed="selected === d.type" @click="selected = d.type">{{ d.label }} <small>Lv {{ d.levelLabel }}</small></button></div>
-        <div class="chart-modes" role="group" aria-label="谱面视图"><button type="button" :aria-pressed="mode === 'perspective'" @click="mode = 'perspective'">透视轨道</button><button type="button" :aria-pressed="mode === 'long'" @click="mode = 'long'">长轨图</button></div>
+        <GsSegmented class="chart-modes" v-model="mode" :options="MODE_OPTIONS" aria-label="谱面视图" />
         <button v-if="mode === 'long'" type="button" :aria-pressed="followPlayback" @click="followPlayback = !followPlayback">跟随播放</button>
         <button v-if="chart && !immersive" type="button" class="chart-immersive-enter" @click="enterImmersive"><Maximize :size="15" aria-hidden="true" />沉浸查看</button>
         <button v-if="immersive" type="button" class="chart-immersive-exit" @click="leaveImmersive"><Minimize :size="15" aria-hidden="true" />退出沉浸</button>
-        <div class="chart-actions"><button ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
+        <div class="chart-actions"><button v-if="!wide" ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
       </header>
-      <Teleport to="body">
-        <div v-if="settingsOpen" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :style="settingsPosition" role="dialog" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
-          <header class="settings-heading"><strong>显示与播放</strong><button type="button" aria-label="关闭视图设置" @click="closeSettings()"><X :size="18" aria-hidden="true" /></button></header>
-          <label>贴图样式 <select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></label>
-          <template v-if="mode === 'perspective'"><label class="speed-setting">音符速度 <input v-model.number="speed" type="number" min="1" max="11" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" type="range" min="1" max="11" step="0.1" aria-label="轨道配速滑杆" /></label><p class="setting-note">1.0–11.0，沿用原作设置刻度；越大落下越快。</p></template>
-          <template v-else><label>纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label><label>长轨排布 <select v-model="longLayout" aria-label="长轨排布"><option value="auto">自动：桌面分栏 / 手机单栏</option><option value="columns">分栏横向阅读</option><option value="continuous">单栏纵向阅读</option></select></label></template>
-          <div class="settings-audio"><label>播放速度 <select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></label><label>音量 <input v-model.number="volume" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></label></div>
-          <label>自动演示 <input v-model="demonstrationEnabled" type="checkbox" aria-label="自动演示事件统计" /></label><p class="setting-note">显示当前位置已过事件与持续长条，不进行触摸判定或评分。</p>
-          <label>打击音 <select v-model="soundSet" aria-label="谱面打击音套装"><option value="off">关闭</option><option value="se1">SE1</option><option value="se2">SE2</option><option value="se3">SE3</option><option value="president">社长愚人节</option></select></label>
-          <label>音效音量 <input v-model.number="soundVolume" type="range" min="0" max="1" step="0.01" aria-label="谱面音效音量" /></label>
-          <p class="setting-note">所有套装均可用于任意歌曲，播放时独立于自动演示开关。</p>
-          <label>音符时机 <input v-model.number="noteTiming" type="number" min="-30" max="30" step="1" aria-label="音符时机调整" @change="noteTiming = Math.max(-30,Math.min(30,Math.round(Number(noteTiming)||0)))" /></label>
-          <p class="setting-note">{{ noteTimingMilliseconds }} ms · 原作刻度 -30～30，每格约16.67ms。正值延后、负值提前谱面与打击音，0为关闭；歌曲音频不变。</p>
-          <label>Combo 提示 <input v-model="comboEnabled" type="checkbox" aria-label="Combo 提示动画" /></label><p class="setting-note">显示已过谱面事件的 Combo，数字动画随播放暂停，不进行评分。</p>
-        </div>
-      </Teleport>
+      <div class="chart-layout" :class="{ 'has-panel': residentPanel }">
+      <div class="chart-main">
       <p v-if="exportError" role="alert">{{ exportError }} <button type="button" :disabled="exporting" @click="download(exportFormat)">重试导出</button></p>
       <p v-if="audioError" role="alert">{{ audioError }}</p>
       <p v-if="soundError" role="alert">{{ soundError }}</p>
@@ -35,14 +21,40 @@
         <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" :effects="trackEffects" :combo="trackCombo" :combo-enabled="comboEnabled" :demonstration-enabled="demonstrationEnabled" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase" :data-sound-set="soundSet" :data-sound-scheduled="soundStats.scheduled" :data-sound-active="soundStats.active" :data-sound-decoded="soundStats.decoded" :data-sound-context="soundStats.context">
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
-          <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
+          <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div v-if="maintainer" class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
           <div class="chart-navigation"><div class="chart-step" role="group" aria-label="谱面播放操作"><button type="button" aria-label="回到开头" title="歌曲开头 · 0 秒" @click="seek(0)"><SkipBack :size="19" aria-hidden="true" /></button><button type="button" aria-label="上一个音符" title="上一个音符 · ←" :disabled="!previousNote" @click="step(-1)"><ChevronLeft :size="23" aria-hidden="true" /></button><button type="button" class="chart-play" :aria-label="starting || playing ? '暂停' : '播放'" :disabled="!audioTrack?.url" @click="togglePlayback"><component :is="starting || playing ? Pause : Play" :size="21" aria-hidden="true" />{{ starting || playing ? '暂停' : '播放' }}</button><button type="button" aria-label="下一个音符" title="下一个音符 · →" :disabled="!nextNote" @click="step(1)"><ChevronRight :size="23" aria-hidden="true" /></button><button type="button" aria-label="播放末尾" title="播放末尾（含尾奏）" @click="seekSeconds(totalSeconds)"><SkipForward :size="19" aria-hidden="true" /></button></div></div>
           <p v-if="clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
-          <p v-if="demonstrationEnabled && demonstrationState" class="chart-demonstration chart-position-status" aria-label="自动演示事件统计" :data-count="demonstrationState.count" :data-total="demonstrationState.total" :data-epoch="demonstrationState.epoch" :data-seconds="demonstrationState.seconds">演示事件 {{ demonstrationState.count }} / {{ demonstrationState.total }} <span>· 持续长条 {{ demonstrationState.holds.length }}</span><span v-for="hold in demonstrationState.holds" :key="hold.sourceIndex" :data-hold-source="hold.sourceIndex" :data-lane="hold.lane"> · 轨位 {{ (hold.lane + 1).toFixed(1) }}</span></p>
+          <p v-if="maintainer && demonstrationEnabled && demonstrationState" class="chart-demonstration chart-position-status" aria-label="自动演示事件统计" :data-count="demonstrationState.count" :data-total="demonstrationState.total" :data-epoch="demonstrationState.epoch" :data-seconds="demonstrationState.seconds">演示事件 {{ demonstrationState.count }} / {{ demonstrationState.total }} <span>· 持续长条 {{ demonstrationState.holds.length }}</span><span v-for="hold in demonstrationState.holds" :key="hold.sourceIndex" :data-hold-source="hold.sourceIndex" :data-lane="hold.lane"> · 轨位 {{ (hold.lane + 1).toFixed(1) }}</span></p>
           <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
         </footer>
       </template>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条依照原生 poly 内部索引生成；预览不进行游戏判定。</p><p>完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长、逐音符速度（含 Special）、轨道坐标、音符四角及长条网格已有原生依据；滑键箭头随歌曲时间循环移动，暂停时冻结。打击音的四套样式可用于任意歌曲，也可单独关闭；预览不进行触摸判定。</p></div>
+      </div>
+      <Teleport to="body" :disabled="wide">
+        <div v-if="panelVisible" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :class="{ 'is-resident': wide }" :style="wide ? undefined : settingsPosition" :role="wide ? 'group' : 'dialog'" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
+          <header v-if="!wide" class="settings-heading"><strong>显示与播放</strong><button type="button" aria-label="关闭视图设置" @click="closeSettings()"><X :size="18" aria-hidden="true" /></button></header>
+          <section class="chart-group" :aria-labelledby="`${uid}-g-view`">
+            <h3 :id="`${uid}-g-view`">观看</h3>
+            <GsRow label="贴图样式"><select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></GsRow>
+            <template v-if="mode === 'perspective'"><GsRow label="音符速度"><template #info>1.0–11.0，沿用原作设置刻度；越大落下越快。</template><input v-model.number="speed" class="chart-number" type="number" min="1" max="11" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" class="chart-range" type="range" min="1" max="11" step="0.1" aria-label="轨道配速滑杆" /></GsRow></template>
+            <template v-else><GsRow label="纵向缩放"><select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></GsRow><GsRow label="长轨排布"><select v-model="longLayout" aria-label="长轨排布"><option value="auto">自动</option><option value="columns">分栏横向阅读</option><option value="continuous">单栏纵向阅读</option></select></GsRow></template>
+          </section>
+          <section class="chart-group" :aria-labelledby="`${uid}-g-sound`">
+            <h3 :id="`${uid}-g-sound`">声音</h3>
+            <GsRow label="播放速度"><select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></GsRow>
+            <GsRow label="音量"><input v-model.number="volume" class="chart-range" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></GsRow>
+            <GsRow label="打击音"><template #info>所有套装均可用于任意歌曲，播放时独立于自动演示开关。</template><select v-model="soundSet" aria-label="谱面打击音套装"><option value="off">关闭</option><option value="se1">SE1</option><option value="se2">SE2</option><option value="se3">SE3</option><option value="president">社长愚人节</option></select></GsRow>
+            <GsRow label="音效音量"><input v-model.number="soundVolume" class="chart-range" type="range" min="0" max="1" step="0.01" aria-label="谱面音效音量" /></GsRow>
+            <GsRow label="音符时机"><template #info>{{ noteTimingMilliseconds }} ms · 原作刻度 -30～30，每格约 16.67ms。正值延后、负值提前谱面与打击音，0 为关闭；歌曲音频不变。</template><input v-model.number="noteTiming" class="chart-number" type="number" min="-30" max="30" step="1" aria-label="音符时机调整" @change="noteTiming = Math.max(-30,Math.min(30,Math.round(Number(noteTiming)||0)))" /></GsRow>
+          </section>
+          <section class="chart-group" :aria-labelledby="`${uid}-g-demo`">
+            <h3 :id="`${uid}-g-demo`">演示</h3>
+            <GsRow label="自动演示"><template #info>显示当前位置已过事件与持续长条，不进行触摸判定或评分。</template><GsSwitch v-model="demonstrationEnabled" aria-label="自动演示事件统计" /></GsRow>
+            <GsRow label="Combo 提示"><template #info>显示已过谱面事件的 Combo，数字动画随播放暂停，不进行评分。</template><GsSwitch v-model="comboEnabled" aria-label="Combo 提示动画" /></GsRow>
+          </section>
+        </div>
+      </Teleport>
+      </div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p v-if="maintainer">五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条依照原生 poly 内部索引生成；预览不进行游戏判定。</p><p v-if="maintainer">完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长、逐音符速度（含 Special）、轨道坐标、音符四角及长条网格已有原生依据；滑键箭头随歌曲时间循环移动，暂停时冻结。打击音的四套样式可用于任意歌曲，也可单独关闭；预览不进行触摸判定。</p></div>
     </template>
   </section>
 </template>
@@ -63,6 +75,10 @@ import { createSongComboPresentation, delayedChartSeconds, noteTimingSeconds } f
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
+import GsRow from '../gs/GsRow.vue'
+import GsSegmented from '../gs/GsSegmented.vue'
+import GsSwitch from '../gs/GsSwitch.vue'
+import { isMaintainerMode } from '../../core/maintainerMode.js'
 import ArchiveSongLongPreview from './ArchiveSongLongPreview.vue'
 import { embedSongChartImages, songNoteEndpoints } from '../../presentation/SongNotePresentation.js'
 const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true }, audioTrack: { type: Object, default: null }, standalone: Boolean })
@@ -87,6 +103,13 @@ const opened = ref(props.standalone), selected = ref(props.difficulties[0]?.type
 const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(5), longLayout = ref('auto'), followPlayback = ref(false)
 const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
+// Wide viewers keep the settings as a resident 292px column beside the canvas; narrow ones open them as a popover.
+const MODE_OPTIONS = [{ value: 'perspective', label: '透视' }, { value: 'long', label: '长轨' }]
+const maintainer = isMaintainerMode()
+const wide = ref(false)
+const residentPanel = computed(() => wide.value && !immersive.value && opened.value)
+const panelVisible = computed(() => residentPanel.value || settingsOpen.value)
+let widthObserver
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
 const chart = shallowRef(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
 // A stable, non-reactive container passes the ref itself into the track. The
@@ -119,7 +142,8 @@ const currentSeconds = computed(() => Math.max(0,transportSeconds.value))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
-const demonstrationEnabled = ref(false), demonstrationState = shallowRef(null)
+// Defaults: perspective track, auto demonstration, hit sound SE1 at 70%, Combo on.
+const demonstrationEnabled = ref(true), demonstrationState = shallowRef(null)
 let demonstration = null, demonstrationFrame = null
 function sampleDemonstration(seconds, discontinuity = false) {
   if (!demonstration) return
@@ -211,12 +235,14 @@ async function loadChart() {
 watch([opened, selected, () => props.songCode], loadChart)
 onMounted(() => {
   if (props.standalone) void loadChart()
+  if (typeof ResizeObserver === 'function' && previewRoot.value) { widthObserver = new ResizeObserver(([entry]) => { wide.value = entry.contentRect.width >= 860 }); widthObserver.observe(previewRoot.value) }
   document.addEventListener('pointerdown', onOutsideSettings)
   document.addEventListener('keydown', onSettingsEscape)
   window.addEventListener('resize', positionSettings)
   window.addEventListener('scroll', positionSettings, true)
 })
 onBeforeUnmount(() => {
+  widthObserver?.disconnect()
   stopPlayback(); sounds.dispose(); generation++; controller?.abort(); clock.dispose()
   document.removeEventListener('pointerdown', onOutsideSettings)
   document.removeEventListener('keydown', onSettingsEscape)
@@ -377,7 +403,7 @@ select { max-width: 100%; min-height: var(--gs-control-normal); padding: 0 var(-
 input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-2); }
 .chart-open { min-height: var(--gs-control-touch); }
 .chart-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); }
-.chart-difficulties, .chart-modes, .chart-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2); }
+.chart-difficulties, .chart-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2); }
 .chart-difficulties button { flex-direction: column; gap: var(--gs-space-1); min-width: 76px; height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border-color: var(--diff-color); color: var(--diff-color); font-size: var(--gs-text-meta); line-height: 1.2; white-space: nowrap; }
 .chart-difficulties small { font-family: var(--gs-font-stage); font-size: var(--gs-text-caption); }
 .difficulty-1 { --diff-color: #247145; }
@@ -385,9 +411,6 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .difficulty-3 { --diff-color: #936309; }
 .difficulty-4 { --diff-color: #994070; }
 .chart-difficulties button[aria-pressed=true] { background: var(--diff-color); color: var(--gs-surface); }
-.chart-modes { box-sizing: border-box; height: var(--gs-control-touch); padding: 2px; gap: 2px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); }
-.chart-modes button { height: calc(var(--gs-control-touch) - 6px); min-height: 0; border: 0; border-radius: var(--gs-radius-pill); background: none; }
-.chart-modes button[aria-pressed=true] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .chart-actions { margin-left: auto; }
 .chart-actions button { height: var(--gs-control-touch); gap: 6px; }
 .chart-actions svg { flex-shrink: 0; }
@@ -395,6 +418,18 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-settings { position: fixed; z-index: 1200; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 15px; padding: 16px; border: 0; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); color: var(--gs-ink); }
 .settings-heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-body); }
 .settings-heading button { width: var(--gs-control-touch); min-height: var(--gs-control-touch); padding: 0; border: 0; background: none; }
+.chart-layout.has-panel { display: grid; grid-template-columns: minmax(0, 1fr) var(--gs-tool-panel-compact); gap: var(--gs-gap-group); align-items: start; }
+.chart-main { min-width: 0; }
+/* Resident column: three groups on the paper, a hairline under each heading; no box. */
+.chart-settings.is-resident { position: static; z-index: auto; max-height: none; padding: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; gap: var(--gs-gap-group); }
+.chart-group { display: flex; flex-direction: column; }
+.chart-group h3 { margin: 0; padding-bottom: var(--gs-space-2); border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
+.chart-group select { min-width: 0; max-width: 150px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.chart-group .chart-number { width: 56px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-2); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.chart-group .chart-range { width: 96px; margin: 0; }
+/* The scoped `button` rule above reaches GsSwitch's root; give the switch its own box back. */
+.chart-group .gs-switch { min-height: 0; padding: 0; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-switch-off); }
+.chart-group .gs-switch[aria-checked=true] { background: var(--gs-switch-on); }
 .chart-settings label { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .chart-settings input[type=range] { width: 100%; min-width: 0; margin: 0; }
 .chart-settings .speed-setting { grid-template-columns: 76px 65px minmax(0, 1fr); gap: var(--gs-space-3); }

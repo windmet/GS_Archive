@@ -506,14 +506,15 @@
       <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
       </template>
     </ArchiveTerminalDialog>
-    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(stageQuality)">
-      <div class="quality-options">
-        <button type="button" :aria-pressed="stageQuality === 'lite'" @click="chooseStageQuality('lite')"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、应援棒、演出镜头与歌词。不开启光束和动态物件，手机与平板更流畅。</span></button>
-        <button type="button" :aria-pressed="stageQuality === 'full'" @click="chooseStageQuality('full')"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(pendingQuality)">
+      <div class="quality-options" role="radiogroup" aria-label="舞台加载方式">
+        <button type="button" role="radio" :aria-checked="pendingQuality === 'lite'" @click="pendingQuality = 'lite'"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、应援棒、演出镜头与歌词。不开启光束和动态物件，手机与平板更流畅。</span></button>
+        <button type="button" role="radio" :aria-checked="pendingQuality === 'full'" @click="pendingQuality = 'full'"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
       </div>
       <p class="quality-tip"><Maximize :size="15" aria-hidden="true" />播放时选「沉浸观看」隐藏界面并全屏，画面最流畅。</p>
       <label class="camera-toggle"><input v-model="rememberViewing" type="checkbox" @change="saveStageViewing" /><span>记住选择，下次不再询问</span></label>
       <small class="quality-note">之后可在「画面」里随时切换。</small>
+      <button type="button" class="quality-start" @click="chooseStageQuality(pendingQuality)">开始加载</button>
     </ArchiveTerminalDialog>
     <!-- Pure mode keeps its controls in a strip along the top edge: hidden while the pointer is on the
          stage, shown when it reaches the top or a key moves focus there. -->
@@ -759,6 +760,8 @@ const stageQuality = ref(['lite', 'full'].includes(savedViewing?.quality) ? save
 const frameRateSetting = ref(['auto', '30', '60', 'max'].includes(savedViewing?.frameRate) ? savedViewing.frameRate : 'auto')
 const rememberViewing = ref(savedViewing?.remember === true)
 const qualityPromptOpen = ref(!rememberViewing.value)
+// Two steps: a choice here only highlights; 开始加载 (or closing the sheet) applies it.
+const pendingQuality = ref(stageQuality.value)
 const IMMERSIVE_HINT_KEY = 'gs-stage-immersive-hint'
 const immersiveHintSeen = ref((() => { try { return localStorage.getItem(IMMERSIVE_HINT_KEY) === 'seen' } catch { return false } })())
 const objectLayersEnabled = ref(stageQuality.value === 'full')
@@ -4499,11 +4502,13 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .immersive-hint .immersive-hint-close { width: 36px; padding: 0; justify-content: center; background: none; color: var(--gs-surface); }
 .quality-options { display: grid; gap: 8px; }
 .quality-options button { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
-.quality-options button[aria-pressed="true"] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
+.quality-options button[aria-checked="true"] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .quality-options strong { display: flex; align-items: center; gap: 8px; font-size: var(--gs-text-body); }
 .quality-options strong small { padding: 1px 8px; border-radius: var(--gs-radius-pill); background: var(--gs-mint-wash); color: var(--gs-mint-ink); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
 .quality-options span { color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
-.quality-options button[aria-pressed="true"] span { color: inherit; }
+.quality-options button[aria-checked="true"] span { color: inherit; }
+.quality-start { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.quality-start:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .quality-tip { display: flex; align-items: center; gap: 6px; margin: 12px 0 4px; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
 .quality-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .touch-help dt { display: flex; align-items: center; color: var(--gs-ink-2); }

@@ -463,7 +463,7 @@ summary { display: flex; align-items: center; min-height: var(--gs-control-touch
 .solo-list button { display: grid; gap: var(--gs-space-1); min-width: 0; min-height: 56px; padding: var(--gs-space-3) var(--gs-space-2); border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
 .solo-list strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .solo-list small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
-.solo-list button[aria-pressed=true] { background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }
+.solo-list button[aria-pressed=true] { background: var(--gs-current-bg-inset); }
 @media (max-width: 760px) {
   /* Only protect the top inset left uncovered by this 85dvh sheet's 15dvh gap. */
   .solo-drawer { --solo-header-safe-top: max(0px, calc(var(--solo-safe-top) - 15dvh)); inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); }

@@ -95,10 +95,11 @@ export const archiveNamedTranslation=(kind,source,field='name')=>{
 // shard on first lookup instead (pending until it arrives), so a page loads only what it shows.
 // Operational voice cues (scout change etc.) repeat card lines and touch voices word for word.
 export const ANY_CARD_LINE=Object.freeze([['card-line','extra'],['card-line','normal'],['card-line','awakened'],['card-touch','text'],['card-voice','text']]);
-export function archiveLineText(domain,keys,source) {
+// locale: the language to show this line in; defaults to the archive's A-level language (the home dialogue box passes its own).
+export function archiveLineText(domain,keys,source,locale=uiLocale.value) {
   const text=typeof source === 'string' ? source : '';
   const original={text:presentProducerAddressingText(text,'ja'),lang:'ja',pending:false};
-  if(uiLocale.value !== 'zh-CN' || !text) return original;
+  if(locale !== 'zh-CN' || !text) return original;
   if(domain === 'card-lines') {
     const key=cardLineShardKey(text), state=lineStatus.value[key];
     // Requested after this render: a lookup runs inside render/computed, which must not write state.

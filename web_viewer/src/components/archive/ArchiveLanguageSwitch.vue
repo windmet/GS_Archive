@@ -1,45 +1,33 @@
 <template>
   <label v-if="dropdown" class="archive-language-dropdown"><Languages :size="17" aria-hidden="true" /><select aria-label="资料语言" :value="uiLocale" @change="saveArchiveLocale($event.target.value)"><option value="zh-CN">中文</option><option value="ja-JP">日本語</option></select></label>
-  <div v-else class="archive-language-switch" :class="{ compact: compactMobile || inline, 'on-dark': onDark, inline }" role="group" aria-label="资料语言 / 表示言語" title="名称与说明：中文译文 / 日本語原文；剧情正文按阅读设置显示">
-    <button type="button" aria-label="中文" lang="zh-CN" :aria-pressed="uiLocale === 'zh-CN'" @click="saveArchiveLocale('zh-CN')"><span class="locale-name">中文</span><span class="locale-short">中</span><span class="locale-note">译</span></button>
-    <button type="button" aria-label="日本語" lang="ja" :aria-pressed="uiLocale === 'ja-JP'" @click="saveArchiveLocale('ja-JP')"><span class="locale-name">日本語</span><span class="locale-short">日</span><span class="locale-note">原</span></button>
-    <button v-if="compactMobile || inline" class="locale-toggle" type="button" :aria-label="uiLocale === 'zh-CN' ? '切换至日本語原文' : '切换至中文译文'" @click="saveArchiveLocale(uiLocale === 'zh-CN' ? 'ja-JP' : 'zh-CN')"><span :class="{ selected: uiLocale === 'zh-CN' }">中</span><span class="locale-divider" aria-hidden="true">/</span><span :class="{ selected: uiLocale === 'ja-JP' }">日</span></button>
+  <div v-else-if="inline" class="archive-language-switch inline" role="group" aria-label="资料语言 / 表示言語">
+    <button class="locale-toggle" type="button" :aria-label="uiLocale === 'zh-CN' ? '切换至日本語原文' : '切换至中文译文'" @click="saveArchiveLocale(uiLocale === 'zh-CN' ? 'ja-JP' : 'zh-CN')"><span :class="{ selected: uiLocale === 'zh-CN' }">中</span><span class="locale-divider" aria-hidden="true">/</span><span :class="{ selected: uiLocale === 'ja-JP' }">日</span></button>
   </div>
+  <GsSegmented v-else class="archive-language-switch" :model-value="uiLocale" :options="LOCALES" aria-label="资料语言 / 表示言語" :on-dark="onDark" @update:model-value="saveArchiveLocale" />
 </template>
 <script setup>
 import {uiLocale, saveArchiveLocale} from '../../utils/LanguageStore.js'
 import {Languages} from '@lucide/vue'
+import GsSegmented from '../gs/GsSegmented.vue'
+// A-level language (names and descriptions across the archive): fixed "中 | 日" at every width.
+// Story body text is a separate, B-level choice (原文 / 译文 / 双语) made where the text is.
 // onDark: for the tools' chrome top bar (stage, Spine, photo studio).
-// inline: the one-button 中 / 日 toggle at every width, for a header row (the home dialogue).
+// inline: the one-button 中 / 日 toggle for a header row (the home dialogue; P2 retires it).
+// compactMobile is kept so existing callers keep compiling; the control no longer changes shape.
 defineProps({ compactMobile: { type: Boolean, default: true }, dropdown:Boolean, onDark:Boolean, inline:Boolean })
+const LOCALES = [
+  { value: 'zh-CN', label: '中', ariaLabel: '中文（名称与说明用译文）', lang: 'zh-CN' },
+  { value: 'ja-JP', label: '日', ariaLabel: '日本語（名称と説明は原文）', lang: 'ja' },
+]
 </script>
 <style scoped>
 .archive-language-dropdown{display:flex;align-items:center;gap:5px;padding:0 8px;color:inherit}.archive-language-dropdown select{max-width:88px;min-height:40px;border:0;background:transparent;color:inherit;font:inherit;font-size:var(--gs-text-meta);cursor:pointer}.archive-language-dropdown select:focus-visible{outline:2px solid #258a8a;outline-offset:2px}
-.archive-language-switch { display:inline-flex; flex:none; align-items:center; gap:2px; padding:3px; border:1px solid var(--gs-line); border-radius:var(--gs-radius-control); background:var(--gs-surface); color:var(--gs-ink-2); }
-.archive-language-switch button { display:inline-flex; align-items:center; gap:4px; min-height:32px; padding:4px 8px; border:0; border-radius:6px; background:transparent; color:inherit; font:inherit; font-size:12px; cursor:pointer; white-space:nowrap; }
-.archive-language-switch button[aria-pressed=true] { color:var(--gs-selected-ink); background:var(--gs-selected-bg); }
-.archive-language-switch button:active { background:var(--gs-mint-wash); }.archive-language-switch .locale-note { font-size:var(--gs-text-caption); opacity:.75; }
-.archive-language-switch .locale-short { display:none; }
-.archive-language-switch .locale-toggle { display:none; }
-@media(max-width:760px) {
-  .archive-language-switch.compact { padding:0;gap:0;border:0;background:transparent; }
-  .archive-language-switch.compact > button:not(.locale-toggle) { display:none; }
-  .archive-language-switch.compact .locale-toggle { display:inline-flex;justify-content:center;gap:3px;width:48px;min-width:48px;padding:0;color:var(--gs-ink-3); }
-  .locale-toggle .selected {color:var(--gs-mint-ink);font-weight:var(--gs-weight-bold);}
-  .locale-toggle .locale-divider {color:var(--gs-line);}
-}
-.archive-language-switch button:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint); outline-offset:var(--gs-focus-offset); }
-/* On the tools' dark chrome bar: no light box, light ink, the chosen language in white. */
-.archive-language-switch.on-dark { border-color:transparent; background:var(--gs-chrome-hover); color:var(--gs-chrome-ink); }
-.archive-language-switch.on-dark button[aria-pressed=true] { color:var(--gs-ink); background:var(--gs-surface); }
-.archive-language-switch.on-dark button:active { background:var(--gs-chrome-hover); }
-/* inline: always the single toggle. */
-.archive-language-switch.inline { padding:0;gap:0;border:0;background:transparent; }
-.archive-language-switch.inline > button:not(.locale-toggle) { display:none; }
-.archive-language-switch.inline .locale-toggle { display:inline-flex;justify-content:center;gap:3px;min-width:48px;padding:0 6px;color:var(--gs-ink-3); }
-.archive-language-switch.inline .locale-toggle .selected { color:var(--gs-mint-ink);font-weight:var(--gs-weight-bold); }
-.archive-language-switch.inline .locale-toggle .locale-divider { color:var(--gs-line); }
-@media(max-width:760px) { .archive-language-switch.compact.on-dark { background:transparent; } .archive-language-switch.on-dark .locale-toggle { color:var(--gs-chrome-ink); } .archive-language-switch.on-dark .locale-toggle .selected { color:var(--gs-surface); } }
-@media(max-width:760px) { .archive-language-switch button { min-height:44px; min-width:44px; } .archive-language-dropdown select { font-size:var(--gs-text-subtitle); } }
-@media(max-width:400px) { .archive-language-switch button { padding:4px 6px; } .archive-language-switch .locale-note { display:none; } }
+.archive-language-switch { flex: none; }
+.archive-language-switch.inline { display:inline-flex;align-items:center; }
+.archive-language-switch .locale-toggle { display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:48px;min-height:44px;padding:0 6px;border:0;background:transparent;color:var(--gs-ink-3);font:inherit;font-size:var(--gs-text-meta);cursor:pointer; }
+.archive-language-switch .locale-toggle .selected { color:var(--gs-mint-ink);font-weight:var(--gs-weight-bold); }
+.archive-language-switch .locale-toggle .locale-divider { color:var(--gs-line); }
+.archive-language-switch .locale-toggle:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint); outline-offset:var(--gs-focus-offset); }
+/* Phone header is 48px tall: 44px touch segments in a 2px track fit it, and the pair keeps off the screen edge. */
+@media(max-width:760px) { .archive-language-dropdown select { font-size:var(--gs-text-subtitle); } .archive-language-switch.archive-language-switch:not(.inline) { --gs-seg-pad:2px; margin-inline-end:var(--gs-space-3); } }
 </style>

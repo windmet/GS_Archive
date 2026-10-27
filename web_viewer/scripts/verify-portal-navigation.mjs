@@ -254,7 +254,7 @@ for (const [view, section] of [['story_catalog', 'stories'], ['idols', 'idols'],
   ['event_catalog', 'events'], ['gashas', 'gashas'], ['photo_catalog', 'photos'], ['unused_archive', 'unused'], ['score_archive', 'scores']]) {
   const crumbs = buildArchiveBreadcrumbs({ view, category: view === 'idols' ? 'idol' : view === 'cards' ? 'cards' : '' })
   assert.deepEqual(crumbs.map(item => item.label), [ARCHIVE_SECTIONS.portal.label, ARCHIVE_SECTIONS[section].label], `${view} breadcrumb`)
-  assert.equal(archiveDocumentTitle(view), `${ARCHIVE_SECTIONS[section].label} · GS Archive`, `${view} browser tab`)
+  assert.equal(archiveDocumentTitle(view), `${ARCHIVE_SECTIONS[section].label} · GROWING STARS 资料馆`, `${view} browser tab`)
 }
 for (const item of ARCHIVE_NAVIGATION) assert.equal(item.label, ARCHIVE_SECTIONS[item.id].label, `${item.id} navigation label`)
 assert.deepEqual(buildArchiveBreadcrumbs({ view: 'picture_studio' }).map(item => item.label), ['资料馆', '摄影工作台'], 'the studio hangs from the root')
