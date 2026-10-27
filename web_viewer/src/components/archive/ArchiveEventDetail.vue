@@ -1,32 +1,42 @@
 <template>
   <article v-if="view" class="event-detail" data-archive-scroll-container>
+    <!-- Head: the KV with no frame, the event's other pictures as a strip beneath it; beside it the
+         type eyebrow, the logo, the name, the period as a date table, and the cast as faces. -->
     <section class="event-identity">
-      <div class="event-visual">
-        <template v-if="bannerBinding?.url && !bannerFailed">
-          <img class="event-banner" :src="bannerBinding.url" :alt="view.identity.title" @error="bannerFailed=true" />
-          <small v-if="resources?.heroRole==='original-announcement'" class="event-media-note">原活动宣传图 · 复刻时间见本页记录</small>
-        </template>
-        <p v-else class="event-banner-unavailable">{{ event.title }}<small>活动图片暂不可用</small></p>
+      <div class="event-visual-column">
+        <div class="event-visual">
+          <template v-if="bannerBinding?.url && !bannerFailed">
+            <img class="event-banner" :src="bannerBinding.url" :alt="view.identity.title" @error="bannerFailed=true" />
+            <small v-if="resources?.heroRole==='original-announcement'" class="event-media-note">原活动宣传图 · 复刻时间见本页记录</small>
+          </template>
+          <p v-else class="event-banner-unavailable">{{ event.title }}<small>活动图片暂不可用</small></p>
+        </div>
+        <ul v-if="mediaStrip.length" class="event-media-strip" aria-label="活动视觉资料">
+          <li v-for="item in mediaStrip" :key="item.role"><DomainMediaPreview :binding="item.binding" :name="item.name" compact /><small>{{ item.name }}</small></li>
+        </ul>
       </div>
       <div class="event-summary">
         <p class="event-kicker">{{ eventTypeLabel }} · {{ scopeLabel }}</p>
+        <img v-if="view.media.logo?.url && !logoFailed" class="event-logo" :src="view.media.logo.url" alt="" decoding="async" @error="logoFailed=true" />
         <h2>{{ view.identity.title }}</h2>
-        <ArchiveSourceLink v-if="exchangeRewards" :url="exchangeRewards.source.url" :label="exchangeRewards.source.title" />
         <dl>
-          <div><dt>活动开始</dt><dd>{{ formatDateTime(view.period.startAt) }}</dd></div>
-          <div><dt>活动结束</dt><dd>{{ formatDateTime(view.period.endAt) }}</dd></div>
-          <div><dt>展示结束</dt><dd>{{ formatDateTime(view.period.displayEndAt) }}</dd></div>
-          <div v-if="view.period.exchangeEndAt>0&&view.period.exchangeEndAt<4102412400"><dt>兑换结束</dt><dd>{{ formatDateTime(view.period.exchangeEndAt) }}</dd></div>
-          <div><dt>活动形式</dt><dd>{{ eventTypeLabel }}</dd></div>
-
+          <div><dt>开始</dt><dd>{{ formatDateTime(view.period.startAt) }}</dd></div>
+          <div><dt>结束</dt><dd>{{ formatDateTime(view.period.endAt) }}</dd></div>
+          <div><dt>展示至</dt><dd>{{ formatDateTime(view.period.displayEndAt) }}</dd></div>
+          <div v-if="view.period.exchangeEndAt>0&&view.period.exchangeEndAt<4102412400"><dt>兑换至</dt><dd>{{ formatDateTime(view.period.exchangeEndAt) }}</dd></div>
         </dl>
+        <small class="event-zone">日本时间</small>
+        <div v-if="castReferences.length || units.length" class="event-cast-line">
+          <span class="event-cast-label">出演</span>
+          <span class="event-cast-faces">
+            <ArchiveIdolReference v-for="entry in castReferences" :key="entry.reference.idolCode || entry.reference.displayName"
+              :reference="entry.reference" density="face" @open="emit('open-idol', entry.idol)" />
+          </span>
+          <button v-for="unit in units" :key="unit.unit_id" type="button" class="event-cast-unit" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">{{ unit.unit_name }}</button>
+        </div>
+        <ArchiveSourceLink v-if="exchangeRewards" :url="exchangeRewards.source.url" :label="exchangeRewards.source.title" />
       </div>
     </section>
-
-    <details class="event-media-archive">
-      <summary>活动视觉资料</summary>
-      <div class="event-media-grid"><DomainMediaPreview v-for="role in ['banner','logo','background','resultBackground']" :key="role" :binding="view.media[role]" :name="({banner:'剧情入口横幅',logo:'活动标志',background:'活动背景',resultBackground:'结算背景'})[role]"/></div>
-    </details>
     <!-- Story block in the story-family idiom: heading with count, synopsis as a quotation,
          one row of actions (reading is the page's primary action), then hairline episode rows. -->
     <section v-if="episodes.length || event.exists || view.seasonalCampaign || view.identity.kind!=='collection'" class="detail-section event-story" aria-labelledby="event-story-title">
@@ -59,7 +69,7 @@
         </a>
       </div>
 
-      <ol v-if="episodes.length" class="episode-list">
+      <ol v-if="episodes.length" class="episode-list" :class="{ 'is-collapsed': !episodesOpen && episodes.length > 5 }">
         <!-- As on the personal-story pages: the row reads the episode, the icon plays it. -->
         <li v-for="episode in episodes" :key="episode.id" class="episode-entry">
           <button v-if="readingByFile.has(episode.file)" class="episode-main" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
@@ -74,6 +84,8 @@
           </button>
         </li>
       </ol>
+      <!-- Phones list the first five episodes; the rest open in place. -->
+      <button v-if="episodes.length > 5 && !episodesOpen" type="button" class="episode-more" @click="episodesOpen = true">显示全部 {{ episodes.length }} 话</button>
       <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
     </section>
 
@@ -130,40 +142,12 @@
       <div class="section-heading"><div><h3 id="event-general-rewards">{{ view.identity.kind==='collection' ? '活动兑换道具' : '奖励明细与藏品' }}</h3><p>{{ exchangeRewards ? '通过演唱会与工作收集道具，用于兑换活动报酬。完整兑换清单见上方 Wikiwiki 补录。' : '历史客户端配置。兑换商店明细与实时排行榜尚未收录。' }}</p></div></div>
       <nav v-if="view.rewards.materials?.length" class="event-materials" aria-label="活动材料"><div v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" class="event-material"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/><button type="button" @click="openQuick(`item:${item.itemId}`)">{{ item.nameJa }}</button></div></nav>
       <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="openQuick" @open-target="emit('open-target',$event)" />
-      <div v-if="view.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in view.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
 
-    <!-- Cast in the unit page's idiom: hairline rows on the paper, units first since they
-         decide what the event belongs to, then the idols as small avatars. -->
-    <section v-if="castReferences.length||units.length" class="detail-section event-cast" aria-labelledby="event-cast-title">
-      <div class="section-heading">
-        <h3 id="event-cast-title">出演与归属</h3>
-        <small class="section-count">{{ castCountLabel }}</small>
-      </div>
-      <div v-if="units.length" class="cast-group">
-        <h4>{{ units.length > 1 ? '出演组合' : '所属组合' }}</h4>
-        <ul class="unit-list">
-          <li v-for="unit in units" :key="unit.unit_id">
-            <button type="button" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">
-              <img :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-              <span>{{ unit.unit_name }}</span>
-              <ChevronRight :size="16" aria-hidden="true" />
-            </button>
-          </li>
-        </ul>
-      </div>
-      <div v-if="castReferences.length" class="cast-group">
-        <h4>出演偶像</h4>
-        <div class="idol-list">
-          <ArchiveIdolReference
-            v-for="entry in castReferences"
-            :key="entry.idol.idol_code"
-            :reference="entry.reference"
-            density="compact"
-            @open="emit('open-idol', entry.idol)"
-          />
-        </div>
-      </div>
+    <!-- Related events (the same series, the original of a reprint) as banner rows. -->
+    <section v-if="relatedEventItems.length" class="detail-section event-related" aria-labelledby="event-related-events-title">
+      <div class="section-heading"><h3 id="event-related-events-title">关联活动</h3><small class="section-count">{{ relatedEventItems.length }} 场</small></div>
+      <ArchiveRelationList :items="relatedEventItems" @select="emit('open-event', $event.payload)" />
     </section>
 
     <section v-if="derivedOnlyCards.length" class="detail-section" aria-labelledby="event-related-title">
@@ -185,7 +169,7 @@
 <script setup>
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
-import { BookOpen, ChevronRight, ExternalLink, Flag, Gauge, Play } from '@lucide/vue'
+import { BookOpen, ExternalLink, Flag, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
@@ -195,9 +179,8 @@ import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import '../../styles/archive-domains.css'
-import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
-import {eventResources} from '../../data/eventResourceGraph.js'
+import {eventBannerUrl,eventResources} from '../../data/eventResourceGraph.js'
 import { useStorySynopsis } from './useStorySynopsis.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { flowForLocale } from '../../../shared/reading/ReadingTypography.js'
@@ -217,8 +200,15 @@ const props = defineProps({
   loadReadingDocument: { type: Function, default: null },
 })
 const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-collection-card', 'open-idol', 'open-unit','open-entity','open-event','open-song','open-target','open-seasonal'])
-const bannerFailed=ref(false)
-watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
+const bannerFailed=ref(false),logoFailed=ref(false),episodesOpen=ref(false)
+watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;logoFailed.value=false;episodesOpen.value=false;quickEntity.value=''})
+// The event's other pictures as a strip under the KV (the logo already sits by the name).
+const MEDIA_NAMES={banner:'剧情入口横幅',background:'活动背景',resultBackground:'结算背景'}
+const mediaStrip=computed(()=>Object.entries(MEDIA_NAMES).map(([role,name])=>({role,name,binding:props.view?.media?.[role]})).filter(item=>item.binding?.url))
+const relatedEventItems=computed(()=>(props.view?.relatedEvents||[]).map(related=>({
+  id:`event-related:${related.event_id}`,kind:'event',label:'',title:related.title,meta:'',
+  imageUrl:eventBannerUrl(related),imageAlt:related.title,payload:related,
+})))
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 const firstReading=computed(()=>readingByFile.value.get(props.view?.episodes?.[0]?.file))
 // The synopsis is the first episode's synopsis row, translated like the story pages show it; the
@@ -236,7 +226,6 @@ const event=computed(()=>props.view?.story.entry)
 const story=computed(()=>props.view?.story)
 const episodes=computed(()=>props.view?.episodes || [])
 const units=computed(()=>props.view?.units || [])
-const castCountLabel=computed(()=>[castReferences.value.length&&`${castReferences.value.length} 位`,units.value.length>1&&`${units.value.length} 个组合`].filter(Boolean).join(' · '))
 const resources=computed(()=>eventResources(props.view?.identity))
 const exchangeRewards=computed(()=>resources.value?.exchangeRewards)
 const bannerBinding=computed(()=>resources.value?.hero || props.view?.media.background || props.view?.media.logo)
@@ -347,22 +336,35 @@ function formatDateTime(timestamp) {
 
 /* Identity: banner beside the title and the period table. */
 .event-identity { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); gap: var(--gs-space-7); padding: var(--gs-space-8) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)) var(--gs-space-7); }
+.event-visual-column { display: grid; align-content: start; gap: var(--gs-space-4); min-width: 0; }
 .event-visual { position: relative; align-self: start; min-width: 0; overflow: hidden; aspect-ratio: 940 / 510; border-radius: var(--gs-radius-media); background: var(--gs-line); }
+/* The strip: the event's other pictures at thumbnail size, each named underneath. */
+.event-media-strip { display: flex; gap: var(--gs-space-5); margin: 0; padding: 0; overflow-x: auto; list-style: none; scrollbar-width: none; }
+.event-media-strip li { display: grid; flex: none; gap: var(--gs-space-1); }
+.event-media-strip :deep(.domain-media-compact) { width: 96px; height: 54px; margin: 0; border-radius: var(--gs-radius-media); background: var(--gs-paper-2); overflow: hidden; }
+.event-media-strip :deep(.domain-media-compact img) { object-fit: cover; }
+.event-media-strip small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.event-logo { display: block; max-width: 140px; max-height: 64px; margin-top: var(--gs-space-3); object-fit: contain; object-position: left center; }
+.event-zone { display: block; margin-top: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+/* Cast as faces, then the unit's name; each opens its page. */
+.event-cast-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-3); margin-top: var(--gs-space-5); }
+.event-cast-label { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.event-cast-faces { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); }
+.event-cast-faces button { display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+.event-cast-unit { min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.episode-more { display: none; }
 .event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }
 .event-media-note { position: absolute; right: 0; bottom: 0; left: 0; padding: var(--gs-space-3); background: color-mix(in srgb, var(--gs-surface) 94%, transparent); color: var(--gs-ink-2); font-size: var(--gs-text-meta); }
 .event-banner-unavailable { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gs-space-4); height: 100%; margin: 0; padding: var(--gs-space-6); color: var(--gs-ink-3); text-align: center; overflow-wrap: anywhere; }
 .event-banner-unavailable small { font-size: var(--gs-text-meta); }
 .event-summary { min-width: 0; }
-.event-kicker { margin: 0; color: var(--gs-mint-ink); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
-.event-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.35; overflow-wrap: anywhere; }
+.event-kicker { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.event-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-5); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.35; overflow-wrap: anywhere; }
 .event-summary dl { margin: 0; border-top: 1px solid var(--gs-rule); }
 .event-summary dl div { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
 .event-summary dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .event-summary dd { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-body); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 
-.event-media-archive { padding: var(--gs-space-2) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)); font-size: var(--gs-text-ui); }
-.event-media-archive > summary { min-height: var(--gs-control-normal); padding-block: var(--gs-space-3); color: var(--gs-mint-ink); cursor: pointer; font-weight: var(--gs-weight-semibold); }
-.event-media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--gs-space-5); margin-top: var(--gs-space-4); }
 
 /* Sections: heading and count on one baseline over a rule, a grey lede beneath the heading. */
 .detail-section { min-width: 0; padding: var(--gs-space-5) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)) var(--gs-space-8); }
@@ -424,28 +426,10 @@ button.episode-main { cursor: pointer; }
 .event-material { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; max-width: 100%; }
 .event-material :deep(.domain-media-compact) { margin: 0; }
 .event-material > button { min-width: 0; min-height: var(--gs-control-normal); padding: 0; border: 0; background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-align: left; overflow-wrap: anywhere; }
-.event-related-history { margin-top: var(--gs-space-6); }
-.event-related-history h3 { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.event-related-history .domain-link { min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
-
-/* Cast. */
-.cast-group + .cast-group { margin-top: var(--gs-space-6); }
-.cast-group h4 { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
-/* Hairline rows like the unit page's members; names wrap rather than truncate. */
-.idol-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 0 var(--gs-space-7); min-width: 0; }
-.idol-list :deep(.idol-reference-copy strong), .idol-list :deep(.idol-reference-copy small) { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
-.unit-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0 var(--gs-space-7); margin: 0; padding: 0; list-style: none; }
-.unit-list li { min-width: 0; }
-.unit-list button { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
-.unit-list img { width: 70px; height: 38px; object-fit: contain; }
-.unit-list span { min-width: 0; font-size: var(--gs-text-body); overflow-wrap: anywhere; }
-.unit-list svg { color: var(--gs-mint-ink); }
 
 .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link) { gap: var(--gs-space-3); min-height: var(--gs-control-normal); max-width: 100%; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .event-summary :deep(.archive-source-link small), .wiki-exchange-table :deep(.archive-source-link small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.event-media-grid :deep(.domain-media-preview) { margin-bottom: var(--gs-space-6); padding: var(--gs-space-5); border-radius: var(--gs-radius-panel); }
-.event-media-grid :deep(figcaption) { margin-top: var(--gs-space-4); font-size: var(--gs-text-meta); }
-.event-media-grid :deep(.domain-media-preview button), .event-reward-card :deep(.domain-media-preview button), .event-material :deep(.domain-media-preview button) { min-height: var(--gs-control-compact); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); border-radius: var(--gs-radius-control); }
+.event-reward-card :deep(.domain-media-preview button), .event-material :deep(.domain-media-preview button) { min-height: var(--gs-control-compact); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); border-radius: var(--gs-radius-control); }
 .detail-section :deep(.relation-list) { gap: var(--gs-space-3); }
 .detail-section :deep(.relation-row) { gap: var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); font-family: inherit; border-radius: var(--gs-radius-control); }
 .detail-section :deep(.relation-copy) { gap: var(--gs-space-2); }
@@ -476,30 +460,30 @@ button.episode-main { cursor: pointer; }
 .detail-section :deep(.archive-technical-body), .event-detail > :deep(.archive-technical-body) { padding: 0 var(--gs-space-5) var(--gs-space-5); font-size: var(--gs-text-meta); }
 .detail-section :deep(.archive-technical pre), .event-detail > :deep(.archive-technical pre) { font-size: var(--gs-text-meta); }
 
-.event-media-archive > summary:focus-visible, .wiki-exchange-table > summary:focus-visible,
+.wiki-exchange-table > summary:focus-visible, .event-cast-faces button:focus-visible, .event-cast-unit:focus-visible, .episode-more:focus-visible,
 .story-actions > :focus-visible, .episode-entry button:focus-visible, .event-reward-open:focus-visible,
-.event-material > button:focus-visible, .unit-list button:focus-visible, .event-related-history button:focus-visible,
+.event-material > button:focus-visible,
 .event-summary :deep(a:focus-visible), .wiki-exchange-table :deep(a:focus-visible),
-.event-media-grid :deep(.domain-media-preview button:focus-visible), .event-reward-card :deep(.domain-media-preview button:focus-visible), .event-material :deep(.domain-media-preview button:focus-visible),
-.idol-list :deep(button:focus-visible), .detail-section :deep(.relation-row:focus-visible),
+.event-media-strip :deep(.domain-media-preview button:focus-visible), .event-reward-card :deep(.domain-media-preview button:focus-visible), .event-material :deep(.domain-media-preview button:focus-visible),
+.detail-section :deep(.relation-row:focus-visible),
 .detail-section :deep(.domain-rewards button:focus-visible), .detail-section :deep(.domain-rewards select:focus-visible),
 .detail-section :deep(.archive-technical summary:focus-visible), .event-detail > :deep(.archive-technical summary:focus-visible) {
   outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset);
 }
 @media (hover: hover) and (pointer: fine) {
   button.episode-main:hover strong, .episode-play:hover:not(:disabled),
-  .event-reward-open:hover, .event-material > button:hover, .unit-list button:hover span,
-  .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-mint-ink); }
+  .event-reward-open:hover, .event-material > button:hover, .event-cast-unit:hover,
+  .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-ink-2); }
+  .event-cast-faces button:hover { opacity: .85; }
 }
 @media (hover: none), (pointer: coarse) {
   .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
   .detail-section :deep(button.domain-reward-name:hover) { background: transparent; color: inherit; }
 }
 @media (max-width: 760px), (pointer: coarse) {
-  .story-action, .event-media-archive > summary, .wiki-exchange-table > summary,
-  .event-material > button, .event-related-history button,
+  .story-action, .wiki-exchange-table > summary, .event-material > button, .event-cast-unit, .episode-more,
   .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link),
-  .event-media-grid :deep(.domain-media-preview button), .event-reward-card :deep(.domain-media-preview button), .event-material :deep(.domain-media-preview button),
+  .event-reward-card :deep(.domain-media-preview button), .event-material :deep(.domain-media-preview button),
   .detail-section :deep(.domain-pagination button), .detail-section :deep(.archive-technical summary), .event-detail > :deep(.archive-technical summary) { min-height: var(--gs-control-touch); }
   .detail-section :deep(.domain-table-controls select) { min-height: var(--gs-control-touch); max-width: 100%; font-size: var(--gs-text-subtitle); }
 }
@@ -511,12 +495,20 @@ button.episode-main { cursor: pointer; }
   .event-identity { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-6); }
   .episode-list { grid-template-columns: minmax(0, 1fr); }
 }
+/* Phones: the KV runs to the screen edges with the identity under it; 从第一话阅读 is a full-width
+   primary action; the episodes list five, then 显示全部. */
 @container event-detail (max-width: 560px) {
-  .event-identity { padding: var(--gs-space-6) var(--gs-space-5) var(--gs-space-5); }
+  .event-identity { padding: 0 var(--gs-space-5) var(--gs-space-5); }
+  .event-visual-column { margin-inline: calc(-1 * var(--gs-space-5)); }
+  .event-visual { border-radius: 0; }
+  .event-media-strip { padding-inline: var(--gs-space-5); }
   .event-summary h2 { font-size: var(--gs-text-section); }
-  .detail-section, .event-media-archive { padding-inline: var(--gs-space-5); }
+  .detail-section { padding-inline: var(--gs-space-5); }
   .story-actions > * { flex: 1 1 140px; }
-  .reward-grid, .event-media-grid { grid-template-columns: minmax(0, 1fr); }
+  .story-actions > .primary { flex-basis: 100%; }
+  .reward-grid { grid-template-columns: minmax(0, 1fr); }
+  .episode-list.is-collapsed > :nth-child(n+6) { display: none; }
+  .episode-more { display: block; width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-2); padding: 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink-2); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); text-align: left; }
 }
 /* Wide screens: the section name sits in a 168px rail on the left, the content to its right; phones keep it above. */
 @media (min-width: 1101px) {
