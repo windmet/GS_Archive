@@ -80,6 +80,13 @@ const errors = []
 const componentContext = vm.createContext({ AbortController, console: { ...console, error: (...args) => errors.push(args) } })
 const empty = { render: () => null }
 const passthrough = { inheritAttrs: false, setup: (_, { slots }) => () => slots.default?.() }
+// The filter menu and the segmented sort stand in as one select each over the same options and v-model,
+// so the catalog's own filter wiring (browse state, page reset, focus) stays under test.
+const choice = {
+  props: { modelValue: [String, Number], options: Array }, emits: ['update:modelValue'],
+  setup: (props, { emit }) => () => Vue.h('select', { onChange: event => emit('update:modelValue', event.target.options.find(option => option.selected)?.value) },
+    props.options.map(option => Vue.h('option', { value: option.value, selected: option.value === props.modelValue }, option.label))),
+}
 const modules = {
   vue: Vue, '@lucide/vue': { ChevronRight: empty }, './EventResourceImage.vue': { default: empty },
   './DomainPresentation.mjs': { eventKindLabels, historicalDate },
@@ -88,6 +95,7 @@ const modules = {
   // Real scope filter; child shells render their slot so the filter controls stay under test.
   '../../presentation/CatalogIdolScope.js': { ...CatalogIdolScope },
   './ArchiveFilterSheet.vue': { default: passthrough }, './ArchiveCatalogScope.vue': { default: empty },
+  '../gs/GsFilterMenu.vue': { default: choice }, '../gs/GsSegmented.vue': { default: choice },
 }
 const { descriptor } = parse(read('src/components/archive/ArchiveEventCatalog.vue'))
 const module = new vm.SourceTextModule(compileScript(descriptor, { id: 'event-catalog-navigation', inlineTemplate: true }).content, { context: componentContext })
@@ -187,7 +195,7 @@ const input = t => all(t.root).find(item => item.type === 'input')
 function select(t, index, value) {
   const item = all(t.root).filter(entry => entry.type === 'select')[index]
   item.options.forEach(option => { option.selected = option.value === value })
-  item.listeners.change({ target: item })
+  ;(item.listeners.change || item.props.onChange)({ target: item })
 }
 
 {

@@ -144,8 +144,14 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
   async function prepareChartTool() {
     await Promise.all([ensureSongCatalog(), ensureChartManifest()])
   }
-  async function ensureChartManifest() {
-    if (chartManifest.value) return true
+  // LIVE and the chart tool both prepare the manifest; a second caller joins the request in flight.
+  let chartManifestRequest = null
+  function ensureChartManifest() {
+    if (chartManifest.value) return Promise.resolve(true)
+    chartManifestRequest ||= loadChartManifest().finally(() => { chartManifestRequest = null })
+    return chartManifestRequest
+  }
+  async function loadChartManifest() {
     try {
       const response = await fetch('/data/song_charts/manifest.json')
       if (!response.ok) throw new Error(`chart manifest ${response.status}`)
