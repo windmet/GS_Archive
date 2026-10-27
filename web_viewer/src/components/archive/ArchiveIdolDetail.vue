@@ -10,11 +10,9 @@
         <button v-if="idol.unit_code" class="idol-hero-unit" type="button" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" :aria-label="`组合 ${idol.unit_name}`" @click="emit('open-unit', idol)">
           <img v-if="!unitLogoFailed" :src="getUnitLogoUrl(idol.unit_code)" alt="" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ idol.unit_name }}</span>
         </button>
-        <div class="idol-hero-name">
-          <h2>{{ displayedIdolName }}</h2>
-          <span class="idol-hero-sign" aria-hidden="true"></span>
-        </div>
+        <h2 class="idol-hero-name">{{ displayedIdolName }}</h2>
         <p lang="ja">{{ idol.name_fields?.kana || '' }}</p>
+        <span class="idol-hero-sign" aria-hidden="true"></span>
       </div>
       <div class="idol-hero-acts">
         <button v-if="hasHome" type="button" class="idol-hero-home" :data-archive-focus-id="`idol-home:${idol.idol_code}`" @click="emit('open-home', idol.idol_code)">去事务所<ChevronRight :size="15" aria-hidden="true" /></button>
@@ -303,15 +301,16 @@ function formatDate(timestamp) {
 /* 人物幕: artwork on the idol's wash. The figure casts a flat shadow in the idol's ink (24%) to the
    lower right; the autograph is written in ink beside the name. Media radius, nothing else. */
 .idol-hero { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 300px; overflow: hidden; padding: var(--gs-space-7) var(--gs-space-8); border-radius: var(--gs-radius-media); background: radial-gradient(circle at 78% 62%, var(--gs-surface) 0, var(--gs-idol-wash) 58%); }
-.idol-hero-figure { position: absolute; left: var(--hero-figure-left, 50%); bottom: -60px; z-index: 1; width: auto; max-width: none; height: 340px; object-fit: contain; -webkit-mask-image: linear-gradient(black 82%, transparent); mask-image: linear-gradient(black 82%, transparent); filter: drop-shadow(14px 8px 0 color-mix(in oklab, var(--gs-idol-ink) 24%, transparent)); }
+.idol-hero-figure { position: absolute; left: var(--hero-figure-left, 50%); bottom: -60px; z-index: 1; width: auto; max-width: none; height: 340px; object-fit: contain; -webkit-mask-image: linear-gradient(black 82%, transparent); mask-image: linear-gradient(black 82%, transparent); filter: drop-shadow(6px 4px 0 color-mix(in oklab, var(--gs-idol-ink) 24%, transparent)); }
 .idol-hero-avatar { position: absolute; right: var(--gs-space-9); top: 50%; z-index: 1; translate: 0 -50%; }
-.idol-hero-copy { position: relative; z-index: 2; display: grid; justify-items: start; gap: var(--gs-space-2); max-width: 55%; }
+.idol-hero-copy { position: relative; z-index: 2; display: grid; justify-items: start; gap: var(--gs-space-2); width: max-content; max-width: 55%; }
 .idol-hero-unit { display: block; height: 42px; margin-bottom: var(--gs-space-2); padding: 0; border: 0; background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .idol-hero-unit img { display: block; height: 100%; width: auto; max-width: 140px; object-fit: contain; object-position: left center; }
-.idol-hero-name { position: relative; }
-/* The 3px identity bar before the name; the autograph sits just past the name's end. */
-.idol-hero-name h2 { margin: 0; padding-left: var(--gs-space-4); border-left: 3px solid var(--gs-idol); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.25; overflow-wrap: anywhere; }
-.idol-hero-sign { position: absolute; left: calc(100% + var(--gs-space-4)); top: -28px; width: 58px; height: 88px; background: var(--gs-idol-ink); -webkit-mask: var(--hero-sign) center / contain no-repeat; mask: var(--hero-sign) center / contain no-repeat; mask-mode: luminance; animation: idol-sign-write 1.1s var(--gs-motion-ease) .2s backwards; }
+/* The 3px identity bar before the name. */
+.idol-hero-name { margin: 0; padding-left: var(--gs-space-4); border-left: 3px solid var(--gs-idol); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.25; overflow-wrap: anywhere; }
+/* 落款, wide screens: the autograph beside the name block, sized with the page (signatures run both
+   tall and wide, so the box is square and the mark is contained in it). */
+.idol-hero-sign { position: absolute; left: calc(100% + var(--gs-space-5)); top: 50%; width: clamp(84px, 11cqi, 136px); aspect-ratio: 1; translate: 0 -50%; background: var(--gs-idol-ink); -webkit-mask: var(--hero-sign) center / contain no-repeat; mask: var(--hero-sign) center / contain no-repeat; mask-mode: luminance; animation: idol-sign-write 1.1s var(--gs-motion-ease) .2s backwards; }
 @keyframes idol-sign-write { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @media (prefers-reduced-motion: reduce) { .idol-hero-sign { animation: none; } }
 .idol-hero-copy p { margin: 0; padding-left: calc(var(--gs-space-4) + 3px); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
@@ -392,8 +391,9 @@ function formatDate(timestamp) {
   .idol-hero-avatar { right: var(--gs-space-5); --idol-avatar-override-size: 78px; }
   .idol-hero-copy { max-width: 62%; }
   .idol-hero-unit { height: 30px; }
-  .idol-hero-name h2 { font-size: var(--gs-text-section); }
-  .idol-hero-sign { width: 44px; height: 66px; top: -18px; }
+  .idol-hero-name { font-size: var(--gs-text-section); }
+  /* Phones: the figure owns the right half, so the autograph signs under the name and reading. */
+  .idol-hero-sign { position: static; width: 112px; height: 44px; aspect-ratio: auto; margin-left: calc(var(--gs-space-4) + 3px); translate: none; -webkit-mask-position: left center; mask-position: left center; }
   .idol-hero-home { min-height: var(--gs-control-touch); }
   .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
