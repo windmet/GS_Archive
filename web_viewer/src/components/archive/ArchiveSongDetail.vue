@@ -169,8 +169,9 @@
               class="difficulty-card"
               :data-difficulty="d.label.toLowerCase()"
             >
+              <i class="difficulty-dot" aria-hidden="true"></i>
               <span class="difficulty-label">{{ d.label }}</span>
-              <strong class="difficulty-level">{{ d.levelLabel }}</strong>
+              <strong class="difficulty-level">Lv {{ d.levelLabel }}</strong>
               <span class="difficulty-combo">{{ d.maxCombo }} Combo</span>
             </li>
           </ul>
@@ -481,12 +482,13 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .version-pill:hover { border-color: var(--gs-ink-3); color: var(--gs-ink); }
 .version-pill[aria-pressed="true"] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); border-color: var(--gs-selected-line); font-weight: var(--gs-weight-semibold); }
 
-.song-difficulty-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: var(--gs-space-4) 0 var(--gs-space-2); padding: var(--gs-space-3) 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); list-style: none; }
-.difficulty-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gs-space-1); padding: var(--gs-space-2) var(--gs-space-1); border: 0; background: transparent; text-align: center; font-variant-numeric: tabular-nums; }
-.difficulty-card:not(:last-child) { border-right: 1px solid var(--gs-line); }
+/* Difficulties as a hairline table: dot, name, level, max Combo; one row each. */
+.song-difficulty-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: var(--gs-space-4) 0 var(--gs-space-2); padding: 0; border-top: 1px solid var(--gs-line); list-style: none; }
+.difficulty-card { display: grid; grid-template-columns: 10px 96px 72px minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); min-height: var(--gs-row); padding: 0; border: 0; border-bottom: 1px solid var(--gs-line); background: transparent; text-align: left; }
+.difficulty-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--diff-color, var(--gs-ink-3)); }
 .difficulty-label { font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-bold); letter-spacing: .04em; color: var(--diff-color, var(--gs-ink)); }
-.difficulty-level { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.1; color: var(--gs-ink); }
-.difficulty-combo { font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); color: var(--gs-ink-3); }
+.difficulty-level { font-family: var(--gs-font-stage); font-size: var(--gs-text-body); font-weight: var(--gs-weight-bold); line-height: 1.1; color: var(--gs-ink); }
+.difficulty-combo { font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); color: var(--gs-ink-3); text-align: right; }
 .difficulty-card[data-difficulty="easy"] { --diff-color: var(--gs-diff-easy); }
 .difficulty-card[data-difficulty="normal"] { --diff-color: var(--gs-diff-normal); }
 .difficulty-card[data-difficulty="hard"] { --diff-color: var(--gs-diff-hard); }
