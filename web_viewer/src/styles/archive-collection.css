@@ -93,3 +93,23 @@
 .collection-original{color:var(--gs-ink-3);font-size:12px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere;margin:6px 0}
 .archive-floating-tooltip strong{display:block;height:auto;white-space:normal}
 @media(max-width:760px){.collection-sheet-backdrop{align-items:end;padding:30px 0 0}.collection-inspector.is-sheet{max-height:78dvh;border-radius:18px 18px 0 0}.collection-inspector-body{padding:16px}}
+
+/* 节目册 2.0 图鉴: categories are underline tabs, entries sit on the paper without tiles, details open as a right drawer. */
+.collection-page .collection-chips { gap:var(--gs-space-5);margin:0 0 var(--gs-space-5);border-bottom:1px solid var(--gs-line); }
+.collection-page .collection-chips button { min-height:var(--gs-control-touch);padding:0 var(--gs-space-1);border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--gs-ink-3);font-weight:var(--gs-weight-medium); }
+.collection-page .collection-chips button:hover { color:var(--gs-ink); }
+.collection-page .collection-chips button[aria-pressed=true] { border-color:transparent;border-bottom-color:var(--gs-selected-line);background:transparent;color:var(--gs-ink);font-weight:var(--gs-weight-semibold); }
+.collection-page .collection-chips.collection-attributes { border-bottom:0;margin-top:calc(-1 * var(--gs-space-3)); }
+.collection-page :is(.collection-attributes button, .collection-cards>button):is(.physical,.intelligent,.mental) { --attr-wash:transparent; }
+.collection-page .collection-card-art { background:transparent; }
+.collection-page .collection-cards>button:hover .collection-card-art { background:var(--gs-hover); }
+.collection-page .collection-cards>button:is(.physical,.intelligent,.mental) .collection-card-art { background:transparent; }
+.collection-page .collection-cards>button[aria-pressed=true] .collection-card-art { background:var(--gs-current-bg-inset);box-shadow:none; }
+.collection-page .collection-cards.is-honors>button:hover strong { color:var(--gs-ink); }
+.collection-page .collection-cards.is-honors>button[aria-pressed=true] { background:var(--gs-current-bg-inset);box-shadow:none;padding-left:var(--gs-space-4); }
+.collection-sheet-backdrop { position:fixed;inset:0;z-index:60;display:flex;align-items:stretch;justify-content:flex-end;padding:0;background:rgb(11 20 36 / 18%); }
+.collection-inspector.is-sheet { width:380px;max-width:100%;height:100%;max-height:none;border:0;border-radius:0;box-shadow:var(--gs-shadow-float); }
+@media (max-width:760px) {
+  .collection-sheet-backdrop { align-items:flex-end;justify-content:stretch; }
+  .collection-inspector.is-sheet { width:100%;height:auto;max-height:60dvh;border-radius:var(--gs-radius-panel); }
+}

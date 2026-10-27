@@ -1,5 +1,5 @@
 <template>
-  <article v-if="idol" class="idol-detail" data-archive-scroll-container>
+  <article v-if="idol" class="idol-detail" :style="themeStyle" data-archive-scroll-container>
     <header class="idol-profile-header">
       <ArchiveIdolAvatar class="idol-portrait" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" :alt="displayedIdolName" />
       <div class="idol-identity">
@@ -11,7 +11,14 @@
           <ChevronRight :size="14" />
         </button>
       </div>
+      <!-- Top right: the idol's own unit as faces; one tap switches the page to that idol. -->
+      <nav v-if="unitMates.length > 1" class="profile-unit-faces" :aria-label="`${idol.unit_name}成员`">
+        <button v-for="mate in unitMates" :key="mate.idol_code" type="button" :class="{ 'is-current': mate.idol_code === idol.idol_code }" :aria-current="mate.idol_code === idol.idol_code ? 'page' : undefined" :aria-label="idolName(mate.idol_code, mate.display_name) || mate.display_name" :title="idolName(mate.idol_code, mate.display_name) || mate.display_name" @click="mate.idol_code !== idol.idol_code && emit('select-idol', mate.idol_code)">
+          <ArchiveIdolAvatar :idol-code="mate.idol_code" :size="40" :ring-width="0" :gap="0" decorative />
+        </button>
+      </nav>
       <ArchiveIdolSwitcher
+        v-else
         class="profile-switcher"
         :idols="idols"
         :selected-idol="selectedIdol"
@@ -126,6 +133,7 @@
 <script setup>
 import { archiveLineText, archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { computed, ref } from 'vue'
+import { idolThemeProperties } from '../../presentation/idolStageLight.js'
 import { BookOpenText, ChevronRight, Images, Camera, Heart, Info, Medal, MessageSquareText, Music, Phone, Play, UsersRound } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCollectionText.js'
@@ -150,6 +158,9 @@ const props = defineProps({
   selfIntroduction: { type: Object, default: null },
 })
 
+// The page is about this idol, so the identity colour, its ink and its wash apply here (layer 2: a hero wash, never the whole page).
+const themeStyle = computed(() => idolThemeProperties(props.idol?.color))
+const unitMates = computed(() => props.idol?.unit_name ? props.idols.filter(row => row.unit_name === props.idol.unit_name) : [])
 const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor','play-introduction'])
 // The self-introduction is the idol's IdolDetail home voice (home-voice, self-intro in the card-lines shard).
 const introLine = computed(() => archiveLineText('card-lines', [['home-voice', 'self-intro']], props.selfIntroduction?.text || ''))
@@ -279,7 +290,10 @@ function formatDate(timestamp) {
 .idol-detail button { font-family: inherit; }
 .idol-detail :deep(button:focus-visible), .idol-detail :deep(select:focus-visible), .idol-detail :deep(summary:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 
-.idol-profile-header { display: grid; grid-template-columns: 104px minmax(0, 1fr) minmax(0, 360px); align-items: center; gap: var(--gs-space-7); }
+.idol-profile-header { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-7); padding: var(--gs-space-6) var(--gs-space-7); border-radius: var(--gs-radius-media); background: var(--gs-idol-wash); }
+/* The 3px identity bar before the name replaces the colour dot after it. */
+.idol-identity h2 { padding-left: var(--gs-space-4); border-left: 3px solid var(--gs-idol); }
+.idol-identity h2 .idol-color { display: none; }
 .idol-identity { display: grid; gap: var(--gs-space-2); min-width: 0; overflow-wrap: anywhere; }
 .idol-identity h2 { display: flex; align-items: center; gap: var(--gs-space-4); margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; }
 .idol-identity p { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
@@ -372,4 +386,10 @@ function formatDate(timestamp) {
   .honor-plate { height: auto; min-height: 36px; }
   .idol-notes { gap: var(--gs-space-7); }
 }
+.profile-unit-faces { display: flex; align-items: center; gap: var(--gs-space-3); margin-left: auto; padding: var(--gs-space-2); }
+.profile-unit-faces button { display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.profile-unit-faces button:hover { opacity: .85; }
+/* Several people at once use the group ring (in the avatar); the current face gets a white gap and the one mint ring that says "now". */
+.profile-unit-faces button.is-current { box-shadow: 0 0 0 2px var(--gs-surface), 0 0 0 4px var(--gs-mint); cursor: default; }
+.profile-unit-faces button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-space-2); }
 </style>

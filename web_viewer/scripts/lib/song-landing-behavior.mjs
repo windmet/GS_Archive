@@ -8,6 +8,7 @@ import vue from '@vitejs/plugin-vue'
 import { renderToString } from '@vue/server-renderer'
 import { createArchiveNavigationCoordinator } from '../../src/core/ArchiveNavigationCoordinator.js'
 import { songMatchesIdol } from '../../src/presentation/CatalogIdolScope.js'
+import { groupSongTiers } from '../../src/presentation/SongTiers.js'
 import { buildSongPresentation } from '../../src/presentation/SongPresentation.js'
 import { projectSongPerformance } from '../../readmodels/lib/projections.mjs'
 import { useStageSongProjection } from '../../src/composables/useStageSongProjection.js'
@@ -182,7 +183,7 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
   const component = production(catalogComponent), emitted = []
   const props = reactive({ catalog: directory, scope: 'all', query: '', scopeIdol: null, idolName: () => '', idolSearch: (_id, name) => name || '' })
   const catalogState = vm.runInNewContext(`${component.setup}\n;({filteredSongs,query,activeFilter})`, {
-    computed, songMatchesIdol, defineProps: () => props, defineEmits: () => (event, value) => emitted.push([event, value]),
+    computed, ref, groupSongTiers, songMatchesIdol, defineProps: () => props, defineEmits: () => (event, value) => emitted.push([event, value]),
   })
   const ids = () => Array.from(catalogState.filteredSongs.value, song => song.song_code)
   assert.equal(ids().length, 60); assert.equal(ids()[0], 'drvalv'); assert.ok(!ids().includes('drv999'))
@@ -219,10 +220,13 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
   try {
     const { default: Catalog } = await server.ssrLoadModule('/src/components/archive/ArchiveSongCatalog.vue')
     const html = await renderToString(createSSRApp(Catalog, { catalog: directory }))
-    assert.equal((html.match(/class="song-card"/g) || []).length, 60)
+    // The default 按组合 view renders three tiers; every song is one entry with its focus id in exactly one of them.
+    const entries = markup => (markup.match(/data-archive-focus-id="song:[a-z0-9]+"/g) || [])
+    assert.equal(entries(html).length, 60); assert.equal(new Set(entries(html)).size, 60)
+    assert.ok(html.includes('song-tier-featured') && html.includes('song-tier-units') && html.includes('song-tier-special'))
     assert.ok(html.includes('aria-label="搜索歌曲"')); assert.ok(html.includes('loading="lazy"'))
     assert.ok(html.indexOf('song:drvalv') < html.indexOf('song:brndnf'))
     const filtered = await renderToString(createSSRApp(Catalog, { catalog: directory, scope: 'mvlive' }))
-    assert.equal((filtered.match(/class="song-card"/g) || []).length, 1); assert.ok(filtered.includes('song:reason'))
+    assert.equal(entries(filtered).length, 1); assert.ok(filtered.includes('song:reason'))
   } finally { await server.close() }
 }

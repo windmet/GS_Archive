@@ -181,18 +181,19 @@
               <span class="authored-text">{{ group.flavor.authoredBody }}</span><span class="reflowed-text">{{ group.flavor.reflowedBody }}</span>
             </blockquote>
             <div class="costume-variants" aria-label="款式用途与状态">
+              <div class="costume-matrix-head" aria-hidden="true"><span>款式</span><span>Live</span><span>剧情</span><span></span></div>
               <component :is="costume.entityKey ? 'button' : 'div'" v-for="costume in group.costumes" :key="costume.key" class="costume-row"
                 :type="costume.entityKey ? 'button' : undefined" :role="costume.entityKey ? undefined : 'group'"
                 :data-archive-focus-id="costume.entityKey ? `card-costume:${card.resource_id}:${costume.model_resource_id}` : undefined"
-                :title="costume.name" :aria-label="archiveText('costume', costume.name) || '衣装名称待确认'"
+                :title="costume.name" :aria-label="archiveText('costume', costume.name) || '衣装名称待确认'" :aria-description="`Live ${costumeUsageCells(costume).live}，剧情 ${costumeUsageCells(costume).story}`"
                 @click="costume.entityKey && emit('open-entity', costume.entityKey)">
                 <span class="costume-thumb" aria-hidden="true"><img v-if="costume.iconUrl && !failedCostumeIcons.has(costume.iconUrl)" :src="costume.iconUrl" alt="" loading="lazy" decoding="async" @error="failedCostumeIcons = new Set([...failedCostumeIcons, costume.iconUrl])" /><Shirt v-else :size="22" /></span>
                 <span class="costume-row-copy">
                   <strong class="costume-variant-name">{{ group.costumes.length > 1 ? (costume.model_resource_id.endsWith('_01') ? '突破版（+）' : '通常版') : '用途' }}</strong>
-                  <span class="costume-conditions">
-                    <span v-for="label in costume.labels" :key="label" class="costume-condition">{{ label }}</span>
-                  </span>
                 </span>
+                <span class="costume-conditions costume-source-labels"><span v-for="label in costume.labels" :key="label" class="costume-condition">{{ label }}</span></span>
+                <span class="costume-use" data-use="live">{{ costumeUsageCells(costume).live }}</span>
+                <span class="costume-use" data-use="story">{{ costumeUsageCells(costume).story }}</span>
                 <ChevronRight v-if="costume.entityKey" class="costume-row-go" :size="18" aria-hidden="true" />
               </component>
             </div>
@@ -336,7 +337,7 @@ import {
   getCardPortraitUrl,
   isRawCardCandidate,
 } from '../../utils/CardAssetResolver.js'
-import { presentCardAssetRows, presentCardCostumeGroups, presentCardCostumeFlavor } from '../../presentation/CardDetailSemantics.js'
+import { costumeUsageCells, presentCardAssetRows, presentCardCostumeGroups, presentCardCostumeFlavor } from '../../presentation/CardDetailSemantics.js'
 import { attributeLabel, attributeKey as attributeKeyOf } from '../../presentation/AttributeLabel.js'
 
 const props = defineProps({
@@ -776,13 +777,19 @@ function openRelation(item) {
 .costume-flavor { margin: var(--gs-space-4) 0; padding: var(--gs-space-1) 0 var(--gs-space-1) var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.8; overflow-wrap: anywhere; }
 .costume-setting-heading { display: block; margin-bottom: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .costume-variants { display: grid; gap: var(--gs-space-2); margin-top: var(--gs-space-3); }
-.costume-variants { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: var(--gs-space-3); }
-.costume-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-2) var(--gs-space-2) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+.costume-variants { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.costume-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 84px 84px 20px; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-2) var(--gs-space-2) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
 button.costume-row { cursor: pointer; }
-.costume-thumb { display: grid; place-items: center; width: 64px; height: 64px; overflow: hidden; border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-mint-ink); }
+.costume-thumb { display: grid; place-items: center; width: 48px; height: 48px; overflow: hidden; border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-mint-ink); }
 .costume-thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .costume-row-copy { display: grid; gap: var(--gs-space-1); min-width: 0; }
-.costume-row-go { color: var(--gs-mint-ink); }
+.costume-row-go { color: var(--gs-ink-3); }
+/* Usage matrix: a header row, then one hairline row per costume model; a dash where this card never wears it. */
+.costume-matrix-head, .costume-row { grid-template-columns: 48px minmax(0, 1fr) 84px 84px 20px; }
+.costume-matrix-head { display: grid; align-items: end; gap: var(--gs-space-4); padding: 0 var(--gs-space-2) var(--gs-space-2) 0; border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
+.costume-matrix-head span:first-child { grid-column: 1 / 3; }
+.costume-source-labels { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.costume-use { color: var(--gs-ink-2); font-size: var(--gs-text-ui); white-space: nowrap; }
 button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (hover: hover) and (pointer: fine) { button.costume-row:hover { background: var(--gs-mint-wash); } }
 .costume-variant-name { color: var(--gs-ink-2); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
