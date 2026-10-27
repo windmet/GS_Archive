@@ -22,8 +22,9 @@
       <template v-if="COLLECTION_SECTIONS.includes(archiveSection)" #subnav>
         <ArchiveCollectionTabs :current="archiveSection" :counts="portalData.overview.value?.collectionCounts || null" @select="navigateArchiveSection" />
       </template>
-      <template v-if="view === 'card_detail'" #header-actions>
-        <ArchiveHeaderStepper label="同偶像卡片" :previous="previousCard" :next="nextCard" :title-of="cardStepTitle" @step="openCard" />
+      <template v-if="view === 'card_detail' || (view === 'idol_detail' && currentIdolUnitMates.length > 1)" #header-actions>
+        <ArchiveHeaderStepper v-if="view === 'card_detail'" label="同偶像卡片" :previous="previousCard" :next="nextCard" :title-of="cardStepTitle" @step="openCard" />
+        <ArchiveUnitMateFaces v-else :mates="currentIdolUnitMates" :current="currentCharacterId" :unit-name="currentIdolProfile?.unit_name || ''" :idol-name="idolDisplayName" @select="selectPrimaryIdol" />
       </template>
       <template #sidebar-identity>
         <ArchiveStageIdolSwitch
@@ -168,6 +169,9 @@
         :songs="currentIdolSongs"
         :idols="bootstrapIdolSwitcher"
         :selected-idol="currentCharacterId"
+        :has-home="validArchiveHomeIdols.includes(currentCharacterId)"
+        :is-favorite="userPreferences.preferredIdol === currentCharacterId"
+        @open-home="openGameHome"
         @open-domain="openIdolDomain" @open-honor="openCollectionEntity"
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
@@ -596,6 +600,7 @@ import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import ArchiveHeaderStepper from './components/archive/ArchiveHeaderStepper.vue'
+import ArchiveUnitMateFaces from './components/archive/ArchiveUnitMateFaces.vue'
 import ArchiveCollectionTabs from './components/archive/ArchiveCollectionTabs.vue'
 import ArchiveStageIdolSwitch from './components/archive/ArchiveStageIdolSwitch.vue'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
@@ -883,6 +888,11 @@ const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiv
 const bootstrapIdolSwitcher = computed(() => archiveBootstrap.idols.map(idol => ({
   idol_code: idol.id, display_name: idolDisplayName(idol.id), unit_name: idol.unitName,
 })))
+// The idol page's unit, for the faces in the title row.
+const currentIdolUnitMates = computed(() => {
+  const unit = bootstrapIdolSwitcher.value.find(row => row.idol_code === currentCharacterId.value)?.unit_name
+  return unit ? bootstrapIdolSwitcher.value.filter(row => row.unit_name === unit) : []
+})
 const mobileIdolReadModelCatalog = shallowRef(null)
 const mobileUnitReadModelCatalog = shallowRef(null)
 const mobileIdolReadModelDetail = shallowRef(null)
