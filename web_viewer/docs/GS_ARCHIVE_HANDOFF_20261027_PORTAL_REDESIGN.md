@@ -1,4 +1,6 @@
-# 门户整体改造交接：节目册 2.0（2026-10-27，v6 更新）
+# 门户整体改造交接：节目册 2.0（2026-10-27，v6 更新；v8 验收 1）
+
+> **v8 验收 1（10-27 晚）**：#106、#107 已验收，结论、量出的数和下一步规格见 [PORTAL_REDESIGN_ACCEPTANCE_20261027.md](PORTAL_REDESIGN_ACCEPTANCE_20261027.md)。新增两批 P1.5「外壳校正」、P1.6「旧控件替换」，插在 P6、P7 剩下的部分之前。它们改写了本文三处：标题行一行、侧栏 208 / 58 可收起、图鉴在侧栏只留一个入口。三处冲突时以验收文档为准。
 
 这份交接给接手「整体门户改造」的新窗口。设计方向已经和用户逐轮定下来，新窗口的任务是按批次落地，不需要重新提方案。规格以本文为准，方向稿是参照：构想图按真实条目和资源画，但不是像素稿，最终以组件、令牌和 Browser 实测为准。
 
@@ -8,7 +10,7 @@
 
 | 项 | 位置 |
 |---|---|
-| 在线方向稿（私有，用户账号可开） | https://claude.ai/artifact/LuPQW8porEGccPrnADFFbW （version 7） |
+| 在线方向稿（私有，用户账号可开） | https://claude.ai/artifact/LuPQW8porEGccPrnADFFbW （version 8；v8 新增「外壳校正与工具入口」一节） |
 | 本地副本，浏览器直接打开 | 主 checkout `web_viewer/.analysis/design-booklet-20261027/gs-booklet-2.html` |
 | 源文件与生成脚本 | 同目录：`booklet.src.html` → `build.py`（把 `images.json` 内嵌成 `im-*` 背景和 `ms-*` 遮罩）→ `gs-booklet-2.html`；`update2–6.py`、`update6b.py` 是各版改动 |
 | 全部文字，方便检索 | 同目录 `booklet_text.md` |
@@ -190,7 +192,7 @@
   - 活动剧情是主角：「从第一话阅读」+ 话目两列直接列出。
   - 报酬卡三列。
 - **图鉴**：
-  - 类别用下划线标签，范围用筛选片。
+  - 类别用下划线标签，范围用筛选片。「类别」指道具、称号、货币、服装、摄影资源、其他语音六类，共用一页；类别内部的分类是范围，用筛选片（v8 验收 1 澄清）。
   - 图标直接放在纸面上，不做磁贴；属性写成名字前的小圆点。
   - 详情从右侧拉出 380 抽屉，手机是底部半屏，网格留在原位。
   - 推定关联挂 C 级「推定关联」+ ⓘ。
@@ -228,6 +230,8 @@
 | P0 | 令牌增量；抽出模式开关、设置行、开关、ⓘ 四个基础件；「白底套白底」计数 | `GS_UI_TOKENS.css`，新组件 GsSegmented / GsRow / GsSwitch / GsInfo |
 | P1 | 中/日三级 | `ArchiveLanguageSwitch.vue`、`PlayerLanguageStatus.js`、`ReaderControlBar.vue` |
 | P1+ | 站名、纸面侧栏与担当切换器、60px 标题行、选中态白片、头像两种环、色影与落款、`--gs-idol*`、「舞台光」改名 | `archiveSections.js`、`ArchiveDocumentTitle.js`、`ArchiveShell.vue`、`ArchiveNavigationDrawer.vue`、`ArchiveStageIdolSwitch.vue`、`ArchiveIdolAvatar.vue`、`ArchivePortalOverview.vue`、`idolStageLight.js` |
+| P1.5（v8） | 外壳校正：标题行一行 60px、面包屑只列上级、返回改墨色；侧栏 208 / 58 可收起、行高三档、图鉴一个入口、组合进侧栏；图鉴六类一页；LIVE 与摄影工作台进入页；浏览器几何验证。在 #106、#107 合入后、P6/P7 剩余之前做 | `ArchiveShell.vue`、`ArchiveBreadcrumb.vue`、`ArchiveBackAction.vue`、`ArchiveStageIdolSwitch.vue`、`archiveRoute.js`、`ArchiveToolLanding.vue`、`ArchiveCollectionCatalog.vue`；规格见验收文档第 2 节 |
+| P1.6（v8） | 旧控件替换：原生下拉、复选框、自绘分段换成基础件、人物选择器、筛选菜单；`verify-design-tokens` 加 `select`、`checkbox` 计数 | 验收文档第 4 节 |
 | P2 | 模式外置：事务所三件控台 + 人物与衣装面板 + 首次引导；资料馆视角开关；舞台加载两步确认 | `ArchiveImmersiveHome.vue`、`ArchivePortalLauncher.vue`、`ChibiStageViewer.vue` |
 | P3 | 谱面功能区（谱面 PR 合入后） | `ArchiveSongChartPreview.vue`、`ArchiveChartLab.vue` |
 | P4 | 舞台面板节奏：曲目页、编队页、画面页（#103 合入后，只动模板与样式） | `ChibiStageViewer.vue`、`ChibiSongPicker.vue` |
