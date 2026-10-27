@@ -241,7 +241,8 @@ function tabCount(mode) {
   if (mode === 'random') return randomTopicCount.value
   const source = mode === 'unit' ? props.unitData?.view?.unitBundles
     : mode === 'phone' ? props.idolData?.view?.phoneBundles : props.idolData?.view?.personalBundles
-  return (source || []).reduce((sum, bundle) => sum + bundle.scenarios.length, 0)
+  // The same unit as the list under the tab (one row per bundle), so the tab and the 「N 条记录」 line agree.
+  return (source || []).length
 }
 function moveSelection(delta) {
   const options = selectionOptions.value
@@ -325,7 +326,13 @@ const callDocumentId = bundle => String(bundle.file || '').replace(/\.json$/u, '
 // Chat previews and topic titles are chat lines, translated with the chats overlay.
 void loadArchiveNames('chats').catch(() => {})
 const CHAT_KEYS = [['chat-line', 'text'], ['chat-choice', 'text'], ['chat-choice', 'detail']]
-const chatText = source => archiveLineText('chats', CHAT_KEYS, source)
+// A title is a one-line preview. The source breaks a line after every phrase; in Japanese and Chinese the pieces join
+// with nothing between them (HTML would render each break as a space), in other languages with one space.
+const joinPreviewLines = (text, lang) => /^(ja|zh)/i.test(lang || 'ja') ? text.replace(/\s*\n\s*/g, '') : text.replace(/\s*\n\s*/g, ' ')
+const chatText = source => {
+  const result = archiveLineText('chats', CHAT_KEYS, source)
+  return result && typeof result.text === 'string' ? { ...result, text: joinPreviewLines(result.text, result.lang) } : result
+}
 const callTitleText = bundle => archiveLineText('card-lines', [['call-title', 'title']], callTitle(bundle))
 function callTitle(bundle) {
   return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''
