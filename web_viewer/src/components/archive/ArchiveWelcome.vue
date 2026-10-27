@@ -14,7 +14,7 @@
     </div>
     <footer class="idol-select-actions" aria-label="确认偶像与打开页面">
       <p class="idol-select-summary" role="status">{{ selectedName ? `已选：${selectedName}` : '请选择一位偶像' }}<small>打开{{ targetLabel }}</small></p>
-      <label class="idol-select-remember"><input v-model="setPreferred" type="checkbox" /> 同时设为我的担当</label>
+      <label class="idol-select-remember"><span>同时设为我的担当</span><GsSwitch v-model="setPreferred" aria-label="同时设为我的担当" /></label>
       <div class="idol-select-buttons">
         <button class="idol-select-secondary" type="button" :disabled="!idols.length" @click="chooseRandom"><Shuffle :size="16" />随机一位</button>
         <button class="idol-select-primary" type="button" :disabled="!selectedName" @click="chooseIdol">打开{{ targetLabel }}</button>
@@ -25,6 +25,7 @@
 <script setup>
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import ArchiveProducerSettings from './ArchiveProducerSettings.vue'
+import GsSwitch from '../gs/GsSwitch.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, Shuffle } from '@lucide/vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
@@ -66,8 +67,7 @@ function chooseIdol() {
 .idol-select-actions { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-5); padding: var(--gs-space-4) max(var(--gs-space-7), calc((100% - 880px) / 2 + var(--gs-space-7))); border-top: 1px solid var(--gs-line); background: var(--gs-surface); }
 .idol-select-summary { flex: 1 1 200px; min-width: 0; margin: 0; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .idol-select-summary small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.idol-select-remember { display: flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-compact); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
-.idol-select-remember input { accent-color: var(--gs-mint-ink); }
+.idol-select-remember { display: flex; align-items: center; gap: var(--gs-space-4); min-height: var(--gs-control-compact); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .idol-select-buttons { display: flex; gap: var(--gs-space-3); }
 .idol-select-buttons button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .idol-select-buttons .idol-select-primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); }

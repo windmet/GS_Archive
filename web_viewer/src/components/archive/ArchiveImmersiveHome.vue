@@ -214,14 +214,12 @@
 
         <label class="settings-toggle">
           <span>自动播放语音</span>
-          <input v-model="preferences.autoVoice" type="checkbox" />
-          <i aria-hidden="true"></i>
+          <GsSwitch v-model="preferences.autoVoice" aria-label="自动播放语音" />
         </label>
 
         <label class="settings-toggle settings-toggle-help">
           <span>专注模式<small>隐藏导航与控件，保留姓名、台词及退出按钮</small></span>
-          <input v-model="focusMode" type="checkbox" />
-          <i aria-hidden="true"></i>
+          <GsSwitch v-model="focusMode" aria-label="专注模式" />
         </label>
 
         <label class="settings-range">
@@ -250,6 +248,7 @@
 <script setup>
 import ArchiveHomeConsole from './ArchiveHomeConsole.vue'
 import GsSegmented from '../gs/GsSegmented.vue'
+import GsSwitch from '../gs/GsSwitch.vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
   ArrowLeft,

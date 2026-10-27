@@ -6,8 +6,8 @@
       <div class="collection-filters">
         <label class="collection-search"><span>搜索</span><input type="search" aria-label="搜索藏品" :value="query" :placeholder="placeholder" @input="emit('query',$event.target.value)" /></label>
         <template v-if="owned">
-          <label><span>偶像</span><select v-model="idol"><option value="">全部偶像</option><option v-for="entry in collectionIdols" :key="entry.id" :value="entry.id">{{ ownerName(entry) }}</option></select></label>
-          <label><span>组合</span><select v-model="unit"><option value="">全部组合</option><option v-for="entry in units" :key="entry.id" :value="entry.id">{{ entry.name }}</option></select></label>
+          <ArchivePersonPicker v-model="idol" :idols="personIdols" :idol-name="personName" label="偶像" allow-all />
+          <GsFilterMenu v-model="unit" label="组合" :options="unitOptions" neutral="" />
         </template>
         <span class="collection-count">{{ filtered.length }} 件</span>
       </div>
@@ -42,6 +42,8 @@ import {collectionIdols,collectionSummary,honorIdol,honorGroup,honorSourceLabel,
 import {UNIT_CODE_TO_NAME} from '../../utils/UnitNameMap.js'
 import CollectionDetailPanel from './CollectionDetailPanel.vue'
 import ArchiveFloatingTooltip from './ArchiveFloatingTooltip.vue'
+import ArchivePersonPicker from './ArchivePersonPicker.vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
 import {archiveText,archiveSearchText} from './useArchiveCollectionText.js'
 import {honorTitle} from './useHonorTitle.js'
 import {archiveSearchText as costumeSearchText} from './useArchiveCostumeText.js'
@@ -81,6 +83,9 @@ const rowImage=row=>kind.value==='costumes' ? costumeImage(row.id,row.image) : r
 const entryName=row=>kind.value==='honors' ? honorTitle(row,props.displayIdolName) : kind.value==='costumes' ? costumeName(row) :
   archiveText(kind.value==='currencies'?'currency':'item',row.nameJa||row.name)
 const ownerName=owner=>owner ? (props.displayIdolName(owner.id)||owner.name) : ''
+const personIdols=collectionIdols.map(entry=>({id:entry.id,name:entry.name,unitCode:entry.unit||'',unitName:UNIT_CODE_TO_NAME[entry.unit]||''}))
+const personName=id=>ownerName(collectionIdols.find(entry=>entry.id===id))
+const unitOptions=[{value:'',label:'全部组合'},...units.map(entry=>({value:entry.id,label:entry.name}))]
 const filtered=computed(()=>{
  const q=props.query.trim().toLowerCase()
  return rows.value.filter(row=>{

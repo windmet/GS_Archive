@@ -53,11 +53,8 @@
           class="unlock-toggle"
           title="原游戏开放条件：仅记录原游戏中的开放条件，不影响资料馆内已收录内容的浏览与播放。"
         >
-          <input
-            v-model="showUnlockConditions"
-            type="checkbox"
-          />
           <span>显示开放条件</span>
+          <GsSwitch v-model="showUnlockConditions" aria-label="显示开放条件" />
         </label>
       </div>
 
@@ -163,6 +160,7 @@ import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveCardFullTitle} from './useArchiveCardTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import GsSwitch from '../gs/GsSwitch.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
 import { communicationUnlockAction } from '../../presentation/communicationUnlock.js'
 import { formatArchiveDate, consolidateProgressiveUnlocks } from '../../data/idolCommunicationSelectors.js'
@@ -405,8 +403,7 @@ function timeWindow(topic) {
 .content-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); }
 .content-heading .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 .content-heading > strong { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.unlock-toggle { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); cursor: pointer; user-select: none; }
-.unlock-toggle input[type="checkbox"] { cursor: pointer; accent-color: var(--gs-mint); }
+.unlock-toggle { display: inline-flex; align-items: center; gap: var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-meta); cursor: pointer; user-select: none; }
 @container mobile-archive (max-width: 390px) {
   .unlock-toggle { margin-left: auto; }
 }

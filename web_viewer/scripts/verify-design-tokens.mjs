@@ -18,7 +18,7 @@ function walk(dir) {
   })
 }
 
-const METRICS = ['raw', 'tiny', 'hex', 'radius', 'breakpoint', 'nestedWhite']
+const METRICS = ['raw', 'tiny', 'hex', 'radius', 'breakpoint', 'nestedWhite', 'select', 'checkbox']
 // Viewport tiers: phone <=760 (where the sidebar becomes the bottom nav), middle 761-1100,
 // wide >1100. Anything finer belongs to the component as an @container query.
 const TIER_WIDTHS = { max: ['760', '1100'], min: ['761', '1101'] }
@@ -67,6 +67,20 @@ export function measure(source) {
   return { raw, tiny, hex, radius, breakpoint, nestedWhite: nestedWhite(source) }
 }
 
+// Native controls in the archive UI (components/archive, Chibi*): a <select> becomes the person picker, filter chips or the
+// filter menu; a checkbox becomes GsSwitch. Counted per file, only down. The settings panel keeps long option
+// lists in plain GsRow selects, so it is the one whitelisted file.
+const NATIVE_CONTROL_SCOPE = /^src\/components\/(?:archive\/|Chibi[^/]*\.vue$)/
+const NATIVE_CONTROL_WHITELIST = new Set(['src/components/archive/ArchiveProducerSettings.vue'])
+export function nativeControls(source, relative) {
+  if (!NATIVE_CONTROL_SCOPE.test(relative) || NATIVE_CONTROL_WHITELIST.has(relative)) return { select: 0, checkbox: 0 }
+  const template = source.match(/<template[\s\S]*<\/template>/)?.[0] || ''
+  return { select: (template.match(/<select[\s>]/g) || []).length, checkbox: (template.match(/<input\s[^>]*\btype=["']checkbox["']/g) || []).length }
+}
+assert.deepEqual(nativeControls('<template><select v-model="a"></select><label><input v-model="b" type="checkbox"/></label><input type="text"/></template>', 'src/components/archive/X.vue'), { select: 1, checkbox: 1 })
+assert.deepEqual(nativeControls('<template><select></select></template>', 'src/components/gs/Y.vue'), { select: 0, checkbox: 0 })
+assert.deepEqual(nativeControls('<template><select></select></template>', 'src/components/archive/ArchiveProducerSettings.vue'), { select: 0, checkbox: 0 })
+
 // Hard rule, not a ratchet: --gs-ink is for text. Fills, borders and rules use the role
 // tokens (--gs-selected-*, --gs-action-*, --gs-play-*, --gs-rule), so solid navy cannot
 // creep back into chips and tabs.
@@ -91,7 +105,7 @@ for (const file of walk(path.join(root, 'src'))) {
   const relative = path.relative(root, file).replaceAll('\\', '/')
   if (relative === 'src/styles/GS_UI_TOKENS.css') continue // the palette itself
   const source = readFileSync(file, 'utf8')
-  const counts = measure(source)
+  const counts = { ...measure(source), ...nativeControls(source, relative) }
   if (METRICS.some(key => counts[key])) current[relative] = counts
   for (const property of inkFills(source)) inkMisuse.push(`${relative}: ${property}`)
 }
