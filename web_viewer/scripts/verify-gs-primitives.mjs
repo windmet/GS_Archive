@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { segmentedNextIndex } from '../src/presentation/GsSegmentedKeys.mjs'
 import { groupConsoleIdols } from '../src/presentation/HomeConsole.js'
+import { groupSongTiers } from '../src/presentation/SongTiers.js'
 
 // P0 of the program-booklet 2.0 redesign: the v2 token increment and the four base components
 // (GsSegmented, GsRow, GsSwitch, GsInfo). Components may only read tokens that exist, so a
@@ -70,4 +71,17 @@ assert.deepEqual(groupConsoleIdols(roster, shown, '濑').map(group => group.idol
 assert.deepEqual(groupConsoleIdols(roster, shown, 'しょうた').flatMap(group => group.idols.map(idol => idol.id)), ['b'], 'matches kana')
 assert.deepEqual(groupConsoleIdols(roster, shown, 'jupiter').flatMap(group => group.idols.map(idol => idol.id)), ['a', 'b'], 'a unit name keeps the whole unit')
 assert.deepEqual(groupConsoleIdols(roster, shown, '没有'), [])
+// Song overview tiers: lineups are sections; units keep the game's order, songs their own.
+{
+  // Catalog JSON names the unit in performance_mapping.confirmed_unit; read-model rows only as performance.unitName.
+  const song = (code, kind, unit) => ({ song_code: code, kind, performance_mapping: unit ? { confirmed_unit: unit } : {} })
+  const modelRow = (code, unitName) => ({ song_code: code, kind: 'fixed_unit', performance: { unitName } })
+  const rows = [song('a', 'fixed_unit', { unit_id: 9, unit_code: '09shi', unit_name: '神速一魂' }), song('b', 'configurable_formation'), modelRow('c', 'Jupiter'), song('d', 'fixed_special_lineup'), modelRow('e', '神速一魂')]
+  const tiers = groupSongTiers(rows, row => row.kind)
+  assert.deepEqual(tiers.featured.map(row => row.song_code), ['b'])
+  assert.deepEqual(tiers.special.map(row => row.song_code), ['d'])
+  assert.deepEqual(tiers.units.map(unit => [unit.code, unit.songs.map(row => row.song_code)]), [['01jup', ['c']], ['09shi', ['a', 'e']]], 'unit order, then song order')
+  assert.equal(tiers.unitSongCount, 3)
+  assert.deepEqual(groupSongTiers([], () => 'fixed_unit'), { featured: [], units: [], unitSongCount: 0, special: [] })
+}
 console.log(`GS primitives: ${V2_TOKENS.length} v2 tokens, ${files.length} components, keyboard model ok`)

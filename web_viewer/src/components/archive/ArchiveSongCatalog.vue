@@ -20,18 +20,7 @@
 
     <div class="song-toolbar">
       <div class="song-filters" role="group" aria-label="曲目过滤">
-        <div class="song-filter-segment" role="group" aria-label="编制筛选">
-          <button
-            v-for="cat in lineupFilters"
-            :key="cat.id"
-            :class="{ active: activeLineup === cat.id }"
-            :aria-pressed="activeLineup === cat.id"
-            @click="setLineup(cat.id)"
-          >
-            {{ cat.label }}
-            <span>{{ catalog ? filterCount(cat.id) : '—' }}</span>
-          </button>
-        </div>
+        <GsSegmented v-model="view" :options="VIEW_OPTIONS" aria-label="歌曲排列方式" />
         <span class="song-filter-divider" aria-hidden="true"></span>
         <div class="song-filter-segment" role="group" aria-label="技术标签筛选">
           <button
@@ -58,7 +47,45 @@
       </label>
     </div>
 
-    <div class="song-grid" :class="{ empty: !filteredSongs.length }">
+    <!-- 按组合: lineups are sections of one list (代表曲 / 组合曲 / 特别编成), not filters. -->
+    <div v-if="view === 'unit' && filteredSongs.length" class="song-tiers">
+      <section v-if="tiers.featured.length" class="song-tier" aria-labelledby="song-tier-featured">
+        <h2 id="song-tier-featured">代表曲 <small>{{ tiers.featured.length }}</small></h2>
+        <div class="song-featured">
+          <button v-for="song in tiers.featured" :key="song.song_code" type="button" class="song-featured-item" :data-archive-focus-id="`song:${song.song_code}`" @click="$emit('open', song.song_code)">
+            <span class="song-featured-jacket"><img v-if="song.jacket_url" :src="song.jacket_url" :alt="`${song.title} 封面`" loading="lazy" decoding="async" width="365" height="360" /><span v-else>封面未收录</span></span>
+            <strong :title="song.title">{{ song.title }}</strong>
+            <span v-if="songBadges(song).length" class="song-tags"><span v-for="badge in songBadges(song)" :key="badge.key">{{ badge.label }}</span></span>
+          </button>
+        </div>
+      </section>
+      <section v-if="tiers.units.length" class="song-tier" aria-labelledby="song-tier-units">
+        <h2 id="song-tier-units">组合曲 <small>{{ tiers.unitSongCount }}</small></h2>
+        <div class="song-unit-table">
+          <div v-for="unit in tiers.units" :key="unit.code" class="song-unit-row">
+            <span class="song-unit-name"><img v-if="unit.code && !failedUnitLogos.has(unit.code)" :src="getUnitLogoUrl(unit.code)" :alt="unit.name" loading="lazy" decoding="async" @error="failedUnitLogos = new Set([...failedUnitLogos, unit.code])" /><b v-else>{{ unit.name }}</b></span>
+            <div class="song-unit-songs">
+              <button v-for="song in unit.songs" :key="song.song_code" type="button" class="song-unit-song" :data-archive-focus-id="`song:${song.song_code}`" @click="$emit('open', song.song_code)">
+                <img v-if="song.jacket_url" :src="song.jacket_url" alt="" loading="lazy" decoding="async" width="56" height="56" /><span v-else class="song-unit-nojacket" aria-hidden="true"></span>
+                <span class="song-unit-copy"><strong :title="song.title">{{ song.title }}</strong><span v-if="songBadges(song).length" class="song-tags"><span v-for="badge in songBadges(song)" :key="badge.key">{{ badge.label }}</span></span></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section v-if="tiers.special.length" class="song-tier" aria-labelledby="song-tier-special">
+        <h2 id="song-tier-special">特别编成 <small>{{ tiers.special.length }}</small></h2>
+        <div class="song-special">
+          <button v-for="song in tiers.special" :key="song.song_code" type="button" class="song-special-item" :data-archive-focus-id="`song:${song.song_code}`" @click="$emit('open', song.song_code)">
+            <img v-if="song.jacket_url" :src="song.jacket_url" alt="" loading="lazy" decoding="async" width="56" height="56" /><span v-else class="song-unit-nojacket" aria-hidden="true"></span>
+            <span class="song-unit-copy"><strong :title="song.title">{{ song.title }}</strong><span class="song-performers" :title="performerLabel(song)">{{ performerSummary(song) }}</span><span v-if="songBadges(song).length" class="song-tags"><span v-for="badge in songBadges(song)" :key="badge.key">{{ badge.label }}</span></span></span>
+            <span v-if="specialFaces(song).length" class="song-special-faces" aria-hidden="true"><ArchiveIdolAvatar v-for="code in specialFaces(song)" :key="code" :idol-code="code" :size="24" :ring-width="0" :gap="0" decorative /></span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div v-else class="song-grid" :class="{ empty: !filteredSongs.length }">
       <button
         v-for="song in filteredSongs"
         :key="song.song_code"
@@ -91,10 +118,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Search } from '@lucide/vue'
 
 import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import GsSegmented from '../gs/GsSegmented.vue'
+import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { groupSongTiers } from '../../presentation/SongTiers.js'
 import { songMatchesIdol } from '../../presentation/CatalogIdolScope.js'
 import { SONG_LINEUP_TAXONOMY as SHARED_SONG_LINEUP_TAXONOMY, classifySongLineup as sharedClassifySongLineup } from '../../presentation/SongPresentation.js'
 
@@ -146,7 +177,12 @@ const summary = computed(() => props.scopeIdol ? {
   three_d_movie_count: techCount('movie'), mvlive_count: techCount('mvlive'), layered_song_count: techCount('layered'),
 } : props.catalog?.summary || {})
 
-const lineupFilters = SONG_LINEUP_TAXONOMY
+const VIEW_OPTIONS = [{ value: 'unit', label: '按组合' }, { value: 'title', label: '按曲名' }]
+const view = ref('unit')
+const failedUnitLogos = ref(new Set())
+const tiers = computed(() => groupSongTiers(filteredSongs.value, classifySongLineup))
+// Faces for the special lineups: who sings it, as group-ring avatars (up to five).
+const specialFaces = song => (song.performance_mapping?.performer_idol_codes || []).slice(0, 5)
 
 const techFilters = [
   { id: 'movie', label: '3DMV' },
@@ -404,5 +440,39 @@ const filteredSongs = computed(() => {
   .song-search input { font-size: var(--gs-text-subtitle); }
   .song-filters button, .song-catalog-status button { min-height: var(--gs-control-touch); }
   .song-catalog-status button { min-width: var(--gs-control-touch); }
+}
+/* Three tiers: big covers, a hairline unit table, a two-column special list. Tags are neutral hairline labels, never mint. */
+.song-tiers { display: grid; gap: var(--gs-gap-section); padding-bottom: var(--gs-space-8); }
+.song-tier > h2 { margin: 0 0 var(--gs-gap-stack); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
+.song-tier > h2 small { margin-left: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
+.song-tags { display: inline-flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-2); }
+.song-tags > span { padding: 0 var(--gs-space-2); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-media); color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; white-space: nowrap; }
+.song-featured { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gs-space-5); }
+.song-featured-item { display: flex; flex-direction: column; gap: var(--gs-space-3); min-width: 0; padding: 0; border: 0; background: transparent; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.song-featured-jacket { display: block; aspect-ratio: 1; overflow: hidden; border-radius: var(--gs-radius-media); background: var(--gs-paper-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.song-featured-jacket img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.song-featured-item strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+.song-unit-table { border-bottom: 1px solid var(--gs-line); }
+.song-unit-row { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: var(--gs-space-5); align-items: center; padding: var(--gs-space-3) 0; border-top: 1px solid var(--gs-line); }
+.song-unit-name { display: grid; place-items: center start; min-width: 0; }
+.song-unit-name img { width: auto; max-width: 128px; height: auto; max-height: 56px; object-fit: contain; }
+.song-unit-name b { font-size: var(--gs-text-ui); }
+.song-unit-songs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gs-space-3); }
+.song-unit-song, .song-special-item { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-row); padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.song-unit-song:hover, .song-special-item:hover { background: var(--gs-hover); }
+.song-unit-song img, .song-special-item img, .song-unit-nojacket { flex: none; width: 56px; height: 56px; border-radius: var(--gs-radius-media); object-fit: cover; background: var(--gs-paper-2); }
+.song-unit-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
+.song-unit-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+.song-special { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--gs-space-8); border-top: 1px solid var(--gs-line); }
+.song-special-item { border-bottom: 1px solid var(--gs-line); border-radius: 0; }
+.song-special-item .song-unit-copy { flex: 1; }
+.song-special-faces { display: inline-flex; flex: none; }
+.song-special-faces > * + * { margin-left: -6px; }
+.song-unit-song:focus-visible, .song-special-item:focus-visible, .song-featured-item:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@media (max-width: 1100px) { .song-featured { grid-template-columns: repeat(3, minmax(0, 1fr)); } .song-unit-songs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .song-featured { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
+  .song-unit-row { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
+  .song-unit-songs, .song-special { grid-template-columns: minmax(0, 1fr); }
 }
 </style>
