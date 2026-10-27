@@ -45,10 +45,6 @@
               <span v-if="card.gameplay.center_skill?.name">中心效果 {{ archiveText('center-skill', card.gameplay.center_skill.name) }}</span>
               <span v-if="card.gameplay.skill?.name">技能 {{ archiveText('skill', card.gameplay.skill.name) }}</span>
             </p>
-            <nav class="card-stepper" aria-label="同偶像卡片">
-              <button class="card-step" type="button" :disabled="!previousCard" :title="previousCard ? archiveText('card', previousCard.title, 'title') || '卡片' : '已经是第一张'" @click="emit('navigate-card', previousCard)"><ChevronLeft :size="18" aria-hidden="true" />上一张</button>
-              <button class="card-step" type="button" :disabled="!nextCard" :title="nextCard ? archiveText('card', nextCard.title, 'title') || '卡片' : '已经是最后一张'" @click="emit('navigate-card', nextCard)">下一张<ChevronRight :size="18" aria-hidden="true" /></button>
-            </nav>
           </div>
         </div>
       </section>
@@ -315,7 +311,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
 const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines', [[kind, field]], source))
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
-import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
+import { CheckCircle2, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveVideoPlayer from './ArchiveVideoPlayer.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
@@ -346,8 +342,6 @@ const props = defineProps({
   embedded: { type: Boolean, default: false },
   assetStatus: { type: Object, default: null },
   artMode: { type: String, default: 'clean' },
-  previousCard: { type: Object, default: null },
-  nextCard: { type: Object, default: null },
   seriesCards: { type: Array, default: () => [] },
   eventRelation: { type: Object, default: null },
   gashaRelation: { type: Object, default: null },
@@ -368,7 +362,6 @@ const emit = defineEmits([
   'back',
   'preview-voice',
   'open-scenario',
-  'navigate-card',
   'navigate-related-card',
   'open-event',
   'open-gasha',
@@ -699,10 +692,6 @@ function openRelation(item) {
 .relation-sources { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-5); margin: var(--gs-space-4) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .card-metaline { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-6); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .card-metaline b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.card-stepper { display: flex; gap: var(--gs-space-3); }
-.card-step { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); cursor: pointer; }
-.card-step:disabled { color: var(--gs-ink-3); background: transparent; cursor: default; }
-@media (hover: hover) { .card-step:hover:not(:disabled) { border-color: var(--gs-ink-3); } }
 
 /* Sections */
 .card-detail-section { display: grid; gap: var(--gs-space-5); min-width: 0; }
@@ -859,7 +848,7 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
   .card-identity h3 { font-size: var(--gs-text-section); }
   .authored-text { display: none; }
   .reflowed-text { display: inline; }
-  .card-tabs button, .card-step, .voice-preview-btn, .skill-heading select { min-height: var(--gs-control-touch); }
+  .card-tabs button, .voice-preview-btn, .skill-heading select { min-height: var(--gs-control-touch); }
   .skill-heading select { font-size: var(--gs-text-subtitle); }
   .card-text-voice, .card-text-voice audio { width: 100%; }
   .asset-status-grid { grid-template-columns: minmax(0, 1fr); }
