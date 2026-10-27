@@ -111,7 +111,7 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 .reader-desktop-toolbar { display:flex; align-items:center; gap:12px; max-width:1100px; margin:auto; padding:0 24px 6px; }
 .compact-episodes { display:flex; gap:4px; flex:1; min-width:0; overflow-x:auto; scrollbar-width:thin; }
 .compact-episodes button { flex:none; padding:0 10px; border-radius:18px; font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
-.compact-episodes button[aria-current] { background:var(--reader-active); color:var(--reader-on-accent); }
+.compact-episodes button[aria-current] { background:var(--reader-bg-card); color:var(--reader-text-main); box-shadow:0 1px 2px rgb(19 33 58 / 12%); }
 .compact-languages { display:flex; margin-inline-start:auto; padding:2px; border-radius:8px; background:var(--reader-bg-card); border:1px solid var(--reader-border); }
 .compact-languages button { min-height:36px; min-width:36px; padding:0 12px; border-radius:5px; white-space:nowrap; }
 .compact-languages { background:var(--reader-bg-page); border-color:transparent; }
