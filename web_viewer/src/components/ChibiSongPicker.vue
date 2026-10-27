@@ -9,16 +9,17 @@
           <div v-if="$slots['current-actions']" class="current-song-actions"><slot name="current-actions" /></div>
         </div>
         <div class="stage-arrangement">
-          <label v-if="selectedGroup.versions.length > 1" class="arrangement-selector">
-            <span>演出编排</span>
-            <select :value="selectedScript?.id || ''" aria-label="演出编排版本" :disabled="disabled" @change="chooseVersion($event.target.value)">
-              <option v-if="!selectedScript" value="" disabled>选择编排版本</option>
-              <optgroup v-for="section in versionSections" :key="section.label" :label="section.label">
-                <option v-for="version in section.versions" :key="version.id" :value="version.id">{{ version.label }}{{ version.participantCount ? ` · ${version.participantCount}人` : '' }}</option>
-              </optgroup>
-            </select>
-          </label>
-          <p v-else class="single-arrangement"><span>演出编排</span><strong>{{ selectedScript?.label || selectedGroup.versions[0]?.label }}</strong></p>
+          <div v-if="selectedGroup.versions.length > 1" class="arrangement-picker">
+            <span class="arrangement-title">编排</span>
+            <!-- Kinds are sections of one list, not filters: only the kinds this song really has. -->
+            <div v-if="versionSections.length > 1" class="stage-segment" role="radiogroup" aria-label="编排种类">
+              <button v-for="section in versionSections" :key="section.kind" type="button" role="radio" :aria-checked="section.kind === selectedKind" :disabled="disabled" @click="chooseKind(section)">{{ section.label }}<span v-if="section.versions.length > 1"> {{ section.versions.length }}</span></button>
+            </div>
+            <div v-if="visibleVersions.length > 1" class="arrangement-options" :class="`is-${selectedKind}`" role="radiogroup" aria-label="演出编排版本">
+              <button v-for="version in visibleVersions" :key="version.id" type="button" role="radio" :data-version-id="version.id" :aria-checked="version.id === selectedScript?.id" :disabled="disabled" @click="chooseVersion(version.id)">{{ version.label }}<small v-if="version.participantCount"> {{ version.participantCount }}人</small></button>
+            </div>
+          </div>
+          <p v-else class="single-arrangement"><span>编排</span><strong>{{ selectedScript?.label || selectedGroup.versions[0]?.label }}</strong></p>
           <p v-if="selectedScript" class="arrangement-description"><span>{{ selectedScript.positionLabel || '出场站位待确认' }}</span></p>
         </div>
       </template>
@@ -33,13 +34,8 @@
           <Search :size="17" aria-hidden="true" />
           <input v-model="query" type="search" aria-label="搜索舞台歌曲" placeholder="搜索歌名或组合" autocomplete="off" enterkeyhint="search" :disabled="disabled" />
         </label>
-        <label class="song-category-select">
-          <select v-model="category" aria-label="舞台歌曲分类" :disabled="disabled">
-            <option v-for="filter in categoryOptions" :key="filter.id" :value="filter.id">{{ compactCategoryLabels[filter.id] || filter.label }} {{ filter.count }}</option>
-          </select>
-        </label>
       </div>
-      <div class="song-category-filters" role="group" aria-label="舞台歌曲分类">
+      <div class="song-category-filters stage-segment" role="group" aria-label="舞台歌曲分类">
         <button v-for="filter in categoryOptions" :key="filter.id" type="button" :aria-pressed="category === filter.id" :disabled="disabled" @click="category = filter.id">
           {{ compactCategoryLabels[filter.id] || filter.label }} <span>{{ filter.count }}</span>
         </button>
@@ -50,7 +46,7 @@
           <img v-if="group.jacketUrl && !failedJackets.has(group.jacketUrl)" :src="group.jacketUrl" alt="" width="36" height="36" loading="lazy" @error="failedJackets.add(group.jacketUrl)" />
           <Music2 v-else class="song-row-icon" :size="18" aria-hidden="true" />
           <span class="song-row-copy">
-            <span class="song-row-title"><strong>{{ group.title }}</strong><span v-if="selectedGroup?.songCode === group.songCode" class="song-current-badge">当前曲目</span></span>
+            <span class="song-row-title"><strong>{{ group.title }}</strong><span v-if="selectedGroup?.songCode === group.songCode" class="song-current-badge"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><span class="song-current-text">当前曲目</span></span></span>
             <small>{{ songSummary(group) }}</small>
           </span>
         </button>
@@ -72,7 +68,7 @@ const props = defineProps({
   disabled: Boolean,
 })
 const emit = defineEmits(['select-song'])
-const compactCategoryLabels = { all: '全部', collective: '全员/编成', unit: '组合曲', special: '特别编成' }
+const compactCategoryLabels = { all: '全部', collective: '代表曲', unit: '组合曲', special: '特别' }
 const query = ref('')
 const category = ref('all')
 const failedJackets = ref(new Set())
@@ -86,16 +82,25 @@ const selectedScript = computed(() => selectedGroup.value?.versions.find(version
 const versionKindSections = [['collective', '全员 / 自由编成'], ['unit', '按组合演唱'], ['center', '单人中心'], ['standard', '标准'], ['special', '特别演出'], ['variant', '其他编排']]
 const versionSections = computed(() => {
   const versions = selectedGroup.value?.versions || []
-  return versionKindSections.map(([kind, label]) => ({ label, versions: versions.filter(version => version.kind === kind) }))
+  return versionKindSections.map(([kind, label]) => ({ kind, label: kindLabels[kind] || label, versions: versions.filter(version => version.kind === kind) }))
     .filter(section => section.versions.length)
 })
+const kindLabels = { collective: '自由编成', unit: '组合版', center: '单人中心', variant: '教学' }
+const selectedKind = computed(() => selectedScript.value?.kind || versionSections.value[0]?.kind || '')
+const visibleVersions = computed(() => versionSections.value.find(section => section.kind === selectedKind.value)?.versions || [])
+// Picking a kind keeps the current script when it already belongs to it; otherwise the kind's first script.
+function chooseKind(section) {
+  if (props.disabled || section.kind === selectedKind.value) return
+  const next = section.versions[0]
+  if (next) chooseVersion(next.id)
+}
 
 watch(categoryOptions, options => {
   if (!options.some(option => option.id === category.value)) category.value = 'all'
 })
 
 function songSummary(group) {
-  const label = group.category === 'unit' && group.unitName ? group.unitName : group.categoryLabel
+  const label = group.category === 'unit' && group.unitName ? group.unitName : group.category === 'collective' ? '代表曲' : group.categoryLabel
   return [label, String(group.versions.length) + ' 种编排'].filter(Boolean).join(' · ')
 }
 
@@ -130,15 +135,28 @@ function chooseVersion(id) {
 .song-search:focus-within { outline: 2px solid var(--gs-mint); outline-offset: 2px; }
 .song-search input::placeholder { color: var(--gs-ink-3); opacity: 1; }
 .song-library-toolbar { flex: 0 0 auto; min-width: 0; }
-.song-category-select { display: none; }
-.song-category-select select { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 8px 6px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); color: var(--gs-ink); background: var(--gs-surface); font: inherit; font-size: 16px; }
 .song-library { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; min-height: 0; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gs-line); background: var(--gs-surface); }
 .song-library-title { flex: none; margin: 0 0 8px; color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.4; }
-.song-category-filters { display: grid; flex: 0 0 auto; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); gap: 4px; margin-top: 8px; }
-.song-category-filters button { min-width: 0; min-height: 44px; padding: 5px 7px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-3); background: var(--gs-surface); font: inherit; font-size: var(--gs-text-meta); cursor: pointer; }
-.song-category-filters button span { margin-left: 3px; color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: 400; }
-.song-category-filters button[aria-pressed="true"] { border-color: var(--gs-selected-line); color: var(--gs-selected-ink); background: var(--gs-selected-bg); }
-.song-category-filters button[aria-pressed="true"] span { color: inherit; }
+/* Segmented switch: a recessed track, one white thumb on the chosen segment; counts sit inside. */
+.stage-segment { display: flex; gap: var(--gs-space-1); box-sizing: border-box; min-width: 0; padding: var(--gs-space-2); border-radius: var(--gs-radius-control); background: var(--gs-mode-track); }
+.stage-segment > button { flex: 1 1 0; min-width: 0; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-segment); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
+.stage-segment > button span { margin-left: var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.stage-segment > button[aria-checked="true"], .stage-segment > button[aria-pressed="true"] { background: var(--gs-mode-thumb); box-shadow: var(--gs-shadow-1); color: var(--gs-mode-ink); }
+.stage-segment > button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.stage-segment > button:disabled { opacity: .6; cursor: default; }
+.song-category-filters { flex: 0 0 auto; margin-top: var(--gs-space-3); }
+/* Arrangement: kind switch, then the kind's own options (a unit grid, the solo rows). */
+.arrangement-picker { display: flex; flex-direction: column; gap: var(--gs-space-3); }
+.arrangement-title { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
+.arrangement-options { display: grid; gap: var(--gs-space-1); }
+.arrangement-options.is-unit { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.arrangement-options > button { display: flex; align-items: center; justify-content: center; gap: var(--gs-space-1); min-width: 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-meta); text-align: center; cursor: pointer; }
+.arrangement-options.is-center > button { justify-content: flex-start; padding: 0 var(--gs-space-4); font-size: var(--gs-text-ui); text-align: left; }
+.arrangement-options > button small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.arrangement-options > button:hover { background: var(--gs-hover); }
+.arrangement-options > button[aria-checked="true"] { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
+.arrangement-options > button:disabled { opacity: .6; cursor: default; }
+.arrangement-options > button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 .song-match-count { flex: 0 0 auto; margin: 8px 0 4px; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.4; }
 .song-list { flex: 1 1 auto; min-width: 0; min-height: 44px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--gs-line) transparent; }
 .song-row { box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; min-height: 56px; padding: 8px 5px; border: 0; border-bottom: 1px solid var(--gs-line); color: var(--gs-ink); background: transparent; font: inherit; text-align: left; cursor: pointer; }
@@ -148,16 +166,19 @@ function chooseVersion(id) {
 .song-row-copy { display: grid; gap: 3px; flex: 1; min-width: 0; }
 .song-row-title { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .song-row-title > strong { flex: 1; min-width: 0; }
-.song-current-badge { flex: none; color: var(--gs-mint-ink); font-size: var(--gs-text-caption); line-height: 1.5; white-space: nowrap; }
+.song-current-badge { position: relative; display: inline-flex; flex: none; align-items: flex-end; gap: 2px; height: 14px; }
+.song-current-badge i { width: 3px; border-radius: 1px; background: var(--gs-mint); }
+.song-current-badge i:nth-child(1) { height: 6px; }
+.song-current-badge i:nth-child(2) { height: 12px; }
+.song-current-badge i:nth-child(3) { height: 9px; }
+.song-current-text { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .song-row strong { font-size: 13px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
 .song-row small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.45; overflow-wrap: anywhere; }
-.song-row[aria-pressed="true"] { color: var(--gs-ink); background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }
-.song-row:active, .song-category-filters button:active { background: var(--gs-mint-wash); }
-.song-row:disabled, .song-category-filters button:disabled { opacity: 0.6; cursor: default; }
-.song-row:focus-visible, .song-category-filters button:focus-visible, .arrangement-selector select:focus-visible, .song-category-select select:focus-visible { outline: 2px solid var(--gs-mint); outline-offset: -2px; }
+.song-row[aria-pressed="true"] { color: var(--gs-ink); background: var(--gs-current-bg-inset); }
+.song-row:active { background: var(--gs-hover); }
+.song-row:disabled { opacity: 0.6; cursor: default; }
+.song-row:focus-visible { outline: 2px solid var(--gs-mint); outline-offset: -2px; }
 .stage-arrangement { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--gs-line); }
-.arrangement-selector { display: grid; gap: 7px; color: var(--gs-ink-3); font-size: 12px; }
-.arrangement-selector select { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 8px 9px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); color: var(--gs-ink); background: var(--gs-surface); font: inherit; font-size: 16px; }
 .single-arrangement { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0; font-size: 12px; line-height: 1.5; }
 .single-arrangement > span { color: var(--gs-ink-3); }
 .single-arrangement > strong { font-weight: 600; }
@@ -169,16 +190,11 @@ function chooseVersion(id) {
   .selected-song { gap: 8px; margin-bottom: 0; }
   .selected-song small { font-size: var(--gs-text-meta); line-height: 1.4; }
   .stage-arrangement { margin-top: 4px; padding-top: 0; border-top: 0; }
-  .arrangement-selector { display: flex; align-items: center; gap: 8px; }
-  .arrangement-selector > span { flex: none; }
-  .arrangement-selector select { flex: 1; width: auto; }
   .arrangement-description { display: none; }
   .song-library { margin-top: 4px; padding-top: 4px; }
   .song-library-title { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .song-library-toolbar { display: flex; align-items: center; gap: 6px; }
   .song-search { flex: 1; }
-  .song-category-select { display: block; flex: 0 0 100px; min-width: 0; }
-  .song-category-filters { display: none; }
   .song-match-count { margin: 4px 0 2px; }
   .song-row { min-height: 44px; padding: 4px 5px; }
   .song-row-copy { gap: 2px; }
@@ -186,6 +202,5 @@ function chooseVersion(id) {
 }
 @media (hover: hover) and (pointer: fine) {
   .song-row:hover { background: var(--gs-paper); }
-  .song-category-filters button:hover { border-color: var(--gs-line); }
 }
 </style>
