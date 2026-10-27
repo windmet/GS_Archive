@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
-import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { archiveBootstrapPlugin } from './lib/archive-bootstrap-plugin.mjs'
 import { portalPreloadLink, withPortalScopePreload } from './lib/portal-preload.mjs'
@@ -245,7 +245,7 @@ const sources = loadEntitySources(root)
     const route = readArchiveRoute(`http://x/${prefix}/`, { history: false })
     assert.equal(route.view, SECTION_SHELLS[prefix].view, prefix)
     const kind = route.collection?.kind
-    assert.ok(shells.find(s => s.kind === 'section' && s.id === prefix).html.includes(`<title>${archiveDocumentTitle(route.view, route.view === 'collection_catalog' ? archiveSectionTitle(route.view, kind) : '')}</title>`), prefix)
+    assert.ok(shells.find(s => s.kind === 'section' && s.id === prefix).html.includes(`<title>${archiveDocumentTitle(route.view, route.view === 'collection_catalog' ? archiveTabSectionTitle(route.view, kind) : '')}</title>`), prefix)
   }
 }
 

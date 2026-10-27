@@ -16,10 +16,12 @@
       :search-placeholder="archiveSearchPlaceholder"
       :show-back="archiveShowBack"
       :breadcrumbs="archiveBreadcrumbs"
-      :root-section="archiveRootSection"
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
+      <template v-if="COLLECTION_SECTIONS.includes(archiveSection)" #subnav>
+        <ArchiveCollectionTabs :current="archiveSection" :counts="portalData.overview.value?.collectionCounts || null" @select="navigateArchiveSection" />
+      </template>
       <template #sidebar-identity>
         <ArchiveStageIdolSwitch
           :idol="preferredArchiveIdol"
@@ -108,7 +110,8 @@
       <ArchiveAbout v-if="view === 'about'" />
       <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" :shelf="currentVoiceShelf" @shelf="currentVoiceShelf = $event; syncArchiveRoute({ replace: true })" @preview-office-voice="previewOfficeVoice" />
       <ArchiveScoreArchive v-if="view === 'score_archive'" :shelf="currentSoundShelf" :load-stories="loadStoryReadModelCatalog" @shelf="currentSoundShelf = $event; syncArchiveRoute({ replace: true })" @open-story="openStoryDetail($event, 'score_archive')" @open-song="openSong" />
-      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" @photo-catalog="openDomainCatalog('photos')" />
+      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" :songs="stageSongDirectory" :chart-songs="chartSongs" :preferred-idol="preferredArchiveIdol" :preferred-name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
+        @charts="openChartTool" @chart-song="openChartSong" @stage="openChibiStage()" @stage-song="openChibiStage({ songCode: $event })" @photo="startPictureStudio" @photo-catalog="openDomainCatalog('photos')" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
@@ -527,7 +530,7 @@
         :songs="chartSongs" :status="songReadModelStatus" @select-song="selectChartSong" />
       <p v-else role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
     </ArchiveExperimentFrame>
-    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
+    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :restore-on-open="studioRestorePending" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
     <SpineViewer v-if="view === 'spine_lab'" :idol-name="idolDisplayName" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
@@ -592,6 +595,7 @@ import PlayerSessionShell from './components/player/PlayerSessionShell.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
+import ArchiveCollectionTabs from './components/archive/ArchiveCollectionTabs.vue'
 import ArchiveStageIdolSwitch from './components/archive/ArchiveStageIdolSwitch.vue'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import { useArchivePortalData } from './components/archive/useArchivePortalData.js'
@@ -605,9 +609,10 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
-import { archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle } from './presentation/ArchiveDocumentTitle.js'
-import { ARCHIVE_BRAND, STORY_KINDS, sectionLabel } from './core/archiveSections.js'
+import { archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from './presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_BRAND, STORY_KINDS, sectionLabel, ARCHIVE_SECTION_GROUPS } from './core/archiveSections.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
+import { DomainRepository } from '../readmodels/runtime/DomainRepository.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import {
   archiveSectionForRoute,
@@ -1369,7 +1374,7 @@ const {
   currentSong, currentSongPresentation, chartSongs,
   loadSongCatalog, ensureSongCatalog, loadSongDetail,
   openSongCatalog, openSong, openSongUnit, openSongIdol, openSongRelatedStory,
-  openChartLab, openChartTool, selectChartSong, closeChartTool, goBackFromSong,
+  openChartLab, openChartTool, openChartSong, selectChartSong, closeChartTool, goBackFromSong,
   invalidateSongNavigation, prepareSongRoute,
 } = useSongNavigation({
   view, currentSongId, currentSongScope, songParentView, currentCharacterId, currentCategoryId, filterQuery, detailSourceRoute,
@@ -1394,6 +1399,9 @@ const archiveSection = computed(() => archiveSectionForRoute({
   collection: view.value === 'collection_catalog' ? currentCollectionState.value : undefined,
 }))
 
+const COLLECTION_SECTIONS = ['collections', 'honors', 'currencies', 'costumes', 'photos', 'unused']
+const COLLECTION_PAGE_TITLE = ARCHIVE_SECTION_GROUPS.find(group => group.id === 'collection').label
+
 const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   // Section pages carry their navigation name, without a suffix (core/archiveSections.js).
@@ -1402,11 +1410,12 @@ const archiveTitle = computed(() => {
   if (view.value === 'live') return sectionLabel('live')
   if (view.value === 'studio') return sectionLabel('studio')
   if (view.value === 'about') return sectionLabel('about')
-  if (view.value === 'unused_archive') return sectionLabel('unused')
+  if (view.value === 'unused_archive') return COLLECTION_PAGE_TITLE
   if (view.value === 'score_archive') return sectionLabel('scores')
   if (view.value === 'archive_status') return '数据状态'
-  if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value.kind)
-  if (view.value === 'photo_catalog') return sectionLabel('photos')
+  // 图鉴 is one page; the category is the selected tab.
+  if (view.value === 'collection_catalog') return COLLECTION_PAGE_TITLE
+  if (view.value === 'photo_catalog') return COLLECTION_PAGE_TITLE
   if (view.value === 'picture_studio') return sectionLabel('studio')
   if (view.value === 'event_catalog') return sectionLabel('events')
   if (view.value === 'story_catalog') {
@@ -1457,7 +1466,7 @@ const archiveTabEntityName = computed(() => {
   if (view.value === 'song_detail') return currentSong.value?.title || ''
   // Event titles are shown in the source on the event page as well.
   if (view.value === 'event_detail') return currentEventProjection.value?.identity?.title || ''
-  if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value?.kind)
+  if (view.value === 'collection_catalog') return archiveTabSectionTitle(view.value, currentCollectionState.value?.kind)
   // Same zh-CN pool name as the gasha's head shell; empty until the catalogue functions load.
   if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name, uiLocale.value) || ''
   if (!idolNamesSettled.value) return ''
@@ -1473,11 +1482,6 @@ watch(() => archiveDocumentTitle(view.value, archiveTabEntityName.value), title 
   if (title) document.title = title
 }, { immediate: true })
 
-// A section's own root page, for the sibling switch beside its title; detail and sub-pages have none.
-const ROOT_PAGE_SECTIONS = { story_catalog: 'stories', mobile_archive: 'interactions', idols: 'idols', unit_catalog: 'units', cards: 'cards',
-  event_catalog: 'events', gashas: 'gashas' }
-const archiveRootSection = computed(() => archiveBreadcrumbs.value.length === 2 && !(view.value === 'idols' && currentCategoryId.value !== 'idol')
-  ? ROOT_PAGE_SECTIONS[view.value] || '' : '')
 const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
   const entityByView = {
@@ -2036,6 +2040,21 @@ async function onEventCatalogReady() {
 const { selectPhotoIdol, updatePhotoCatalogQuery, selectPhotoEntity, openPictureStudio } = usePhotoCatalogNavigation({
   view, currentPhotoIdol, currentPhotoEntity, filterQuery, syncArchiveRoute, captureDetailSource, commitView,
 })
+
+// The studio's entry page offers three starts: with the 担当 (its photo actor is found in the photos catalogue), blank,
+// or the composition this browser saved (the studio loads it itself once it is ready).
+const studioRestorePending = ref(false)
+async function startPictureStudio({ idolCode = '', restore = false } = {}) {
+  studioRestorePending.value = restore
+  currentPhotoIdol.value = ''
+  if (idolCode) {
+    try {
+      const catalog = await new DomainRepository(readModelClient, archiveBootstrap).catalog('photos')
+      currentPhotoIdol.value = catalog.find(row => row.idolCode === idolCode)?.id || ''
+    } catch (error) { console.error('[Studio] Could not resolve the photo actor of the 担当:', error) }
+  }
+  openPictureStudio()
+}
 
 async function onPhotoCatalogReady() {
   const pending=pendingPhotoCatalogRestore

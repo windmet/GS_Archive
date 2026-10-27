@@ -398,6 +398,7 @@ const props = defineProps({
   bootstrap: Object,
   photoIdol: { type: String, default: "" },
   photoEntity: { type: String, default: "" },
+  restoreOnOpen: Boolean,
   idolName: { type: Function, default: () => "" },
   idolSearch: { type: Function, default: () => "" },
 });
@@ -474,6 +475,9 @@ const {
   load,
   retry,
 } = useStudioComposition(props, canvas);
+// 继续上次的构图: the entry page asks for the saved composition; it loads once the studio's own first load is done.
+let restoreAsked = props.restoreOnOpen;
+watch(busy, (now, before) => { if (before && !now && restoreAsked) { restoreAsked = false; void restore(); } });
 function photoCostumeLabel(costume) {
   const name = costume.nameJa === costume.modelId ? storyCostumeLabel(costume.modelId) || costume.nameJa : costume.nameJa;
   return archiveText('costume', name);

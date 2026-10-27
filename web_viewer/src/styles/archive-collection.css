@@ -94,12 +94,7 @@
 .archive-floating-tooltip strong{display:block;height:auto;white-space:normal}
 @media(max-width:760px){.collection-sheet-backdrop{align-items:end;padding:30px 0 0}.collection-inspector.is-sheet{max-height:78dvh;border-radius:18px 18px 0 0}.collection-inspector-body{padding:16px}}
 
-/* 节目册 2.0 图鉴: categories are underline tabs, entries sit on the paper without tiles, details open as a right drawer. */
-.collection-page .collection-chips { gap:var(--gs-space-5);margin:0 0 var(--gs-space-5);border-bottom:1px solid var(--gs-line); }
-.collection-page .collection-chips button { min-height:var(--gs-control-touch);padding:0 var(--gs-space-1);border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--gs-ink-3);font-weight:var(--gs-weight-medium); }
-.collection-page .collection-chips button:hover { color:var(--gs-ink); }
-.collection-page .collection-chips button[aria-pressed=true] { border-color:transparent;border-bottom-color:var(--gs-selected-line);background:transparent;color:var(--gs-ink);font-weight:var(--gs-weight-semibold); }
-.collection-page .collection-chips.collection-attributes { border-bottom:0;margin-top:calc(-1 * var(--gs-space-3)); }
+/* 节目册 2.0 图鉴: entries sit on the paper without tiles, details open as a right drawer (the six categories are the shell's tabs). */
 .collection-page :is(.collection-attributes button, .collection-cards>button):is(.physical,.intelligent,.mental) { --attr-wash:transparent; }
 .collection-page .collection-card-art { background:transparent; }
 .collection-page .collection-cards>button:hover .collection-card-art { background:var(--gs-hover); }

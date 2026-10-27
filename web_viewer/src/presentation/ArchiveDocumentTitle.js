@@ -5,6 +5,7 @@ import { sectionLabel } from '../core/archiveSections.js'
 // section roots (/cards/, /items/, …) their section name, the
 // same title the static head shell for that path ships (scripts/generate-entity-head-shells.mjs); every other
 // page keeps the site title from index.html.
+const COLLECTION_PAGE_LABEL = '图鉴'
 export const ARCHIVE_SITE_TITLE = 'GROWING STARS 资料馆 · 偶像大师 SideM'
 export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_detail', 'card_detail', 'song_detail', 'event_detail', 'gasha_detail',
   'home', 'mobile_archive']))
@@ -18,6 +19,13 @@ export const SECTION_TITLES = Object.freeze(Object.fromEntries(Object.entries({ 
 export function archiveSectionTitle(view, collectionKind = 'items') {
   if (view === 'collection_catalog') return collectionKindLabel(collectionKind)
   return SECTION_TITLES[view] || ''
+}
+
+// 图鉴 is one page of six categories: its tab titles name the category and then the page.
+const COLLECTION_VIEWS = new Set(['collection_catalog', 'photo_catalog', 'unused_archive'])
+export function archiveTabSectionTitle(view, collectionKind = 'items') {
+  const name = archiveSectionTitle(view, collectionKind)
+  return name && COLLECTION_VIEWS.has(view) ? `${name} · ${COLLECTION_PAGE_LABEL}` : name
 }
 
 export function archiveEntityTitle(name) {
@@ -36,7 +44,7 @@ export function archiveCardName(title, idolName) {
 // Returns null while an entity page has no name yet, so the caller keeps the current title (the shell's)
 // instead of flashing the site title during loading.
 export function archiveDocumentTitle(view, entityName = '') {
-  if (view === 'collection_catalog' || SECTION_TITLES[view]) return archiveEntityTitle(entityName || archiveSectionTitle(view))
+  if (view === 'collection_catalog' || SECTION_TITLES[view]) return archiveEntityTitle(entityName || archiveTabSectionTitle(view))
   if (!ENTITY_TITLE_VIEWS.has(view)) return ARCHIVE_SITE_TITLE
   const name = String(entityName || '').trim()
   return name ? archiveEntityTitle(name) : null

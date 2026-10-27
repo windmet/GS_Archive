@@ -14,7 +14,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { archiveCardName, archiveEntityTitle, archiveIdolPlaceName, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveEntityTitle, archiveIdolPlaceName, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS } from '../src/core/archiveRoute.js'
 import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
@@ -228,7 +228,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
       path: `${prefix}/index.html`,
       kind: 'section', id: prefix, url: base + location,
       html: withHead(template, headTags({
-        title: archiveEntityTitle(archiveSectionTitle(section.view, section.kind)),
+        title: archiveEntityTitle(archiveTabSectionTitle(section.view, section.kind)),
         description: section.description,
         url: base + location,
         image: `${base}/assets/brand/image_chara_icon_producer.png`,  // the site icon, as index.html
