@@ -95,7 +95,7 @@ const IdolReference = await compileComponent('src/components/archive/ArchiveIdol
 })
 const SongDetail = await compileComponent('src/components/archive/ArchiveSongDetail.vue', {
   vue: Vue,
-  '@lucide/vue': { ChevronRight: emptyComponent, ExternalLink: emptyComponent, Play: emptyComponent },
+  '@lucide/vue': { ChevronRight: emptyComponent, Clapperboard: emptyComponent, ExternalLink: emptyComponent, Music: emptyComponent, Play: emptyComponent },
   './ArchiveTechnicalDetails.vue': { default: emptyComponent },
   './ArchiveIdolReference.vue': { default: IdolReference },
   './ArchiveSongExperimentalPlayer.vue': { default: emptyComponent },

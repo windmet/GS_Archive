@@ -34,42 +34,25 @@
           :idol-search="idolSearch"
           @open-stage="openStage"
           @version-change="onVersionChange"
-        >
-          <template #header-action>
-            <button
-              v-if="song.stageCandidate"
-              class="stage-open-button stage-header-action"
-              type="button"
-              @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })"
-            >{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D舞台演出' }} →</button>
-          </template>
-        </ArchiveSongExperimentalPlayer>
+        />
         <ArchiveSongSinglePlayer
           v-else-if="song.playback.track"
           ref="songPlayer"
           :song="song"
           :track="song.playback.track"
-        >
-          <template #header-action>
-            <button
-              v-if="song.stageCandidate"
-              class="stage-open-button stage-header-action"
-              type="button"
-              @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })"
-            >{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D舞台演出' }} →</button>
-          </template>
-        </ArchiveSongSinglePlayer>
+        />
         <div v-else class="song-playback-unavailable-card">
-          <div class="song-block-heading">
-            <h3>歌曲播放</h3>
-            <button
-              v-if="song.stageCandidate"
-              class="stage-open-button stage-header-action"
-              type="button"
-              @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })"
-            >{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D舞台演出' }} →</button>
-          </div>
+          <div class="song-block-heading"><h3>歌曲播放</h3></div>
           <p class="song-block-note song-playback-unavailable" role="status">{{ song.playbackLabel || '暂未提供试听' }}</p>
+        </div>
+        <!-- The console's foot: the song's two tools, side by side. -->
+        <div v-if="song.stageCandidate || song.gameplay" class="song-console-links">
+          <button
+            v-if="song.stageCandidate"
+            type="button"
+            @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })"
+          ><Clapperboard :size="16" aria-hidden="true" />{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D 舞台' }}</button>
+          <button v-if="song.gameplay" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart"><Music :size="16" aria-hidden="true" />谱面</button>
         </div>
       </div>
       <div class="song-record-column">
@@ -185,7 +168,6 @@
             <p v-if="song.gameplay.wikiLevelStatus === 'resolved_song_page'" class="song-block-note">难度按本地主数据与单曲页核对。</p>
             <p v-else-if="song.gameplay.wikiLevelStatus === 'conflict_pending'" class="song-block-note">Wiki 与主数据难度不一致，暂按主数据展示；差异待核实。</p>
           </details>
-          <button class="stage-open-button" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart">打开谱面预览 ↗</button>
         </section>
       <section v-if="song.variants.length" class="song-block">
         <div class="song-block-heading"><h3>关联演出版本</h3></div>
@@ -221,10 +203,6 @@
         </a></li></ul>
         <p class="song-block-note">链接打开 Lantis 的专辑页面，可选择各音乐平台试听或购买。</p>
       </section>
-      <section v-if="song.credits.length" class="song-block song-credit-section">
-        <div class="song-block-heading"><h3>制作信息</h3></div>
-        <ul class="credit-list"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
-      </section>
       <ArchiveTechnicalDetails :key="song.id" :evidence="song.technicalEvidence" />
       </div>
     </div>
@@ -233,7 +211,7 @@
 </template>
 
 <script setup>
-import { ChevronRight, ExternalLink, Play } from '@lucide/vue'
+import { ChevronRight, Clapperboard, ExternalLink, Music, Play } from '@lucide/vue'
 import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
@@ -498,8 +476,12 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .song-unlock-link { display: inline; padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; cursor: pointer; }
 @media (hover: hover) { .song-unlock-link:hover { text-decoration: underline; } }
 .song-history a { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.stage-open-button { min-height: var(--gs-control-normal); margin-top: var(--gs-space-5); padding: 0 var(--gs-space-5); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
-.stage-header-action { margin-left: auto; margin-top: 0; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); font-size: var(--gs-text-meta); white-space: nowrap; }
+/* The console's foot: 2D 舞台 and 谱面 as two plain buttons on one line (the player ends on its own hairline). */
+.song-console-links { display: flex; gap: var(--gs-space-3); margin-top: var(--gs-space-4); }
+.song-console-links button { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); box-shadow: inset 0 0 0 1px var(--gs-rule); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); cursor: pointer; white-space: nowrap; }
+.song-console-links svg { color: var(--gs-ink-2); }
+@media (hover: hover) { .song-console-links button:hover { background: var(--gs-hover); } }
+.song-console-links button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: 2px; }
 .performance-scope-card { margin-top: var(--gs-space-4); padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); }
 .performance-scope-card strong { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .performance-scope-card p { margin: var(--gs-space-2) 0 0; color: var(--gs-ink-2); line-height: 1.7; }
@@ -553,11 +535,10 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .album-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
 .album-copy small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); }
 .album-list svg { flex: none; color: var(--gs-ink-3); }
-.movie-list, .link-list, .credit-list { display: grid; gap: var(--gs-space-3); margin: var(--gs-space-4) 0 0; padding: 0; list-style: none; }
+.movie-list, .link-list { display: grid; gap: var(--gs-space-3); margin: var(--gs-space-4) 0 0; padding: 0; list-style: none; }
 .movie-list li { display: flex; align-items: baseline; gap: var(--gs-space-4); font-size: var(--gs-text-body); }
 .movie-list strong { font-weight: var(--gs-weight-semibold); }
-.movie-list span, .credit-list { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.credit-list { color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.7; }
+.movie-list span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .link-list a { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-compact); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; }
 @media (hover: hover) {
   .variant-list button:hover strong { color: var(--gs-mint-ink); }
@@ -572,24 +553,25 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .song-detail button:focus-visible, .song-detail a:focus-visible, .song-detail summary:focus-visible,
 .song-record-column :deep(button.archive-idol-reference:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 
+/* Identity: the cover holds the left column; name, credits, attribute and date stack beside it. */
 @container song-detail (min-width: 520px) {
-  .song-detail-hero.has-jacket { grid-template-columns: 180px minmax(0, 1fr); }
-  .song-detail-jacket { width: 180px; }
-  .song-credit-section { display: none; }
+  .song-detail-hero.has-jacket { grid-template-columns: 176px minmax(0, 1fr); }
+  .song-detail-jacket { width: 176px; grid-row: span 3; }
+  .song-detail-hero.has-jacket .song-detail-meta, .song-detail-hero.has-jacket .song-parent-link { grid-column: 2; }
+  .song-detail-hero.has-jacket .song-detail-meta { padding-bottom: 0; border-bottom: 0; }
 }
-@container song-detail (max-width: 519px) { .song-detail-credits { display: none; } }
+/* Wide: one head row — cover | identity | console (the page's one white surface); the sections run full width below. */
 @container song-detail (min-width: 900px) {
-  .song-detail-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); align-items: start; gap: var(--gs-space-8) var(--gs-space-9); }
+  .song-detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 360px); align-items: start; gap: var(--gs-space-8) var(--gs-space-7); }
   .song-detail-hero { grid-column: 1; grid-row: 1; }
   .song-detail-body { display: contents; }
-  .song-record-column { grid-column: 1; grid-row: 2; }
-  .song-listen-column { grid-column: 2; grid-row: 1 / 3; top: var(--gs-space-5); }
-  .song-listen-column.is-sticky-fit { position: sticky; }
+  .song-listen-column { grid-column: 2; grid-row: 1; }
+  .song-record-column { grid-column: 1 / -1; grid-row: 2; padding-top: var(--gs-space-6); border-top: 1px solid var(--gs-rule); }
 }
 @media (max-width: 760px) {
   .song-detail { padding: var(--gs-space-5); }
   .song-detail-title h2 { font-size: var(--gs-text-section); }
   .song-listen-column { padding: var(--gs-space-4); }
-  .song-parent-link, .link-list a, .song-history a, .stage-open-button, .chip-list button, .source-action, .source-unit-link, .version-pill { min-height: var(--gs-control-touch); }
+  .song-parent-link, .link-list a, .song-history a, .song-console-links button, .chip-list button, .source-action, .source-unit-link, .version-pill { min-height: var(--gs-control-touch); }
 }
 </style>
