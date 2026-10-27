@@ -18,7 +18,7 @@ const template = `<!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>GS Archive · SideM GROWING STARS 资料馆</title>
+    <title>GROWING STARS 资料馆 · 偶像大师 SideM</title>
     <script type="module" crossorigin src="/_app/index-abc.js"></script>
 <link rel="preload" href="/_catalog/v/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/portal/index.json" as="fetch" crossorigin>
   </head>
@@ -58,7 +58,7 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
     assert.ok(html.includes(`<link rel="canonical" href="${location}" />`), `${shell.path}: canonical is its path`)
     assert.equal(attr(html, 'meta property="og:url"'), location)
     assert.ok(attr(html, 'meta property="og:image"').startsWith(`${origin}/assets/`), `${shell.path}: absolute image on the site`)
-    assert.ok(!html.includes('SideM GROWING STARS 资料馆</title>'), `${shell.path}: the generic title is replaced`)
+    assert.ok(!html.includes('偶像大师 SideM</title>'), `${shell.path}: the generic title is replaced`)
     assert.equal(body(html), body(sourceTemplate), `${shell.path}: body and scripts unchanged`)
     assert.ok(html.includes('<meta charset="UTF-8" />'), `${shell.path}: the rest of the head is kept`)
   }
@@ -75,22 +75,22 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   const shells = renderEntityHeadShells({ template, idols, idolNames: { '001tom': '天濑冬马' }, origin: 'https://example.test/' })
   checkShells(shells, { idols, origin: 'https://example.test', sourceTemplate: template })
   const tom = shells.find(s => s.id === '001tom').html
-  assert.ok(tom.includes('<title>天濑冬马 · GS Archive</title>'), 'the zh-CN display name leads the title')
+  assert.ok(tom.includes('<title>天濑冬马 · GROWING STARS 资料馆</title>'), 'the zh-CN display name leads the title')
   assert.ok(tom.includes('天濑冬马（天ヶ瀬 冬馬，Jupiter）的卡牌'), 'the description keeps the source name and unit')
   const sho = shells.find(s => s.id === '002sht').html
-  assert.ok(sho.includes('<title>御手洗 翔太 · GS Archive</title>'), 'without a translation the source name is used')
+  assert.ok(sho.includes('<title>御手洗 翔太 · GROWING STARS 资料馆</title>'), 'without a translation the source name is used')
   assert.ok(sho.includes('御手洗 翔太（Jupiter）的卡牌'), 'the source name is not repeated')
   assert.ok(shells.find(s => s.id === '091nou').html.includes('无所属') === false && shells.find(s => s.id === '091nou').html.includes('無所属的卡牌'), 'no unit, no empty parentheses')
   const unsafe = shells.find(s => s.id === '090xss').html
   assert.ok(!unsafe.includes('A<b>') && unsafe.includes(escapeHtml('A<b>&"c\'')), 'names are escaped')
-  assert.ok(shells.find(s => s.id === '99tst').html.includes('<title>T&amp;&lt;U&gt; · GS Archive</title>'))
+  assert.ok(shells.find(s => s.id === '99tst').html.includes('<title>T&amp;&lt;U&gt; · GROWING STARS 资料馆</title>'))
   // An idol's 事务所 and 通信 carry the idol and the section; an idol the home does not list has no office.
   const place = kind => shells.find(s => s.kind === kind && s.id === '001tom').html
-  assert.ok(place('office').includes('<title>天濑冬马 · 事务所 · GS Archive</title>') && place('office').includes('content="天濑冬马的事务所：'))
-  assert.ok(place('mobile').includes('<title>天濑冬马 · 通信 · GS Archive</title>') && place('mobile').includes('content="天濑冬马的通信：'))
+  assert.ok(place('office').includes('<title>天濑冬马 · 事务所 · GROWING STARS 资料馆</title>') && place('office').includes('content="天濑冬马的事务所：'))
+  assert.ok(place('mobile').includes('<title>天濑冬马 · 通信 · GROWING STARS 资料馆</title>') && place('mobile').includes('content="天濑冬马的通信：'))
   assert.ok(place('office').includes('https://example.test/assets/idols/icons/image_chara_icon_001tom.png'))
   assert.ok(!shells.some(s => s.kind === 'office' && s.id === '091nou') && shells.some(s => s.kind === 'mobile' && s.id === '091nou'))
-  assert.ok(shells.find(s => s.kind === 'mobile' && s.id === '090xss').html.includes(`<title>${escapeHtml(idols[2].name)} · 通信 · GS Archive</title>`), 'place names are escaped')
+  assert.ok(shells.find(s => s.kind === 'mobile' && s.id === '090xss').html.includes(`<title>${escapeHtml(idols[2].name)} · 通信 · GROWING STARS 资料馆</title>`), 'place names are escaped')
   const jup = shells.find(s => s.id === '01jup').html
   assert.ok(jup.includes('Jupiter（天濑冬马、御手洗 翔太）的成员'), 'units list their members by display name')
   assert.throws(() => renderEntityHeadShells({ template: template.replace('<title>', '<title>x</title><title>'), idols }), /exactly one <title>/)
@@ -104,11 +104,11 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   const cardShells = renderEntityHeadShells({ template, idols, idolNames: { '001tom': '天濑冬马' }, cards, cardTitles: { スタートライン: '起跑线' }, origin: 'https://example.test' })
   checkShells(cardShells, { idols, cards, origin: 'https://example.test', sourceTemplate: template })
   const start = cardShells.find(s => s.id === '001tom_n01').html
-  assert.ok(start.includes('<title>【起跑线】天濑冬马 · GS Archive</title>'))
+  assert.ok(start.includes('<title>【起跑线】天濑冬马 · GROWING STARS 资料馆</title>'))
   assert.ok(start.includes('天濑冬马的N卡片「起跑线」（スタートライン）'), 'the description keeps the source title')
   assert.ok(start.includes('https://example.test/assets/cards/icons/image_card_icon_001tom_n01.png'))
   const untranslated = cardShells.find(s => s.id === '002sht_ssr12').html
-  assert.ok(untranslated.includes('<title>【&lt;未訳&gt;】御手洗 翔太 · GS Archive</title>'), 'untranslated titles stay in the source and are escaped')
+  assert.ok(untranslated.includes('<title>【&lt;未訳&gt;】御手洗 翔太 · GROWING STARS 资料馆</title>'), 'untranslated titles stay in the source and are escaped')
   assert.ok(untranslated.includes('卡片「&lt;未訳&gt;」：'), 'no repeated source title')
   assert.throws(() => renderEntityHeadShells({ template, idols, cards: [{ ...cards[0], resource_id: '001tom' }] }), /Unexpected card id/)
   assert.throws(() => renderEntityHeadShells({ template, idols, cards: [{ ...cards[0], character_id: '099zzz' }] }), /has no idol/)
@@ -122,11 +122,11 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   const songShells = renderEntityHeadShells({ template, idols, songs, origin: 'https://example.test' })
   checkShells(songShells, { idols, songs, origin: 'https://example.test', sourceTemplate: template })
   const field = songShells.find(s => s.id === 'brndnf').html
-  assert.ok(field.includes('<title>BRAND NEW FIELD · GS Archive</title>'))
+  assert.ok(field.includes('<title>BRAND NEW FIELD · GROWING STARS 资料馆</title>'))
   assert.ok(field.includes('Jupiter演唱的歌曲「BRAND NEW FIELD」：'))
   assert.ok(field.includes('https://example.test/assets/songs/jacket_brndnf.png'))
   const formation = songShells.find(s => s.id === 'grwsml').html
-  assert.ok(formation.includes('<title>Growing &lt;Smiles&gt; · GS Archive</title>'), 'song titles are escaped')
+  assert.ok(formation.includes('<title>Growing &lt;Smiles&gt; · GROWING STARS 资料馆</title>'), 'song titles are escaped')
   assert.ok(formation.includes('歌曲「Growing &lt;Smiles&gt;」（自由编成）：'), 'a special lineup names its scope, not a singer')
   assert.ok(songShells.find(s => s.id === 'x00000').html.includes('content="歌曲「Unknown」：'), 'no performer, no empty parentheses')
   assert.throws(() => renderEntityHeadShells({ template, idols, songs: [{ ...songs[0], song_code: 'BRNDNF' }] }), /Unexpected song code/)
@@ -150,11 +150,11 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   checkShells(eventShells, { idols, events, origin: 'https://example.test', sourceTemplate: template })
   const theater = eventShells.find(s => s.id === '410001')
   assert.equal(theater.path, 'events/410001/index.html')
-  assert.ok(theater.html.includes('<title>GROWING SIGN@L · GS Archive</title>'))
+  assert.ok(theater.html.includes('<title>GROWING SIGN@L · GROWING STARS 资料馆</title>'))
   assert.ok(theater.html.includes('THEATER活动「GROWING SIGN@L」，2021年10月10日开始：'))
   const carnival = eventShells.find(s => s.id === 'event:20001')
   assert.equal(carnival.path, 'events/20001/index.html')
-  assert.ok(carnival.html.includes('<title>315カーニバル &lt;1&gt; · GS Archive</title>'), 'event titles are escaped')
+  assert.ok(carnival.html.includes('<title>315カーニバル &lt;1&gt; · GROWING STARS 资料馆</title>'), 'event titles are escaped')
   assert.ok(eventShells.find(s => s.id === 'event:50001').html.includes('image_event_logo_50001.png'), 'no banner: the logo')
   assert.throws(() => renderEntityHeadShells({ template, idols, events: [{ ...events[0], id: '10001' }] }), /Unexpected event id/)
   assert.throws(() => renderEntityHeadShells({ template, idols, events: [{ ...events[0], image: '' }] }), /has no image/)
@@ -162,20 +162,20 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
 
 // The app's tab title matches the shell title for the same entity, and other pages keep the site title.
 {
-  assert.equal(archiveDocumentTitle('idol_detail', '天濑冬马'), '天濑冬马 · GS Archive')
-  assert.equal(archiveDocumentTitle('unit_detail', 'W'), 'W · GS Archive')
-  assert.equal(archiveDocumentTitle('card_detail', archiveCardName('起跑线', '天濑冬马')), '【起跑线】天濑冬马 · GS Archive')
-  assert.equal(archiveDocumentTitle('song_detail', 'BRAND NEW FIELD'), 'BRAND NEW FIELD · GS Archive')
-  assert.equal(archiveDocumentTitle('event_detail', '315カーニバル'), '315カーニバル · GS Archive')
+  assert.equal(archiveDocumentTitle('idol_detail', '天濑冬马'), '天濑冬马 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('unit_detail', 'W'), 'W · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('card_detail', archiveCardName('起跑线', '天濑冬马')), '【起跑线】天濑冬马 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('song_detail', 'BRAND NEW FIELD'), 'BRAND NEW FIELD · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('event_detail', '315カーニバル'), '315カーニバル · GROWING STARS 资料馆')
   assert.equal(archiveCardName('起跑线', ''), '', 'a card without its idol name has no title yet')
   assert.equal(archiveDocumentTitle('idol_detail', ''), null, 'no name yet keeps the current (shell) title')
-  assert.equal(archiveDocumentTitle('gasha_detail', 'Growing Twilight Live招募'), 'Growing Twilight Live招募 · GS Archive')
-  assert.equal(archiveDocumentTitle('home', archiveIdolPlaceName('home', '天濑冬马')), '天濑冬马 · 事务所 · GS Archive')
-  assert.equal(archiveDocumentTitle('mobile_archive', archiveIdolPlaceName('mobile_archive', '天濑冬马')), '天濑冬马 · 通信 · GS Archive')
+  assert.equal(archiveDocumentTitle('gasha_detail', 'Growing Twilight Live招募'), 'Growing Twilight Live招募 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('home', archiveIdolPlaceName('home', '天濑冬马')), '天濑冬马 · 事务所 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('mobile_archive', archiveIdolPlaceName('mobile_archive', '天濑冬马')), '天濑冬马 · 通信 · GROWING STARS 资料馆')
   assert.equal(archiveDocumentTitle('home', archiveIdolPlaceName('home', '')), null, 'no idol name yet keeps the current (shell) title')
   // Section roots carry their section name, as their shells do; other pages keep the site title.
-  assert.equal(archiveDocumentTitle('cards'), '卡片 · GS Archive')
-  assert.equal(archiveDocumentTitle('collection_catalog', '称号'), '称号 · GS Archive')
+  assert.equal(archiveDocumentTitle('cards'), '卡片 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('collection_catalog', '称号'), '称号 · GROWING STARS 资料馆')
   assert.equal(archiveDocumentTitle('about', 'x'), ARCHIVE_SITE_TITLE)
   assert.ok(template.includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'the site title constant matches index.html')
   assert.ok(readFileSync(path.join(root, 'index.html'), 'utf8').includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'index.html still ships the site title')
@@ -238,7 +238,7 @@ const sources = loadEntitySources(root)
   assert.equal(sources.gashas.length, 61 + 25)
   for (const gasha of sources.gashas) assert.equal(readArchiveRoute(`http://x/gashas/${gasha.id}/`, { history: false }).gasha, gasha.id, gasha.id)
   const shells = renderEntityHeadShells({ template, ...sources })
-  assert.ok(shells.find(s => s.id === '210003').html.includes('<title>Growing Twilight Live招募 · GS Archive</title>'), 'zh-CN pool name')
+  assert.ok(shells.find(s => s.id === '210003').html.includes('<title>Growing Twilight Live招募 · GROWING STARS 资料馆</title>'), 'zh-CN pool name')
   assert.ok(shells.find(s => s.id === 'ticket-02b623e0abc38ce0').html.includes('2021年10月10日开放'), 'a wiki-dated ticket pool states its run')
   // Every section root reads as its catalogue and is titled as the app titles it.
   for (const prefix of ARCHIVE_SECTION_PATHS) {

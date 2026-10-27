@@ -17,7 +17,7 @@ const V2_TOKENS = [
   '--gs-reading-width', '--gs-rail-width', '--gs-tool-panel', '--gs-tool-panel-compact', '--gs-tool-bar',
   '--gs-text-figure', '--gs-leading-body', '--gs-leading-ui', '--gs-track-label',
   '--gs-mode-track', '--gs-mode-thumb', '--gs-mode-ink', '--gs-radius-segment', '--gs-switch-on', '--gs-switch-off',
-  '--gs-current-bg', '--gs-current-shadow', '--gs-current-bg-inset', '--gs-current-motion', '--gs-hover',
+  '--gs-current-bg', '--gs-current-shadow', '--gs-current-bg-inset', '--gs-current-motion', '--gs-hover', '--gs-ring-group',
   '--gs-idol', '--gs-idol-light', '--gs-idol-ink', '--gs-idol-wash',
   '--gs-stage-bg', '--gs-stage-raise', '--gs-stage-line', '--gs-stage-ink', '--gs-stage-ink-2', '--gs-stage-track', '--gs-stage-thumb',
 ]

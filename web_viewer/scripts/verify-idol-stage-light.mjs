@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { contrastRatio, idolStageLight, idolStageLightProperties, STAGE_LIGHT_TOKENS } from '../src/presentation/idolStageLight.js'
+import { contrastRatio, idolStageLight, idolStageLightProperties, idolThemeProperties, IDOL_THEME_TOKENS, STAGE_LIGHT_TOKENS } from '../src/presentation/idolStageLight.js'
 import { normalizeArchiveUserPreferences } from '../src/data/archiveUserPreferences.js'
 
 // The 担当 stage light: every official idol colour must yield readable roles, and the
@@ -24,7 +24,12 @@ for (const colour of colours) {
   assert.ok(contrastRatio(ink, PAPER) >= 4.5, `${colour}: link text on paper ${contrastRatio(ink, PAPER).toFixed(2)}`)
   assert.ok(contrastRatio(light, INK) >= 4.5, `${colour}: play glyph on the light ${contrastRatio(light, INK).toFixed(2)}`)
   assert.deepEqual(Object.keys(idolStageLightProperties(colour)), STAGE_LIGHT_TOKENS)
+  const theme = idolThemeProperties(colour)
+  assert.deepEqual(Object.keys(theme), IDOL_THEME_TOKENS)
+  assert.equal(theme['--gs-idol'].toLowerCase(), colour.toLowerCase(), 'the identity colour is the idol colour itself, never re-derived')
+  assert.equal(theme['--gs-idol-ink'], idolStageLight(colour).ink)
 }
+assert.deepEqual(idolThemeProperties(''), {})
 
 // Opt-in preference, defaulting to the archive mint.
 assert.equal(normalizeArchiveUserPreferences({ version: 3 }).stageLight, 'mint')
@@ -44,9 +49,11 @@ const shell = read('src/components/archive/ArchiveShell.vue')
 assert.match(shell, /<slot name="sidebar-identity" \/>/)
 assert.doesNotMatch(shell, /\.archive-sidebar[^{]*\{[^}]*(box-shadow|border-top|background)[^}]*var\(--gs-mint/)
 const stageSwitch = read('src/components/archive/ArchiveStageIdolSwitch.vue')
-assert.match(stageSwitch, /:accent-color="ring"/)
-assert.match(stageSwitch, /props\.stageLight \? idolStageLight\(props\.idol\?\.color\)/)
-assert.match(stageSwitch, /stageLight: \$event\.target\.checked \? 'idol' : 'mint'/)
+// The identity ring is always the idol's own colour (layer 1), drawn as an outline so its gap stays transparent;
+// only the stage-light switch inside the popover follows the preference (layer 3).
+assert.match(stageSwitch, /normalizeIdolAccentColor\(props\.idol\?\.color\)/)
+assert.match(stageSwitch, /outline: 2px solid var\(--stage-idol-ring\)/)
+assert.match(stageSwitch, /<GsSwitch :model-value="stageLight"[^>]*@update:model-value="emit\('save-startup', \{ stageLight: \$event \? 'idol' : 'mint' \}\)"/)
 assert.match(stageSwitch, /<ArchiveIdolPickerPanel[\s\S]{0,200}@update:model-value="emit\('save-preferred', \$event\)/)
 assert.match(read('src/components/archive/ArchiveProducerSettings.vue'), /stageLight:\$event\.target\.checked \? 'idol' : 'mint'/)
 

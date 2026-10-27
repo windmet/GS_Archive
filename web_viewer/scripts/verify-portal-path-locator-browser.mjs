@@ -165,18 +165,18 @@ try {
   // P15: the tab title follows the entity on path pages and returns to the site title elsewhere.
   const unitTitle = await ev('document.title')
   // The title waits for the translation pack, so it never shows the source name first.
-  await open('/idols/001tom/', idolReady); await waitFor(`/^天濑冬马 · GS Archive$/.test(document.title)`)
+  await open('/idols/001tom/', idolReady); await waitFor(`/^天濑冬马 · GROWING STARS 资料馆$/.test(document.title)`)
   const idolTitle = await ev('document.title')
   await clickTo('[data-archive-focus-id^="idol-domain:001tom:"]'); await waitFor(`location.pathname === '/'`)
   const otherTitle = await ev('document.title')
-  check('P15 tab title follows the entity', unitTitle === 'W · GS Archive' && /^天濑冬马 · GS Archive$/.test(idolTitle) && otherTitle === 'GS Archive · SideM GROWING STARS 资料馆', `unit="${unitTitle}" idol="${idolTitle}" other="${otherTitle}"`)
+  check('P15 tab title follows the entity', unitTitle === 'W · GROWING STARS 资料馆' && /^天濑冬马 · GROWING STARS 资料馆$/.test(idolTitle) && otherTitle === 'GROWING STARS 资料馆 · 偶像大师 SideM', `unit="${unitTitle}" idol="${idolTitle}" other="${otherTitle}"`)
   // P16: a card path opens cold, keeps its address and titles the tab with the card and its idol, never the source text.
   const cardReady = `!!document.querySelector('.card-detail .card-identity')`
   const titles = []
   await open('/cards/001tom_ssr01/', cardReady)
-  for (let i = 0; i < WAIT_MS / 250 && !/^【.+】天濑冬马 · GS Archive$/.test(titles.at(-1) || ''); i++) { titles.push(await ev('document.title')); await sleep(250) }
+  for (let i = 0; i < WAIT_MS / 250 && !/^【.+】天濑冬马 · GROWING STARS 资料馆$/.test(titles.at(-1) || ''); i++) { titles.push(await ev('document.title')); await sleep(250) }
   const sourceShown = titles.filter(title => /天ヶ瀬|瞳に映る/.test(title))
-  check('P16 card path opens cold with its title', (await loc()) === '/cards/001tom_ssr01/' && /^【.+】天濑冬马 · GS Archive$/.test(titles.at(-1)) && !sourceShown.length && errors.length === 0,
+  check('P16 card path opens cold with its title', (await loc()) === '/cards/001tom_ssr01/' && /^【.+】天濑冬马 · GROWING STARS 资料馆$/.test(titles.at(-1)) && !sourceShown.length && errors.length === 0,
     `${await loc()} title="${titles.at(-1)}" source titles=${sourceShown.length} errors=${errors.join(' | ') || 0}`)
   // P17: with no source, page back goes to the card's idol's cards.
   await pageBack(); await waitFor(atRoot('cards'))
@@ -202,8 +202,8 @@ try {
   check('P19 legacy card link becomes its path in place', legacy === '/cards/001tom_n01/' && after === before + 1, `shown=${legacy}; history ${before}->${after}`)
   // P20: a song path opens cold, keeps its address and titles the tab with the song.
   const songReady = `!!document.querySelector('.song-detail .song-detail-hero')`
-  await open('/songs/brndnf/', songReady); await waitFor(`document.title === 'BRAND NEW FIELD · GS Archive'`); await shot('p20-song')
-  check('P20 song path opens cold with its title', (await loc()) === '/songs/brndnf/' && (await ev('document.title')) === 'BRAND NEW FIELD · GS Archive' && errors.length === 0,
+  await open('/songs/brndnf/', songReady); await waitFor(`document.title === 'BRAND NEW FIELD · GROWING STARS 资料馆'`); await shot('p20-song')
+  check('P20 song path opens cold with its title', (await loc()) === '/songs/brndnf/' && (await ev('document.title')) === 'BRAND NEW FIELD · GROWING STARS 资料馆' && errors.length === 0,
     `${await loc()} title="${await ev('document.title')}" errors=${errors.join(' | ') || 0}`)
   // P21: with no source, page back goes to the song catalogue.
   await pageBack(); await waitFor(atRoot('songs'))
@@ -236,9 +236,9 @@ try {
   check('P24 legacy song link becomes its path in place', songLegacy === '/songs/brndnf/' && songAfter === songBefore + 1, `shown=${songLegacy}; history ${songBefore}->${songAfter}`)
   // P25: an event path opens cold, keeps its address and titles the tab with the event.
   const eventReady = `!!document.querySelector('.event-detail .event-identity h2')`
-  await open('/events/410018/', eventReady); await waitFor(`/ · GS Archive$/.test(document.title) && !document.title.startsWith('GS Archive')`); await shot('p25-event')
+  await open('/events/410018/', eventReady); await waitFor(`/ · GROWING STARS 资料馆$/.test(document.title) && !document.title.startsWith('GROWING STARS')`); await shot('p25-event')
   const eventHeading = await ev(`document.querySelector('.event-detail .event-identity h2')?.textContent.trim()`)
-  check('P25 event path opens cold with its title', (await loc()) === '/events/410018/' && (await ev('document.title')) === `${eventHeading} · GS Archive` && errors.length === 0,
+  check('P25 event path opens cold with its title', (await loc()) === '/events/410018/' && (await ev('document.title')) === `${eventHeading} · GROWING STARS 资料馆` && errors.length === 0,
     `${await loc()} title="${await ev('document.title')}" errors=${errors.join(' | ') || 0}`)
   // P26: with no source and no placement, page back returns to the event catalogue, the event's own section.
   await pageBack(); await waitFor(atRoot('events'))
@@ -349,11 +349,11 @@ try {
     `${readerUrl.slice(0, 70)} -> ${playerUrl37.slice(0, 70)} -> reload ${reloadedPlayer.slice(0, 40)}; pinned keeps rev=${pinnedLoc.includes('reading_rev=')} errors=${errors.join(' | ') || 0}`)
   // P38: a gasha path opens cold with its title; with no source, page back returns to the gasha catalogue.
   const gashaReady = `!!document.querySelector('.gasha-detail .gasha-identity h2')`
-  await open('/gashas/210003/', gashaReady); await waitFor(`/ · GS Archive$/.test(document.title) && !document.title.startsWith('GS Archive')`); await shot('p38-gasha')
+  await open('/gashas/210003/', gashaReady); await waitFor(`/ · GROWING STARS 资料馆$/.test(document.title) && !document.title.startsWith('GROWING STARS')`); await shot('p38-gasha')
   const gashaHeading = await ev(`document.querySelector('.gasha-detail .gasha-identity h2')?.textContent.trim()`)
   const gashaTitle = await ev('document.title')
   await pageBack(); await waitFor(atRoot('gashas'))
-  check('P38 gasha path opens cold and backs out to the catalogue', gashaTitle === `${gashaHeading} · GS Archive` && (await loc()) === '/gashas/' && errors.length === 0,
+  check('P38 gasha path opens cold and backs out to the catalogue', gashaTitle === `${gashaHeading} · GROWING STARS 资料馆` && (await loc()) === '/gashas/' && errors.length === 0,
     `title="${gashaTitle}" back=${await loc()} errors=${errors.join(' | ') || 0}`)
   // P39: a ticket-only pool has a path too; the legacy link is rewritten in place.
   await open('/?view=gasha_detail&gasha=ticket-ee75311e4c092124&q=x', gashaReady); await shot('p39-ticket-gasha')
@@ -368,7 +368,7 @@ try {
   // P41: section roots open cold at their path with the section title; the sidebar publishes the same path.
   const roots = []
   for (const [path, title, ready] of [['/units/', '组合', '.unit-entry, .unit-card'], ['/songs/', '歌曲', '.song-card'], ['/events/', '活动', '.event-item'], ['/items/', '道具', '.collection-catalog, main'], ['/honors/', '称号', '.collection-catalog, main']]) {
-    await open(path, `!!document.querySelector(${JSON.stringify(ready)}) && document.title === '${title} · GS Archive'`)
+    await open(path, `!!document.querySelector(${JSON.stringify(ready)}) && document.title === '${title} · GROWING STARS 资料馆'`)
     roots.push(`${await loc()}=${await ev('document.title')}`)
     if ((await loc()) !== path) break
   }
@@ -378,11 +378,11 @@ try {
   const sidebarEvents = await loc()
   await clickText('.archive-nav-cluster button', '卡池'); await waitFor(atRoot('gashas'))
   const sidebarGashas = await loc()
-  check('P41 section roots open at their path with section titles', roots.length === 5 && roots.every(row => row.endsWith(' · GS Archive')) && sidebarEvents === '/events/' && sidebarGashas === '/gashas/' && errors.length === 0,
+  check('P41 section roots open at their path with section titles', roots.length === 5 && roots.every(row => row.endsWith(' · GROWING STARS 资料馆')) && sidebarEvents === '/events/' && sidebarGashas === '/gashas/' && errors.length === 0,
     `${roots.join(' ')}; sidebar ${sidebarEvents} -> ${sidebarGashas}; errors=${errors.join(' | ') || 0}`)
   // P42: an idol's office opens cold at /office/<idol>/ with the place title; the legacy query link is rewritten to it.
-  const atOffice = idol => `location.pathname === '/office/${idol}/' && / · 事务所 · GS Archive$/.test(document.title)`
-  const atMobile = idol => `location.pathname === '/mobile/${idol}/' && / · 通信 · GS Archive$/.test(document.title)`
+  const atOffice = idol => `location.pathname === '/office/${idol}/' && / · 事务所 · GROWING STARS 资料馆$/.test(document.title)`
+  const atMobile = idol => `location.pathname === '/mobile/${idol}/' && / · 通信 · GROWING STARS 资料馆$/.test(document.title)`
   await open('/office/010pie/', atOffice('010pie')); await shot('p42-office')
   const officeCold = `${await loc()}=${await ev('document.title')}`
   await open('/?view=home&home_idol=010pie', atOffice('010pie'))

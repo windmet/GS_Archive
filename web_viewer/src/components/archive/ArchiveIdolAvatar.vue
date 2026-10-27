@@ -42,12 +42,12 @@ function onImageError() { imageFailed.value = true; emit('error') }
 </script>
 
 <style scoped>
-.idol-avatar-shell { --idol-avatar-size: var(--idol-avatar-override-size, var(--idol-avatar-base-size)); display: inline-block; flex: 0 0 var(--idol-avatar-size); width: var(--idol-avatar-size); height: var(--idol-avatar-size); box-sizing: border-box; padding: var(--idol-avatar-gap); border: var(--idol-avatar-ring) solid var(--idol-avatar-color); border-radius: 50%; background: #eef1f3; vertical-align: middle; }
+.idol-avatar-shell { --idol-avatar-size: var(--idol-avatar-override-size, var(--idol-avatar-base-size)); display: inline-block; flex: 0 0 var(--idol-avatar-size); width: var(--idol-avatar-size); height: var(--idol-avatar-size); box-sizing: border-box; padding: var(--idol-avatar-gap); border: var(--idol-avatar-ring) solid var(--idol-avatar-color); border-radius: 50%; background: var(--gs-surface); vertical-align: middle; }
 .idol-avatar-clip { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; }
-/* Without a colour ring the icon still gets a frame: three inset rings over the crop
-   (dark blue-grey, light blue, near white), so the cut edge never reads as a stray square. */
-.idol-avatar-shell.is-plain { padding: 0; border: 0; }
-.idol-avatar-shell.is-plain .idol-avatar-clip::after { content: ''; position: absolute; inset: 0; border-radius: 50%; box-shadow: var(--gs-avatar-frame); pointer-events: none; }
+/* Two rings only. With an idol colour: the identity ring (white gap, colour ring), drawn by the border above.
+   Without one (several people at once): the group ring, a white gap and a faint navy edge, outside the icon.
+   The icon is cropped 1.12x, which already hides the source image's own square frame. */
+.idol-avatar-shell.is-plain { padding: 0; border: 0; background: var(--gs-paper-2); box-shadow: var(--gs-ring-group); }
 .idol-avatar-clip img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(var(--idol-avatar-scale)); }
 .idol-avatar-fallback { display: grid; place-items: center; width: 100%; height: 100%; color: #526e73; font-size: max(12px, calc(var(--idol-avatar-size) * .35)); font-weight: 700; }
 </style>

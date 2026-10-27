@@ -70,3 +70,12 @@ export function idolStageLightProperties(color) {
   const stage = idolStageLight(color)
   return stage ? { '--gs-mint': stage.light, '--gs-mint-ink': stage.ink, '--gs-mint-wash': stage.wash } : {}
 }
+
+// The 担当 theme (layer 2) is always on once a 担当 is set, whether or not the stage light follows it: the identity
+// colour itself (rings, 3px bars, small dots, never text) plus the ink and wash derived from it. Layer 3, the stage
+// light, is the separate set above and stays off by default.
+export const IDOL_THEME_TOKENS = ['--gs-idol', '--gs-idol-light', '--gs-idol-ink', '--gs-idol-wash']
+export function idolThemeProperties(color) {
+  const hex = normalizeIdolAccentColor(color), stage = idolStageLight(color)
+  return hex && stage ? { '--gs-idol': hex, '--gs-idol-light': stage.light, '--gs-idol-ink': stage.ink, '--gs-idol-wash': stage.wash } : {}
+}

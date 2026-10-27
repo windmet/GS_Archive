@@ -127,11 +127,11 @@ onMounted(() => {
 .archive-drawer-tool-copy { display: grid; gap: 1px; }
 .archive-drawer-tool-copy b { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; }
 .archive-drawer .archive-drawer-tool-copy small { overflow: visible; color: var(--gs-ink-3); font-size: var(--gs-text-caption); line-height: 1.35; white-space: normal; }
-/* Where the reader is: the current section carries the bar's mint. */
-.archive-drawer button.active { background: var(--gs-mint-wash); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gs-mint) 40%, transparent); font-weight: var(--gs-weight-semibold); }
-.archive-drawer button.active svg { color: var(--gs-mint-ink); }
+/* Where the reader is: on a white sheet the current section is the recessed level (paper-2), not mint or bold. */
+.archive-drawer button.active { background: var(--gs-current-bg-inset); }
+.archive-drawer .is-collection button.active, .archive-drawer .is-tools button.active { box-shadow: inset 0 0 0 1px var(--gs-rule); }
 .archive-drawer .is-tools button.active { border-color: transparent; }
-.archive-drawer button:not(:disabled):active { background: var(--gs-mint-wash); }
+.archive-drawer button:not(:disabled):active { background: var(--gs-hover); }
 .archive-drawer button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 /* Footer line: quiet and centred, each link still a full touch target. */
 .archive-drawer-footer { display: flex; align-items: center; justify-content: center; gap: var(--gs-space-1); margin: var(--gs-space-2) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
