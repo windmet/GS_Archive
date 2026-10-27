@@ -103,7 +103,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
   .home-dialogue { left: 12px; right: 12px; bottom: 12px; width: auto; max-height: 42%; padding: 10px 14px; }.home-dialogue p { font-size: var(--gs-text-body); }.stage-tap-target { left: 18%; width: 64%; top: 12%; }
 }
 @media (max-height: 540px) and (orientation: landscape) { .home-dialogue { width: 43%; max-height: 54%; bottom: 10px; }.home-dialogue p { font-size: var(--gs-text-ui); }.home-masthead { top: 10px; }.home-context { top: 10px; }.scene-settings { max-height: calc(100% - 16px); } }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .immersive-home :where(button, select, [role="button"]) { transform: none !important; }
+}
 .exit-focus { position: absolute; z-index: 7; top: 16px; right: 16px; min-height: 44px; padding: 8px 14px; border: 0; border-radius: var(--gs-radius-control); background: rgb(19 33 58 / 72%); color: var(--gs-surface); }
 .is-focus-mode .home-context, .is-focus-mode .mobile-idol-switch, .is-focus-mode .mobile-settings-trigger, .is-focus-mode .mobile-costume-trigger { display: none; }
 .immersive-home[data-home-mode="card"] .stage-tap-target { inset: 0; width: 100%; }

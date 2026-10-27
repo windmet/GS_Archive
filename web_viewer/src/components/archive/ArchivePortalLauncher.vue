@@ -59,7 +59,14 @@ const preferredActions = [{ id: 'profile', label: '资料' }, { id: 'story', lab
 
 onMounted(async () => {
   await nextTick()
-  overview.value?.focusHeading()
+  const hasQuery = Boolean(props.globalSearch?.query?.trim())
+  let isCollapsed = false
+  try { isCollapsed = sessionStorage.getItem('sidem:portal-search-collapsed') === 'true' } catch {}
+  if (!hasQuery || isCollapsed) {
+    overview.value?.focusHeading()
+  } else {
+    overview.value?.restoreSearchFocus()
+  }
   if (wallpaper.preferences.value.wallpaperKey) {
     wallpaper.load()
     void loadArchiveNames('cards').catch(error => console.warn('Wallpaper card names unavailable', error))

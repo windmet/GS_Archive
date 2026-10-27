@@ -107,7 +107,13 @@
             <p v-if="bundle.guests?.length" class="call-guests"><span class="call-guest-faces" aria-hidden="true"><ArchiveIdolAvatar v-for="code in bundle.guests" :key="code" :idol-code="code" :size="22" :ring-width="0" :gap="0" decorative /></span>{{ guestNames(bundle) }} 也在通话中</p>
           </div>
           <div v-if="!bundle.exists" class="conversation-meta"><span>暂未收录</span></div>
-          <button class="conversation-play" :disabled="!bundle.exists" :title="bundle.exists ? '播放通信' : '本地脚本缺失'" @click="emit('play', bundle.file)">
+          <button
+            class="conversation-play"
+            :disabled="!bundle.exists"
+            :aria-label="bundlePlayAriaLabel(bundle)"
+            :title="bundlePlayAriaLabel(bundle)"
+            @click="emit('play', bundle.file)"
+          >
             <Play v-if="bundle.exists" :size="17" fill="currentColor" />
             <FileWarning v-else :size="17" />
           </button>
@@ -325,6 +331,13 @@ const chatText = source => archiveLineText('chats', CHAT_KEYS, source)
 const callTitleText = bundle => archiveLineText('card-lines', [['call-title', 'title']], callTitle(bundle))
 function callTitle(bundle) {
   return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''
+}
+function bundlePlayAriaLabel(bundle) {
+  const title = bundle.kind === 'idol_phone'
+    ? (callTitleText(bundle)?.text || bundle.scenarios?.[0]?.title || bundle.title || '')
+    : (chatText(bundle.title)?.text || bundle.title || '')
+  const displayTitle = title ? `：${title}` : ''
+  return bundle.exists ? `播放通信${displayTitle}` : `本地脚本缺失${displayTitle}`
 }
 function kindLabel(kind) { return kind === 'unit_talk' ? '组合聊天' : kind === 'idol_phone' ? '电话' : '偶像聊天' }
 function playRandomTopic(bundle, topic) {

@@ -3,7 +3,7 @@ const CATEGORY_LABELS = {
   growing_fes: 'GROWING FES',
   stage_step_up: 'STAGE',
   full_roster_series: '全员系列',
-  ticket_named: '道具补录',
+  ticket_named: '票券招募',
 }
 
 export function resolveGashaRelatedCards(gasha, index) {

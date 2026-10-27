@@ -41,11 +41,23 @@ defineProps({
 
 .player-icon-btn:hover:not(:disabled) {
   background: var(--player-control-surface-hover);
-  transform: translateY(-2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .player-icon-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
 }
 
 .player-icon-btn:active:not(:disabled) {
   transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-icon-btn:hover:not(:disabled),
+  .player-icon-btn:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 .player-icon-btn:disabled {
