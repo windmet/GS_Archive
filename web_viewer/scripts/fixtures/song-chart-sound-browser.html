@@ -1,0 +1,25 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>Chart native sound decode acceptance</title></head>
+<body><h1>打击音资源与实际解码验收</h1><p>检查十五份资源的字节散列、浏览器解码和离线输出波形；不代表设备扬声器听感验收。</p>
+<button id="run">验证全部音效</button><pre role="status">就绪</pre>
+<script type="module">
+import {songChartSounds as spec} from '/src/presentation/SongChartSoundPlayer.js'
+const status=document.querySelector('[role=status]')
+document.querySelector('#run').onclick=async()=>{
+ try {
+ const reports=[]
+ for (const [id,asset] of Object.entries(spec.assets)) {
+  const response=await fetch(asset.url);if(!response.ok)throw Error(id+' HTTP '+response.status)
+  const bytes=await response.arrayBuffer(),digest=await crypto.subtle.digest('SHA-256',bytes)
+  const sha=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('')
+  if(sha!==asset.sha256)throw Error(id+' hash mismatch')
+  const ctx=new OfflineAudioContext(2,48000,48000),buffer=await ctx.decodeAudioData(bytes)
+  const source=ctx.createBufferSource();source.buffer=buffer;source.connect(ctx.destination);source.start()
+  const rendered=await ctx.startRendering();const values=rendered.getChannelData(0)
+  const rms=Math.sqrt(values.reduce((a,v)=>a+v*v,0)/values.length)
+  if(rms<.00001)throw Error(id+' silent output')
+  reports.push({id,seconds:buffer.duration,channels:buffer.numberOfChannels,rms,sha256:sha})
+ }
+ status.textContent=JSON.stringify({status:'passed',sets:Object.keys(spec.sets),decoded:reports.length,reports},null,2)
+ }catch(e){status.textContent='FAILED: '+e.message;console.error(e)}
+}
+</script></body></html>

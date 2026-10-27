@@ -1,6 +1,7 @@
 {
   "about": "Every scripts/verify-* file is either reached by the Web Viewer Source Gate or listed under localOnly with its reason. 'batch' runs in CI through npm run verify:source-batch; checked by scripts/verify-verifier-coverage.mjs.",
   "batch": [
+    "verify-costume-category-filters.mjs",
     "verify-stage-costume-families.mjs",
     "verify-chibi-original-lineups.mjs",
     "verify-chibi-object-sprite-tweens.mjs",
@@ -121,6 +122,11 @@
     "verify-song-chart-presentation.mjs",
     "verify-song-chart-frame-clock.mjs",
     "verify-song-chart-playback-cadence.mjs",
+    "verify-song-chart-demonstration.mjs",
+    "verify-song-hit-effects-wiring.mjs",
+    "verify-song-hit-effects-selection.mjs",
+    "verify-song-hit-effect-assets.mjs",
+    "verify-song-hit-effect-renderer.mjs",
     "verify-song-chart-timing.mjs",
     "verify-song-detail-presentation.mjs",
     "verify-song-domain-landing.mjs",
@@ -133,6 +139,7 @@
     "verify-song-track-presentation.mjs",
     "verify-song-track-native-effects.mjs",
     "verify-song-track-native-hold-geometry.mjs",
+    "verify-song-track-flick-connectors.mjs",
     "verify-song-track-native-middle-nodes.mjs",
     "verify-song-track-native-note-geometry.mjs",
     "verify-song-track-native-projection.mjs",
@@ -179,7 +186,10 @@
     "verify-chibi-searchlights.mjs",
     "verify-chibi-particle-rotation.mjs",
     "verify-chibi-object-emitters.mjs",
-    "verify-progressive-mission-merge.mjs"
+    "verify-progressive-mission-merge.mjs",
+    "verify-song-chart-sounds.mjs",
+    "verify-song-flick-motion.mjs",
+    "verify-song-combo-timing.mjs"
   ],
   "localOnly": {
     "corpus": {

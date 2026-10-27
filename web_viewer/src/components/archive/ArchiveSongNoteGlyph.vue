@@ -3,10 +3,10 @@
     <svg v-if="showBody" :x="x - width / 2" :y="y - bodyHeight / 2" :width="width" :height="bodyHeight" :viewBox="viewBox(sprite)" overflow="hidden">
       <image :href="sprite.url" :width="sprite.width" :height="sprite.height" />
     </svg>
-    <g v-if="marker" :data-direction-hint="role" :data-effect-prefab="marker.defaultIndex" data-effect-presentation="static-emitter">
+    <g v-if="marker" :data-direction-hint="role" :data-effect-prefab="marker.defaultIndex" :data-effect-presentation="marker.presentation || 'static-emitter'">
       <template v-for="(layer, i) in marker.layers" :key="i">
         <defs><filter :id="`${uid}-${i}`" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" :values="tintMatrix(layer.color)" /></filter></defs>
-        <image :href="layer.url" :x="layer.cx - layer.width / 2" :y="layer.cy - layer.height / 2" :width="layer.width" :height="layer.height" :transform="`rotate(${layer.rotation} ${layer.cx} ${layer.cy})`" :filter="`url(#${uid}-${i})`" preserveAspectRatio="none" />
+        <image :href="layer.url" :data-arrow-sort="layer.sortingOrder" :x="layer.cx - layer.width / 2" :y="layer.cy - layer.height / 2" :width="layer.width" :height="layer.height" :opacity="layer.alpha ?? 1" :style="{ mixBlendMode: layer.blendMode === 'lighter' ? 'plus-lighter' : 'normal' }" :transform="`rotate(${layer.rotation} ${layer.cx} ${layer.cy})`" :filter="`url(#${uid}-${i})`" preserveAspectRatio="none" />
       </template>
     </g>
   </g>
@@ -21,7 +21,7 @@ const sprite = computed(() => noteRendering.skins[props.skin][props.role])
 const viewBox = s => { const [x, y, r, b] = s.displayBounds; return `${x} ${y} ${r-x} ${b-y}` }
 const bodyHeight = computed(() => props.width * (sprite.value.displayBounds[3] - sprite.value.displayBounds[1]) / (sprite.value.displayBounds[2] - sprite.value.displayBounds[0]))
 const marker = computed(() => props.hint || (props.showBody ? songChartStaticFlickHint(props.role, props.x, props.y, props.width, props.skin) : null))
-// Static source-color multiplication. Original particle shader/blur and
-// prewarmed emission phases are intentionally not represented by these PNGs.
+// Multiply source RGB and retain its alpha. Additive layers blend directly
+// with the scene backdrop; an isolated transparent group would hide it.
 const tintMatrix = c => `${c.r} 0 0 0 0 0 ${c.g} 0 0 0 0 0 ${c.b} 0 0 0 0 0 ${c.a} 0`
 </script>

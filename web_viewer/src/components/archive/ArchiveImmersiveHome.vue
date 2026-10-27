@@ -67,6 +67,7 @@
         </select>
       </label>
       <span v-if="homeMode === 'spine'" class="context-divider" aria-hidden="true"></span>
+      <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="首页服装类别" compact />
       <label v-if="homeMode === 'spine'" class="context-select context-costume">
         <span>服装</span>
         <select
@@ -74,7 +75,8 @@
           aria-label="首页服装"
           @change="emit('update:selectedCostume', $event.target.value)"
         >
-          <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
+          <option v-if="filteredCostumes.pinned" :value="filteredCostumes.pinned.modelId">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（分类外）</option>
+          <option v-for="costume in filteredCostumes.rows" :key="costume.modelId" :value="costume.modelId">
             {{ archiveText('costume',costume.name) }}
           </option>
         </select>
@@ -148,9 +150,10 @@
           <X :size="18" />
         </button>
       </header>
+      <div class="costume-picker-filter"><CostumeCategoryFilter v-model="costumeCategory" :costumes="activeIdol.costumes" label="首页服装列表类别" /><p v-if="filteredCostumes.pinned" class="costume-filter-note">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（不在此类别）</p></div>
       <div class="costume-grid">
         <button
-          v-for="costume in activeIdol.costumes"
+          v-for="costume in filteredCostumes.rows"
           :key="costume.modelId"
           type="button"
           :class="{ active: activeCostume?.modelId === costume.modelId }"
@@ -289,10 +292,12 @@
           </select>
         </label>
 
+        <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="场景设置服装类别" />
         <label v-if="homeMode === 'spine'" class="settings-field settings-costume-field">
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
-            <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
+            <option v-if="filteredCostumes.pinned" :value="filteredCostumes.pinned.modelId">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（分类外）</option>
+            <option v-for="costume in filteredCostumes.rows" :key="costume.modelId" :value="costume.modelId">
               {{ archiveText('costume',costume.name) }}
             </option>
           </select>
@@ -372,6 +377,8 @@ import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js
 import { producerName } from '../../utils/LanguageStore.js'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 import {archiveText} from './useArchiveCostumeText.js'
+import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
+import {costumeFilterView} from '../../presentation/CostumeCategories.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
 import { archiveText as photoText } from './useArchivePhotoText.js'
@@ -492,6 +499,8 @@ const cueGroups = computed(() => {
   const order = key => key.startsWith('idol:') ? Object.keys(GENERAL_GROUP_TITLES).indexOf(key.slice(5)) : 99
   return groups.sort((left, right) => order(left.key) - order(right.key))
 })
+const costumeCategory = ref('')
+const filteredCostumes = computed(() => costumeFilterView(activeIdol.value?.costumes || [], costumeCategory.value, activeCostume.value?.modelId))
 const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
   activeIdol.value?.costumes?.[0] || null)
@@ -619,6 +628,7 @@ function syncHomeVisibility() {
 watch(() => activeCostume.value?.modelId, () => stopVoice())
 
 watch(() => activeIdol.value?.id, () => {
+  costumeCategory.value = ''
   stageTapAbort?.abort()
   stageError.value = false
   stopVoice()
@@ -903,17 +913,21 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 @media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
 @media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { font-size:var(--gs-text-body); } }
 @media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);min-height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
-.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in .22s ease-out; }
+.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in var(--gs-motion-enter) var(--gs-ease-out); }
 .scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
 .scene-settings.cue-index > header { background:transparent; }
-@keyframes cue-drawer-in { from { transform:translateX(24px);opacity:0; } }
-@keyframes cue-sheet-in { from { transform:translateY(24px);opacity:0; } }
+@keyframes cue-drawer-in { from { transform:translateX(32px);opacity:0; } }
+@keyframes cue-sheet-in { from { transform:translateY(100%);opacity:0; } }
+@keyframes cue-fade-in { from { opacity:0; } }
 @media (max-width:760px) {
-  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);animation-name:cue-sheet-in; }
+  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);animation-name:cue-sheet-in;animation-duration:var(--gs-motion-sheet); }
 }
 .cue-index-filters { flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 18px;border-bottom:1px solid var(--gs-line); }
 .cue-index-search { display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);color:var(--gs-ink-3); }
 .cue-index-search input { flex:1;min-width:0;border:0;outline:0;background:none;color:var(--gs-ink);font:inherit;font-size:var(--gs-text-ui); }
+@media (max-width:760px) {
+  .cue-index-search input { font-size:var(--gs-text-subtitle); }
+}
 .cue-index-search:focus-within { border-color:var(--gs-mint); }
 .cue-index-filters .background-variants { margin:0; }
 .cue-index-body { gap:16px; }
@@ -924,12 +938,15 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .cue-index-card li button:hover { background:var(--gs-paper); }
 .cue-index-card li button[aria-current="true"] { background:var(--gs-selected-bg);box-shadow:inset 3px 0 0 var(--gs-selected-line); }
 .cue-index-now { flex:none;display:inline-flex;align-items:flex-end;gap:2px;width:14px;height:14px;margin-top:5px; }
-.cue-index-now i { flex:1;height:40%;background:var(--gs-mint); }
+.cue-index-now i { flex:1;height:100%;transform-origin:bottom;transform:scaleY(0.4);background:var(--gs-mint); }
 .cue-index-now.is-playing i { animation:cue-now 0.9s ease-in-out infinite; }
 .cue-index-now.is-playing i:nth-child(2) { animation-delay:-.3s; }
 .cue-index-now.is-playing i:nth-child(3) { animation-delay:-.6s; }
-@keyframes cue-now { 0%, 100% { height:30%; } 50% { height:100%; } }
-@media (prefers-reduced-motion: reduce) { .scene-settings.cue-index, .cue-index-now.is-playing i { animation:none; } }
+@keyframes cue-now { 0%, 100% { transform:scaleY(0.3); } 50% { transform:scaleY(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .scene-settings.cue-index { animation-name:cue-fade-in; }
+  .cue-index-now.is-playing i { animation:none;transform:scaleY(0.6); }
+}
 .cue-index-number { flex:none;min-width:24px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;line-height:1.65; }
 .cue-index-line { flex:1;min-width:0;font-size:var(--gs-text-ui);line-height:1.65;white-space:pre-line; }
 .cue-index-line.is-pending { visibility:hidden; }

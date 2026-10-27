@@ -60,6 +60,11 @@ function classify(relativePath) {
       consumer:['SongChartPreview'], reason_tracked:'bounded native Unity note sprites and flick texture cells; SHA and pixel provenance in song-chart rendering audits',
       force_add_allowed:true, owner_release:'2026-10-01-native-song-chart-sprites-001', grandfathered:false }
   }
+  if (/^web_viewer\/public\/assets\/song-chart-(combo|effects)\/[A-Za-z0-9_/-]+\.png$/.test(relativePath)) {
+    return { category:'stable-promoted-asset', logical_id:`song-chart-native:${relativePath.split("/assets/")[1].toLowerCase().replaceAll("/",":").replace(/\.png$/,"")}`,
+      consumer:['SongChartPreview'], reason_tracked:'bounded native Unity hit-effect, combo and 315 milestone textures; SHA and source in the song-hit-effect and combo audits',
+      force_add_allowed:true, owner_release:'2026-10-26-native-song-chart-effects-001', grandfathered:false }
+  }
 
   if (relativePath === 'web_viewer/public/assets/portal/image_mobile_background_common.png') {
     return {

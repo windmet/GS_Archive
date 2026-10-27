@@ -281,14 +281,16 @@
           <p v-if="selected.locked" class="studio-status"><Lock :size="13" />图层已锁定。<button type="button" @click="toggleLayer(selectedId, 'locked')">解锁编辑</button></p>
           <fieldset class="studio-editable-properties" :disabled="!!selected.locked">
           <template v-if="selectedActor">
+            <CostumeCategoryFilter v-model="costumeCategory" :costumes="selectedActor.costumes" label="摄影服装类别" />
             <label class="studio-field"
-              >服装<select v-model="selected.modelId">
+              >服装<select v-model="selected.modelId" aria-label="摄影服装">
+                <option v-if="filteredCostumes.pinned" :value="filteredCostumes.pinned.modelId">当前：{{ photoCostumeLabel(filteredCostumes.pinned) }}（分类外）</option>
                 <option
-                  v-for="costume in selectedActor.costumes"
+                  v-for="costume in filteredCostumes.rows"
                   :key="costume.modelId"
                   :value="costume.modelId"
                 >
-                  {{ archiveText('costume', costume.nameJa) }}
+                  {{ photoCostumeLabel(costume) }}
                 </option>
               </select></label
             >
@@ -355,6 +357,9 @@
 </template>
 <script setup>
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
+import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
+import {costumeFilterView} from '../../presentation/CostumeCategories.js'
+import {storyCostumeLabel} from '../../presentation/costumeSeries.js'
 import { computed, nextTick, onMounted, onScopeDispose, ref, shallowRef, watch } from "vue";
 import {
   Download,
@@ -469,6 +474,13 @@ const {
   load,
   retry,
 } = useStudioComposition(props, canvas);
+function photoCostumeLabel(costume) {
+  const name = costume.nameJa === costume.modelId ? storyCostumeLabel(costume.modelId) || costume.nameJa : costume.nameJa;
+  return archiveText('costume', name);
+}
+const costumeCategory = ref('');
+const filteredCostumes = computed(() => costumeFilterView(selectedActor.value?.costumes || [], costumeCategory.value, selected.value?.modelId));
+watch(() => selected.value?.instanceId, () => { costumeCategory.value = ''; });
 watch(focused, cancelInteraction);
 // Snapping is a per-viewer convenience, remembered in this browser only.
 const SNAP_KEY = 'gs-studio-snap';

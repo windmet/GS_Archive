@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Chart module import audit</title></head><body>
+<h1>Chart module import audit</h1><pre id="result">entry</pre>
+<script type="module">
+const output=document.querySelector('#result')
+try {
+  for (const url of ['/node_modules/vue/dist/vue.runtime.esm-bundler.js','/src/presentation/SongChartHitEffectRenderer.js','/src/components/archive/ArchiveSongHitEffectPreview.vue','/src/components/archive/ArchiveSongChartPreview.vue']) {
+    output.textContent+=`\nimport ${url}`
+    await import(/* @vite-ignore */ url)
+    output.textContent+=' passed'
+  }
+  output.textContent+='\nall imports passed'
+} catch(error) { output.textContent+=`\nFAILED ${error.stack || error}`; console.error(error) }
+</script></body></html>

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>Song chart demonstration integration</title>
+<style>body{font:16px system-ui;margin:16px}#app{max-width:960px}pre{white-space:pre-wrap}</style></head>
+<body><h1>自动演示组件回归</h1><p>受控媒体与 rAF；检查实际 Vue 接线，不代表真实音频或设备 FPS。</p>
+<button id="run" disabled>运行接线回归</button><pre id="result" role="status">加载中</pre><div id="app"></div>
+<script type="module">
+import { createApp, nextTick } from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
+import Chart from '/src/components/archive/ArchiveSongChartPreview.vue'
+import { buildSongChartTiming } from '/src/presentation/SongChartTiming.js'
+import { playableSongChart } from '/src/presentation/SongChartPresentation.js'
+import { songNoteEndpoints, songHoldMiddleNodes } from '/src/presentation/SongNotePresentation.js'
+import { nativeSongNoteIsHold } from '/src/presentation/SongTrackNativeNoteTypes.js'
+import { drawEffectTexture } from '/src/presentation/SongChartEffectTextures.js'
+import { delayedChartSeconds } from '/src/presentation/SongComboTiming.js'
+const result=document.querySelector('#result'),run=document.querySelector('#run')
+const songs=(await(await fetch('/data/song_catalog.json')).json()).songs
+const audioManifest=(await(await fetch('/data/song_playback_audio.json')).json()).songs
+const media={time:0,paused:true,seeking:false,ended:false,ready:4,rate:1},frames=new Map()
+let sequence=0,now=0,app,chart,timing,events,counts
+window.requestAnimationFrame=callback=>{frames.set(++sequence,callback);return sequence}
+window.cancelAnimationFrame=id=>frames.delete(id)
+for(const [key,getter] of Object.entries({currentTime:()=>media.time,paused:()=>media.paused,seeking:()=>media.seeking,
+  ended:()=>media.ended,duration:()=>150,readyState:()=>media.ready,error:()=>null})){
+  Object.defineProperty(HTMLMediaElement.prototype,key,{configurable:true,get:getter,...(key==='currentTime'?{set(value){
+    media.time=value;media.ended=false;media.seeking=true;this.dispatchEvent(new Event('seeking'))
+    queueMicrotask(()=>{media.seeking=false;this.dispatchEvent(new Event('seeked'))})
+  }}:{})})
+}
+HTMLMediaElement.prototype.play=async function(){media.paused=false;this.dispatchEvent(new Event('play'));this.dispatchEvent(new Event('playing'))}
+HTMLMediaElement.prototype.pause=function(){media.paused=true;this.dispatchEvent(new Event('pause'))}
+HTMLMediaElement.prototype.load=function(){}
+const check=(condition,message)=>{if(!condition)throw Error(message)}
+const button=label=>document.querySelector(`[aria-label="${label}"]`)
+const state=()=>document.querySelector('.chart-demonstration')
+function effectPixels(){
+  const canvas=document.querySelector('.track-effects-canvas')
+  check(canvas,'effect canvas exists')
+  const data=canvas.getContext('2d').getImageData(0,0,1280,720).data
+  let hash=2166136261,visible=0,colored=0
+  for(let i=0;i<data.length;i++){hash=Math.imul(hash^data[i],16777619);if(i%4===3&&data[i])visible++}
+  for(let i=0;i<data.length;i+=4)if(data[i+3]>32&&Math.max(data[i],data[i+1],data[i+2])-Math.min(data[i],data[i+1],data[i+2])>32)colored++
+  return {hash,visible,colored,data}
+}
+function pixelDifference(reference){
+  const current=effectPixels()
+  let maximum=0,changed=0,total=0
+  for(let i=0;i<current.data.length;i++){const delta=Math.abs(current.data[i]-reference.data[i]);maximum=Math.max(maximum,delta);total+=delta;if(delta>2)changed++}
+  return {maximum,changed,mean:total/current.data.length,visible:current.visible}
+}
+async function checkTextureMultiplication(){
+  const source=document.createElement('canvas');source.width=source.height=4
+  const ctx=source.getContext('2d'),pixels=ctx.createImageData(4,4)
+  for(let i=0;i<pixels.data.length;i+=4)pixels.data.set([100,200,50,128],i)
+  ctx.putImageData(pixels,0,0)
+  const image=new Image();image.src=source.toDataURL();await image.decode()
+  const target=document.createElement('canvas');target.width=target.height=4
+  const output=target.getContext('2d')
+  drawEffectTexture(output,image,{sx:0,sy:0,sw:4,sh:4,colorTint:{r:.5,g:.25,b:1}},[0,0,4,4])
+  const rgba=[...output.getImageData(1,1,1,1).data]
+  check(rgba.every((v,i)=>Math.abs(v-[50,50,50,128][i])<=1),'RGB multiplication preserves semi-transparent source alpha')
+  return rgba
+}
+async function waitForImages(){
+  for(let i=0;i<300&&Number(document.querySelector('.track-effects-canvas')?.dataset.assetsPending)>0;i++)await new Promise(r=>setTimeout(r,10))
+  check(Number(document.querySelector('.track-effects-canvas')?.dataset.assetsPending)===0,'images loaded')
+  check(Number(document.querySelector('.track-effects-canvas')?.dataset.assetsFailed)===0,'images decoded')
+  await settle()
+}
+async function settle(){await nextTick();await nextTick()}
+async function pulse(seconds){
+  media.time=seconds;now+=1000/60
+  const pending=[...frames.values()];frames.clear();for(const callback of pending)callback(now)
+  await settle()
+  if(sequence%120===0)await new Promise(resolve=>setTimeout(resolve,0))
+}
+async function enable(value=true){
+  const control=document.querySelector('[aria-label="自动演示事件统计"][type="checkbox"]')
+  control.checked=value;control.dispatchEvent(new Event('change',{bubbles:true}));await settle()
+}
+async function seek(seconds){
+  const slider=document.querySelector('[aria-label="谱面时间轴"]');slider.value=String(seconds)
+  slider.dispatchEvent(new Event('input',{bubbles:true}));await settle()
+}
+async function mount(code){
+  app?.unmount();frames.clear();Object.assign(media,{time:0,paused:true,seeking:false,ended:false,ready:4})
+  const song=songs[code],difficulty=song.gameplay.difficulties.find(d=>d.type===4)
+  chart=playableSongChart(await(await fetch(difficulty.chart.url)).json(),audioManifest[code].source.duration_seconds)
+  timing=buildSongChartTiming(chart)
+  events=[...songNoteEndpoints(chart),...songHoldMiddleNodes(chart)].map(e=>({...e,seconds:timing.tickToSeconds(e.tick)}))
+  counts={parent:0,track:0}
+  app=createApp(Chart,{standalone:true,songCode:code,title:song.title,difficulties:song.gameplay.difficulties,
+    audioTrack:{url:'data:audio/wav;base64,',source:audioManifest[code].source}})
+  app.mixin({updated(){if(this.$options.__name==='ArchiveSongChartPreview')counts.parent++;if(this.$options.__name==='ArchiveSongTrackPreview')counts.track++}})
+  app.mount('#app')
+  for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
+  check(document.querySelector('.track-svg'),'chart mount')
+  const expert=[...document.querySelectorAll('.chart-difficulties button')].find(b=>b.textContent.includes('EXPERT'))
+  expert.click();await settle()
+  for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
+  button('视图设置')?.click()
+  // Settings button has visible text rather than aria-label.
+  if(!document.querySelector('[type="checkbox"]'))[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click()
+  await settle();const sound=document.querySelector('[aria-label="谱面打击音套装"]');sound.value='off';sound.dispatchEvent(new Event('change',{bubbles:true}));await settle();await enable();button('关闭视图设置').click();await settle()
+}
+function checkPosition(seconds){
+  check(Number(state().dataset.count)===events.filter(e=>e.seconds<=seconds).length,`count at ${seconds}`)
+  const expected=chart.notes.filter(n=>nativeSongNoteIsHold(n)&&n.duration>0&&timing.tickToSeconds(n.tick)<=seconds&&timing.tickToSeconds(n.tick+n.duration)>seconds)
+  check(document.querySelectorAll('[data-hold-fx]').length===expected.length,`holds at ${seconds}`)
+}
+run.disabled=false;result.textContent='就绪'
+run.onclick=async()=>{
+  run.disabled=true
+  try{
+    const textureMultiplication=await checkTextureMultiplication()
+    const reports=[]
+    for(const code of ['cfprde','remasq']){
+      result.textContent=`回放 ${code}…`;await mount(code)
+      await seek(10);button('播放').click();await settle()
+      const initial={...counts}
+      for(let i=0;i<600;i++)await pulse(10+i/60)
+      check(counts.parent-initial.parent<130,'parent rerenders at track cadence')
+      check(counts.track-initial.track>580,'track cadence regression')
+      // Land just after a hit, then stop between control refreshes.
+      const hit=events.find(e=>e.seconds>20.1)
+      await seek(Math.floor((hit.seconds-.03)*100)/100)
+      await pulse(hit.seconds+.02);button('暂停').click();await settle()
+      check(document.querySelectorAll('[data-hit-fx]').length>0,'paused hit present')
+      check(document.querySelector('[data-additive-hit-layer]')?.style.mixBlendMode==='plus-lighter','additive particle surface must blend with the actual track backdrop')
+      check(document.querySelector('[data-auto-layer="EvaluationImage"]'),'Auto base must remain separate from additive particles')
+      check(document.querySelector('[data-auto-layer="EvaluationImage"]').style.mixBlendMode==='normal','Auto base keeps native source-over')
+      const frozenAuto=document.querySelector('[data-auto-evaluation]').outerHTML
+      await waitForImages()
+      const frozenPixels=effectPixels()
+      check(frozenPixels.visible>0,'paused canvas contains visible pixels')
+      check(frozenPixels.colored>100,'authored particle colors reach actual Canvas pixels')
+      const frozen=document.querySelector('.track-hit-effects').outerHTML,epoch=state().dataset.epoch
+      const frozenCombo=document.querySelector('[data-chart-combo]')?.outerHTML
+      const comboScale=Number(document.querySelector('[data-chart-combo]')?.dataset.scale)
+      check(comboScale>1,'native Combo clip reaches the actual SVG scale after a hit')
+      button('播放').click();await settle();await pulse(media.time)
+      check(state().dataset.epoch===epoch,'resume must preserve epoch')
+      check(document.querySelector('.track-hit-effects')?.outerHTML===frozen,'resume must preserve frozen hit instances')
+      check(document.querySelector('[data-chart-combo]')?.outerHTML===frozenCombo,'pause/resume freezes the actual Combo clip')
+      check(document.querySelector('[data-auto-evaluation]')?.outerHTML===frozenAuto,'pause/resume freezes all Auto UI layers')
+      const resumedDifference=pixelDifference(frozenPixels)
+      // Canvas readback/redraw may round an 8-bit channel by one. A state or
+      // animation-age change is much larger; retain the observed difference.
+      check(resumedDifference.maximum<=1,`resume preserves rendered pixels: ${JSON.stringify(resumedDifference)}`)
+      const audio=document.querySelector('audio');audio.dispatchEvent(new Event('waiting'));await settle()
+      const waiting=document.querySelector('.track-hit-effects')?.outerHTML
+      for(let i=0;i<30;i++)await pulse(media.time)
+      check(document.querySelector('.track-hit-effects')?.outerHTML===waiting,'buffer must freeze effect age')
+      check(pixelDifference(frozenPixels).maximum<=1,'buffer freezes rendered pixels')
+      audio.dispatchEvent(new Event('playing'));await settle()
+      await seek(5);checkPosition(5);check(!document.querySelector('[data-hit-fx]'),'seek must not replay skipped hits')
+      // Entire media timeline at 10Hz, including BPM boundaries and all tails.
+      for(let i=50;i<=Math.ceil(timing.duration*10);i++){
+        await pulse(i/10)
+        if(i%37===0){button('暂停').click();await settle();checkPosition(media.time);button('播放').click();await settle()}
+      }
+      media.time=150;media.ended=true;media.paused=true;audio.dispatchEvent(new Event('ended'));await settle()
+      check(Number(state().dataset.count)===events.length,'ended must consume final chart events')
+      check(!document.querySelector('[data-hold-fx]'),'ended retires holds')
+      check(!document.querySelector('[data-track-note]'),'ended removes final note body')
+      check(!document.querySelector('[data-hold-middle]'),'ended removes final middle')
+      check(!document.querySelector('[data-direction-hint]'),'ended removes final arrow')
+      const milestoneSeconds=[...events].sort((a,b)=>a.seconds-b.seconds)[314]?.seconds
+      if(milestoneSeconds!=null) {
+        await seek(milestoneSeconds+.2)
+        check(document.querySelector('[data-combo-315]'),'seek inside native 315 milestone restores its effect')
+        check(document.querySelector('[data-combo-system="logo_315"]')&&document.querySelector('[data-combo-system="logo_315_2"]'),'both native 315 logo systems reach the SVG')
+        const frozen315=document.querySelector('[data-combo-315]').outerHTML
+        await pulse(media.time)
+        check(document.querySelector('[data-combo-315]').outerHTML===frozen315,'paused 315 effect freezes')
+        await seek(milestoneSeconds+1.01)
+        check(!document.querySelector('[data-combo-315]'),'315 effect retires after its native one-second window')
+      }
+      await seek(12)
+      ;[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click();await settle()
+      const timingInput=document.querySelector('[aria-label="音符时机调整"]')
+      timingInput.value='6';timingInput.dispatchEvent(new Event('input',{bubbles:true}));await settle()
+      check(Math.abs(media.time-12)<1e-6,'timing setting must not seek or alter the audio')
+      check(Math.abs(Number(button('编辑谱面 tick 位置').dataset.tick)-Math.round(timing.secondsToTick(11.9)))<=1,'positive setting delays chart by six native ticks')
+      check(Number(document.querySelector('[data-chart-combo]').dataset.count)===events.filter(e=>e.seconds<=delayedChartSeconds(12,6)).length,'Combo follows adjusted chart time')
+      const comboToggle=document.querySelector('[aria-label="Combo 提示动画"]')
+      comboToggle.checked=false;comboToggle.dispatchEvent(new Event('change',{bubbles:true}));await settle()
+      check(!document.querySelector('[data-chart-combo]'),'Combo toggle removes the visual')
+      timingInput.value='-6';timingInput.dispatchEvent(new Event('input',{bubbles:true}));await settle()
+      check(Math.abs(Number(button('编辑谱面 tick 位置').dataset.tick)-Math.round(timing.secondsToTick(12.1)))<=1,'negative setting advances chart')
+      timingInput.value='0';timingInput.dispatchEvent(new Event('input',{bubbles:true}))
+      comboToggle.checked=true;comboToggle.dispatchEvent(new Event('change',{bubbles:true}));await settle()
+      button('关闭视图设置').click();await settle();checkPosition(12)
+      await seek(12);checkPosition(12)
+      document.querySelector('.chart-modes button:last-child').click();await settle()
+      document.querySelector('.chart-modes button:first-child').click();await settle();checkPosition(12)
+      const hold=chart.notes.find(n=>nativeSongNoteIsHold(n)&&n.duration>480)
+      const midpoint=Math.round(timing.tickToSeconds(hold.tick+hold.duration/2)*100)/100
+      await seek(midpoint);checkPosition(midpoint);await waitForImages()
+      check(effectPixels().visible>0,'paused seek redraws loaded hold textures')
+      // Difficulty reset must not retain the old chart's count or effect pool.
+      document.querySelector('.chart-difficulties button').click();await settle()
+      for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
+      check(Number(state().dataset.count)===0,'difficulty must reset demonstration')
+      check(!document.querySelector('[data-hit-fx]'),'difficulty must clear transients')
+      reports.push({code,events:events.length,updates:counts,pausedCanvasPixels:frozenPixels.visible,coloredPixels:frozenPixels.colored,resumedDifference,comboScale,comboPauseResume:true,timingAdjustment:true,comboToggle:true,milestoneSeconds,special315:true,status:'passed'})
+    }
+    result.textContent=JSON.stringify({status:'passed',textureMultiplication,reports},null,2)
+  }catch(error){result.textContent=JSON.stringify({status:'failed',error:error.message});console.error(error)}
+  finally{run.disabled=false}
+}
+</script></body></html>

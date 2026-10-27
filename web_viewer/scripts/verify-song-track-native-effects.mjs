@@ -86,11 +86,12 @@ for (const song of Object.values(catalog.songs)) for (const difficulty of song.g
       if (!glyph.role.startsWith('swipe_')) continue
       assert.ok(glyph.hint)
       assert.equal(glyph.hint.defaultIndex, 2)
-      assert.equal(glyph.hint.layers.length, 2)
+      assert.equal(glyph.hint.layers.length, 6)
+      assert.equal(glyph.hint.presentation, 'native-loop-sampler')
       for (const layer of glyph.hint.layers) assert.ok([layer.cx,layer.cy,layer.width,layer.height].every(Number.isFinite))
       markers++
     }
   }
   charts++
 }
-console.log(`Native effect roots: ${fixture.cases.length} ARM64 PointInfo/Transform cases, 486 Matrix4x4 emitter centers; old clock/scale/offset mutations rejected. Static default-2 markers: ${charts} charts/${markers} consumer glyphs, four PNG hashes; particle simulation remains separate.`)
+console.log(`Native effect roots: ${fixture.cases.length} ARM64 PointInfo/Transform cases, 486 Matrix4x4 emitter centers; old clock/scale/offset mutations rejected. Animated default-2 consumer markers: ${charts} charts/${markers} consumer glyphs, four PNG hashes; motion and loop sampler have their own regression; Unity GPU parity remains separate.`)

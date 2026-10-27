@@ -3,6 +3,7 @@
     <ArchiveListHeader v-if="!embedded" :title="title" @back="emit('back')">
       <template #filters>
         <input
+          ref="searchInput"
           :value="modelValue"
           placeholder="搜索卡片标题或稀有度"
           class="filter-input"
@@ -86,7 +87,22 @@
       </div>
     </div>
 
-    <div class="card-archive-list" :class="`layout-${layout}`">
+    <div v-if="!cards.length" class="card-empty-state" role="status">
+      <p class="card-empty-title">{{ hasActiveFilters ? '未找到匹配的卡片' : '暂无卡片数据' }}</p>
+      <p class="card-empty-desc">
+        {{ hasActiveFilters ? '当前筛选与搜索条件下没有找到卡片，可尝试调整关键词或重置筛选。' : '当前偶像暂无可展示的卡片记录。' }}
+      </p>
+      <button
+        v-if="hasActiveFilters"
+        type="button"
+        class="card-empty-reset"
+        @click="resetFilters"
+      >
+        重置筛选与搜索
+      </button>
+    </div>
+
+    <div v-else class="card-archive-list" :class="`layout-${layout}`">
       <button
         v-for="card in cards"
         :key="card.resource_id"
@@ -114,7 +130,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { ChevronRight, LayoutGrid, List } from '@lucide/vue'
 import ArchiveFilterSheet from './ArchiveFilterSheet.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
@@ -170,6 +186,37 @@ const relationStateOptions = [
 ]
 
 const activeFilterCount = computed(() => [props.currentAttribute, props.currentAssetState, props.currentRelationState].filter(value => value !== 'all').length)
+
+const hasActiveFilters = computed(() => {
+  return Boolean(
+    (props.modelValue && props.modelValue.trim()) ||
+    props.currentRarity !== 'all' ||
+    props.currentAttribute !== 'all' ||
+    props.currentAssetState !== 'all' ||
+    props.currentRelationState !== 'all'
+  )
+})
+
+const searchInput = ref(null)
+
+function resetFilters() {
+  emit('update:modelValue', '')
+  emit('select-rarity', 'all')
+  emit('select-attribute', 'all')
+  emit('select-asset-state', 'all')
+  emit('select-relation-state', 'all')
+  nextTick(() => {
+    if (searchInput.value) {
+      searchInput.value.focus({ preventScroll: true })
+      return
+    }
+    const fallback = document.querySelector('.card-rarity-tab.active') ||
+      document.querySelector('.card-rarity-tab') ||
+      document.querySelector('.card-archive-row')
+    fallback?.focus?.({ preventScroll: true })
+  })
+}
+
 // Counts read as words; a zero is simply left out.
 function cardCounts(card) {
   const voices = card.home_voice_count ?? card.home_voice_cues?.length ?? 0
@@ -211,21 +258,32 @@ function fallbackCardIcon(event, resourceId) {
 
 .card-archive-list { display: grid; gap: 0 var(--gs-space-7); grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8) var(--gs-space-9); }
 .card-archive-row { display: grid; grid-template-columns: 56px 40px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: 72px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
-.card-thumb { width: 56px; height: 56px; border-radius: var(--gs-radius-media); background: var(--gs-line); object-fit: cover; }
-.card-image-missing { display: none; }
-.card-rarity { color: var(--gs-ink-2); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-weight: var(--gs-weight-bold); }
+.card-thumb { grid-column: 1; width: 56px; height: 56px; border-radius: var(--gs-radius-media); background: var(--gs-line); object-fit: cover; }
+.card-thumb.card-image-missing { visibility: hidden; }
+.card-rarity { grid-column: 2; color: var(--gs-ink-2); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-weight: var(--gs-weight-bold); }
 .card-rarity[data-rarity="SSR"] { color: var(--gs-ink); }
-.card-main { display: grid; gap: var(--gs-space-1); min-width: 0; }
+.card-main { grid-column: 3; display: grid; gap: var(--gs-space-1); min-width: 0; }
 .card-title { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .card-owner-name { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
-.card-counts { color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
+.card-counts { grid-column: 4; color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .card-row-arrow { display: none; }
+
+.card-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gs-space-3); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-9) var(--gs-space-8); text-align: center; }
+.card-empty-title { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-bold); }
+.card-empty-desc { max-width: 420px; margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.5; }
+.card-empty-reset { display: inline-flex; align-items: center; justify-content: center; min-height: var(--gs-control-normal); margin-top: var(--gs-space-2); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.card-empty-reset:hover { border-color: var(--gs-selected-line); background: var(--gs-mint-wash); }
+.card-empty-reset:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 
 /* Grid: the card icon carries the tile; no frame around it. */
 .card-archive-list.layout-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--gs-space-6) var(--gs-space-5); padding-top: var(--gs-space-5); }
 .layout-grid .card-archive-row { display: flex; flex-direction: column; align-items: stretch; gap: var(--gs-space-2); min-height: 0; padding: 0; border: 0; }
-.layout-grid .card-thumb { width: 100%; height: auto; aspect-ratio: 1; }
-.layout-grid .card-rarity { font-size: var(--gs-text-ui); }
+.layout-grid .card-thumb { grid-column: auto; width: 100%; height: auto; aspect-ratio: 1; }
+.layout-grid .card-thumb.card-image-missing { visibility: hidden; }
+.layout-grid .card-rarity { grid-column: auto; font-size: var(--gs-text-ui); }
+.layout-grid .card-main { grid-column: auto; }
+.layout-grid .card-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.35; word-break: break-all; }
+.layout-grid .card-counts { grid-column: auto; }
 @media (hover: hover) {
   .card-archive-row:hover .card-title { color: var(--gs-mint-ink); }
   .card-rarity-tab:hover:not(.active) { border-color: var(--gs-ink-3); }
@@ -233,6 +291,8 @@ function fallbackCardIcon(event, resourceId) {
 .card-archive-row:focus-visible, .card-rarity-tab:focus-visible, .card-layout-toggle button:focus-visible, .asset-filter select:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 
 @media (max-width: 760px) {
+  .card-empty-state { padding: var(--gs-space-8) var(--gs-space-5); }
+  .card-empty-reset { min-height: var(--gs-control-touch); }
   .card-idol-heading { padding: var(--gs-space-3) var(--gs-space-5); }
   .card-idol-copy { display: none; }
   .card-idol-heading :deep(.idol-switcher) { width: 100%; }
@@ -247,9 +307,10 @@ function fallbackCardIcon(event, resourceId) {
   .card-layout-toggle button { width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .card-archive-list { grid-template-columns: minmax(0, 1fr); padding: var(--gs-space-2) var(--gs-space-5) calc(var(--gs-space-8) + env(safe-area-inset-bottom)); }
   .card-archive-row { grid-template-columns: 56px minmax(0, 1fr) 18px; grid-template-rows: auto auto; gap: var(--gs-space-1) var(--gs-space-4); }
-  .card-thumb { grid-row: 1 / 3; }
+  .card-thumb { grid-column: 1; grid-row: 1 / 3; align-self: center; }
   .card-rarity { display: none; }
   .card-main { grid-column: 2; grid-row: 1; align-self: end; }
+  .card-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.35; word-break: break-all; }
   .card-counts { grid-column: 2; grid-row: 2; }
   .card-row-arrow { display: block; grid-column: 3; grid-row: 1 / 3; align-self: center; color: var(--gs-ink-3); }
   .card-archive-list.layout-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5) var(--gs-space-4); }
