@@ -135,8 +135,9 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   work_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   idol_story_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   mobile_archive: { section: 'interactions', required: [], fallback: 'home' },
-  unit_catalog: { section: 'idols', required: [] },
-  unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
+  // 组合 is its own sidebar destination since P1.5, so its pages light 组合, not 偶像.
+  unit_catalog: { section: 'units', required: [] },
+  unit_detail: { section: 'units', required: ['unit'], fallback: 'unit_catalog' },
   idols: { section: 'category', required: [] },
   idol_detail: { section: 'idols', required: [], fallback: 'home' },
   cards: { section: 'cards', required: [], fallback: 'home' },
