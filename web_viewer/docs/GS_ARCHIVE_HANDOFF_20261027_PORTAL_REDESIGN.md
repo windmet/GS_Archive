@@ -1,4 +1,4 @@
-# 门户整体改造交接：节目册 2.0（2026-10-27）
+# 门户整体改造交接：节目册 2.0（2026-10-27，v6 更新）
 
 这份交接给接手「整体门户改造」的新窗口。设计方向已经和用户逐轮定下来，新窗口的任务是按批次落地，不需要重新提方案。规格以本文为准，方向稿是参照：构想图按真实条目和资源画，但不是像素稿，最终以组件、令牌和 Browser 实测为准。
 
@@ -8,27 +8,28 @@
 
 | 项 | 位置 |
 |---|---|
-| 在线方向稿（私有，用户账号可开） | https://claude.ai/artifact/LuPQW8porEGccPrnADFFbW （version 5） |
+| 在线方向稿（私有，用户账号可开） | https://claude.ai/artifact/LuPQW8porEGccPrnADFFbW （version 7） |
 | 本地副本，浏览器直接打开 | 主 checkout `web_viewer/.analysis/design-booklet-20261027/gs-booklet-2.html` |
-| 源文件与生成脚本 | 同目录：`booklet.src.html` → `build.py`（把 `images.json` 内嵌成 `im-*` 背景和 `ms-*` 遮罩）→ `gs-booklet-2.html`；`update2–5.py` 是各版改动 |
+| 源文件与生成脚本 | 同目录：`booklet.src.html` → `build.py`（把 `images.json` 内嵌成 `im-*` 背景和 `ms-*` 遮罩）→ `gs-booklet-2.html`；`update2–6.py`、`update6b.py` 是各版改动 |
 | 全部文字，方便检索 | 同目录 `booklet_text.md` |
 | 令牌增量原文 | 同目录 `tokens-v2.css` |
 | 样例数据 | 同目录 `songs.json`（60 首 + 1 个特殊版本的编制、组合、特性）、`colors.json`（49 人代表色）、`names.json`、`units.json` |
 
 `.analysis/` 被 Git 忽略。方向稿内嵌约 2 MB 图片，按 [仓库数据治理](REPO_DATA_GOVERNANCE_20261022.md) 不进 Git。
 
-## 1. 开工前先合的 PR
+## 1. 前置 PR 的状态
 
-这四个 PR 都从 `d0531dcc` 切出。门户改造要从它们合入之后的 master 开分支，否则会和衣装筛选、审计修复撞在同一批文件上。
+门户改造从这几条都合入之后的 master 开分支，否则会和衣装筛选、审计修复撞在同一批文件上。
 
-| PR | 分支 | 内容 | 状态与注意 |
+| PR | 分支 | 内容 | 状态 |
 |---|---|---|---|
-| #100 | `chart/20261024-autoplay-timeline` | 谱面自动演示、命中特效、Combo/315、打击音 | LF 干净检出 `gate:source` 116/116。新增 27 个 PNG 已登记二进制清单，基线报告已更新。**15 个 OGG 打击音（约 0.5 MB）进了 Git，与「音频不进 Git」冲突，等用户决定**：作为例外保留，或改走派生目录 + R2 |
-| #101 | `portal/20261024-ui-audit-convergence` | F01–F18 八批修复 + R1–R5 + Escape 收起修复 | 包含全部 8 条 `portal/20261024-*` 修复分支（`git cherry` 逐条确认）；这 8 条可按规则打 `archive/` tag 后删。LF 干净检出 116/116。 R2 的 Escape 修复只做了源码和构建，Browser 复验待补 |
-| #102 | `portal/20261025-costume-filters` | 首页 / 摄影按原生派生类别筛选衣装 | 自带文档 [COSTUME_CATEGORY_FILTERS_20261025.md](COSTUME_CATEGORY_FILTERS_20261025.md)。LF 干净检出 116/116。 |
-| #103 | `stage/20261025-costume-groups` | 舞台衣装五层归族、套服搭配 | 自带文档 [STAGE_COSTUME_FAMILIES_20261025.md](STAGE_COSTUME_FAMILIES_20261025.md)。LF 干净检出 116/116。 |
+| #100 | `chart/20261024-autoplay-timeline` | 谱面自动演示、命中特效、Combo/315、打击音 | 已合入（`75755179`）。15 个 OGG 打击音（511,331 B）按用户决定作为例外留在 Git，登记在 [仓库数据治理](REPO_DATA_GOVERNANCE_20261022.md) |
+| #101 | `portal/20261024-ui-audit-convergence` | F01–F18 八批修复 + R1–R5 + Escape 收起修复 | 已合入（`ec6f9fcd`）。R2 的 Escape 修复只做了源码和构建，**Browser 复验待补**。被它取代的 8 条 `portal/20261024-*` 分支，`git cherry` 已确认补丁全在 master，可打 `archive/` tag 后删，由用户执行 |
+| #102 | `portal/20261025-costume-filters` | 首页 / 摄影按原生派生类别筛选衣装 | 已合入（`6a4651a6`），文档 [COSTUME_CATEGORY_FILTERS_20261025.md](COSTUME_CATEGORY_FILTERS_20261025.md) |
+| #103 | `stage/20261025-costume-groups` | 舞台衣装五层归族、套服搭配 | 已同步 master（`76d97978`），`verifier-coverage.json` 与 CURRENT_STATE 的冲突已解，LF 检出 116/116，**待合**。文档 [STAGE_COSTUME_FAMILIES_20261025.md](STAGE_COSTUME_FAMILIES_20261025.md) |
+| #104 | `docs/20261027-portal-redesign-handoff` | 本交接第一版 | 已合入（`4ea7d284`） |
 
-**合并顺序：**谱面 → UI 审计 → 首页衣装筛选，这三个互不冲突。舞台衣装分组和衣装筛选在 `config/verifier-coverage.json`、`docs/CURRENT_STATE.md` 上有文本冲突：后合的那条先 `git merge origin/master`，在 LF 检出里解决冲突并重跑 `gate:source` 再合。两条都改了 CURRENT_STATE 的同一段，合并时保留两边内容。
+本文 v6 更新与 CURRENT_STATE 刷新在 #103 之后合入。
 
 ## 2. 已定的决定
 
@@ -49,7 +50,13 @@
    - 侧栏去掉整块藏青，换成纸面加一条细线。藏青退到工具顶栏和深色舞台。
    - 品牌行与右侧标题行同高 60px，两边底线连成一条。
    - 资料馆首页的标题行也统一到这一高度：现在首页自己画，其他页走 `ArchivePageChrome`。
-8. **担当名牌**：担当头像（身份环）+ 名字，铺这位偶像的 wash 浅底，圆角 10px。顶部 3px 灯条和左侧竖条都不用：用户说灯条让左右像没对齐。
+8. **我的担当：纸面上的一行切换器**（v6 改，替换上一版「wash 浅底名牌」）：
+   - 用户反馈上一版名牌「层级陷下去」：浅底在纸面侧栏里比纸深一级，读成凹槽。侧栏只有三种高度：凹槽 paper-2（轨道、底槽、占位）、纸面（静止）、白片（当前项）。担当不是当前页，不能用白片；也不该进凹槽，所以静止时直接放在纸面上，不铺底。
+   - 结构：头像 28px，身份环用 `outline: 2px solid <代表色>; outline-offset: 2px` 画，间隙透明；右边两行字，名字 13 / 600 ink、「我的担当」11.5 ink-3；右端上下箭头（lucide `ChevronsUpDown` 14px，ink-3），替换现在的 `ChevronDown`。
+   - 尺寸：行高 52，左内边距 7，头像中心与下方导航图标中心对齐（距侧栏内容左缘 21px）；下接导航留 12px，不加分隔线；圆角 10。
+   - 状态：悬停 `--gs-hover`（ink 5%）；点开时抬成白片（`--gs-current-bg` + `--gs-current-shadow`），弹层贴在下方，内容就是现在对话框的两项：「舞台光跟随担当色」开关、「更换担当 ›」进入选择器。手机仍用底部抽屉。收起侧栏时只剩头像。
+   - 未设担当：同一行，虚线圆 + 「设置担当」。
+   - 顶部 3px 灯条和左侧竖条都不用：用户说灯条让左右像没对齐。
 9. **立绘色影 + 签名落款**：
    - 色影：立绘向右下投平影，`filter: drop-shadow(14px 8px 0 color-mix(in oklab, <偶像 ink> 24%, transparent))`。
    - 落款：签名用这位偶像的 ink 写在名字旁或名字下，在纸面一侧，不叠在立绘前后。
@@ -60,10 +67,13 @@
     - 当前项：身份环外再加白间隙和一圈薄荷。
     - 深色工具里，白间隙改成舞台底色。
     - 浅蓝仿框退役：`ArchiveIdolAvatar` 的 `ringWidth: 0` 分支换成群像环，删掉 `--gs-avatar-frame`。保留放大 1.12 倍的裁切，它已经盖住原图方框。
+    - 底色会变的地方（侧栏担当行的悬停 / 展开）身份环改用 outline + offset，间隙透明，不露白边。
+11. **选中态 A 白片**（用户 10-27 确认）：规则见第 3 节。
+12. **舞台曲目页**（v6 新排，用户交给 Claude 定，不另说就按此实现）：规格见第 6 节「2D 舞台」。
 
-## 3. 待用户确认：选中态（建议 A）
+## 3. 选中态（已定 A）
 
-用户不喜欢现在的当前项：左侧 3px 竖条 + 浅底 + 加粗，读起来像半个括号，还和名字前的身份竖条撞在一起。方案：
+用户不喜欢现在的当前项：左侧 3px 竖条 + 浅底 + 加粗，读起来像半个括号，还和名字前的身份竖条撞在一起。10-27 确认用 A：
 
 - **一条规则**：选中 = 比所在底面高一级的一块面。纸面上是白片（`--gs-current-bg` + `--gs-current-shadow`），它和分段开关的白滑块是同一片；白底面板里是凹一级的 `--gs-current-bg-inset`（paper-2）。
 - **不加粗、不加线**：字重保持 500，只把文字从 ink-2 换成 ink、图标从 ink-3 换成 ink。
@@ -71,7 +81,7 @@
 - **用在**：侧栏当前项、阅读器目录当前 EP、手机导航抽屉、事务所人物 / 衣装列表、歌曲版本格。分段开关、标签页下划线、筛选片不变。
 - 偶像详情和事务所名字前的 3px 原色竖条是身份，不是选中态，保留。用户若也想去掉，换成名字下方一条 24px 短色线。
 
-方向稿「选中态」一节能整页在 A 白片 / B 浅墨底 / C 实心墨片之间切换。用户没有另行表态时按 A 实现，PR 描述里写明。
+方向稿「选中态」一节仍保留 A / B / C 整页对照开关，只作比较；实现只做 A。
 
 ## 4. 令牌增量（v2）
 
@@ -86,8 +96,9 @@
 - **字**：`--gs-text-figure 32 / 手机 26`、`--gs-leading-body 1.75`、`--gs-leading-ui 1.45`、`--gs-track-label .04em`。分组小标题统一 12 / 600 / .04em。12px 是全站下限。
 - **控件族**：`--gs-mode-track / -thumb / -ink`、`--gs-radius-segment 6`、`--gs-switch-on / -off`。
 - **当前项**：`--gs-current-bg / -shadow / -bg-inset / -motion`（见第 3 节）。
+- **悬停**：`--gs-hover: rgb(19 33 58 / 5%)`，纸面和白底通用，替代现在 `--gs-mint-wash` 的「hover on paper」用途（薄荷只给「现在」）。
 - **担当色**：`--gs-idol / -light / -ink / -wash`，运行时由 `idolStageLight(担当原色)` 写入；未设担当时取中性色。
-  - 原色只画环、名牌和 3px 色条，不做文字。
+  - 原色只画环和 3px 色条，不做文字。
   - ink 保证 4.5:1；例如悠介 `#FFE200` 的文字用 `#716400`。
 - **工具深色舞台**：`--gs-stage-bg #0b1424`、`--gs-stage-raise`、`--gs-stage-line`、`--gs-stage-ink / -2`、`--gs-stage-track / -thumb`。
 
@@ -110,7 +121,7 @@
 - **说明分三层**：读者可见的说明一行以内；「怎么用」进 ⓘ（悬停或点按，两行以内）；「依据是什么」进维护者模式（`?maintainer=1`）或关于页；控件已说清的删掉。具体条目见方向稿「说明文字分三层」表。
 - **担当色三层**：
   1. 身份：始终开。
-  2. 担当主题：侧栏名牌、担当视角人物幕 wash、相关条目前的原色小圆点、事务所默认显示担当。
+  2. 担当主题：侧栏担当行、担当视角人物幕 wash、相关条目前的原色小圆点、事务所默认显示担当。
   3. 舞台光跟随：默认关，只换状态色，不动藏青主操作、难度色、属性色。
   - 不染整页：只有担当视角人物幕和偶像自己的详情页人物幕铺 wash。
   - 多人同时出现时只用圆环。
@@ -120,7 +131,7 @@
 以下只写结论，完整的现状 / 改法 / 手机版见方向稿对应模块。
 
 - **外壳**（`ArchiveShell.vue`、`ArchiveNavigationDrawer.vue`、`archiveSections.js`、`ArchiveDocumentTitle.js`）：
-  - 纸面侧栏、名牌、白片当前项、60px 品牌行。
+  - 纸面侧栏、担当切换器（第 2 节第 8 条，组件 `ArchiveStageIdolSwitch.vue`）、白片当前项、60px 品牌行。
   - `ARCHIVE_BRAND` 增加 `mark: 'GROWING STARS'`、`sub: 'SideM 资料馆'`；手机外壳显示 mark + sub，不显示 english。
 - **事务所首页**（`ArchiveImmersiveHome.vue`）：
   - 右上控台收成三件：「人物与衣装」胶囊（头像 + 当前衣装名）、「立绘 | 卡面」、场景设置。现在 4 个下拉导致偶像名和衣装名被截断。
@@ -193,8 +204,14 @@
   - 右侧 292 常驻面板，分观看、声音、演示三组；说明进 ⓘ。
   - Tick、演示事件计数、原生依据进维护者模式。
   - 手机设置是画布下的三个标签页。
-- **2D 舞台**：
+- **2D 舞台**（`ChibiStageViewer.vue`、`ChibiSongPicker.vue`）：
   - 编队页依次是站位条 → 当前位置（偶像、衣装）→ 演唱组 → 套服组，组间 24。
+  - **曲目页**（v6）：从上到下三块。
+    1. 正在演出：封面 56 + 曲名 + 「代表曲 · 20 种编排」，右端声部钮（打开声部与伴奏）。
+    2. 编排：多种编排时，先是种类分段（只列有的种类：自由编成 / 组合版 16 / 单人中心 3，Growing Smiles！多一段「教学」），组合版下面是 4 × 4 组合 logo 格，单人中心是 Solo / Solo Multi / Solo Single 三行。下面一行说明：组合名 · 人数 · 槽位 · 编舞来源，「人数未确认」照实写。只有一种编排时这一块收成一行「编排 · Jupiter · 3 人」，没有控件。替换现在 20 项的 optgroup 下拉。
+    3. 换一首：搜索 + 一组分段（全部 60 / 代表曲 5 / 组合曲 47 / 特别 8），去掉重复的分类下拉。分类名、组合顺序与歌曲总览同一份：「全部」按三层分组，组合曲按组合加小标题。点一首直接切换，并保留当前编排种类；预载期间整块禁用。
+  - 曲目页的选中：当前曲目行、当前组合格都用白底面板里的 `--gs-current-bg-inset`；正在演出的曲目右端是薄荷音柱，替换「当前曲目」文字徽标。
+  - 手机：编排收成一行「编排 · 组合版 · Jupiter ›」，点开底部抽屉，内容与桌面同一块；只有一种编排时这一行没有箭头。
   - 加载方式两步：单选卡片，说明一直可见，「记住选择」+「开始加载」。
   - 与舞台衣装分组 PR 合入后做。
 - **摄影 / 播放器 / 阅读器**：
@@ -210,10 +227,10 @@
 |---|---|---|
 | P0 | 令牌增量；抽出模式开关、设置行、开关、ⓘ 四个基础件；「白底套白底」计数 | `GS_UI_TOKENS.css`，新组件 GsSegmented / GsRow / GsSwitch / GsInfo |
 | P1 | 中/日三级 | `ArchiveLanguageSwitch.vue`、`PlayerLanguageStatus.js`、`ReaderControlBar.vue` |
-| P1+ | 站名、纸面侧栏与名牌、60px 标题行、选中态白片、头像两种环、色影与落款、`--gs-idol*`、「舞台光」改名 | `archiveSections.js`、`ArchiveDocumentTitle.js`、`ArchiveShell.vue`、`ArchiveNavigationDrawer.vue`、`ArchiveIdolAvatar.vue`、`ArchivePortalOverview.vue`、`idolStageLight.js` |
+| P1+ | 站名、纸面侧栏与担当切换器、60px 标题行、选中态白片、头像两种环、色影与落款、`--gs-idol*`、「舞台光」改名 | `archiveSections.js`、`ArchiveDocumentTitle.js`、`ArchiveShell.vue`、`ArchiveNavigationDrawer.vue`、`ArchiveStageIdolSwitch.vue`、`ArchiveIdolAvatar.vue`、`ArchivePortalOverview.vue`、`idolStageLight.js` |
 | P2 | 模式外置：事务所三件控台 + 人物与衣装面板 + 首次引导；资料馆视角开关；舞台加载两步确认 | `ArchiveImmersiveHome.vue`、`ArchivePortalLauncher.vue`、`ChibiStageViewer.vue` |
 | P3 | 谱面功能区（谱面 PR 合入后） | `ArchiveSongChartPreview.vue`、`ArchiveChartLab.vue` |
-| P4 | 舞台面板节奏（舞台衣装分组 PR 合入后，只动模板与样式） | `ChibiStageViewer.vue` |
+| P4 | 舞台面板节奏：曲目页、编队页、画面页（#103 合入后，只动模板与样式） | `ChibiStageViewer.vue`、`ChibiSongPicker.vue` |
 | P5 | 资料馆首页整页、剧情目录、手机抽屉 | `ArchivePortalOverview.vue`、`ArchiveStoryCatalog.vue`、`verify-portal-bento.mjs` |
 | P6 | 详情骨架：卡面 → 歌曲（总览、多版本、Center 台词）→ 偶像 → 活动 → 组合 / 卡池 / 图鉴 | `ArchiveCardDetail`、`ArchiveSongCatalog`、`ArchiveSongDetail`、`ArchiveIdolDetail`、`ArchiveEventDetail`、`ArchiveCollectionCatalog`、`CollectionDetailPanel` |
 | P7 | 摄影、播放器、阅读器 | `PictureStudio.vue`、`PlayerTopBar.vue`、`ReaderWorkspaceControls.vue` |
@@ -229,6 +246,9 @@
 - **分轨歌曲**：分轨演唱 3 首（`audio_form: layered`）：DRIVE A LIVE、Beyond The Dream、Growing Smiles！。
   - DRIVE A LIVE 的分轨在 `public/data/song_experimental_audio.json`：16 条组合轨、49 条 Solo、伴奏、全员混音，`special_tracks` 是 drv999。
   - 编舞变体 19 套，在 `choreography.live_effect_variants`。
+- **舞台曲库**（`buildStageSongLibrary`，输入 `public/data/stage-choreography-shards.json` + `song_catalog.json`）：60 首，分类 collective 5 / unit 47 / special 8。
+  - 多种编排的只有 3 首：DRIVE A LIVE、Beyond The Dream 各 20 种（自由编成 1 + 组合版 16 + 单人中心 3），Growing Smiles！21 种（多一套教学编排）。Take a StuMp! 01 / 02 虽归 collective，各只有 1 种。
+  - DRIVE A LIVE 的舞台时长 125.1 秒（`duration` 125100，`startTime` −2000），和音频 2:10.3 不是一回事。
 - **Center 台词**：`public/data/song_oneshot_voices.json`。
   - precious love 的 `triggers` 是 60000 ms、`deck_slot` 1，49 条 clip 各约 3.6 秒。
   - 原曲站位：四季、涟、直央、克里斯。
@@ -245,5 +265,5 @@
   - 主 checkout 带语料又是 CRLF，会把 CI 红项跑绿。
   - 可复用的 LF 检出：`E:/Web_build/GS_Archive_Domain_Work/gate-retire-lf`，游离 HEAD，`node_modules` 已联接到主 checkout。
 - 新增 PNG 要在 `scripts/lib/tracked-binary-inventory.mjs` 有分类，然后跑 `npm run generate:tracked-binary-inventory`；`public/data/archive_baseline_report.json` 的 `tracked_binaries` 也要同步。音频、视频、大图不进 Git。
-- 改到画面的批次必须做 Browser 实测，桌面加 390px 手机。Claude 会话的沙盒里 Chrome 起不来，需要用户放行，或在 Codex 窗口验收。
+- 改到画面的批次必须做 Browser 实测，桌面加 390px 手机。Claude 会话的沙盒里 Chrome 起不来；放行到沙盒外后，Playwright 缓存里的 `chromium_headless_shell-1243/chrome-headless-shell-win64/chrome-headless-shell.exe` 可以起（CDP 截图可用，节目册 v6 就是这样核的），完整版 `chrome.exe` 仍起不来。也可以在 Codex 窗口验收。
 - 不 push master，不 rebase / force push 已推送分支；只暂存自己 commit 的具体路径（另一会话共用暂存区）。合并 master 不等于部署，部署要用户明确授权。

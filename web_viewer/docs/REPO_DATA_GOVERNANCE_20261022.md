@@ -29,8 +29,10 @@
 | `public/data/compiled/` | 只跟踪**冻结的子集** | `.gitignore` 已忽略该目录，新文件进不来；当前 3485 个已跟踪，磁盘上有 4941 个。完整语料由 R2 加账本承载，Git 不是 compiled 的来源 |
 | `public/data/reading/` | 跟踪 | 被审校回执钉住字节，见 `sidem_reading_doc_bytes_frozen` |
 | 小型原生纹理与界面图（Stage 发射器 / 探照灯 / 整屏纹理、谱面精灵等） | 跟踪，但必须登记 | 沿用既有政策 `notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md`：每个 PNG 都要在 `policies/tracked-binary-assets.v1.json` 中有类别与 `owner_release`，由 `verify-tracked-binary-inventory` 守门。Stage 纹理按内容哈希命名，不会原名重提交，历史不膨胀 |
-| 音频、视频、大尺寸立绘 / 封面 / 剧情图 | **不进 Git** | 走 R2 / 派生目录，清单（sha256 + 来源）进 Git 作为身份，参照 `config/derived_story_audio.json` |
+| 音频、视频、大尺寸立绘 / 封面 / 剧情图 | **不进 Git** | 走 R2 / 派生目录，清单（sha256 + 来源）进 Git 作为身份，参照 `config/derived_story_audio.json`。唯一例外见下 |
 | 已在 Git 的大图（歌曲封面、剧情图） | 保持不动 | 不删除、不搬走（既有政策的 grandfathered 条款）；需要替换时优先改成 R2 引用，不再原名重提交新的 PNG。歌曲封面 50.9 MiB 的历史负担就是这样产生的 |
+
+**例外：谱面打击音（2026-10-27 用户决定）。**`public/assets/song-chart-sounds/` 的 15 个 OGG（共 511,331 B）随 #100 进了 Git，用户决定保留。清单与来源（IPA 内路径、sha256）在 `config/song-chart-sounds.v1.json`。例外只限这一类：游戏原生的小型打击音，每个几十 KB、内容不会再变。BGM、语音、歌曲混音和视频仍按上表走 R2。以后要再加同类文件，同样在清单登记 sha256 和来源，并在 PR 描述里写明总字节数。
 
 ## 本次做的
 

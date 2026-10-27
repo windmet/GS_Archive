@@ -2,14 +2,14 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-24（开发 master 已到 #97；谱面原生投影与帧率分支待合入；站点/R2 发布快照未重新验收）
+更新：2026-10-27（开发 master 已含 #98–#104；本更新随 #103 之后的交接 PR 合入；站点/R2 发布快照未重新验收）
 
 ## 开发基线
 
 | 项 | 值 |
 |---|---|
-| master（本 PR 合入前） | `084dcedb`，PR #97（组合/歌曲 v2）；此前 #95 舞台 Smoke partial、#96 门户 v8 已合入。本谱面分支已通过普通 merge `28d870d5` 同步；本表不把待合入的谱面改动写成 master 已有 |
-| 谱面开发分支 | `chart/20261023-native-projection`；功能与性能证据输入 `0972a349`；[谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)。原生投影/音符/长条/middle/flick 静态提示及当前 Browser 约 59–60Hz 连续播放已验证，Autoplay 未实现 |
+| master | 已含 #98 谱面原生投影、#99 组合/歌曲 v2、#100 谱面自动演示时间线、#101 UI 审计收敛、#102 首页/摄影衣装筛选、#103 舞台衣装归族、#104 门户改造交接（#104 合入时为 `4ea7d284`） |
+| 谱面 | 无进行中分支。#98 原生投影、#100 自动演示 / 命中特效 / Combo·315 / 打击音已合入；最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，基线 [谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md) |
 | 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `1accd9d0aa698ec03ec6d0b80211939f914940abac105d51021b36a8fb321081`；data revision `2688ad94abf9bd93277ec844a6ada160131e6f0856e5fad891ceb69de72f83bc`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表下表站点已发布 |
 | 已有阶段 tag | `baseline/2026-10-20`（另保留 `baseline/2026-10-14`）；本 PR 尚未合入，不提前打新的 master 基线 tag |
 
@@ -32,9 +32,9 @@
 | 线 | 当前分支 | 下一步 |
 |---|---|---|
 | 剧情 / ADV | 无进行中分支（#59 候选工具、#66–#69/#71/#73 原生效果已合入） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；#58 的 SE `sheet` 总线路由与 #73 的 part 开头黑场都要晋升后才在已发布 compiled 上生效。晋升后才恢复翻译批次。粒子剩樱花（需给共用采样器加 ForceModule，红叶/雪语料未使用）；part 之间原生是 0.5 秒渐黑再停 1 秒，我们是直接切黑 |
-| 门户 portal | `portal/20261025-costume-filters`，从 master `d0531dcc`（#99）新开 | 首页/摄影衣装类别筛选已接入，覆盖690模型；见 [COSTUME_CATEGORY_FILTERS_20261025.md](COSTUME_CATEGORY_FILTERS_20261025.md)。图鉴动态预览仍待办。故事入口一律经 `src/core/StoryOwner.js` 落到归属页，不再新增通用故事页。盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定；关于页联系方式待定。启动 JS 预算已由导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
+| 门户 portal | 无进行中分支（#101 UI 审计收敛、#102 衣装筛选已合入） | **下一步：整体门户改造，按 [节目册 2.0 交接](GS_ARCHIVE_HANDOFF_20261027_PORTAL_REDESIGN.md) 的 P0–P7 分批做**；#101 的 Escape 收起修复待 Browser 复验。衣装筛选见 [COSTUME_CATEGORY_FILTERS_20261025.md](COSTUME_CATEGORY_FILTERS_20261025.md)；图鉴动态预览仍待办。故事入口一律经 `src/core/StoryOwner.js` 落到归属页，不再新增通用故事页。盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定；关于页联系方式待定。启动 JS 预算已由导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 谱面 chart | `chart/20261023-native-projection`，从 `2bdd3de4` 开，已同步 master `084dcedb`，待合入 master | [开发基线与下一步](CHART_DEVELOPMENT_BASELINE_20261024.md)、[原生证据审计](CHART_ASSUMPTION_AUDIT_20261023.md)、[帧率验收](CHART_FRAME_RATE_20261024.md)。下一批可预计算自动演示事件；原生命中特效需先补选择/资源/生命周期证据。输入判定、完整粒子、nextFlickNote 连线及物理手机验收仍独立保留 |
+| 谱面 chart | 无进行中分支（#98 原生投影、#100 自动演示时间线已合入） | 最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，下一批按其「下一批建议顺序」；另见 [开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)、[原生证据审计](CHART_ASSUMPTION_AUDIT_20261023.md)。仍开放：输入判定、完整原机粒子 / GPU 等价、共享 hold 循环与 Special 等音效 cue、物理手机验收。谱面界面改版并入门户交接 P3 |
 | 舞台 stage | `stage/20261025-costume-groups`，从 master `d0531dcc`（#99）新开，已同步 master（含 #100–#102、#104）；前轮粒子/Smoke 已随 #95 合入（`a3c03a6e`） | 本轮仅接舞台服装：549 个 Live 模型按适用范围→款式→普通/另一款→逐人 ID→当前出演位覆盖分层，个人衣装下拉分组；全员/组合/属性/跨组合套服可按可用成员应用，缺版本者保留原装。设计、来源和验收见 [STAGE_COSTUME_FAMILIES_20261025.md](STAGE_COSTUME_FAMILIES_20261025.md)。已再核对 141 个常服/剧情专用模型只有 comu、无 cos，不加入舞台舞蹈资源；摄影/图鉴 comu 预览留待办。前轮[收口记录](STAGE_PR_CLOSEOUT_20261023.md)的边界（Smoke partial、原机/GPU、RNG、Noise、参考时钟等）继续保留；本轮未部署 |
 
 舞台 Smoke 补证（同分支，输入 `91f61d32` / `8290ec28` / `84350bde`）：6系统/120个受控出生位置与单位方向、+1.5/+7/−7原生startSpeed及down两系统的6条无外力轨迹已核对。side四系统确认快速缓存拒绝非0/1端点，改走原生通用曲线，双常量重力→限速→积分16轨迹/320粒子检查点同新增JS运动核对照，最大误差1.06e−5。对照已纳入object-emitter门禁，见[Smoke来源记录](NATIVE_SMOKE_SOURCE_20261023.md)。此段为当时补证边界；随后已接入确定性 Web 场景预览，原机时钟/退休调度及完整场景等价仍开放。
