@@ -285,7 +285,7 @@
             <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSelection.basis === 'table2-selected-unit' ? '所选组合按原生槽序排列，可调整' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
             <!-- Who is heard: the official mix, or each formation idol's own part following SwitchSinger. -->
             <div v-if="stageVocalAvailable" class="lineup-vocal">
-              <label class="camera-toggle"><input v-model="stageVocalEnabled" type="checkbox" :disabled="booting" @change="handleStageVocalToggle" /><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span></label>
+              <label class="camera-toggle"><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span><GsSwitch :model-value="stageVocalEnabled" aria-label="按编成偶像演唱" :disabled="booting" @update:model-value="stageVocalEnabled = $event; handleStageVocalToggle()" /></label>
               <button type="button" class="lineup-vocal-mix" aria-label="声部与伴奏音量" title="声部与伴奏音量" @click="vocalSettingsOpen = true"><Music2 :size="17" /></button>
             </div>
             <!-- Unit_serif: the mix leaves this line silent and the game plays the deck center card's own take. -->
@@ -317,8 +317,8 @@
 
           <section v-show="panelTab === 'viewing'" :id="`${inspectorTitleId}-viewing`" class="control-section panel-section viewing-section" aria-label="观看设置">
             <div class="viewing-toggles">
-            <label class="camera-toggle"><input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" /><span>演出镜头</span></label>
-            <label class="camera-toggle"><input v-model="lyricsEnabled" type="checkbox" /><span>显示歌词</span></label>
+            <label class="camera-toggle"><span>演出镜头</span><GsSwitch :model-value="cameraEnabled" aria-label="演出镜头" @update:model-value="cameraEnabled = $event; applyCameraTransform()" /></label>
+            <label class="camera-toggle"><span>显示歌词</span><GsSwitch :model-value="lyricsEnabled" aria-label="显示歌词" @update:model-value="lyricsEnabled = $event" /></label>
             </div>
             <label class="viewing-select"><span>加载</span><select v-model="stageQuality" aria-label="舞台加载方式" @change="applyStageQuality"><option value="lite">轻量 · 舞台、人物与应援棒</option><option value="full">完整 · 含灯光与动态物件</option></select></label>
             <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
@@ -346,37 +346,29 @@
             <fieldset class="layer-debug-controls">
               <legend>显示图层</legend>
               <label>
-                <input v-model="staticStageEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>静态舞台</span>
+                <span>静态舞台</span><GsSwitch :model-value="staticStageEnabled" aria-label="静态舞台" @update:model-value="staticStageEnabled = $event; applyLayerDebugVisibility()" />
               </label>
               <label>
-                <input v-model="backmonitorEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>背景屏幕</span>
+                <span>背景屏幕</span><GsSwitch :model-value="backmonitorEnabled" aria-label="背景屏幕" @update:model-value="backmonitorEnabled = $event; applyLayerDebugVisibility()" />
               </label>
               <label>
-                <input v-model="imageLayersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>图片布景</span>
+                <span>图片布景</span><GsSwitch :model-value="imageLayersEnabled" aria-label="图片布景" @update:model-value="imageLayersEnabled = $event; applyLayerDebugVisibility()" />
               </label>
               <label>
-                <input v-model="objectLayersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>舞台物件</span>
+                <span>舞台物件</span><GsSwitch :model-value="objectLayersEnabled" aria-label="舞台物件" @update:model-value="objectLayersEnabled = $event; applyLayerDebugVisibility()" />
               </label>
               <label>
-                <input v-model="lightingEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>灯光染色</span>
+                <span>灯光染色</span><GsSwitch :model-value="lightingEnabled" aria-label="灯光染色" @update:model-value="lightingEnabled = $event; applyLayerDebugVisibility()" />
               </label>
               <label>
-                <input v-model="beamEffectsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>光束灯效</span>
+                <span>光束灯效</span><GsSwitch :model-value="beamEffectsEnabled" aria-label="光束灯效" @update:model-value="beamEffectsEnabled = $event; applyLayerDebugVisibility()" />
               </label>
-              <label><input v-model="penlightsEnabled" type="checkbox" @change="applyLayerDebugVisibility" /><span>应援棒</span></label>
+              <label><span>应援棒</span><GsSwitch :model-value="penlightsEnabled" aria-label="应援棒" @update:model-value="penlightsEnabled = $event; applyLayerDebugVisibility()" /></label>
               <label v-if="!isSpecialSingle">
-                <input v-model="charactersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>舞台人物</span>
+                <span>舞台人物</span><GsSwitch :model-value="charactersEnabled" aria-label="舞台人物" @update:model-value="charactersEnabled = $event; applyLayerDebugVisibility()" />
               </label>
               <label v-if="!isSpecialSingle">
-                <input v-model="characterShadowsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
-                <span>人物阴影</span>
+                <span>人物阴影</span><GsSwitch :model-value="characterShadowsEnabled" aria-label="人物阴影" @update:model-value="characterShadowsEnabled = $event; applyLayerDebugVisibility()" />
               </label>
             </fieldset>
             <label class="range-control environment-scale-control">
@@ -476,8 +468,7 @@
             <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
               <legend>{{ stageVocalLegend }}</legend>
               <label class="camera-toggle">
-                <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
-                <span>{{ stageVocalToggleLabel }}</span>
+                <span>{{ stageVocalToggleLabel }}</span><GsSwitch :model-value="stageVocalEnabled" aria-label="按编成偶像演唱" @update:model-value="stageVocalEnabled = $event; handleStageVocalToggle()" />
               </label>
               <details v-if="stageVocalEnabled" class="mix-details"><summary>声部与伴奏音量</summary>
                 <label class="range-control">
@@ -512,7 +503,7 @@
         <button type="button" role="radio" :aria-checked="pendingQuality === 'full'" @click="pendingQuality = 'full'"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
       </div>
       <p class="quality-tip"><Maximize :size="15" aria-hidden="true" />播放时选「沉浸观看」隐藏界面并全屏，画面最流畅。</p>
-      <label class="camera-toggle"><input v-model="rememberViewing" type="checkbox" @change="saveStageViewing" /><span>记住选择，下次不再询问</span></label>
+      <label class="camera-toggle"><span>记住选择，下次不再询问</span><GsSwitch :model-value="rememberViewing" aria-label="记住选择，下次不再询问" @update:model-value="rememberViewing = $event; saveStageViewing()" /></label>
       <small class="quality-note">之后可在「画面」里随时切换。</small>
       <button type="button" class="quality-start" @click="chooseStageQuality(pendingQuality)">开始加载</button>
     </ArchiveTerminalDialog>
@@ -543,6 +534,7 @@ import { colorLayersAt } from '../core/chibiColorLayers.js'
 import { bodyUniformsAt } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
+import GsSwitch from './gs/GsSwitch.vue'
 import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
@@ -4467,12 +4459,10 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .range-control { display: grid; grid-template-columns: 36px minmax(0, 1fr) 48px; gap: 9px; align-items: center; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .range-control input { width: 100%; accent-color: var(--accent); }
 .range-control output { color: var(--gs-ink); text-align: right; font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
-.camera-toggle { display: flex; min-height: 44px; gap: 8px; align-items: center; color: var(--gs-ink); font-size: var(--gs-text-ui); }
-.camera-toggle input { margin: 0; accent-color: var(--accent); }
+.camera-toggle { display: flex; min-height: 44px; gap: 12px; align-items: center; justify-content: space-between; color: var(--gs-ink); font-size: var(--gs-text-ui); }
 .layer-debug-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 12px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(111, 174, 229, 0.22); border-radius: 10px; }
 .layer-debug-controls legend { padding: 0 5px; color: #38796f; font-size: 10px; letter-spacing: 0.08em; }
-.layer-debug-controls label { display: flex; gap: 7px; align-items: center; min-width: 0; min-height: 44px; color: #45616a; font-size: 11px; }
-.layer-debug-controls input { margin: 0; accent-color: var(--accent); }
+.layer-debug-controls label { display: flex; gap: 8px; align-items: center; justify-content: space-between; min-width: 0; min-height: 44px; color: #45616a; font-size: 12px; }
 .runtime-summary { display: grid; gap: 8px; margin: 0; }
 .runtime-details > summary { min-height: 44px; display: list-item; align-content: center; color: #365860; font-size: 13px; line-height: 1.6; cursor: pointer; }
 .runtime-details .runtime-summary { margin-top: 8px; }

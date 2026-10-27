@@ -72,12 +72,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .settings-segment-options { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); overflow: hidden; }
 .settings-segment legend { padding: 0 0 7px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }.settings-segment button { min-height: 44px; border: 0; background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
 .settings-segment button.active { background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
-.settings-toggle { display: grid; grid-template-columns: minmax(0, 1fr) 40px; align-items: center; gap: 12px; min-height: 44px; font-size: var(--gs-text-ui); }
+.settings-toggle { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; font-size: var(--gs-text-ui); }
 .settings-toggle span { display: flex; flex-direction: column; gap: 5px; }.settings-toggle small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.settings-toggle input { position: absolute; opacity: 0; }.settings-toggle i { position: relative; width: 38px; height: 22px; border-radius: var(--gs-radius-pill); background: var(--gs-ink-3); }
-.settings-toggle i::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--gs-surface); }
-.settings-toggle input:checked + i { background: var(--gs-mint); }.settings-toggle input:checked + i::after { left: 19px; }
-.settings-toggle input:focus-visible + i { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: 3px; }
 .settings-range > div { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; gap: 10px; }.settings-range input { width: 100%; min-height: 34px; accent-color: var(--gs-mint-ink); }.settings-range output { font-size: var(--gs-text-ui); }
 .scene-settings footer button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 15px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); }
 .settings-reset { background: var(--gs-surface); color: var(--gs-ink-2); }.settings-done { border-color: var(--gs-action-bg) !important; background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); min-width: 110px; }

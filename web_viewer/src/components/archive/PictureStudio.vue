@@ -66,7 +66,7 @@
           <p role="status" class="studio-status">
             {{ rendering ? "正在更新构图…" : status }}
           </p>
-          <label class="studio-snap-toggle"><input v-model="snapOn" type="checkbox" />吸附<small class="hint-pointer">对齐线与 0°/90° 旋转；按住 Alt 临时关闭</small><small class="hint-touch">对齐线与 0°/90° 旋转；需要自由摆放时关闭</small></label>
+          <label class="studio-snap-toggle"><GsSwitch v-model="snapOn" aria-label="吸附" />吸附<small class="hint-pointer">对齐线与 0°/90° 旋转；按住 Alt 临时关闭</small><small class="hint-touch">对齐线与 0°/90° 旋转；需要自由摆放时关闭</small></label>
           <div class="studio-toolbar">
             <button
               type="button"
@@ -358,6 +358,7 @@
 <script setup>
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
+import GsSwitch from '../gs/GsSwitch.vue'
 import {costumeFilterView} from '../../presentation/CostumeCategories.js'
 import {storyCostumeLabel} from '../../presentation/costumeSeries.js'
 import { computed, nextTick, onMounted, onScopeDispose, ref, shallowRef, watch } from "vue";

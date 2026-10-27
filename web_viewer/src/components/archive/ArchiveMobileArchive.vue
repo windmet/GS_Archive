@@ -53,11 +53,8 @@
           class="unlock-toggle"
           title="原游戏开放条件：仅记录原游戏中的开放条件，不影响资料馆内已收录内容的浏览与播放。"
         >
-          <input
-            v-model="showUnlockConditions"
-            type="checkbox"
-          />
           <span>显示开放条件</span>
+          <GsSwitch v-model="showUnlockConditions" aria-label="显示开放条件" />
         </label>
       </div>
 
@@ -163,6 +160,7 @@ import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveCardFullTitle} from './useArchiveCardTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import GsSwitch from '../gs/GsSwitch.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
 import { communicationUnlockAction } from '../../presentation/communicationUnlock.js'
 import { formatArchiveDate, consolidateProgressiveUnlocks } from '../../data/idolCommunicationSelectors.js'
@@ -243,7 +241,8 @@ function tabCount(mode) {
   if (mode === 'random') return randomTopicCount.value
   const source = mode === 'unit' ? props.unitData?.view?.unitBundles
     : mode === 'phone' ? props.idolData?.view?.phoneBundles : props.idolData?.view?.personalBundles
-  return (source || []).reduce((sum, bundle) => sum + bundle.scenarios.length, 0)
+  // The same unit as the list under the tab (one row per bundle), so the tab and the 「N 条记录」 line agree.
+  return (source || []).length
 }
 function moveSelection(delta) {
   const options = selectionOptions.value
@@ -327,7 +326,13 @@ const callDocumentId = bundle => String(bundle.file || '').replace(/\.json$/u, '
 // Chat previews and topic titles are chat lines, translated with the chats overlay.
 void loadArchiveNames('chats').catch(() => {})
 const CHAT_KEYS = [['chat-line', 'text'], ['chat-choice', 'text'], ['chat-choice', 'detail']]
-const chatText = source => archiveLineText('chats', CHAT_KEYS, source)
+// A title is a one-line preview. The source breaks a line after every phrase; in Japanese and Chinese the pieces join
+// with nothing between them (HTML would render each break as a space), in other languages with one space.
+const joinPreviewLines = (text, lang) => /^(ja|zh)/i.test(lang || 'ja') ? text.replace(/\s*\n\s*/g, '') : text.replace(/\s*\n\s*/g, ' ')
+const chatText = source => {
+  const result = archiveLineText('chats', CHAT_KEYS, source)
+  return result && typeof result.text === 'string' ? { ...result, text: joinPreviewLines(result.text, result.lang) } : result
+}
 const callTitleText = bundle => archiveLineText('card-lines', [['call-title', 'title']], callTitle(bundle))
 function callTitle(bundle) {
   return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''
@@ -405,8 +410,7 @@ function timeWindow(topic) {
 .content-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); }
 .content-heading .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 .content-heading > strong { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.unlock-toggle { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); cursor: pointer; user-select: none; }
-.unlock-toggle input[type="checkbox"] { cursor: pointer; accent-color: var(--gs-mint); }
+.unlock-toggle { display: inline-flex; align-items: center; gap: var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-meta); cursor: pointer; user-select: none; }
 @container mobile-archive (max-width: 390px) {
   .unlock-toggle { margin-left: auto; }
 }

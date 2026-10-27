@@ -37,51 +37,12 @@
       </div>
 
       <ArchiveFilterSheet title="筛选卡片" title-id="card-filter-title" :active-count="activeFilterCount">
-      <label class="asset-filter">
-        <span>属性</span>
-        <select aria-label="卡片属性" :value="currentAttribute" @change="emit('select-attribute', $event.target.value)">
-          <option value="all">全部属性</option>
-          <option v-for="attribute in ['Physical','Intelligence','Mental']" :key="attribute" :value="attribute">{{ attributeLabel(attribute) }}</option>
-        </select>
-      </label>
-
-      <label class="asset-filter">
-        <span>资源</span>
-        <select aria-label="卡片资源" :value="currentAssetState" @change="emit('select-asset-state', $event.target.value)">
-          <option v-for="option in assetStateOptions" :key="option.id" :value="option.id">
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
-
-      <label class="asset-filter relation-filter">
-        <span>关联</span>
-        <select aria-label="卡片关联" :value="currentRelationState" @change="emit('select-relation-state', $event.target.value)">
-          <option v-for="option in relationStateOptions" :key="option.id" :value="option.id">
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
+      <GsFilterMenu label="属性" :model-value="currentAttribute" :options="attributeOptions" neutral="all" @update:model-value="emit('select-attribute', $event)" />
+      <GsFilterMenu label="资源" :model-value="currentAssetState" :options="assetMenuOptions" :neutral="assetMenuOptions[0]?.value" @update:model-value="emit('select-asset-state', $event)" />
+      <GsFilterMenu label="关联" :model-value="currentRelationState" :options="relationMenuOptions" :neutral="relationMenuOptions[0]?.value" @update:model-value="emit('select-relation-state', $event)" />
       </ArchiveFilterSheet>
 
-      <div class="card-layout-toggle" aria-label="视图模式">
-        <button
-          title="紧凑列表"
-          :class="{ active: layout === 'compact' }"
-          :aria-pressed="layout === 'compact'"
-          @click="emit('update:layout', 'compact')"
-        >
-          <List :size="17" />
-        </button>
-        <button
-          title="网格视图"
-          :class="{ active: layout === 'grid' }"
-          :aria-pressed="layout === 'grid'"
-          @click="emit('update:layout', 'grid')"
-        >
-          <LayoutGrid :size="17" />
-        </button>
-      </div>
+      <GsSegmented class="card-layout-toggle" :model-value="layout" :options="layoutOptions" aria-label="视图模式" @update:model-value="emit('update:layout', $event)" />
     </div>
 
     <div v-if="!cards.length" class="card-empty-state" role="status">
@@ -132,6 +93,8 @@ import { ChevronRight, LayoutGrid, List } from '@lucide/vue'
 import ArchiveFilterSheet from './ArchiveFilterSheet.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
+import GsSegmented from '../gs/GsSegmented.vue'
 import {archiveText} from './useArchiveCardTitle.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import { attributeLabel } from '../../presentation/AttributeLabel.js'
@@ -181,6 +144,12 @@ const relationStateOptions = [
   { id: 'release_series', label: '共通系列' },
   { id: 'unrelated', label: '暂无直接关联' },
 ]
+
+// The filter menus take { value, label }; the two long lists keep their ids as values.
+const assetMenuOptions = assetStateOptions.map(option => ({ value: option.id, label: option.label }))
+const relationMenuOptions = relationStateOptions.map(option => ({ value: option.id, label: option.label }))
+const attributeOptions = [{ value: 'all', label: '全部属性' }, ...['Physical', 'Intelligence', 'Mental'].map(attribute => ({ value: attribute, label: attributeLabel(attribute) }))]
+const layoutOptions = [{ value: 'compact', icon: List, ariaLabel: '紧凑列表', label: '紧凑列表' }, { value: 'grid', icon: LayoutGrid, ariaLabel: '网格视图', label: '网格视图' }]
 
 const activeFilterCount = computed(() => [props.currentAttribute, props.currentAssetState, props.currentRelationState].filter(value => value !== 'all').length)
 
@@ -245,11 +214,6 @@ function fallbackCardIcon(event, resourceId) {
 .card-rarity-tab small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); }
 .card-rarity-tab.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
 .card-rarity-tab.active small { color: inherit; }
-.asset-filter { display: flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.asset-filter select { height: var(--gs-control-compact); max-width: 170px; padding: 0 var(--gs-space-7) 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
-.card-layout-toggle { display: flex; gap: var(--gs-space-1); }
-.card-layout-toggle button { display: grid; place-items: center; width: var(--gs-control-compact); height: var(--gs-control-compact); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); cursor: pointer; }
-.card-layout-toggle button.active { background: var(--gs-mint-wash); color: var(--gs-ink); }
 
 .card-archive-list { display: grid; gap: 0 var(--gs-space-7); grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8) var(--gs-space-9); }
 .card-archive-row { display: grid; grid-template-columns: 56px 40px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: 72px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
@@ -283,22 +247,18 @@ function fallbackCardIcon(event, resourceId) {
   .card-archive-row:hover .card-title { color: var(--gs-mint-ink); }
   .card-rarity-tab:hover:not(.active) { border-color: var(--gs-ink-3); }
 }
-.card-archive-row:focus-visible, .card-rarity-tab:focus-visible, .card-layout-toggle button:focus-visible, .asset-filter select:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.card-archive-row:focus-visible, .card-rarity-tab:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 
 @media (max-width: 760px) {
   .card-empty-state { padding: var(--gs-space-8) var(--gs-space-5); }
   .card-empty-reset { min-height: var(--gs-control-touch); }
   .card-idol-heading { padding: var(--gs-space-3) var(--gs-space-5); }
   .card-idol-heading :deep(.idol-switcher) { width: 100%; }
-  .card-idol-heading :deep(.idol-switcher label > span) { display: none; }
-  .card-idol-heading :deep(.idol-switcher select) { min-width: 0; height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
-  .card-idol-heading :deep(.idol-switcher > button) { width: var(--gs-control-touch); height: var(--gs-control-touch); flex-basis: var(--gs-control-touch); }
   .embedded-filters { gap: var(--gs-space-3); padding: var(--gs-space-2) var(--gs-space-5) var(--gs-space-3); }
   .card-rarity-tabs { flex: 1 0 100%; flex-wrap: nowrap; margin: 0; overflow-x: auto; scrollbar-width: none; }
   .embedded-filters :deep(.filter-sheet-trigger) { margin-right: auto; }
   .card-rarity-tabs::-webkit-scrollbar { display: none; }
   .card-rarity-tab { flex: 0 0 auto; min-height: var(--gs-control-touch); line-height: calc(var(--gs-control-touch) - 2px); white-space: nowrap; }
-  .card-layout-toggle button { width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .card-archive-list { grid-template-columns: minmax(0, 1fr); padding: var(--gs-space-2) var(--gs-space-5) calc(var(--gs-space-8) + env(safe-area-inset-bottom)); }
   .card-archive-row { grid-template-columns: 56px minmax(0, 1fr) 18px; grid-template-rows: auto auto; gap: var(--gs-space-1) var(--gs-space-4); }
   .card-thumb { grid-column: 1; grid-row: 1 / 3; align-self: center; }

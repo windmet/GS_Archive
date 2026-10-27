@@ -28,7 +28,8 @@ assert.equal([...tokens.matchAll(/^\s*--gs-idol\s*:/gm)].length, 1, '--gs-idol m
 
 const dir = path.join(root, 'src/components/gs')
 const files = readdirSync(dir).filter(name => name.endsWith('.vue')).sort()
-assert.deepEqual(files, ['GsInfo.vue', 'GsRow.vue', 'GsSegmented.vue', 'GsSwitch.vue'])
+// P1.6 added GsFilterMenu (the many-values filter that replaced native selects); it meets the same rules.
+assert.deepEqual(files, ['GsFilterMenu.vue', 'GsInfo.vue', 'GsRow.vue', 'GsSegmented.vue', 'GsSwitch.vue'])
 for (const file of files) {
   const source = readFileSync(path.join(dir, file), 'utf8')
   const used = [...source.matchAll(/var\((--gs-[a-z0-9-]+)/g)].map(match => match[1])

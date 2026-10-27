@@ -7,8 +7,8 @@
     <div class="catalog-filter">
       <label class="catalog-search"><span>搜索</span><input :value="query" type="search" placeholder="活动名称或编号" @input="emit('query',$event.target.value)" /></label>
       <ArchiveFilterSheet title="筛选活动" title-id="event-filter-title" :active-count="(eventKind ? 1 : 0) + (sort !== 'newest' ? 1 : 0)">
-        <label><span>活动形式</span><select v-model="eventKind"><option value="">全部</option><option v-for="(label,id) in eventKindLabels" :key="id" :value="id">{{ label }}</option></select></label>
-        <label><span>排序</span><select v-model="sort"><option value="newest">最新优先</option><option value="oldest">最早优先</option></select></label>
+        <GsFilterMenu v-model="eventKind" label="活动形式" :options="kindOptions" neutral="" />
+        <GsSegmented v-model="sort" :options="sortOptions" aria-label="排序" />
       </ArchiveFilterSheet>
       <span>{{ ready ? `${filtered.length} 条结果` : busy ? '正在读取…' : '结果暂不可用' }}</span>
     </div>
@@ -34,6 +34,8 @@ import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs
 import {eventResources} from '../../data/eventResourceGraph.js'
 import EventResourceImage from './EventResourceImage.vue'
 import ArchiveFilterSheet from './ArchiveFilterSheet.vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
+import GsSegmented from '../gs/GsSegmented.vue'
 import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
 import { eventMatchesIdol, idolEventIds } from '../../presentation/CatalogIdolScope.js'
 const props=defineProps({scopeIdol:{type:Object,default:null},idolName:{type:Function,default:()=>''},loadIdol:Function,client:Object,bootstrap:Object,query:{type:String,default:''},browseState:{type:Object,default:()=>({kind:'',sort:'newest',page:0})}})
@@ -44,6 +46,8 @@ const relatedEventIds=computed(()=>idolEventIds(scopeDetail.value))
 const sourceRows=shallowRef([]),busy=ref(false),error=ref('')
 function filterModel(key){return computed({get:()=>props.browseState[key] ?? (key==='page'?0:key==='sort'?'newest':''),set:value=>emit('browse',{...props.browseState,[key]:value,...(key==='page'?{}:{page:0})})})}
 const page=filterModel('page'),eventKind=filterModel('kind'),sort=filterModel('sort')
+const kindOptions=[{value:'',label:'全部'},...Object.entries(eventKindLabels).map(([value,label])=>({value,label}))]
+const sortOptions=[{value:'newest',label:'最新优先'},{value:'oldest',label:'最早优先'}]
 const rows=computed(()=>sourceRows.value.filter(row=>eventMatchesIdol(row,props.scopeIdol,relatedEventIds.value)))
 const ready=computed(()=>!busy.value&&!error.value)
 const storyCount=computed(()=>rows.value.filter(row=>row.resources?.storyAvailable).length)

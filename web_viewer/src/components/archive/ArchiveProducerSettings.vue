@@ -15,7 +15,7 @@
           <span class="settings-row-copy"><strong>{{ favorite ? displayName(favorite) : '尚未设置担当' }}</strong><small>{{ favorite?.unitName ? `我的担当 · ${favorite.unitName}` : '资料馆首页会围绕担当展开；临时浏览其他偶像不会改变它。' }}</small></span>
           <button type="button" class="settings-button" @click="favoriteOpen=true">{{ favorite ? '更换担当' : '选择担当' }}</button>
         </div>
-        <label class="settings-row"><span class="settings-row-copy"><span>跟随担当配色</span><small>{{ favorite ? '选中、播放与进度改用担当色。' : '设置担当后可用。' }}</small></span><input type="checkbox" aria-label="跟随担当配色" :checked="preferences.stageLight === 'idol'" :disabled="!favorite" @change="emit('save-startup',{stageLight:$event.target.checked ? 'idol' : 'mint'})" /></label>
+        <label class="settings-row"><span class="settings-row-copy"><span>跟随担当配色</span><small>{{ favorite ? '选中、播放与进度改用担当色。' : '设置担当后可用。' }}</small></span><GsSwitch aria-label="跟随担当配色" :model-value="preferences.stageLight === 'idol'" :disabled="!favorite" @update:model-value="emit('save-startup',{stageLight:$event ? 'idol' : 'mint'})" /></label>
         <div class="settings-row settings-name"><ProducerNameSetting /></div>
       </section>
 
@@ -32,7 +32,7 @@
 
       <section class="settings-group" aria-labelledby="settings-sound">
         <h2 id="settings-sound">声音</h2>
-        <label class="settings-row"><span>事务所自动语音</span><input type="checkbox" aria-label="事务所自动语音" :checked="home.autoVoice" @change="home=saveArchiveHomePreferences({...home,autoVoice:$event.target.checked})" /></label>
+        <label class="settings-row"><span>事务所自动语音</span><GsSwitch aria-label="事务所自动语音" :model-value="home.autoVoice" @update:model-value="home=saveArchiveHomePreferences({...home,autoVoice:$event})" /></label>
         <label class="settings-row"><span>主音量</span><span class="volume-control"><input type="range" aria-label="主音量" min="0" max="1" step="0.01" :value="player.volumes.master" @input="savePlayer({volumes:{master:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.master*100) }}%</output></span></label>
         <label class="settings-row"><span>剧情 BGM</span><span class="volume-control"><input type="range" aria-label="剧情 BGM 音量" min="0" max="1" step="0.01" :value="player.volumes.bgm" @input="savePlayer({volumes:{bgm:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.bgm*100) }}%</output></span></label>
         <label class="settings-row"><span>语音</span><span class="volume-control"><input type="range" aria-label="语音音量" min="0" max="1" step="0.01" :value="player.volumes.voice" @input="savePlayer({volumes:{voice:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.voice*100) }}%</output></span></label>
@@ -58,6 +58,7 @@
 import {computed,onMounted,ref} from 'vue'
 import {ArrowLeft,Download,Upload,UserRound} from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import GsSwitch from '../gs/GsSwitch.vue'
 import ProducerNameSetting from './ProducerNameSetting.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
@@ -89,7 +90,7 @@ onMounted(()=>heading.value?.focus({preventScroll:true}))
 .settings-group h2 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
 .settings-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); align-items: center; gap: var(--gs-space-5); min-height: 56px; padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
 .settings-row select { width: 100%; min-width: 0; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
-.settings-row input[type=checkbox] { justify-self: end; width: 20px; height: 20px; margin: 0; accent-color: var(--gs-mint-ink); }
+.settings-row .gs-switch { justify-self: end; }
 .settings-row input[type=range] { flex: 1; min-width: 0; accent-color: var(--gs-mint-ink); }
 .volume-control { display: flex; align-items: center; gap: var(--gs-space-3); }
 .volume-control output { min-width: 40px; color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-variant-numeric: tabular-nums; text-align: right; }
@@ -115,7 +116,7 @@ onMounted(()=>heading.value?.focus({preventScroll:true}))
   .settings-head h1 { font-size: var(--gs-text-section); }
   .settings-group { margin-top: var(--gs-space-8); }
   .settings-row { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
-  .settings-row:has(> input[type=checkbox]) { grid-template-columns: minmax(0, 1fr) auto; }
+  .settings-row:has(> .gs-switch) { grid-template-columns: minmax(0, 1fr) auto; }
   .settings-row select { min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .settings-favorite { grid-template-columns: auto minmax(0, 1fr); }
   .settings-favorite .settings-button { grid-column: 1 / -1; }

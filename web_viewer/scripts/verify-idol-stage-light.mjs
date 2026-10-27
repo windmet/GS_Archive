@@ -55,7 +55,8 @@ assert.match(stageSwitch, /normalizeIdolAccentColor\(props\.idol\?\.color\)/)
 assert.match(stageSwitch, /outline: 2px solid var\(--stage-idol-ring\)/)
 assert.match(stageSwitch, /<GsSwitch :model-value="stageLight"[^>]*@update:model-value="emit\('save-startup', \{ stageLight: \$event \? 'idol' : 'mint' \}\)"/)
 assert.match(stageSwitch, /<ArchiveIdolPickerPanel[\s\S]{0,200}@update:model-value="emit\('save-preferred', \$event\)/)
-assert.match(read('src/components/archive/ArchiveProducerSettings.vue'), /stageLight:\$event\.target\.checked \? 'idol' : 'mint'/)
+// P1.6: the settings row is a GsSwitch too, off without an idol to follow.
+assert.match(read('src/components/archive/ArchiveProducerSettings.vue'), /<GsSwitch aria-label="跟随担当配色" :model-value="preferences\.stageLight === 'idol'" :disabled="!favorite" @update:model-value="emit\('save-startup',\{stageLight:\$event \? 'idol' : 'mint'\}\)"/)
 
 // Errors never rely on the critical colour alone.
 for (const [file, cls] of [['src/components/ChibiStageViewer.vue', 'audio-error'], ['src/components/SpineViewer.vue', 'audio-error'],
