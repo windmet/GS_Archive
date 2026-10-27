@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { segmentedNextIndex } from '../src/presentation/GsSegmentedKeys.mjs'
+import { groupConsoleIdols } from '../src/presentation/HomeConsole.js'
 
 // P0 of the program-booklet 2.0 redesign: the v2 token increment and the four base components
 // (GsSegmented, GsRow, GsSwitch, GsInfo). Components may only read tokens that exist, so a
@@ -61,4 +62,12 @@ assert.equal(segmentedNextIndex(opts(['x', 'b', 'c']), 2, 'Home'), 1, 'Home land
 assert.equal(segmentedNextIndex(opts(['x', 'x']), 0, 'ArrowRight'), -1, 'nothing selectable')
 assert.equal(segmentedNextIndex(opts(['a', 'b']), 0, 'Enter'), -1, 'other keys are ignored')
 assert.equal(segmentedNextIndex([], 0, 'ArrowRight'), -1)
+// 事务所 console idol list: grouped by unit in roster order, searched by full name, kana or unit.
+const roster = [{ id: 'a', name: '天瀬冬馬', kana: 'あまがせ とうま', unitName: 'Jupiter' }, { id: 'b', name: '御手洗翔太', kana: 'みたらい しょうた', unitName: 'Jupiter' }, { id: 'c', name: '天道輝', kana: 'てんどう てる', unitName: 'DRAMATIC STARS' }]
+const shown = idol => ({ a: '天濑冬马' })[idol.id] || idol.name
+assert.deepEqual(groupConsoleIdols(roster, shown).map(group => [group.unit, group.idols.map(idol => idol.id)]), [['Jupiter', ['a', 'b']], ['DRAMATIC STARS', ['c']]])
+assert.deepEqual(groupConsoleIdols(roster, shown, '濑').map(group => group.idols.map(idol => idol.id)), [['a']], 'matches the displayed (translated) name')
+assert.deepEqual(groupConsoleIdols(roster, shown, 'しょうた').flatMap(group => group.idols.map(idol => idol.id)), ['b'], 'matches kana')
+assert.deepEqual(groupConsoleIdols(roster, shown, 'jupiter').flatMap(group => group.idols.map(idol => idol.id)), ['a', 'b'], 'a unit name keeps the whole unit')
+assert.deepEqual(groupConsoleIdols(roster, shown, '没有'), [])
 console.log(`GS primitives: ${V2_TOKENS.length} v2 tokens, ${files.length} components, keyboard model ok`)

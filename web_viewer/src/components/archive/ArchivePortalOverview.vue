@@ -6,7 +6,11 @@
           <button v-if="canGoBack" class="overview-icon-button" type="button" aria-label="返回来源页" data-archive-focus-id="portal-back" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
           <h1 id="portal-title" ref="heading" tabindex="-1">资料馆</h1>
           <span class="overview-breadcrumb-divider" aria-hidden="true">/</span>
-          <button class="overview-lens-trigger" type="button" aria-label="切换资料馆视角" :aria-expanded="scopeOpen" @click="scopeOpen = true"><ArchiveIdolAvatar v-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="26" decorative /><Users v-else :size="17" /><span>{{ preferredReference?.actionable ? preferredName : '全站档案' }}</span><ChevronRight :size="15" /></button>
+          <!-- The view switch: the whole archive, or one idol's workbench (the saved 担当, or whoever was opened). -->
+          <GsSegmented class="overview-lens" :model-value="lensValue" :options="lensOptions" aria-label="资料馆视角" @update:model-value="chooseLens">
+            <template #default="{ option }"><ArchiveIdolAvatar v-if="option.code" :idol-code="option.code" :size="20" :ring-width="0" :gap="0" decorative /><span class="overview-lens-name">{{ option.label }}</span></template>
+          </GsSegmented>
+          <button class="overview-icon-button overview-lens-change" type="button" aria-label="更换视角偶像" :aria-expanded="scopeOpen" title="更换视角偶像" @click="scopeOpen = true"><ChevronsUpDown :size="16" aria-hidden="true" /></button>
         </div>
 
 
@@ -203,7 +207,7 @@
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
 import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
+import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ChevronsUpDown, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
@@ -212,6 +216,7 @@ import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
+import GsSegmented from '../gs/GsSegmented.vue'
 import PortalCardBento from './PortalCardBento.vue'
 import { useNearViewportKeys } from './useNearViewport.js'
 import {portalTimeline} from '../../presentation/PortalBento.js'
@@ -313,6 +318,19 @@ const almanacIdolName=code=>props.idolName(code,props.idols.find(row=>row.id===c
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
+const lensIdolCode = computed(() => props.preferredReference?.actionable ? props.preferredReference.idolCode : props.savedIdolCode)
+const lensValue = computed(() => props.preferredReference?.actionable ? 'idol' : 'all')
+const lensOptions = computed(() => [
+  { value: 'all', label: '全站' },
+  { value: 'idol', code: lensIdolCode.value, label: lensIdolCode.value
+    ? (props.preferredReference?.actionable ? preferredName.value : props.idolName(lensIdolCode.value, props.idols.find(row => row.id === lensIdolCode.value)?.name))
+    : '选择担当' },
+])
+function chooseLens(value) {
+  if (value === 'all') chooseScope('')
+  else if (lensIdolCode.value) chooseScope(lensIdolCode.value)
+  else scopeOpen.value = true
+}
 function openDirectory(domain, filters = {}) {
   emit('open-directory', { domain, idolCode: props.preferredReference?.actionable ? props.preferredReference.idolCode : '', ...filters })
 }
@@ -440,9 +458,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-brand h1:focus { outline:none; }
 .overview-breadcrumb-divider { color:var(--gs-ink-3); }
 .overview-icon-button { display:grid;place-items:center;flex:none;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
-.overview-lens-trigger { display:flex;align-items:center;gap:var(--gs-space-3);min-width:0;min-height:var(--gs-control-toolbar);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink);font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold); }
-.overview-lens-trigger span { max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.overview-lens-trigger > svg:last-child { color:var(--gs-ink-3); }
+.overview-lens { min-width:0; max-width:100%; }
+.overview-lens :deep(.gs-segmented-option) { gap:var(--gs-space-3); }
+.overview-lens-name { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.overview-lens-change { color:var(--gs-ink-3); }
 .overview-toolbar-actions { display:flex;align-items:center;justify-content:flex-end;gap:var(--gs-space-1); }
 .overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
 
@@ -718,7 +737,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-birthdays button:hover strong { color:var(--gs-mint-ink); }
   .overview-stat:hover { border-color:var(--gs-selected-line); }
   .overview-stat:hover strong { color:var(--gs-mint-ink); }
-  .overview-icon-button:hover, .overview-lens-trigger:hover { background:var(--gs-mint-wash); }
+  .overview-icon-button:hover { background:var(--gs-mint-wash); }
   .overview-preferred-actions button:hover { background:color-mix(in srgb, var(--gs-surface) 70%, transparent); }
   .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
   .overview-section-heading button:hover, .overview-personal-meta button:hover, .overview-search-results li > button:hover,
@@ -774,8 +793,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-brand { display:contents; }
   .overview-breadcrumb-divider { display:none; }
   .overview-toolbar-actions { grid-column:3;grid-row:1; }
-  .overview-lens-trigger { grid-column:1 / -1;grid-row:2;justify-self:start;max-width:100%;border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface); }
-  .overview-lens-trigger span { max-width:none; }
+  .overview-lens { grid-column:1 / -1;grid-row:2;justify-self:start; }
+  .overview-lens-change { grid-row:2;justify-self:start; }
   .overview-toolbar > .overview-search { grid-row:3; }
   .overview-search-results { width:100%; }
   /* Counts are links: two rows of two, each a full touch target, numbers aligned in a column. */

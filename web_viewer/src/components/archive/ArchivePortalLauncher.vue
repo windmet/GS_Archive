@@ -9,7 +9,7 @@
       @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')"
       @select-scope="emit('select-scope', $event)" @save-preferred="emit('save-preferred', $event)" @expand-cards="emit('expand-cards')">
       <template #toolbar>
-        <ArchiveLanguageSwitch dropdown />
+        <ArchiveLanguageSwitch />
         <button class="portal-control" type="button" aria-label="更换 SSR 卡面壁纸" title="SSR 卡面壁纸" data-archive-focus-id="portal-wallpaper" @click="wallpaperOpen = true"><Images :size="18" aria-hidden="true" /></button>
         <button class="portal-control" type="button" aria-label="制作人设置" title="制作人设置" data-archive-focus-id="portal-settings" @click="emit('settings')"><Settings2 :size="18" aria-hidden="true" /></button>
       </template>

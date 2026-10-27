@@ -2,7 +2,7 @@
   <div ref="root" class="gs-segmented" :class="{ 'on-dark': onDark, compact }" role="radiogroup" :aria-label="ariaLabel" :style="{ '--segments': options.length, '--selected': Math.max(selectedIndex, 0) }" @keydown="onKey">
     <span v-if="selectedIndex >= 0" class="gs-segmented-thumb" aria-hidden="true"></span>
     <button v-for="(option, index) in options" :key="option.value" type="button" role="radio" class="gs-segmented-option" :aria-checked="index === selectedIndex" :aria-label="option.ariaLabel || undefined" :tabindex="index === focusIndex ? 0 : -1" :disabled="option.disabled" :lang="option.lang" @click="choose(option)">
-      <span class="gs-segmented-label">{{ option.label }}</span><span v-if="option.short" class="gs-segmented-short" aria-hidden="true">{{ option.short }}</span>
+      <span class="gs-segmented-label"><slot :option="option">{{ option.label }}</slot></span><span v-if="option.short" class="gs-segmented-short" aria-hidden="true">{{ option.short }}</span>
     </button>
   </div>
 </template>
@@ -11,7 +11,8 @@ import { computed, ref } from 'vue'
 import { segmentedNextIndex } from '../../presentation/GsSegmentedKeys.mjs'
 // Mode switch: a recessed track with one white thumb that slides to the chosen segment.
 // options: [{ value, label, short?, ariaLabel?, lang?, disabled? }]; at most three segments by the design rules.
-// `compact` swaps each label for its `short` form when the row is too tight.
+// `compact` swaps each label for its `short` form when the row is too tight. The default slot receives { option }
+// to draw richer content (an avatar beside a name) inside a segment.
 const props = defineProps({ modelValue: { type: [String, Number, Boolean], default: null }, options: { type: Array, required: true }, ariaLabel: { type: String, required: true }, onDark: Boolean, compact: Boolean })
 const emit = defineEmits(['update:modelValue'])
 const root = ref(null)
