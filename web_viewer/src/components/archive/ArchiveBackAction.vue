@@ -29,7 +29,7 @@ const emit = defineEmits(['back'])
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: var(--archive-back-ink, #16838d);
+  color: var(--archive-back-ink, var(--gs-ink-2));
   cursor: pointer;
   font: inherit;
   font-size: 14px;
@@ -37,11 +37,11 @@ const emit = defineEmits(['back'])
   white-space: nowrap;
 }
 .archive-back-action.is-pill {
-  border: 1px solid var(--archive-back-border, #cde7eb);
+  border: 1px solid var(--archive-back-border, var(--gs-line));
   border-radius: 24px;
   background: var(--archive-back-fill, transparent);
 }
 .archive-back-action.is-icon-only { width: 44px; padding: 0; }
-.archive-back-action:hover { background: var(--archive-back-hover, #eaf8f6); }
-.archive-back-action:focus-visible { outline: 3px solid #168f98; outline-offset: 3px; }
+.archive-back-action:hover { background: var(--archive-back-hover, var(--gs-hover)); }
+.archive-back-action:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: 2px; }
 </style>

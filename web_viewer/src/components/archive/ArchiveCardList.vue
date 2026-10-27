@@ -13,9 +13,6 @@
     </ArchiveListHeader>
 
     <div class="card-idol-heading">
-      <div class="card-idol-copy">
-        <strong>{{ title }}</strong>
-      </div>
       <ArchiveIdolSwitcher
         :idols="idols"
         allow-all
@@ -240,9 +237,7 @@ function fallbackCardIcon(event, resourceId) {
 <style scoped>
 /* Card catalogue: heading, one filter bar, then hairline rows or a border-free art grid. */
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); }
-.card-idol-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-6); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-7) var(--gs-space-8) var(--gs-space-4); }
-.card-idol-copy { min-width: 0; }
-.card-idol-heading strong { display: block; overflow: hidden; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+.card-idol-heading { display: flex; align-items: center; justify-content: flex-end; gap: var(--gs-space-6); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-7) var(--gs-space-8) var(--gs-space-4); }
 .card-idol-heading :deep(.idol-switcher) { width: min(360px, 48vw); }
 .embedded-filters { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-5); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8); border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); }
 .card-rarity-tabs { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); margin-right: auto; }
@@ -294,7 +289,6 @@ function fallbackCardIcon(event, resourceId) {
   .card-empty-state { padding: var(--gs-space-8) var(--gs-space-5); }
   .card-empty-reset { min-height: var(--gs-control-touch); }
   .card-idol-heading { padding: var(--gs-space-3) var(--gs-space-5); }
-  .card-idol-copy { display: none; }
   .card-idol-heading :deep(.idol-switcher) { width: 100%; }
   .card-idol-heading :deep(.idol-switcher label > span) { display: none; }
   .card-idol-heading :deep(.idol-switcher select) { min-width: 0; height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }

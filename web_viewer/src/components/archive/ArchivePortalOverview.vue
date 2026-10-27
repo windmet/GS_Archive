@@ -1,16 +1,13 @@
 <template>
   <div class="portal-overview-scroll" data-archive-scroll-container>
-    <div class="portal-overview">
       <header class="overview-toolbar">
         <div class="overview-brand">
           <button v-if="canGoBack" class="overview-icon-button" type="button" aria-label="返回来源页" data-archive-focus-id="portal-back" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
           <h1 id="portal-title" ref="heading" tabindex="-1">资料馆</h1>
-          <span class="overview-breadcrumb-divider" aria-hidden="true">/</span>
           <!-- The view switch: the whole archive, or one idol's workbench (the saved 担当, or whoever was opened). -->
           <GsSegmented class="overview-lens" :model-value="lensValue" :options="lensOptions" aria-label="资料馆视角" @update:model-value="chooseLens">
             <template #default="{ option }"><ArchiveIdolAvatar v-if="option.code" :idol-code="option.code" :size="20" :ring-width="0" :gap="0" decorative /><span class="overview-lens-name">{{ option.label }}</span></template>
           </GsSegmented>
-          <button class="overview-icon-button overview-lens-change" type="button" aria-label="更换视角偶像" :aria-expanded="scopeOpen" title="更换视角偶像" @click="scopeOpen = true"><ChevronsUpDown :size="16" aria-hidden="true" /></button>
         </div>
 
 
@@ -47,6 +44,7 @@
       </section>
       <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
       </header>
+    <div class="portal-overview">
       <slot name="notices" />
       <!-- Scale of the archive as one line of links, not a row of number tiles. -->
       <p class="overview-footprint" :class="{'is-preferred-footprint': preferredReference?.actionable}" aria-label="当前视角资料数量" :aria-busy="!footprints.length">
@@ -417,12 +415,12 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
    Sections sit on the paper under a heading and a rule; only controls, the search popover and the
    art carry a surface. Component layout follows the page's own width (container portal); the
    viewport tiers decide only the shell-level rows (toolbar, phone directory). */
-.portal-overview-scroll { position:relative;z-index:2;width:100%;height:100%;min-height:0;overflow:auto;padding:var(--gs-space-7) var(--gs-space-8) var(--gs-space-9);scrollbar-width:thin; }
+.portal-overview-scroll { position:relative;z-index:2;width:100%;height:100%;min-height:0;overflow:auto;scrollbar-width:thin; }
 .portal-overview {
   --portal-accent:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 36%,var(--gs-ink));
   --portal-tint:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 7%,var(--gs-surface));
   --portal-line:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 15%,var(--gs-line));
-  container:portal / inline-size;width:min(1200px,100%);min-width:0;margin:0 auto;color:var(--gs-ink);font-family:var(--gs-font-directory);font-size:var(--gs-text-ui);line-height:1.6;
+  container:portal / inline-size;box-sizing:border-box;width:min(1264px,100%);min-width:0;margin:0 auto;padding:var(--gs-space-7) var(--gs-space-8) var(--gs-space-9);color:var(--gs-ink);font-family:var(--gs-font-directory);font-size:var(--gs-text-ui);line-height:1.6;
 }
 .portal-overview *, .portal-overview-scroll { box-sizing:border-box; }
 .portal-overview button, .portal-overview input { font:inherit; }
@@ -432,16 +430,15 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-visually-hidden { position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
 
 /* Toolbar: 资料馆 / scope · search · tools. */
-.overview-toolbar { display:grid;grid-template-columns:auto minmax(180px,1fr) auto;align-items:center;gap:var(--gs-space-4);min-height:var(--gs-control-touch); }
+/* The same 61px row as every page's title row (and the sidebar's brand row): pinned, full width, one hairline under it. */
+.overview-toolbar { position:sticky;top:0;z-index:8;display:grid;grid-template-columns:auto minmax(180px,1fr) auto;align-items:center;gap:var(--gs-space-4);height:61px;padding:0 var(--gs-space-6) 0 var(--gs-gutter);border-bottom:1px solid var(--gs-line);background:var(--gs-paper); }
 .overview-brand { display:flex;align-items:center;gap:var(--gs-space-3);min-width:0; }
 .overview-brand h1 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.3;white-space:nowrap; }
 .overview-brand h1:focus { outline:none; }
-.overview-breadcrumb-divider { color:var(--gs-ink-3); }
 .overview-icon-button { display:grid;place-items:center;flex:none;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
 .overview-lens { min-width:0; max-width:100%; }
 .overview-lens :deep(.gs-segmented-option) { gap:var(--gs-space-3); }
 .overview-lens-name { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.overview-lens-change { color:var(--gs-ink-3); }
 .overview-toolbar-actions { display:flex;align-items:center;justify-content:flex-end;gap:var(--gs-space-1); }
 .overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
 
@@ -455,7 +452,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-search-form input::-webkit-search-cancel-button { display:none; }
 .overview-search-form .overview-icon-button { width:32px;height:38px; }
 .overview-search-submit { min-height:38px;padding:0 var(--gs-space-4);border:0;border-radius:6px;background:var(--gs-action-bg);color:var(--gs-action-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
-.overview-search-results { position:absolute;z-index:12;top:52px;right:0;width:min(620px,calc(100cqw - 24px));max-height:min(560px,calc(100dvh - 160px));overflow:auto;overscroll-behavior:contain;padding:var(--gs-space-3) var(--gs-space-5);border-radius:var(--gs-radius-panel);background:var(--gs-surface);box-shadow:var(--gs-shadow-float); }
+.overview-search-results { position:absolute;z-index:12;top:52px;right:0;width:min(620px,calc(100vw - 96px));max-height:min(560px,calc(100dvh - 160px));overflow:auto;overscroll-behavior:contain;padding:var(--gs-space-3) var(--gs-space-5);border-radius:var(--gs-radius-panel);background:var(--gs-surface);box-shadow:var(--gs-shadow-float); }
 .overview-search-collapse { display:flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-normal);margin-left:auto;padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-3); }
 .overview-search-shortcuts { display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-3);margin:var(--gs-space-3) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-search-shortcuts > button { min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
@@ -759,26 +756,21 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 /* Shell tiers. Middle and phone: tighter gutters, the search on its own row. */
 @media (max-width:1100px) {
-  .portal-overview-scroll { padding:var(--gs-space-5); }
-  .overview-toolbar { grid-template-columns:minmax(0,1fr) auto; }
-  .overview-toolbar-actions { grid-column:2;grid-row:1; }
-  .overview-toolbar > .overview-search { grid-column:1 / -1;grid-row:2;max-width:none; }
+  .portal-overview { padding:var(--gs-space-5); }
 }
 /* Phones have no sidebar: 资料馆 and the tools share the first row, the scope chip the second, then
    the search, then the index of every section. */
 @media (max-width:760px) {
-  .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-5) var(--gs-space-8); } /* the same 16px side margin as the other pages */
+  .portal-overview { padding:var(--gs-space-3) var(--gs-space-5) var(--gs-space-8); } /* the same 16px side margin as the other pages */
   /* One column at every phone width: the page container's two-column hero (641–980px) would otherwise
      put the hero beside its shortcuts on a large phone, with a hole under the shortcuts. */
   .overview-personal { display:flex;align-items:stretch; }
   .overview-search-form input { font-size:var(--gs-text-subtitle); } /* touch input: 16px or iOS zooms on focus */
-  .overview-toolbar { grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2); }
+  .overview-toolbar { position:static;grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2);height:auto;padding:var(--gs-space-4) var(--gs-space-5) 0;border-bottom:0; }
   .overview-brand { display:contents; }
-  .overview-breadcrumb-divider { display:none; }
   .overview-toolbar-actions { grid-column:3;grid-row:1; }
-  .overview-lens { grid-column:1 / -1;grid-row:2;justify-self:start; }
-  .overview-lens-change { grid-row:2;justify-self:start; }
-  .overview-toolbar > .overview-search { grid-row:3; }
+  .overview-lens { grid-column:1 / -1;grid-row:2;justify-self:stretch;width:100%; }
+  .overview-toolbar > .overview-search { grid-column:1 / -1;grid-row:3;max-width:none; }
   .overview-search-results { width:100%; }
   /* Counts are links: two rows of two, each a full touch target, numbers aligned in a column. */
   .overview-footprint { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--gs-space-5);font-size:var(--gs-text-meta); }

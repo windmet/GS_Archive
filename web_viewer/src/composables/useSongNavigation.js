@@ -139,11 +139,19 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
     captureDetailSource(); filterQuery.value = ''; currentSongId.value = ''
     commitView('chart_lab')
   }
+  // A song's 谱面 door on the LIVE landing: the tool opens already on that song.
+  function openChartSong(songCode) { openChartTool(); return selectChartSong(songCode) }
   async function prepareChartTool() {
     await Promise.all([ensureSongCatalog(), ensureChartManifest()])
   }
-  async function ensureChartManifest() {
-    if (chartManifest.value) return true
+  // LIVE and the chart tool both prepare the manifest; a second caller joins the request in flight.
+  let chartManifestRequest = null
+  function ensureChartManifest() {
+    if (chartManifest.value) return Promise.resolve(true)
+    chartManifestRequest ||= loadChartManifest().finally(() => { chartManifestRequest = null })
+    return chartManifestRequest
+  }
+  async function loadChartManifest() {
     try {
       const response = await fetch('/data/song_charts/manifest.json')
       if (!response.ok) throw new Error(`chart manifest ${response.status}`)
@@ -207,7 +215,8 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
     return true
   }
 
-  watch(view, next => { if (next === 'chart_lab') void prepareChartTool() }, { immediate: true })
+  // The LIVE landing lists every song with its chart, so it needs the same two files as the chart tool.
+  watch(view, next => { if (next === 'chart_lab' || next === 'live') void prepareChartTool() }, { immediate: true })
   watch([view, currentSongId], ([nextView, songCode]) => {
     if (nextView !== 'song_detail' || !songCode || songReadModelDetail.value?.id === songCode) return
     const request = ++pendingSongNavigation
@@ -230,7 +239,7 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
     currentSong, currentSongPresentation, chartSongs,
     loadSongCatalog, ensureSongCatalog, loadSongDetail,
     openSongCatalog, openSong, openSongUnit, openSongIdol, openSongRelatedStory,
-    openChartLab, openChartTool, selectChartSong, closeChartTool, goBackFromSong,
+    openChartLab, openChartTool, openChartSong, selectChartSong, closeChartTool, goBackFromSong,
     invalidateSongNavigation, prepareSongRoute,
   }
 }

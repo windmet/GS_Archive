@@ -254,7 +254,9 @@ for (const [view, section] of [['story_catalog', 'stories'], ['idols', 'idols'],
   ['event_catalog', 'events'], ['gashas', 'gashas'], ['photo_catalog', 'photos'], ['unused_archive', 'unused'], ['score_archive', 'scores']]) {
   const crumbs = buildArchiveBreadcrumbs({ view, category: view === 'idols' ? 'idol' : view === 'cards' ? 'cards' : '' })
   assert.deepEqual(crumbs.map(item => item.label), [ARCHIVE_SECTIONS.portal.label, ARCHIVE_SECTIONS[section].label], `${view} breadcrumb`)
-  assert.equal(archiveDocumentTitle(view), `${ARCHIVE_SECTIONS[section].label} · GROWING STARS 资料馆`, `${view} browser tab`)
+  // 图鉴's categories read as the category, then the page they share.
+  const tabName = ['photo_catalog', 'unused_archive'].includes(view) ? `${ARCHIVE_SECTIONS[section].label} · 图鉴` : ARCHIVE_SECTIONS[section].label
+  assert.equal(archiveDocumentTitle(view), `${tabName} · GROWING STARS 资料馆`, `${view} browser tab`)
 }
 for (const item of ARCHIVE_NAVIGATION) assert.equal(item.label, ARCHIVE_SECTIONS[item.id].label, `${item.id} navigation label`)
 assert.deepEqual(buildArchiveBreadcrumbs({ view: 'picture_studio' }).map(item => item.label), ['资料馆', '摄影工作台'], 'the studio hangs from the root')
@@ -262,8 +264,10 @@ const iconSource = readFileSync(new URL('../src/components/archive/archiveNaviga
 for (const item of ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items)) assert.match(iconSource, new RegExp(`[\\s,{]${item.id}\\s*:`), `${item.id} has a directory glyph`)
 // Desktop sidebar: an explicit 资料馆 entry, and each root page names its group's other pages beside its title.
 const shellSource = readFileSync(new URL('../src/components/archive/ArchiveShell.vue', import.meta.url), 'utf8')
-assert.match(shellSource, /@click="emit\('navigate', 'portal'\)">\s*<LayoutGrid[^>]*\/><span>\{\{ sectionLabel\('portal'\) \}\}<\/span>/, 'sidebar lists 资料馆 as an entry')
-assert.match(app, /:root-section="archiveRootSection"/, 'App tells the shell which root page is showing')
+assert.match(shellSource, /id: 'portal', label: sectionLabel\('portal'\), icon: LayoutGrid, target: 'portal'/, 'sidebar lists 资料馆 as an entry')
+assert.doesNotMatch(shellSource + app, /siblingSections|archive-sibling-switch|root-section/, 'the title row no longer names the group beside the title: the sidebar holds every destination')
+assert.match(shellSource, /props\.breadcrumbs\.slice\(1, -1\)/, 'the title row lists only the parents between the archive and the page')
+assert.match(shellSource, /\['idols', 'units', 'cards'\]/, '偶像 / 组合 / 卡片 sit together in the sidebar')
 assert.match(app, /else if \(section === 'units'\) openUnitCatalog\(\)/, '组合 in the switch opens the unit directory')
 // Phone bar 2+1: the two homes, then one cell that opens the drawer and otherwise names the current section.
 const barItems = shellSource.match(/const mobileNavigation = computed\(\(\) => \[([\s\S]*?)\n\]\)/)?.[1] || ''
@@ -308,7 +312,7 @@ assert.ok(hero > 0 && heroDirectory > hero && heroDirectory < overviewSource.ind
 const tokenSource = readFileSync(new URL('../src/styles/GS_UI_TOKENS.css', import.meta.url), 'utf8')
 assert.match(tokenSource, /@media \(max-width: 760px\) \{ \[data-archive-scroll-container\] \{ scrollbar-gutter: stable both-edges; \} \}/, 'a classic scrollbar reserves both sides in the phone layout')
 const phoneOverview = overviewSource.slice(overviewSource.lastIndexOf('@media (max-width:760px)'))
-assert.match(phoneOverview, /\.portal-overview-scroll \{ padding:var\(--gs-space-4\) var\(--gs-space-5\) /, 'the portal keeps the 16px side margin of the other pages')
+assert.match(phoneOverview, /\.portal-overview \{ padding:var\(--gs-space-3\) var\(--gs-space-5\) /, 'the portal keeps the 16px side margin of the other pages')
 assert.match(phoneOverview, /\.overview-personal \{ display:flex;align-items:stretch; \}/, 'the hero stays one column at every phone width')
 assert.match(phoneOverview, /\.overview-directory \{ display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\);/, 'the phone directory has four columns')
 assert.doesNotMatch(phoneOverview, /\.overview-directory \{ grid-template-columns:/, 'no width changes the directory columns')

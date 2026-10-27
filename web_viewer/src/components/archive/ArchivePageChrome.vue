@@ -1,6 +1,6 @@
 <template>
   <header class="archive-page-chrome">
-    <ArchiveBackAction v-if="canGoBack" :class="backClass" :label="backLabel" :pill="backPill" @back="emit('back')" />
+    <ArchiveBackAction v-if="canGoBack" :class="backClass" :label="backLabel" :pill="backPill" :icon-only="backIconOnly" @back="emit('back')" />
     <slot name="before-title" />
     <slot name="title" />
     <slot name="actions" />
@@ -15,6 +15,7 @@ defineProps({
   backLabel: { type: String, default: '返回' },
   backClass: { type: String, default: '' },
   backPill: { type: Boolean, default: false },
+  backIconOnly: { type: Boolean, default: false },
 })
 const emit = defineEmits(['back'])
 </script>
