@@ -228,5 +228,15 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
     assert.ok(html.indexOf('song:drvalv') < html.indexOf('song:brndnf'))
     const filtered = await renderToString(createSSRApp(Catalog, { catalog: directory, scope: 'mvlive' }))
     assert.equal(entries(filtered).length, 1); assert.ok(filtered.includes('song:reason'))
+    // Render the idol-scoped branch, including its computed technical summary.
+    const scoped = await renderToString(createSSRApp(Catalog, {
+      catalog: directory, scopeIdol: { id: '001tom', unitName: 'Jupiter' },
+    }))
+    assert.deepEqual(entries(scoped).sort(), ['brndnf', 'inndgn', 'trhorz', 'unmikn']
+      .map(code => `data-archive-focus-id="song:${code}"`).sort())
+    assert.match(scoped, /<dt[^>]*>歌曲作品<\/dt><dd[^>]*>4<\/dd>/)
+    for (const [label, count] of [['3DMV', 1], ['MV LIVE', 0], ['分轨演唱', 0]]) {
+      assert.match(scoped, new RegExp(`<dt[^>]*>${label}</dt><dd[^>]*>${count}</dd>`))
+    }
   } finally { await server.close() }
 }
