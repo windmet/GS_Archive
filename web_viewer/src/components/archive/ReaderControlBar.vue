@@ -28,6 +28,9 @@ defineExpose({focusSearch:()=>searchToggle.value?.focus()})
 .reader-languages { display:grid; grid-template-columns:repeat(3,1fr); flex:0 0 204px; padding:3px; border-radius:6px; background:var(--reader-bg-page); }
 button { min-height:44px; padding:8px 12px; border:0; border-radius:4px; background:transparent; color:var(--reader-text-main); font:inherit; cursor:pointer; }
 button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-on-accent); font-weight:700; }
+/* B-level language switch: recessed track, a raised thumb and ink text; the accent fill is for the theme dots' ring and the like. */
+.reader-languages button { border-radius:var(--gs-radius-segment); font-weight:500; }
+.reader-languages button[aria-pressed=true] { background:var(--reader-bg-card); color:var(--reader-text-main); font-weight:500; box-shadow:0 1px 2px rgb(19 33 58 / 12%); }
 .reader-producer-name { display:flex; flex:1 1 245px; align-items:center; gap:10px; min-width:0; color:var(--reader-text-sub); }
 input { box-sizing:border-box; min-width:0; width:100%; max-width:210px; min-height:44px; padding:8px 10px; border:1px solid var(--reader-border); border-radius:5px; background:var(--reader-bg-card); color:var(--reader-text-main); font:inherit; }
 .reader-search-toggle { display:flex; gap:7px; align-items:center; border:1px solid var(--reader-border); white-space:nowrap; }

@@ -114,7 +114,8 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 .compact-episodes button[aria-current] { background:var(--reader-active); color:var(--reader-on-accent); }
 .compact-languages { display:flex; margin-inline-start:auto; padding:2px; border-radius:8px; background:var(--reader-bg-card); border:1px solid var(--reader-border); }
 .compact-languages button { min-height:36px; min-width:36px; padding:0 12px; border-radius:5px; white-space:nowrap; }
-.compact-languages button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-on-accent); }
+.compact-languages { background:var(--reader-bg-page); border-color:transparent; }
+.compact-languages button[aria-pressed=true] { background:var(--reader-bg-card); color:var(--reader-text-main); box-shadow:0 1px 2px rgb(19 33 58 / 12%); }
 .compact-themes { display:flex; }
 .compact-themes button { display:grid; place-items:center; width:36px; padding:0; }
 .compact-themes span { width:17px; height:17px; border-radius:50%; border:1px solid #94a3b8; }
