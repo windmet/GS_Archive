@@ -298,10 +298,20 @@
                 <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
                 <span class="slot-editor-copy"><small>{{ editingSlot.position }} 号位 · {{ editingSlot.loading ? '加载中' : currentSingerPositions.includes(editingSlot.position) ? '正在演唱' : '出演' }}</small><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronDown :size="17" />
               </button>
-              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><option v-for="costume in costumesForSlot(editingSlot)" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></select></label>
+              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><optgroup v-for="group in editingCostumeGroups" :key="group.id" :label="group.label"><option v-for="costume in group.costumes" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></optgroup></select></label>
             </div>
             <button v-if="editingSlot" class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
-            <div v-if="sharedQuickCostumes.length" class="common-costume-actions"><h3>共通套服</h3><div class="uniform-quick-actions"><button v-for="costume in sharedQuickCostumes" :key="costume.id" type="button" :disabled="booting" @click="applySharedCostume(costume.id)">{{ stageCostumeLabel(costume) }}</button></div></div>
+            <section class="common-costume-actions" aria-label="套服搭配" :data-stage-costume-scope="costumeScope" :data-stage-costume-family="selectedCostumeFamily?.id" :data-stage-costume-version="selectedCostumeChoice?.version.sourceName">
+              <h3>套服搭配</h3>
+              <label class="costume-control"><span>适用范围</span><select v-model="costumeScope" aria-label="套服适用范围" :disabled="costumeSelectionBusy" @change="costumeNotice = ''; costumeFamilyId = ''; costumeVersionKey = ''"><option v-for="scope in sharedCostumeScopes" :key="scope.id" :value="scope.id">{{ scope.label }}</option></select></label>
+              <template v-if="selectedCostumeFamily">
+                <label class="costume-control"><span>款式</span><select :value="selectedCostumeFamily.id" aria-label="套服款式" :disabled="costumeSelectionBusy" @change="costumeFamilyId = $event.target.value; costumeVersionKey = ''; costumeNotice = ''"><option v-for="family in availableCostumeFamilies" :key="family.id" :value="family.id">{{ stageFamilyLabel(family) }}</option></select></label>
+                <label v-if="selectedFamilyVersions.length" class="costume-control"><span>版本</span><select :value="selectedCostumeChoice?.key" aria-label="套服版本" :disabled="costumeSelectionBusy" @change="costumeVersionKey = $event.target.value; costumeNotice = ''"><option v-for="choice in selectedFamilyVersions" :key="choice.key" :value="choice.key">{{ choice.version.another ? '另一款' : '普通款' }} · {{ choice.plan.matched.length }}/{{ activeSlots.length }} 人可用</option></select></label>
+                <p v-if="selectedCostumeChoice" class="costume-coverage" role="status">{{ selectedCostumeChoice.plan.matched.length }}/{{ activeSlots.length }} 位出演成员可用<template v-if="selectedCostumeChoice.plan.unmatched.length">；{{ costumeUnmatchedNames }}无此版本，保留原装</template>。</p>
+                <button type="button" class="costume-family-apply" :disabled="costumeSelectionBusy || !selectedCostumeChoice" @click="applyFamilyCostume">应用给可用成员</button>
+              </template>
+              <p v-else class="costume-coverage" role="status">当前编队没有可用的{{ sharedCostumeScopes.find(scope => scope.id === costumeScope)?.label }}。</p>
+            </section>
             <p v-if="costumeNotice" class="costume-notice" role="status">{{ costumeNotice }}</p>
           </section>
 
@@ -523,7 +533,8 @@ import { isMaintainerMode } from '../core/maintainerMode.js'
 import ChibiIdolPicker from './ChibiIdolPicker.vue'
 import ChibiSongPicker from './ChibiSongPicker.vue'
 import { normalizeIdolAccentColor } from '../presentation/idolAccentColor.js'
-import { buildOriginalStageLineup, planStageCostumeSync, universalStageCostumes, stageCostumeLabel as sourceStageCostumeLabel } from '../presentation/ChibiPanelPresentation.js'
+import {STAGE_COSTUME_SCOPES, stageCostumeFamilies, stageCostumeOptionsForCharacter, stageFamilyChoices} from '../presentation/StageCostumeFamilies.js'
+import { buildOriginalStageLineup, planStageCostumeSync, stageCostumeLabel as sourceStageCostumeLabel } from '../presentation/ChibiPanelPresentation.js'
 import { archiveText } from './archive/useArchiveCostumeText.js'
 import { usePlayerImmersiveMode } from '../composables/usePlayerImmersiveMode.js'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
@@ -1075,7 +1086,17 @@ const editingSlot = computed(() => activeSlots.value.find(slot => slot.position 
 const nativeOriginalLineups = shallowRef(null)
 const originalSelection = computed(() => originalMemberSelection(selectedSong.value, nativeOriginalLineups.value, props.originalPerformers, props.originalSlotOrdered))
 const originalStageLineup = computed(() => buildOriginalStageLineup(selectedSong.value, originalSelection.value.codes, characters.value, props.idolDirectory, originalSelection.value))
-const sharedQuickCostumes = computed(() => universalStageCostumes(characters.value, props.idolDirectory))
+const costumeScope = ref('all'), costumeFamilyId = ref(''), costumeVersionKey = ref('')
+const sharedCostumeScopes = STAGE_COSTUME_SCOPES.filter(scope => scope.id !== 'personal')
+const costumeFamilies = computed(() => stageCostumeFamilies(characters.value, props.idolDirectory))
+const editingCostumeGroups = computed(() => stageCostumeOptionsForCharacter(costumeFamilies.value, characterForSlot(editingSlot.value)))
+const costumeChoices = computed(() => stageFamilyChoices(costumeFamilies.value, lineup.value, characters.value, activePositions.value, costumeScope.value))
+const availableCostumeFamilies = computed(() => costumeFamilies.value.filter(family => costumeChoices.value.some(choice => choice.family.id === family.id)))
+const selectedCostumeFamily = computed(() => availableCostumeFamilies.value.find(family => family.id === costumeFamilyId.value) || availableCostumeFamilies.value[0] || null)
+const selectedFamilyVersions = computed(() => costumeChoices.value.filter(choice => choice.family.id === selectedCostumeFamily.value?.id))
+const selectedCostumeChoice = computed(() => selectedFamilyVersions.value.find(choice => choice.key === costumeVersionKey.value) || selectedFamilyVersions.value[0] || null)
+const costumeSelectionBusy = computed(() => booting.value || preloading.value || stageStarting.value || activeSlots.value.some(slot => slot.loading))
+const costumeUnmatchedNames = computed(() => (selectedCostumeChoice.value?.plan.unmatched || []).map(item => stageIdolName(characters.value.find(character => character.id === item.idolCode)) || item.idolCode).join('、'))
 const costumeSyncPlan = computed(() => editingSlot.value ? planStageCostumeSync(
   lineup.value, characters.value, activePositions.value, editingSlot.value.characterId, editingSlot.value.costumeId,
 ) : null)
@@ -1580,6 +1601,11 @@ function stageIdolStyle(character) {
   return { '--idol-accent': stageIdolColor(character) }
 }
 function stageCostumeLabel(costume) { return archiveText('costume', sourceStageCostumeLabel(costume)) }
+function stageFamilyLabel(family) {
+  const name = archiveText('costume', family.name)
+  const unit = family.scope === 'unit' && props.idolDirectory.find(idol => idol.unitCode === family.unitCode)
+  return unit ? `${unit.unitName || family.unitCode} · ${name}` : name
+}
 async function selectStageIdol(id) {
   const slot = slotByPosition(pickerPosition.value)
   pickerPosition.value = null
@@ -1621,7 +1647,10 @@ async function randomizeLineup() {
 }
 async function syncEditingCostume() {
   if (booting.value || editingSlot.value?.loading || !costumeSyncPlan.value) return
-  const plan = costumeSyncPlan.value
+  await applyCostumePlan(costumeSyncPlan.value)
+}
+async function applyCostumePlan(plan) {
+  if (costumeSelectionBusy.value || !plan?.matched.length) return
   const songId = selectedSong.value?.id
   for (const assignment of plan.matched) {
     const slot = slotByPosition(assignment.position)
@@ -1633,13 +1662,8 @@ async function syncEditingCostume() {
   const names = plan.unmatched.map(item => stageIdolName(characters.value.find(character => character.id === item.idolCode)) || item.idolCode)
   costumeNotice.value = `已为 ${plan.matched.length} 位出演成员应用衣装` + (names.length ? `；${names.join('、')}无此衣装，保留原样。` : '。')
 }
-async function applySharedCostume(id) {
-  const costume = sharedQuickCostumes.value.find(item => item.id === id)
-  if (booting.value || !costume || activeSlots.value.some(slot => !costume.costumeIdsByIdol?.[slot.characterId])) return
-  const songId = selectedSong.value?.id
-  for (const slot of activeSlots.value) slot.costumeId = costume.costumeIdsByIdol[slot.characterId]
-  await rebuildStage()
-  if (!stageDisposed && selectedSong.value?.id === songId) costumeNotice.value = `已为 ${activeSlots.value.length} 位出演成员换为${stageCostumeLabel(costume)}。`
+async function applyFamilyCostume() {
+  await applyCostumePlan(selectedCostumeChoice.value?.plan)
 }
 // 沉浸观看 is one feature: hide the controls and go fullscreen together, and leave both together.
 // Fullscreen is requested first, inside the user gesture; where the browser refuses it (iOS
@@ -4502,9 +4526,10 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .costume-sync-action:disabled { opacity: .4; cursor: default; }
 .common-costume-actions { padding-top: 8px; border-top: 1px solid var(--line); }
 .common-costume-actions h3 { margin: 0 0 8px; color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.uniform-quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.uniform-quick-actions button { min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-2); background: var(--gs-surface); cursor: pointer; font-size: var(--gs-text-ui); }
-.uniform-quick-actions button:disabled { opacity: .4; cursor: default; }
+.common-costume-actions { display: grid; gap: 8px; min-width: 0; }
+.costume-coverage { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
+.costume-family-apply { min-height: 44px; width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); color: var(--gs-ink); background: var(--gs-surface); cursor: pointer; font-size: var(--gs-text-ui); }
+.costume-family-apply:disabled { opacity: .4; cursor: default; }
 .costume-notice { margin: 0; color: var(--gs-ink-2); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
 .viewing-section { display: grid; gap: 4px; }
 .viewing-toggles, .viewing-actions { display: flex; flex-wrap: wrap; gap: 4px 16px; }
