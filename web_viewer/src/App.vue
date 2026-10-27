@@ -22,6 +22,9 @@
       <template v-if="COLLECTION_SECTIONS.includes(archiveSection)" #subnav>
         <ArchiveCollectionTabs :current="archiveSection" :counts="portalData.overview.value?.collectionCounts || null" @select="navigateArchiveSection" />
       </template>
+      <template v-if="view === 'card_detail'" #header-actions>
+        <ArchiveHeaderStepper label="同偶像卡片" :previous="previousCard" :next="nextCard" :title-of="cardStepTitle" @step="openCard" />
+      </template>
       <template #sidebar-identity>
         <ArchiveStageIdolSwitch
           :idol="preferredArchiveIdol"
@@ -183,8 +186,6 @@
         :skill-movie="currentCardSkillMovie"
         :acquisition="currentCardAcquisition"
         :art-mode="cardArtMode"
-        :previous-card="previousCard"
-        :next-card="nextCard"
         :series-cards="currentSeriesCards"
         :event-relation="currentCardEventRelation"
         :gasha-relation="currentCardGashaRelation"
@@ -192,7 +193,6 @@
         @back="goArchiveBack"
         @preview-voice="previewCardVoice"
         @open-scenario="openCardScenario"
-        @navigate-card="openCard"
         @navigate-related-card="openRelatedCard"
         @open-event="openCardEvent"
         @open-gasha="openCardGasha"
@@ -595,6 +595,7 @@ import PlayerSessionShell from './components/player/PlayerSessionShell.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
+import ArchiveHeaderStepper from './components/archive/ArchiveHeaderStepper.vue'
 import ArchiveCollectionTabs from './components/archive/ArchiveCollectionTabs.vue'
 import ArchiveStageIdolSwitch from './components/archive/ArchiveStageIdolSwitch.vue'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
@@ -1402,6 +1403,8 @@ const archiveSection = computed(() => archiveSectionForRoute({
 const COLLECTION_SECTIONS = ['collections', 'honors', 'currencies', 'costumes', 'photos', 'unused']
 const COLLECTION_PAGE_TITLE = ARCHIVE_SECTION_GROUPS.find(group => group.id === 'collection').label
 
+// The title-row stepper names the neighbouring card the way the title row names this one.
+const cardStepTitle = card => archiveNamedText('card', card?.title, 'title') || '卡片'
 const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   // Section pages carry their navigation name, without a suffix (core/archiveSections.js).

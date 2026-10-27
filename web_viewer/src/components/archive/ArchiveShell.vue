@@ -54,6 +54,7 @@
             @input="emit('update:modelValue', $event.target.value)"
           />
         </label>
+        <slot name="header-actions" />
         <ArchiveLanguageSwitch :compact-mobile="compactMobile" />
         </div>
       </template>
@@ -593,6 +594,10 @@ onBeforeUnmount(() => navObserver?.disconnect())
  .is-compact-mobile .archive-topbar :deep(.archive-back) {width:44px;padding:0;}
  .is-compact-mobile .archive-header-actions :deep(.archive-language-switch) {grid-column:4;grid-row:1;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) :deep(.archive-language-switch) {grid-column:3;}
+ /* A detail page's previous / next takes its own column before the language switch. */
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)):has(.archive-header-stepper) {grid-template-columns:44px minmax(0,1fr) auto auto;column-gap:var(--gs-space-1);}
+ .is-compact-mobile .archive-topbar:has(.archive-header-stepper) :deep(.archive-header-stepper) {grid-column:3;grid-row:1;margin-right:0;}
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)):has(.archive-header-stepper) :deep(.archive-language-switch) {grid-column:4;}
  .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:#52777b;cursor:pointer;}
  .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:var(--gs-control-touch);width:100%;margin-bottom:var(--gs-space-3);}
  .is-compact-mobile .archive-search.is-open {display:flex;animation:gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards;}
