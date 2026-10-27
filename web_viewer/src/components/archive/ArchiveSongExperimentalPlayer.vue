@@ -11,12 +11,13 @@
       <button type="button" class="unit-preset-change-btn" @click="unitSelectorOpen = true">更换</button>
     </div>
     <template v-else>
-      <label class="song-mode-selector" data-vocal-setting-selector>
-        <span>试听模式</span>
-        <select :value="mode" @change="changeListeningMode">
-          <option v-for="item in listeningModes" :key="item.id" :value="item.id">{{ item.label }}</option>
-        </select>
-      </label>
+      <!-- 演唱版本: the first choice on this page, a segmented switch rather than a dropdown. -->
+      <div class="song-mode-selector" data-vocal-setting-selector>
+        <span class="song-mode-title" id="song-mode-title">演唱版本</span>
+        <div class="song-mode-segment" role="radiogroup" aria-labelledby="song-mode-title">
+          <button v-for="item in listeningModes" :key="item.id" type="button" role="radio" :aria-checked="mode === item.id" @click="chooseListeningMode(item.id)">{{ item.label }}</button>
+        </div>
+      </div>
       <div v-if="mode === 'unit'" class="experimental-controls">
         <label>
           组合
@@ -185,18 +186,11 @@ const listeningModes = computed(() => [
   ...(hasVocalSetting('center') && soloEntries.value.length ? [{ id: 'solo', label: 'Solo 试听' }] : []),
   ...(auditedOptions.value.length ? [{ id: 'single', label: '收录音轨' }] : []),
 ])
-function changeListeningMode(event) {
+function chooseListeningMode(requestedMode) {
   unitSelectorOpen.value = false
-  const selector = event.target
-  const requestedMode = selector.value
-  if (!listeningModes.value.some(item => item.id === requestedMode)) {
-    selector.value = mode.value
-    return
-  }
+  if (!listeningModes.value.some(item => item.id === requestedMode)) return
   if (requestedMode === 'solo') {
     // A Solo request opens the picker; the active mode changes only on selection.
-    selector.value = mode.value
-    selector.focus({ preventScroll: true })
     soloOpen.value = true
     return
   }
@@ -434,8 +428,7 @@ onBeforeUnmount(() => resetPlayback())
 .experimental-error { margin: var(--gs-space-3) 0 0; color: var(--gs-critical); font-size: var(--gs-text-ui); }
 .song-block-heading { display: flex; gap: var(--gs-space-3); align-items: center; }
 .song-block-heading small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.song-mode-selector { display: grid; gap: var(--gs-space-2); min-width: 0; margin-top: var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.song-mode-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.song-mode-selector { min-width: 0; margin-top: var(--gs-space-4); }
 .solo-open { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-3); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
 summary { display: flex; align-items: center; min-height: var(--gs-control-touch); color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; }
 .experimental-player :is(button, select, input, summary):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
@@ -470,6 +463,11 @@ summary { display: flex; align-items: center; min-height: var(--gs-control-touch
   .experimental-controls { display: grid; grid-template-columns: 1fr; }
   .experimental-controls select { width: 100%; min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .experimental-mix-controls { grid-template-columns: 1fr; }
-  .song-mode-selector select { font-size: var(--gs-text-subtitle); }
 }
+.song-mode-selector { display: flex; flex-direction: column; gap: var(--gs-space-3); }
+.song-mode-title { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
+.song-mode-segment { display: flex; flex-wrap: wrap; gap: var(--gs-space-1); padding: var(--gs-space-2); border-radius: var(--gs-radius-control); background: var(--gs-mode-track); }
+.song-mode-segment button { flex: 1 1 auto; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-segment); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
+.song-mode-segment button[aria-checked="true"] { background: var(--gs-mode-thumb); box-shadow: var(--gs-shadow-1); color: var(--gs-mode-ink); }
+.song-mode-segment button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 </style>
