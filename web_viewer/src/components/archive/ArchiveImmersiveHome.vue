@@ -67,6 +67,7 @@
         </select>
       </label>
       <span v-if="homeMode === 'spine'" class="context-divider" aria-hidden="true"></span>
+      <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="首页服装类别" compact />
       <label v-if="homeMode === 'spine'" class="context-select context-costume">
         <span>服装</span>
         <select
@@ -74,7 +75,8 @@
           aria-label="首页服装"
           @change="emit('update:selectedCostume', $event.target.value)"
         >
-          <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
+          <option v-if="filteredCostumes.pinned" :value="filteredCostumes.pinned.modelId">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（分类外）</option>
+          <option v-for="costume in filteredCostumes.rows" :key="costume.modelId" :value="costume.modelId">
             {{ archiveText('costume',costume.name) }}
           </option>
         </select>
@@ -148,9 +150,10 @@
           <X :size="18" />
         </button>
       </header>
+      <div class="costume-picker-filter"><CostumeCategoryFilter v-model="costumeCategory" :costumes="activeIdol.costumes" label="首页服装列表类别" /><p v-if="filteredCostumes.pinned" class="costume-filter-note">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（不在此类别）</p></div>
       <div class="costume-grid">
         <button
-          v-for="costume in activeIdol.costumes"
+          v-for="costume in filteredCostumes.rows"
           :key="costume.modelId"
           type="button"
           :class="{ active: activeCostume?.modelId === costume.modelId }"
@@ -289,10 +292,12 @@
           </select>
         </label>
 
+        <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="场景设置服装类别" />
         <label v-if="homeMode === 'spine'" class="settings-field settings-costume-field">
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
-            <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
+            <option v-if="filteredCostumes.pinned" :value="filteredCostumes.pinned.modelId">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（分类外）</option>
+            <option v-for="costume in filteredCostumes.rows" :key="costume.modelId" :value="costume.modelId">
               {{ archiveText('costume',costume.name) }}
             </option>
           </select>
@@ -372,6 +377,8 @@ import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js
 import { producerName } from '../../utils/LanguageStore.js'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 import {archiveText} from './useArchiveCostumeText.js'
+import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
+import {costumeFilterView} from '../../presentation/CostumeCategories.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
 import { archiveText as photoText } from './useArchivePhotoText.js'
@@ -492,6 +499,8 @@ const cueGroups = computed(() => {
   const order = key => key.startsWith('idol:') ? Object.keys(GENERAL_GROUP_TITLES).indexOf(key.slice(5)) : 99
   return groups.sort((left, right) => order(left.key) - order(right.key))
 })
+const costumeCategory = ref('')
+const filteredCostumes = computed(() => costumeFilterView(activeIdol.value?.costumes || [], costumeCategory.value, activeCostume.value?.modelId))
 const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
   activeIdol.value?.costumes?.[0] || null)
@@ -619,6 +628,7 @@ function syncHomeVisibility() {
 watch(() => activeCostume.value?.modelId, () => stopVoice())
 
 watch(() => activeIdol.value?.id, () => {
+  costumeCategory.value = ''
   stageTapAbort?.abort()
   stageError.value = false
   stopVoice()
