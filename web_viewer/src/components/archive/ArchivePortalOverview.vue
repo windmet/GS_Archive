@@ -462,7 +462,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-result-group > header { display:flex;align-items:center;justify-content:space-between;gap:var(--gs-space-4); }
 .overview-result-group h3 { margin:0;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
 .overview-result-group h3 > span { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
-.overview-result-group > header > button { display:flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
+.overview-result-group > header > button { display:flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:var(--gs-ink-2);font-size:var(--gs-text-ui); }
 .overview-search-results li { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-3) 0; }
 .overview-search-results li + li { border-top:1px solid var(--gs-line); }
 .overview-search-results li > button { display:flex;flex:1;align-items:center;justify-content:space-between;gap:var(--gs-space-5);min-width:0;min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:inherit;text-align:left; }
@@ -489,7 +489,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-section-heading h2, .overview-section-heading h3 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.4; }
 .overview-section-heading h2 > small, .overview-section-heading h3 > small { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-section-heading button, .overview-heading-actions { display:flex;flex:none;align-items:center;gap:var(--gs-space-2); }
-.overview-section-heading button { flex-shrink:0;white-space:nowrap;min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
+.overview-section-heading button { flex-shrink:0;white-space:nowrap;min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-ink-2);font-size:var(--gs-text-ui); }
 .overview-heading-actions { gap:var(--gs-space-5); }
 /* Chips inside a heading row: one quiet pill row between the title and its actions, scrolling when it
    runs out of room. Each chip opens the directory filtered by it. */
@@ -541,7 +541,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 /* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
    the figure placed by where the person stands. It gets the media radius and nothing else. */
 .overview-identity { position:relative;height:228px;overflow:hidden;border-radius:var(--gs-radius-media);background:radial-gradient(circle at 76% 62%,var(--gs-surface) 0,var(--hero-wash,var(--gs-paper)) 58%); }
-.overview-identity::before { content:'';position:absolute;inset:0 0 auto;z-index:3;height:3px;background:var(--hero-light,var(--gs-mint)); }
 .overview-portrait-slot { position:absolute;inset:0; }
 .overview-idol-art { position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;max-width:none;height:300px;object-fit:contain;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent);filter:drop-shadow(14px 8px 0 color-mix(in oklab,var(--hero-ink,var(--gs-ink)) 24%,transparent)); }
 .overview-signature { position:absolute;top:86px;left:148px;z-index:3;display:block;width:130px;height:52px;opacity:.8;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance; }
@@ -557,15 +556,15 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 /* Shortcuts: this idol's five archive pages, the main way on from the hero. They sit on a band of
    the hero's own wash with icons in the idol's ink (idolStageLight keeps both readable), so they
    read as part of the 担当 block and stand out from the quiet line below. */
-.overview-preferred-actions { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:var(--gs-space-1);border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--hero-wash,var(--gs-mint-wash)) 75%,var(--gs-surface)); }
-.overview-preferred-actions button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-1);min-height:52px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
-.overview-preferred-actions button svg { width:18px;height:18px;color:var(--hero-ink,var(--gs-mint-ink)); }
+.overview-preferred-actions { display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--gs-space-2); }
+.overview-preferred-actions button { display:inline-flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-compact);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-medium); }
+.overview-preferred-actions button svg { width:16px;height:16px;color:var(--gs-ink-3); }
 /* Quiet settings: 设为担当 and the producer — one caption line, separated by dots. */
 .overview-personal-meta { display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--gs-space-2);margin:0;padding-top:var(--gs-space-3);border-top:1px solid var(--gs-line);color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-personal-meta:empty { display:none; }
 .overview-personal-meta button { display:inline-flex;align-items:center;gap:2px;min-height:var(--gs-control-compact);padding:0;border:0;background:none;color:var(--gs-ink-2);font-size:var(--gs-text-meta); }
 .overview-personal-meta button + button::before { content:'·';margin-right:var(--gs-space-2);color:var(--gs-ink-3); }
-.overview-personal-meta .overview-save-idol { color:var(--gs-mint-ink);font-weight:var(--gs-weight-semibold); }
+.overview-personal-meta .overview-save-idol { color:var(--gs-ink);font-weight:var(--gs-weight-semibold);text-decoration:underline;text-underline-offset:3px; }
 
 /* Global view: the unit matrix, in each unit's own colour. */
 .overview-unit-hub { margin-top:var(--gs-space-7); }
@@ -688,7 +687,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-birthday-copy { display:grid;flex:1;gap:2px;min-width:0; }
 .overview-birthdays strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-birthdays small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
-.overview-birthday-action { display:inline-flex;flex:none;align-items:center;gap:2px;color:var(--gs-mint-ink);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.overview-birthday-action { display:inline-flex;flex:none;align-items:center;gap:2px;color:var(--gs-ink-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
 .overview-birthdays button:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
 
 /* Global events: a horizontal timeline of banners (scopes built before the almanac). */
@@ -714,14 +713,14 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 
 @media (hover:hover) and (pointer:fine) {
   .overview-heading-chips button:not(:disabled):hover { border-color:var(--gs-selected-line); }
-  .overview-birthdays button:hover strong { color:var(--gs-mint-ink); }
+  .overview-birthdays button:hover strong { color:var(--gs-ink); }
   .overview-icon-button:hover { background:var(--gs-mint-wash); }
-  .overview-preferred-actions button:hover { background:color-mix(in srgb, var(--gs-surface) 70%, transparent); }
+  .overview-preferred-actions button:hover { background:var(--gs-hover);color:var(--gs-ink); }
   .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
   .overview-section-heading button:hover, .overview-personal-meta button:hover, .overview-search-results li > button:hover,
-  .overview-story-gateways button:hover strong, .overview-main-index button:hover strong { color:var(--gs-mint-ink); }
-  .overview-song-detail:hover strong, .overview-story > button:hover strong, .overview-event > button:hover strong, .overview-timeline button:hover strong { color:var(--gs-mint-ink); }
-  .overview-stage-button:hover, .overview-home-action:hover { color:var(--gs-mint-ink); }
+  .overview-story-gateways button:hover strong, .overview-main-index button:hover strong { color:var(--gs-ink); }
+  .overview-song-detail:hover strong, .overview-story > button:hover strong, .overview-event > button:hover strong, .overview-timeline button:hover strong { color:var(--gs-ink); }
+  .overview-stage-button:hover, .overview-home-action:hover { color:var(--gs-ink); }
   .overview-unit-tile:hover { background:var(--gs-hover); }
 }
 
