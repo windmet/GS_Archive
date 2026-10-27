@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import { songAnimatedFlickHint, flickDisplacement, flickTextureFrame, songFlickMotion } from '../src/presentation/SongFlickMotion.js'
+import { songStaticFlickHint } from '../src/presentation/SongTrackNativeEffects.js'
+const root={position:[0,0,0],scale:[1,1,1]}
+for(const role of ['swipe_left','swipe_right','swipe_up']) {
+ const a=songAnimatedFlickHint(role,root,.05,7),b=songAnimatedFlickHint(role,root,.25,7)
+ assert.equal(a.layers.length,6,'three systems with two source burst particles')
+ assert.notDeepEqual(a,b,'arrows must move relative to the body')
+ assert.deepEqual(a,songAnimatedFlickHint(role,root,.05,7),'seek/pause reproducible')
+ const source=songFlickMotion.layers[role][1],axis=role==='swipe_up'?'y':'x'
+ assert.deepEqual(songFlickMotion.layers[role].map(l=>l.sortingOrder),[1,2,3],'native fill then outline then additive blur')
+ assert.deepEqual(songStaticFlickHint(role,root).layers.map(l=>l.sortingOrder),[1,2],'long schematic cannot cover its outline either')
+ assert.deepEqual(songFlickMotion.layers[role].map(l=>l.blend.dst),[10,10,1])
+ assert.deepEqual(b.layers.map(l=>l.sortingOrder),[1,1,2,2,3,3],'actual consumer must preserve renderer sorting')
+ const d=flickDisplacement(source.velocity[axis],.25,.5)
+ assert.ok(Math.abs(Math.abs(d)-.4375)<1e-6,'integrated source velocity at apex')
+ assert.ok(Math.abs(flickDisplacement(source.velocity[axis],.5,.5))<1e-6,'returns before next burst')
+ assert.ok(b.layers.some(x=>x.url.includes('blur-')),'blur texture is consumed')
+ for(const layer of songFlickMotion.layers[role]) {
+  const cell=layer.textureCell
+  if(layer.url.includes('blur-')) {
+   const expected=role==='swipe_up'?1:0
+   for(const age of [0,.05,.25,.499])assert.equal(flickTextureFrame(layer,age),expected,'sideways blur wraps startFrame + frameOverTime, unlike upward blur')
+   assert.equal(cell.frame,expected)
+   assert.ok(b.layers.filter(l=>l.sortingOrder===3).every(l=>l.url.endsWith(`blur-${expected}.png`)),'actual consumer selects the correct directional cell')
+  }
+  assert.equal(cell.tilesY,cell.textureId===876?1:2,'blur is a 2x1 sheet, not the 2x2 fill/outline atlas')
+  if(cell.textureId===876) {
+   assert.equal(cell.height,1024,'retain the entire chevron, not one stretched quadrant')
+   const url=new URL('../public'+layer.url,import.meta.url)
+   if(fs.existsSync(url)) {const png=fs.readFileSync(url);assert.equal(png.readUInt32BE(16),cell.width);assert.equal(png.readUInt32BE(20),cell.height)}
+  }
+ }
+}
+console.log('Native loop/burst, velocity integral, moving outline/fill/blur and deterministic seeks passed')

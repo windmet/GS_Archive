@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>Song chart additive compositing regression</title>
+<style>body{margin:16px;font:16px system-ui}svg,canvas.reference{width:512px;height:288px;display:block}#panels{display:flex;gap:16px}pre{white-space:pre-wrap;max-height:160px;overflow:auto}</style></head>
+<body><h1>加色图层合成回归</h1><p>左：实际 SVG foreignObject 合成；右：直接在同色背景上做 Canvas lighter。三个色块依次为不透明黑、半透明红、暗灰。</p>
+<div id="panels"><svg id="actual" viewBox="0 0 1280 720"><rect width="1280" height="720" fill="rgb(20,40,60)"/><foreignObject data-additive-hit-layer width="1280" height="720" style="mix-blend-mode:plus-lighter"><canvas id="surface" width="1280" height="720" style="width:100%;height:100%;display:block"></canvas></foreignObject></svg><canvas class="reference" id="reference" width="1280" height="720"></canvas></div>
+<pre id="result" role="status">加载中</pre><button id="toggle">显示旧合成</button><div id="native"></div>
+<script type="module">
+import {drawParticleCanvas} from '/src/presentation/SongChartParticleCanvas.js'
+import {createApp,h,ref} from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
+import Hit from '/src/components/archive/ArchiveSongHitEffectPreview.vue'
+import Auto from '/src/components/archive/ArchiveSongAutoEvaluationPreview.vue'
+const images=new Map(),particles=[],colors=[[0,0,0,255],[200,0,0,128],[40,40,40,255]]
+for(let i=0;i<colors.length;i++){
+ const source=document.createElement('canvas');source.width=source.height=2
+ const c=source.getContext('2d'),pixels=c.createImageData(2,2)
+ for(let j=0;j<pixels.data.length;j+=4)pixels.data.set(colors[i],j)
+ c.putImageData(pixels,0,0)
+ const image=new Image();image.src=source.toDataURL();await image.decode();images.set(i,image)
+ const x=50+i*300,y=50,w=200,h=200
+ particles.push({textureId:i,sx:0,sy:0,sw:2,sh:2,colorTint:{r:1,g:1,b:1},alpha:1,quad:[{x,y,depth:1},{x:x+w,y,depth:1},{x,y:y+h,depth:1},{x:x+w,y:y+h,depth:1}]})
+}
+const surface=document.querySelector('#surface').getContext('2d'),reference=document.querySelector('#reference').getContext('2d')
+reference.fillStyle='rgb(20,40,60)';reference.fillRect(0,0,1280,720);reference.globalCompositeOperation='lighter'
+const gpu=drawParticleCanvas(surface,particles,images);drawParticleCanvas(reference,particles,images)
+const sample=(ctx,x)=>[...ctx.getImageData(x,100,1,1).data]
+const expected=colors.map((_,i)=>sample(reference,100+i*300)),transparent=colors.map((_,i)=>sample(surface,100+i*300))
+if(!gpu||expected[0].join()!=='20,40,60,255'||Math.abs(expected[1][0]-120)>1||expected[2].join()!=='60,80,100,255')throw Error('additive reference failed')
+// Source-over copy of transparent black coverage would hide the backdrop.
+if(transparent[0][3]!==255)throw Error('fixture must exercise opaque black coverage')
+const old=ref(false)
+document.querySelector('#toggle').onclick=()=>{old.value=!old.value;document.querySelector('#toggle').textContent=old.value?'恢复加色合成':'显示旧合成'}
+createApp({render:()=>h('svg',{id:'native-svg',viewBox:'0 0 1280 720',style:'width:640px;height:360px'},[
+ h('rect',{width:1280,height:720,fill:'#8b9caa'}),
+ h('foreignObject',{'data-additive-hit-layer':'',width:1280,height:720,style:`mix-blend-mode:${old.value?'normal':'plus-lighter'}`},[h(Hit,{hits:[{hitType:1,sourceIndex:7,targetLane:2,age:.15}],holds:[],autoEval:{active:true,age:.03}})]),
+ h(Auto,{state:{active:true,age:.03}})
+])}).mount('#native')
+document.querySelector('#result').textContent=JSON.stringify({status:'passed',gpu,expected,transparent,limitation:'CSS/SVG backdrop verified separately by Browser screenshot pixels'},null,2)
+</script></body></html>

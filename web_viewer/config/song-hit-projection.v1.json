@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "elfSha256": "9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e",
+    "dataSha256": "fb28e28793e4f9d21e76dd96be2c776a71382cb607d98acd24f65f20bed8018a",
+    "methods": [
+      {
+        "name": "EffectController.Initialize",
+        "rva": "0x2046f04",
+        "bytes": 308,
+        "sha256": "2cf329d9d6ce11baf574b53597b4fb4c7bfa7d04575f9d3317ce5007049656f9"
+      },
+      {
+        "name": "EffectController.Play",
+        "rva": "0x2047038",
+        "bytes": 216,
+        "sha256": "f69eb4f4b20d9799465de0cb538762db50f09eba95ed302bab7cecab75cf3461"
+      },
+      {
+        "name": "FloatingTarget.Init",
+        "rva": "0x205a558",
+        "bytes": 360,
+        "sha256": "a2212c04f1614362ad2b73aac515eebc86b88d1c7558010ec851563e09d02b0e"
+      },
+      {
+        "name": "NoteDrawManager..cctor",
+        "rva": "0x20b85e8",
+        "bytes": 244,
+        "sha256": "bc8538b79f553b87d009b4b3c536e6e3eebc5714a56727c288d95c6c69d915a3"
+      }
+    ],
+    "execution": "Unicorn executes Initialize/Play with cached Transform. Unity layer/transform/gameobject calls are capture stubs, Vector3.one returns (1,1,1). Not a GPU replay."
+  },
+  "cameras": {
+    "pre": {
+      "pathId": 45558,
+      "name": "PreCamera",
+      "sourceSha256": "2a97b3d2cf655f94ae02ffcb54145a9306f62fdc94b9a722558f24fbb7ec4fc0",
+      "transformSha256": "444a14737ed6dff3c37b8ccc653a5c8a1f2ed15c1e77daea3dd34f0987bf9cf4",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.0
+      },
+      "orthographic": true,
+      "orthographicSize": 5.0,
+      "fieldOfView": 60.0,
+      "cullingMask": 16777216
+    },
+    "perspective": {
+      "pathId": 45568,
+      "name": "LiveTapEffectCamera",
+      "sourceSha256": "731d0b8b06a58206b5cf38be23205df77ca6915a3cad904c43d9e33e77994878",
+      "transformSha256": "19b5ad52f78b69ecca29773e33d5e30ef98b49240103cce43f09e27f25f472ad",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -6.650000095367432
+      },
+      "orthographic": false,
+      "orthographicSize": 5.0,
+      "fieldOfView": 60.0,
+      "cullingMask": 65536
+    },
+    "hold": {
+      "pathId": 45564,
+      "name": "EffectCamera",
+      "sourceSha256": "9b9ca562be106c25e197e582dc07997756505cba62fb8bdd7fb151fdc76dd171",
+      "transformSha256": "4230a75145e1c2cd2690255691c6ee460b54e9618df4fe6a9d340bdf5fef5e3e",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.0
+      },
+      "orthographic": true,
+      "orthographicSize": 5.0,
+      "fieldOfView": 60.0,
+      "cullingMask": 1073741824
+    }
+  },
+  "targetCanvas": {
+    "pathId": 3313,
+    "sourceSha256": "12922f7eb0b2f129ecc3c30fd97e50cd106dae86936c340796d84a06b724250e",
+    "planeDistance": 1.0
+  },
+  "transientRootScale": 1.5,
+  "holdRootScale": 100.0,
+  "noteRadius": 64.0,
+  "connectorRadius": 44.0,
+  "cases": [
+    {
+      "useParseCamera": false,
+      "noteScale": 0.8,
+      "initializedScale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "playedScale": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+      ]
+    },
+    {
+      "useParseCamera": false,
+      "noteScale": 1,
+      "initializedScale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "playedScale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "useParseCamera": false,
+      "noteScale": 1.2,
+      "initializedScale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "playedScale": [
+        1.2000000476837158,
+        1.2000000476837158,
+        1.2000000476837158
+      ]
+    },
+    {
+      "useParseCamera": true,
+      "noteScale": 0.8,
+      "initializedScale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "playedScale": [
+        1.2000000476837158,
+        1.2000000476837158,
+        1.2000000476837158
+      ]
+    },
+    {
+      "useParseCamera": true,
+      "noteScale": 1,
+      "initializedScale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "playedScale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    },
+    {
+      "useParseCamera": true,
+      "noteScale": 1.2,
+      "initializedScale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "playedScale": [
+        1.8000000715255737,
+        1.8000000715255737,
+        1.8000000715255737
+      ]
+    }
+  ]
+}

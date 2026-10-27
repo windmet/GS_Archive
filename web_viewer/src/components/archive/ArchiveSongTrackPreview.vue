@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="track-preview">
     <svg class="track-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" :aria-label="`${title} 五轨透视预览`">
       <title>{{ title }} · 五轨 · 原始 tick {{ safeCursor }}</title>
@@ -10,6 +10,16 @@
       <rect width="1280" height="720" fill="#162b36" />
       <image href="/assets/song-chart-track/live_lane_gradation.png" x="0" y="0" width="1280" height="720" preserveAspectRatio="none" :clip-path="`url(#${uid}-lane)`" />
       <polygon :points="laneOutline" fill="#07151b" opacity=".25" />
+      <g v-if="demonstrationEnabled && laneAlphas.some(a => a > 0)" class="track-lane-flashes" pointer-events="none">
+        <polygon
+          v-for="i in 5"
+          :key="`lane-flash-${i - 1}`"
+          :data-lane-flash="i - 1"
+          :points="`${scene.lanes[i - 1].topX},${scene.topY} ${scene.lanes[i].topX},${scene.topY} ${scene.lanes[i].bottomX},${scene.height} ${scene.lanes[i - 1].bottomX},${scene.height}`"
+          fill="rgb(132, 232, 255)"
+          :opacity="laneAlphas[i - 1] * 0.28"
+        />
+      </g>
       <line v-for="(lane, i) in scene.lanes" :key="i" :data-lane-boundary="i" :x1="lane.topX" :y1="scene.topY" :x2="lane.bottomX" :y2="scene.height" :stroke="i === 0 || i === 5 ? '#91e5e8' : '#a4bac6'" :stroke-width="i === 0 || i === 5 ? 5 : 1.2" :opacity="i === 0 || i === 5 ? .7 : .5" />
       <foreignObject v-if="!holdCanvasUnavailable" width="1280" height="720"><ArchiveSongHoldMeshPreview :holds="scene.holds" :skin="skin" @unavailable="holdCanvasUnavailable = true" /></foreignObject>
       <template v-else><g v-for="hold in scene.holds" :key="hold.id" :data-track-hold="hold.id">
@@ -29,35 +39,87 @@
         <g :clip-path="`url(#${uid}-note-${n.id})`"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
         <ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="n.width" :show-body="false" :hint="n.hint" />
       </g>
+      <!-- Native Particle & Hit Effects Layer (Steps 2-5) -->
+      <foreignObject
+        v-if="demonstrationEnabled && (hits.length || holds.length || autoEval.active)"
+        width="1280"
+        height="720"
+        pointer-events="none"
+        style="mix-blend-mode:plus-lighter"
+        data-additive-hit-layer
+      >
+        <ArchiveSongHitEffectPreview
+          :hits="hits"
+          :holds="holds"
+          :auto-eval="autoEval"
+          :judge-y="scene.judgeY"
+        />
+      </foreignObject>
+      <ArchiveSongAutoEvaluationPreview v-if="demonstrationEnabled" :state="autoEval" />
+      <g v-if="demonstrationEnabled && holds.length" class="track-hold-effects" pointer-events="none" aria-hidden="true">
+          <g v-for="h in holds" :key="'hold-fx-' + h.sourceIndex" :data-hold-fx="h.sourceIndex" />
+      </g>
+      <g v-if="demonstrationEnabled && hits.length" class="track-hit-effects" pointer-events="none" aria-hidden="true">
+          <g v-for="hit in hits" :key="hit.instanceId" :data-hit-fx="hit.instanceId" :data-hit-type="hit.hitType" />
+      </g>
+      <ArchiveSongComboPreview v-if="comboEnabled" :state="combo?.state?.value" />
     </svg>
   </div>
 </template>
 
 <script setup>
 import { computed, getCurrentInstance, ref } from 'vue'
-import { createSongTrackRenderer } from '../../presentation/SongTrackPresentation.js'
+import { createSongTrackRenderer, projectTrackPoint } from '../../presentation/SongTrackPresentation.js'
 import { buildSongChartTiming } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackNativeTiming.js'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
 import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
-const props = defineProps({ chart: { type: Object, required: true }, title: { type: String, required: true }, skin: { type: String, default: 'Note1SpriteAtlas' }, position: { type: Object, required: true }, speed: { type: Number, required: true } })
+import ArchiveSongHitEffectPreview from './ArchiveSongHitEffectPreview.vue'
+import ArchiveSongAutoEvaluationPreview from './ArchiveSongAutoEvaluationPreview.vue'
+import ArchiveSongComboPreview from './ArchiveSongComboPreview.vue'
+
+const props = defineProps({
+  combo: { type: Object, default: null },
+  comboEnabled: { type: Boolean, default: true },
+  chart: { type: Object, required: true },
+  title: { type: String, required: true },
+  skin: { type: String, default: 'Note1SpriteAtlas' },
+  position: { type: Object, required: true },
+  speed: { type: Number, required: true },
+  effects: { type: Object, default: () => ({ state: ref(null) }) },
+  demonstrationEnabled: { type: Boolean, default: false },
+})
+
 const uid = `track-${getCurrentInstance().uid}`
 const holdCanvasUnavailable = ref(false)
-const safeCursor = computed(() => Math.min(props.chart.maxTick, Math.max(0, props.position.tick.value)))
+// The media clock continues through the outro. Clamping to maxTick leaves the
+// final note sitting exactly on its inclusive draw boundary forever.
+const safeCursor = computed(() => Math.max(0, props.position.tick.value))
 const timing = computed(() => buildSongChartTiming(props.chart))
 // Integrate from this frame's cursor, including a BPM transition in the read
 // window. A slower transport cursor must never determine the track window.
 const span = computed(() => songTrackSpanForSpeed(props.speed, timing.value, safeCursor.value))
 const renderTrack = computed(() => createSongTrackRenderer(props.chart))
-const scene = computed(() => renderTrack.value(safeCursor.value, span.value, props.skin))
+const scene = computed(() => {
+  const result = renderTrack.value(safeCursor.value, span.value, props.skin)
+  return props.position.ended?.value ? { ...result, glyphs: [], holds: [], middleNodes: [], links: [] } : result
+})
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)
 const laneOutline = computed(() => {
   const a = scene.value.lanes[0], b = scene.value.lanes[5]
   return `${a.topX},${scene.value.topY} ${b.topX},${scene.value.topY} ${b.bottomX},${scene.value.height} ${a.bottomX},${scene.value.height}`
 })
+
+const activeEffects = computed(() => (props.demonstrationEnabled ? props.effects?.state?.value : null))
+const laneAlphas = computed(() => activeEffects.value?.laneAlphas || [0, 0, 0, 0, 0])
+const hits = computed(() => activeEffects.value?.hits || [])
+const holds = computed(() => activeEffects.value?.holds || [])
+const autoEval = computed(() => activeEffects.value?.autoEval || { active: false, age: 0, alpha: 0 })
 </script>
 
 <style scoped>
+.track-preview { display: block; width: 100%; }
 .track-svg { display: block; width: 100%; border: 1px solid #35485a; border-radius: 6px; }
+
 </style>

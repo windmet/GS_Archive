@@ -1,0 +1,14 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>Native Combo layout and 315 QA</title><style>body{font:16px system-ui;margin:12px}svg{background:#162b36;display:block;width:100%;max-width:1280px}pre{white-space:pre-wrap}label{display:inline-block;margin:8px}input{width:80px}</style></head><body>
+<h1>原生 Combo 与 315 接线</h1><label>计数 <input id="count" type="number" min="2" max="9999" value="315"></label><label>315 年龄 <input id="age" type="number" step=".05" value=".2"></label><button id="peak">切换弹跳峰值</button><div id="app"></div><pre id="result" role="status"></pre>
+<script type="module">
+import {createApp,h,ref,nextTick} from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
+import Combo from '/src/components/archive/ArchiveSongComboPreview.vue'
+import {comboLayout} from '/src/presentation/SongComboTiming.js'
+const count=ref(315),age=ref(.2),scale=ref(1)
+createApp({render:()=>h('svg',{viewBox:'0 0 1280 720',id:'qa-svg'},[h(Combo,{state:{visible:true,count:count.value,scale:scale.value,specialAge:count.value===315?age.value:null}})])}).mount('#app')
+async function report(){await nextTick();const svg=document.querySelector('#qa-svg').getBoundingClientRect(),base=document.querySelector('[data-combo-animated-base]').getBoundingClientRect(),line=document.querySelector('[data-combo-underline]').getBoundingClientRect();const passed=base.right<=svg.right&&base.left>=svg.left&&line.right<=svg.right&&line.left>=svg.left;document.querySelector('#result').textContent=JSON.stringify({status:passed?'passed':'failed',count:count.value,scale:scale.value,age:age.value,svg:{left:svg.left,right:svg.right},base:{left:base.left,right:base.right},line:{left:line.left,right:line.right},layout:comboLayout(count.value),systems:[...document.querySelectorAll('[data-combo-system]')].map(e=>e.dataset.comboSystem)},null,2)}
+document.querySelector('#count').oninput=e=>{count.value=Number(e.target.value);report()}
+document.querySelector('#age').oninput=e=>{age.value=Number(e.target.value);report()}
+document.querySelector('#peak').onclick=()=>{scale.value=scale.value===1?1.2000000476837158:1;report()}
+report();window.addEventListener('resize',report)
+</script></body></html>

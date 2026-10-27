@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>Chart projection reference checkpoints</title>
+<style>body{font:15px system-ui;margin:12px;background:#edf0f4}#app{max-width:1280px}label{margin-right:14px}pre{white-space:pre-wrap;max-height:140px;overflow:auto}</style></head>
+<body><h1>贴图尺寸、透视与滑键连接检查点</h1>
+<p>固定来源粒子年龄和谱面窗口；用于几何/像素检查，不声称与未提供曲目及配速的录屏同一帧。</p>
+<label>命中年龄<input id="age" aria-label="命中年龄" type="range" min="0.02" max="0.65" step="0.01" value="0.3"></label>
+<label>轨道配速<input id="speed" aria-label="轨道配速" type="number" min="1" max="11" step="0.5" value="11"></label>
+<button id="check">验证当前像素</button><pre role="status">加载中</pre><div id="app"></div>
+<script type="module">
+import {createApp,ref,nextTick,h} from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
+import Track from '/src/components/archive/ArchiveSongTrackPreview.vue'
+import {createSongTrackRenderer,songTrackSpanForSpeed} from '/src/presentation/SongTrackPresentation.js'
+import {buildSongChartTiming} from '/src/presentation/SongChartTiming.js'
+const chart=await(await fetch('/data/song_charts/brndnf-4.json')).json()
+const age=ref(.3),speed=ref(11),position={tick:ref(127790)},state=ref(null)
+function update(){state.value={hits:[0,2,4].map(lane=>({hitType:0,pathId:14650,targetLane:lane,age:age.value,sourceIndex:lane,instanceId:'reference-'+lane})),holds:[],autoEval:{active:true,age:.1},laneAlphas:[0,0,0,0,0]}}
+update()
+createApp({setup:()=>()=>h(Track,{chart,title:'BRAND NEW FIELD EXPERT · fixed reference checkpoint',speed:speed.value,position,effects:{state},demonstrationEnabled:true})}).mount('#app')
+document.querySelector('#age').oninput=e=>{age.value=+e.target.value;update()}
+document.querySelector('#speed').onchange=e=>speed.value=+e.target.value
+const status=document.querySelector('[role=status]')
+document.querySelector('#check').onclick=()=>{
+ try{
+  const effect=document.querySelector('.track-effects-canvas'),hold=document.querySelector('[data-native-hold-canvas]')
+  if(effect.dataset.assetsPending!=='0'||effect.dataset.assetsFailed!=='0')throw Error('textures not loaded')
+  if(effect.dataset.particleRenderer!=='webgl-perspective')throw Error('perspective GPU consumer inactive')
+  const pixels=effect.getContext('2d').getImageData(0,0,1280,720).data
+  let visible=0,green=0
+  for(let i=0;i<pixels.length;i+=4){if(pixels[i+3])visible++;if(pixels[i+3]>32&&pixels[i+1]-pixels[i]>24)green++}
+  const gl=hold.getContext('webgl'),rgba=new Uint8Array(1280*720*4);gl.readPixels(0,0,1280,720,gl.RGBA,gl.UNSIGNED_BYTE,rgba)
+  let holdPixels=0;for(let i=3;i<rgba.length;i+=4)if(rgba[i])holdPixels++
+  const rings=[288,640,992].map(center=>{
+    let count=0,x=0,y=0,xy=0,minX=1280,maxX=0,minY=720,maxY=0
+    // Exclude the Auto badge at y449 from the center ring's color bounds.
+    for(let py=480;py<720;py++)for(let px=center-170;px<center+170;px++){
+      const i=(py*1280+px)*4
+      if(pixels[i+3]>32&&pixels[i+1]-pixels[i]>40&&pixels[i+2]-pixels[i]>30){
+        count++;x+=px;y+=py;xy+=px*py;minX=Math.min(minX,px);maxX=Math.max(maxX,px);minY=Math.min(minY,py);maxY=Math.max(maxY,py)
+      }
+    }
+    return {width:maxX-minX,height:maxY-minY,covarianceXY:xy/count-x*y/count**2}
+  })
+  if(age.value===.3&&!(rings[0].covarianceXY<0&&rings[2].covarianceXY>0))throw Error('left/right perspective lean missing')
+  const timing=buildSongChartTiming(chart),scene=createSongTrackRenderer(chart)(position.tick.value,songTrackSpanForSpeed(speed.value,timing,position.tick.value))
+  const bridgeAlpha=scene.holds.filter(h=>h.flickConnector).map(h=>{
+    const vertices=h.nativeMesh.vertices,k=Math.floor(vertices.length/4)*2,a=vertices[k],b=vertices[k+1]
+    const x=Math.floor(640+(a.x+b.x)/2),y=Math.floor(360-(a.y+b.y)/2)
+    return rgba[((719-y)*1280+x)*4+3]
+  })
+  if(!bridgeAlpha.every(a=>a>10))throw Error('flick mesh exists but actual connector midpoint has no pixels')
+  if(visible<1000||green<500||holdPixels<100)throw Error('actual rendered particle/connector pixels missing')
+  if(+hold.dataset.flickCount<2)throw Error('right flick chain missing')
+  status.textContent=JSON.stringify({status:'passed',age:age.value,speed:speed.value,renderer:effect.dataset.particleRenderer,visible,green,rings,flickConnectors:+hold.dataset.flickCount,holdPixels,bridgeAlpha},null,2)
+ }catch(e){status.textContent='FAILED: '+e.message;console.error(e)}
+}
+await nextTick();status.textContent='就绪：三轨固定命中、右滑连续链，等待贴图加载后验证'
+</script></body></html>
