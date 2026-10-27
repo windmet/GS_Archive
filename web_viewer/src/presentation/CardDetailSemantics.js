@@ -20,11 +20,25 @@ export function presentCardCostumeRelations(relations = []) {
     if (!CARD_COSTUME_SLOTS.has(relation.slot)) continue
     const key = relation.model_resource_id || relation.costume_key
     if (!key) continue
-    const current = byModel.get(key) || { ...relation, key, labels: [], ...costumeLink(relation.model_resource_id) }
+    const current = byModel.get(key) || { ...relation, key, labels: [], slots: [], ...costumeLink(relation.model_resource_id) }
+    if (!current.slots.includes(relation.slot)) current.slots.push(relation.slot)
     if (relation.label && !current.labels.includes(relation.label)) current.labels.push(relation.label)
     byModel.set(key, current)
   }
   return [...byModel.values()]
+}
+
+// The usage matrix: one row per costume model, columns Live and 剧情, each cell naming the card state that wears it
+// (普通 / 特训 / 突破), or — when this card never uses the costume there. The homepage column is left out on purpose:
+// home slots are a reusable selection, not a relation of this card (see CARD_COSTUME_SLOTS).
+const USAGE_LABELS = {
+  live: [['live_initial', '普通'], ['live_limitbreak', '突破']],
+  story: [['story_initial', '普通'], ['story_awakened', '特训'], ['story_limitbreak', '突破']],
+}
+export function costumeUsageCells(costume) {
+  const slots = costume?.slots || []
+  const cell = pairs => pairs.filter(([slot]) => slots.includes(slot)).map(([, label]) => label).join(' · ') || '—'
+  return { live: cell(USAGE_LABELS.live), story: cell(USAGE_LABELS.story) }
 }
 
 const COSTUME_VARIANT_SLOTS = [

@@ -33,6 +33,17 @@ const card = code => mergeCardDetail(cardMap.get(code), detailIndex)
 const compactCard = code => stripEvidence(card(code))
 const { presentCardCostumeRelations, presentCardCostumeGroups, presentCardCostumeFlavor, reflowCardCostumeFlavor } = semantics
 const describe = costume => archiveText('costume', costume.description, 'description')
+// Usage matrix cells: Live and 剧情 columns, 普通 / 特训 / 突破, a dash where the card never wears the model.
+{
+  const { costumeUsageCells } = semantics
+  const rel = (slot, model = '001tom_001_00') => ({ slot, model_resource_id: model, label: slot })
+  const wear = (...slots) => presentCardCostumeRelations(slots.map(slot => rel(slot)))[0]
+  assert.deepEqual(costumeUsageCells(wear('live_initial', 'story_initial', 'story_awakened')), { live: '普通', story: '普通 · 特训' })
+  assert.deepEqual(costumeUsageCells(wear('live_limitbreak', 'story_limitbreak')), { live: '突破', story: '突破' })
+  assert.deepEqual(costumeUsageCells(wear('story_awakened')), { live: '—', story: '特训' }, 'a column with no slot reads as a dash')
+  assert.deepEqual(costumeUsageCells(wear('home_default', 'live_initial')), { live: '普通', story: '—' }, 'home slots never reach the card matrix')
+  assert.deepEqual(costumeUsageCells(null), { live: '—', story: '—' })
+}
 const groupsFor = relations => presentCardCostumeGroups(relations, describe)
 const clone = value => JSON.parse(JSON.stringify(value))
 
