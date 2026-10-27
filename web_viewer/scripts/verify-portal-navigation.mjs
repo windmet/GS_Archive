@@ -287,13 +287,15 @@ const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavi
 assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups/, 'the drawer keeps no destination list of its own')
 assert.deepEqual(drawerSource.match(/ARCHIVE_SECTIONS(?:\[[^\]]+\]\?\.\w+)?/g), ['ARCHIVE_SECTIONS', 'ARCHIVE_SECTIONS[item.id]?.blurb'], 'the drawer reads only descriptions from the dictionary')
 assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
-assert.doesNotMatch(drawerSource.split('<script')[0], /group\.label|<h2/, 'the drawer draws no group titles; each icon is labelled')
+// Booklet 2.0: rows in a table of contents. Groups are told apart by their sidebar titles, not by boxes.
+assert.match(drawerSource.split('<script')[0], /<h2>\{\{ group\.label \}\}<\/h2>/, 'each drawer group is titled with its sidebar group name')
 assert.match(drawerSource, /props\.groups\.filter\(group => \(TIER_OF_GROUP\[group\.id\] \|\| 'core'\) === id\)/, 'every drawer tier is cut from the sidebar groups')
-// 图鉴 names run two to four characters; filled cells carry the column lines instead of the ragged text.
-assert.match(drawerSource, /\.archive-drawer \.is-collection button \{[^}]*background: var\(--gs-paper\)/, '图鉴 rows sit in filled cells so uneven names do not skew the columns')
+// 图鉴 names run two to four characters; a fixed icon column and full-width rules keep them aligned, without filled cells.
+assert.doesNotMatch(drawerSource.split('<style')[1], /background: var\(--gs-paper\)|border: 1px solid/, 'no filled cells or outlined cards')
+assert.match(drawerSource, /\.archive-drawer-blank \{[^}]*border-bottom: 1px solid var\(--gs-line\)/, 'blank rows keep the rules running across a short group')
 assert.match(drawerSource, /const TIER_OF_GROUP = \{ collection: 'collection', live: 'tools', studio: 'tools', resources: 'footer' \}/, 'catalogues, 图鉴, tools and the maintainer page each have their tier')
-// The tools are players and editors, not lists: cards that say what they open, from the dictionary.
-assert.match(drawerSource, /<span v-if="tier\.id === 'tools'" class="archive-drawer-tool-copy"><b>\{\{ item\.label \}\}<\/b><small v-if="item\.blurb">\{\{ item\.blurb \}\}<\/small><\/span>/, 'tool cards carry a name and a one-line description')
+// The tools are players and editors, not lists: a row that says what it opens, from the dictionary, ending in ↗.
+assert.match(drawerSource, /<template v-if="tier\.id === 'tools'"><small v-if="item\.blurb">\{\{ item\.blurb \}\}<\/small><ArrowUpRight /, 'tool rows carry a one-line description and ↗')
 assert.match(drawerSource, /blurb: ARCHIVE_SECTIONS\[item\.id\]\?\.blurb/, 'tool descriptions come from the dictionary')
 assert.deepEqual(Object.values(ARCHIVE_SECTIONS).filter(section => section.blurb).map(section => section.id), ['live', 'studio'], 'only the two tools carry a description')
 // 回到页顶 and 关于本站 close the drawer as a footer line; 回到页顶 scrolls the archive scroll area.
