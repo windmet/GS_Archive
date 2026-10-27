@@ -17,6 +17,7 @@
       :show-back="archiveShowBack"
       :breadcrumbs="archiveBreadcrumbs"
       @navigate="navigateArchiveSection"
+      @follow="followArchiveLink"
       @back="goArchiveBack"
     >
       <template v-if="COLLECTION_SECTIONS.includes(archiveSection)" #subnav>
@@ -2213,6 +2214,14 @@ function openHomeCard({ idolId, cardId, voice }) {
 
 function openHomeChat(idolId) {
   openMobileArchive({ idolCode: idolId, mode: 'personal' })
+}
+
+// An in-archive link (a breadcrumb level) opens the page its address names, as a fresh entry with no source,
+// exactly what the link opens in a new tab, but without reloading the archive.
+function followArchiveLink(href) {
+  return restoreRoute(readArchiveRoute(href, { history: false }), { restoring: false }).catch(error => {
+    console.error('[ArchiveRoute] Failed to follow an archive link:', error)
+  })
 }
 
 function goArchiveBack() {
