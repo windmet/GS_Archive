@@ -518,4 +518,11 @@ button.episode-main { cursor: pointer; }
   .story-actions > * { flex: 1 1 140px; }
   .reward-grid, .event-media-grid { grid-template-columns: minmax(0, 1fr); }
 }
+/* Wide screens: the section name sits in a 168px rail on the left, the content to its right; phones keep it above. */
+@media (min-width: 1100px) {
+  .detail-section { display: grid; grid-template-columns: var(--gs-rail-width) minmax(0, 1fr); column-gap: var(--gs-gap-group); align-items: start; }
+  .detail-section > .section-heading { grid-column: 1; grid-row: 1 / span 24; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: var(--gs-space-2); margin-bottom: 0; }
+  .detail-section > .section-heading > div { flex: none; }
+  .detail-section > :not(.section-heading) { grid-column: 2; min-width: 0; }
+}
 </style>
