@@ -6,6 +6,7 @@
     :type="reference?.actionable ? 'button' : undefined"
     :data-archive-focus-id="reference?.actionable ? `idol-reference:${reference.idolCode}` : undefined"
     :aria-label="reference?.actionable ? `查看${reference.displayName}的偶像资料` : undefined"
+    :title="density === 'face' ? reference?.displayName : undefined"
     @click="reference?.actionable && emit('open', reference.idolCode)"
   >
     <span v-if="showImage && currentImageKind === 'event_story_visual'" class="idol-reference-art" aria-hidden="true">
@@ -28,7 +29,8 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 
 const props = defineProps({
   reference: { type: Object, default: null },
-  density: { type: String, default: 'compact', validator: value => ['identity', 'compact', 'portrait', 'visual'].includes(value) },
+  // face: the avatar alone (a cast line of faces); the name stays the accessible name and the tooltip.
+  density: { type: String, default: 'compact', validator: value => ['face', 'identity', 'compact', 'portrait', 'visual'].includes(value) },
   showImage: { type: Boolean, default: true },
 })
 const emit = defineEmits(['open'])
@@ -39,7 +41,7 @@ const usableCandidates = computed(() => (props.reference?.imageCandidates || [])
 const imageUrls = computed(() => usableCandidates.value.map(candidate => candidate.url).filter(Boolean))
 const imageSrc = computed(() => imageUrls.value[imageIndex.value] || '')
 const currentImageKind = computed(() => usableCandidates.value[imageIndex.value]?.kind || '')
-const avatarSize = computed(() => ({ identity: 36, compact: 44, portrait: 64, visual: 72 })[props.density] || 44)
+const avatarSize = computed(() => ({ face: 30, identity: 36, compact: 44, portrait: 64, visual: 72 })[props.density] || 44)
 watch(() => `${props.reference?.idolCode || ''}|${imageUrls.value.join('|')}`, () => { imageIndex.value = 0 })
 
 function advanceImage() {
@@ -56,6 +58,9 @@ button.archive-idol-reference:hover { background: var(--gs-mint-wash); }
 /* Touch has no hover: a tap must not leave the row tinted. */
 @media (hover: none), (pointer: coarse) { button.archive-idol-reference:hover { background: none; } }
 button.archive-idol-reference:focus-visible { outline: 3px solid var(--gs-mint); outline-offset: 2px; }
+.density-face { --reference-size: 30px; width: auto; min-height: 0; padding: 0; border-bottom: 0; border-radius: 50%; }
+.density-face .idol-reference-copy, .density-face .idol-reference-arrow { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+button.density-face:hover { background: none; opacity: .85; }
 .density-identity { --reference-size: 36px; width: auto; min-height: 44px; padding: 3px 5px; border-bottom: 0; border-radius: var(--gs-radius-control); }
 .density-identity .idol-reference-copy { flex-direction: row; align-items: baseline; gap: 6px; }
 .density-identity .idol-reference-copy small::before { content: '·'; margin-right: 6px; }
