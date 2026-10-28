@@ -46,6 +46,9 @@ for (const view of VALID_VIEWS) {
       // Player's return destination into non-Player pages.
       if (view !== 'player') expected.returnView = ''
       if (view === 'chibi_stage') expected.stageId = actual.stageId
+      if ((view === 'story_collection' || view === 'player' && returnView === 'story_collection') && parent === 'unit_detail') {
+        expected.unit = navigation.currentArchiveUnitCode.value
+      }
       if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) {
         expected.story = actual.story
         expected.workMode = actual.workMode

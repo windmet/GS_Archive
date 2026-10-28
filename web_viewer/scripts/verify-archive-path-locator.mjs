@@ -17,6 +17,33 @@ const song = { view: 'song_detail', song: 'brndnf' }
 const event = { view: 'event_detail', event: '410018' }
 const same = (a, b, message) => assert.equal(buildArchiveUrl('http://localhost/', a).search, buildArchiveUrl('http://localhost/', b).search, message)
 
+// Story owners keep the read-model domain/section; selected chapters or participants remain query state.
+for (const [route, location] of [
+  ...['main', 'extra', 'birthday', 'unit_story', 'event'].map(storyType => [{ view: 'story_catalog', storyType }, `/stories/${storyType}/`]),
+  [{ view: 'story_collection', storyType: 'main', storySection: '101', story: '1_1_101_01.json' }, '/stories/main/101/?story=1_1_101_01.json'],
+  [{ view: 'story_collection', storyType: 'unit_story', storySection: '1' }, '/stories/unit_story/1/'],
+  [{ view: 'story_collection', storyType: 'extra', storySection: '601' }, '/stories/extra/601/'],
+  ...['029ass', '101ken', 'producer_birthday_common'].map(storySection => [{ view: 'story_collection', storyType: 'birthday', storySection }, `/stories/birthday/${storySection}/`]),
+  [{ view: 'seasonal_campaign', storyType: 'seasonal_campaign', storySection: 'valentine_2022', idol: '001tom' }, '/stories/seasonal_campaign/valentine_2022/?idol=001tom'],
+  [{ view: 'idol_story_archive', storyType: 'idol_story', idol: '001tom', storySection: '1', episode: '2' }, '/stories/idol_story/001tom/?story_section=1&episode=2'],
+  [{ view: 'work_archive', storyType: 'work', idol: '001tom', story: '1_2_001_01.json', workMode: 'lines' }, '/stories/work/001tom/?story=1_2_001_01.json&work_mode=lines'],
+  [{ view: 'external_story_resources' }, '/stories/external/'],
+]) {
+  const result = buildPublicArchiveUrl('http://x/', route), expected = new URL(location, 'http://x/')
+  assert.equal(result.pathname, expected.pathname, location)
+  assert.deepEqual([...result.searchParams].sort(), [...expected.searchParams].sort(), location)
+  same(read(result.href), read(buildArchiveUrl('http://x/', route)), location)
+  same(read(result.href.replace(/\/(\?|$)/, '$1')), read(result.href), `${location}: optional trailing slash`)
+}
+assert.equal(buildPublicArchiveUrl('http://x/', { view: 'story_catalog', storyType: 'main', storyMode: 'search', query: 'x' }).pathname, '/stories/', 'search mode stays a directory filter')
+assert.equal(read('http://x/stories/main/101/?view=song_detail&song=brndnf').view, 'song_detail', 'legacy query priority on three-segment paths')
+for (const bad of ['/stories/main/01/', '/stories/unit_story/0/', '/stories/extra/101/', '/stories/birthday/029ASS/', '/stories/work/xyz/',
+  '/stories/seasonal_campaign/valentine_22/', '/stories/main/101/extra/', '/stories//main/101/', '/stories/main%2F101/']) {
+  assert.equal(isBareArchiveEntry(`http://x${bad}`), true, bad)
+}
+assert.equal(buildPublicArchiveUrl('http://x/', read('http://x/?view=groups&category=main_story')).pathname, '/stories/main/', 'retired directory landing')
+assert.equal(buildPublicArchiveUrl('http://x/', read('http://x/?view=episodes&unit=001jup')).pathname, '/stories/unit_story/1/', 'retired prequel collection')
+
 // U1–U4: path and legacy query forms read as the same route.
 for (const href of ['http://x/idols/001tom/', 'http://x/idols/001tom', 'http://x/?view=idol_detail&idol=001tom', 'http://x/?view=idols&category=idol&idol=001tom']) {
   const route = read(href)
@@ -140,7 +167,7 @@ for (const [route, href] of [
   same(read(href.replace(/\/(\?|$)/, '$1')), read(href), `${href} without its trailing slash`)
 }
 // Audited directory filters survive path -> query -> path; stale story context does not.
-for (const location of ['/songs/?idol=001tom&q=x', '/events/?idol=001tom&q=x&event_kind=theater', '/stories/?story_type=main&story_section=101', '/items/?q=x', '/photos/?q=x', '/gashas/?gasha_type=growing_fes&q=x']) {
+for (const location of ['/songs/?idol=001tom&q=x', '/events/?idol=001tom&q=x&event_kind=theater', '/stories/?story_mode=search&story_type=main&story_section=101', '/items/?q=x', '/photos/?q=x', '/gashas/?gasha_type=growing_fes&q=x']) {
   const url = new URL(location, 'http://x/')
   const roundTrip = buildPublicArchiveUrl('http://x/', read(url))
   assert.equal(roundTrip.pathname, url.pathname, location)
@@ -259,6 +286,17 @@ assert.equal(isBareArchiveEntry('http://x/idols/xyz/?view=cards'), false, 'a que
   assert.deepEqual(entries.at(-1).state.sidemArchiveNav.gasha, { parent: 'card_detail' })
   assert.deepEqual([readArchiveRoute().gasha, readArchiveRoute().parentView], ['210003', 'card_detail'])
   assert.equal(readArchiveRoute(href).parentView, '', 'a copied gasha link carries no placement')
+  for (const opener of [{ parentView: 'song_detail', song: 'grwsml' }, { parentView: 'idol_story_archive', idol: '029ass' },
+    { parentView: 'unit_detail', unit: '01jup' }]) {
+    const collection = { view: 'story_collection', storyType: 'main', storySection: '101', story: '1_1_101_01.json', ...opener }
+    writeArchiveRoute(collection)
+    assert.equal(entries.at(-1).url, 'http://x/stories/main/101/?story=1_1_101_01.json')
+    const live = readArchiveRoute(), shared = readArchiveRoute(href)
+    for (const key of Object.keys(opener)) { assert.equal(live[key], opener[key]); assert.equal(shared[key], '', `shared collection has no ${key}`) }
+    assert.equal(live.story, collection.story, 'chapter survives refresh')
+    assert.equal(buildPublicArchiveUrl('http://x/', collection).href, href, 'shareable collection never carries its opener')
+    assert.equal(buildPublicArchiveUrl('http://x/', { ...collection, sourceRoute: '?view=song_detail&song=grwsml' }).href, href, 'shareable collection never carries its source frame')
+  }
   // Other pages never read an event placement.
   writeArchiveRoute(card)
   assert.equal(entries.at(-1).state.sidemArchiveNav, undefined); assert.equal(readArchiveRoute().parentView, '')

@@ -172,8 +172,8 @@ try {
   // The title waits for the translation pack, so it never shows the source name first.
   await open('/idols/001tom/', idolReady); await waitFor(`/^天濑冬马 · GROWING STARS 资料馆$/.test(document.title)`)
   const idolTitle = await ev('document.title')
-  // Cards now have their own section path/title; use the unpublished personal-story page for the generic-title check.
-  await clickTo('[data-archive-focus-id="idol-domain:001tom:stories"]'); await waitFor(`location.pathname === '/' && location.search.includes('view=idol_story_archive')`)
+  // Personal stories now publish a path too. Settings retain the generic site title.
+  await open('/?view=welcome', `document.body.innerText.includes('制作人设置')`)
   const otherTitle = await ev('document.title')
   check('P15 tab title follows the entity', unitTitle === 'W · GROWING STARS 资料馆' && /^天濑冬马 · GROWING STARS 资料馆$/.test(idolTitle) && otherTitle === 'GROWING STARS 资料馆 · 偶像大师 SideM', `unit="${unitTitle}" idol="${idolTitle}" other="${otherTitle}"`)
   // P16: a card path opens cold, keeps its address and titles the tab with the card and its idol, never the source text.
@@ -315,10 +315,10 @@ try {
   // P34: a main-story unlock names its chapter and opens that chapter; page back returns to the song.
   await open('/songs/grwsml/', `!!document.querySelector('.song-unlock-link')`); await ev(`document.querySelector('.song-gameplay')?.scrollIntoView({block:'center'})`); await sleep(400); await shot('p34-song-unlock')
   const unlockText = await ev(`document.querySelector('.song-unlock-link').closest('p').textContent.trim()`)
-  await clickTo('.song-unlock-link'); await waitFor(`location.search.includes('view=story_collection')`)
+  await clickTo('.song-unlock-link'); await waitFor(`location.pathname === '/stories/main/101/'`)
   const unlockRoute = await loc()
   await pageBack(); await waitFor(songReady)
-  check('P34 main-story unlock opens the chapter and back', unlockText === '解锁条件：阅读主线 第1章 第1話（至 EPISODE10）' && unlockRoute.includes('story_type=main') && unlockRoute.includes('story_section=101') && (await loc()) === '/songs/grwsml/',
+  check('P34 main-story unlock opens the chapter and back', unlockText === '解锁条件：阅读主线 第1章 第1話（至 EPISODE10）' && unlockRoute === '/stories/main/101/' && (await loc()) === '/songs/grwsml/',
     `"${unlockText}" -> ${unlockRoute} -> ${await loc()}`)
   // P35: song -> its event -> reload -> page back returns to the song (the opener survives in history state).
   await open('/songs/ntalon/', `!!document.querySelector('.song-events .relation-row')`)

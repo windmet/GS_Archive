@@ -661,7 +661,7 @@ import { useMobileNavigation } from './composables/useMobileNavigation.js'
 import { useReaderNavigation } from './composables/useReaderNavigation.js'
 import { usePortalNavigation } from './composables/usePortalNavigation.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
-import { storyCollectionTitle } from './presentation/StoryPageTitle.js'
+import { storyCollectionTitle, seasonalCampaignTitle } from './presentation/StoryPageTitle.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
 import { storyOwner } from './core/StoryOwner.js'
 import {
@@ -1474,6 +1474,11 @@ const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.
 // Names wait for their translation overlay, so a slow first visit keeps the head shell's title instead of
 // switching to the Japanese source name and back.
 const archiveTabEntityName = computed(() => {
+  if (view.value === 'story_catalog') return archiveTitle.value
+  if (view.value === 'story_collection') return idolNamesSettled.value ? storyCollectionTitle(currentStoryCollection.value, idolDisplayName) : ''
+  if (view.value === 'seasonal_campaign') return seasonalCampaignTitle(currentSeasonalCampaign.value)
+  if (view.value === 'idol_story_archive') return idolNamesSettled.value ? archiveIdolPlaceName(view.value, currentIdolStoryPage.value && idolDisplayName(currentIdolStoryPage.value.idol_code, currentIdolStoryPage.value.idol_name)) : ''
+  if (view.value === 'work_archive') return idolNamesSettled.value ? archiveIdolPlaceName(view.value, currentWorkIdol.value && idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name)) : ''
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || ''
   // Song titles have no translation overlay; they are shown in the source everywhere.
   if (view.value === 'song_detail') return currentSong.value?.title || ''

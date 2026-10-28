@@ -115,6 +115,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
       (view.value === 'song_detail' && songParentView.value === 'unit_detail') ||
       (view.value === 'player' && returnViewAfterPlayer.value === 'unit_detail') ||
       (view.value === 'player' && returnViewAfterPlayer.value === 'mobile_archive') ||
+      (preservesStoryCollectionContext && storyCollectionParentView.value === 'unit_detail') ||
       (preservesEventContext && eventParentView.value === 'unit_detail')
     return {
       view: view.value,

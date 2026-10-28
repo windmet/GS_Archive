@@ -1,4 +1,4 @@
-import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES } from './publicRoutes.js'
+import { PUBLIC_ROUTES, matchPublicRoute, publicRoutePath } from './publicRoutes.js'
 import { normalizeCollectionRoute, collectionKindLabel } from './CollectionRouteState.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 import { pruneToRouteSchema } from './routeSchema.js'
@@ -650,19 +650,12 @@ export function isArchiveLocatorPath(pathname) {
 function locatorQuery(url) {
   const params = new URLSearchParams(url.searchParams)
   if (params.has('view')) return params
-  const root = /^\/([a-z]+)\/?$/.exec(url.pathname)
-  const section = root && SECTION_PATH_ROUTES.find(entry => entry.prefix === root[1])
-  if (section) {
-    params.set('view', section.view)
-    for (const [key, value] of Object.entries(section.implied)) params.set(key, value)
-    return params
+  for (const entry of PUBLIC_ROUTES) {
+    const matched = matchPublicRoute(entry, url.pathname)
+    if (!matched) continue
+    for (const [key, value] of Object.entries(matched)) params.set(key, value)
+    break
   }
-  const match = /^\/([a-z]+)\/([^/]+)\/?$/.exec(url.pathname)
-  const locator = match && PUBLIC_PATH_ROUTES.find(entry => entry.prefix === match[1] && entry.pattern.test(match[2]))
-  if (!locator) return params
-  params.set('view', locator.view)
-  params.set(locator.param, locator.fromPath ? locator.fromPath(match[2]) : match[2])
-  for (const [key, value] of Object.entries(locator.implied)) params.set(key, value)
   return params
 }
 
@@ -670,26 +663,17 @@ function locatorQuery(url) {
 // SECTION_PATH_ROUTES, `/` otherwise.
 function publicArchiveUrl(url) {
   const view = url.searchParams.get('view')
-  const section = SECTION_PATH_ROUTES.find(entry => entry.view === view &&
-    Object.entries(entry.implied).every(([key, value]) => url.searchParams.get(key) === value))
-  if (section) {
-    url.pathname = `/${section.prefix}/`
-    url.searchParams.delete('view')
-    for (const key of Object.keys(section.implied)) url.searchParams.delete(key)
-    return url
-  }
-  const locator = PUBLIC_PATH_ROUTES.find(entry => entry.view === view)
-  const identity = locator && url.searchParams.get(locator.param)
-  const id = locator?.toPath ? locator.toPath(identity || '') : identity
-  const implied = locator && Object.entries(locator.implied).every(([key, value]) => url.searchParams.get(key) === value)
-  if (!locator || !implied || !locator.pattern.test(id || '')) {
-    url.pathname = '/'
-    return url
-  }
-  url.pathname = `/${locator.prefix}/${id}/`
+  const candidates = PUBLIC_ROUTES.filter(entry => entry.view === view)
+    .sort((a, b) => Object.keys(b.implied).length - Object.keys(a.implied).length)
+  const locator = candidates.find(entry => publicRoutePath(entry, url.searchParams))
+  if (!locator) { url.pathname = '/'; return url }
+  url.pathname = publicRoutePath(locator, url.searchParams)
   url.searchParams.delete('view')
-  url.searchParams.delete(locator.param)
+  for (const segment of locator.segments || (locator.param ? [{ param: locator.param }] : [])) {
+    if (segment.param) url.searchParams.delete(segment.param)
+  }
   for (const key of Object.keys(locator.implied)) url.searchParams.delete(key)
+  if (view === 'story_collection') for (const key of [...Object.values(STORY_COLLECTION_CONTEXT_PARAMS), ...Object.values(NAVIGATION_CONTEXT_PARAMS)]) url.searchParams.delete(key)
   return url
 }
 
@@ -708,7 +692,8 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
   // Where an event Reader or an event detail was opened from rides history state, not the URL.
   const openedFrom = params.get('view') === 'reader' ? context.reader || {}
     : params.get('view') === 'event_detail' ? context.event || {}
-    : params.get('view') === 'gasha_detail' ? context.gasha || {} : {}
+    : params.get('view') === 'gasha_detail' ? context.gasha || {}
+    : params.get('view') === 'story_collection' ? context.storyCollection || {} : {}
   return normalizeArchiveRoute({
     view: params.get('view'),
     pickTarget: params.get('pick'),
@@ -744,7 +729,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     sort: params.get('sort'),
     episode: clean(params.get('episode')),
     card: clean(params.get('card')) || openedFrom.card || '',
-    song: clean(params.get('song')),
+    song: clean(params.get('song')) || openedFrom.song || '',
     stageId: params.get('stage'),
     songScope: params.get('song_scope'),
     event: clean(params.get('event')),
@@ -888,6 +873,8 @@ const EVENT_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'un
 // Where a gasha detail was opened from (/gashas/<id>/ keeps only the gasha): its parent, and the extra-story
 // collection goBackFromGasha returns to.
 const GASHA_CONTEXT_PARAMS = { parent: 'parent', story_type: 'story_type', story_section: 'story_section' }
+// A collection's address is domain/section plus its selected chapter. Its opener is not shareable identity.
+const STORY_COLLECTION_CONTEXT_PARAMS = { parent: 'parent', song: 'song', idol: 'idol', unit: 'unit', category: 'category' }
 
 function contextFrom(value, params) {
   if (!value || typeof value !== 'object') return null
@@ -903,7 +890,8 @@ function historyNavigationContext() {
   if (stored?.v === NAVIGATION_CONTEXT_VERSION) {
     return { ...Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])])),
       reader: contextFrom(stored.reader, READER_CONTEXT_PARAMS), event: contextFrom(stored.event, EVENT_CONTEXT_PARAMS),
-      gasha: contextFrom(stored.gasha, GASHA_CONTEXT_PARAMS) }
+      gasha: contextFrom(stored.gasha, GASHA_CONTEXT_PARAMS),
+      storyCollection: contextFrom(stored.storyCollection, STORY_COLLECTION_CONTEXT_PARAMS) }
   }
   return { source: localQuery(state?.[LEGACY_SOURCE_KEY]) }
 }
@@ -925,7 +913,8 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
     }
     if (Object.keys(reader).length) context.reader = reader
   }
-  for (const [view, key, params] of [['event_detail', 'event', EVENT_CONTEXT_PARAMS], ['gasha_detail', 'gasha', GASHA_CONTEXT_PARAMS]]) {
+  for (const [view, key, params] of [['event_detail', 'event', EVENT_CONTEXT_PARAMS], ['gasha_detail', 'gasha', GASHA_CONTEXT_PARAMS],
+    ['story_collection', 'storyCollection', STORY_COLLECTION_CONTEXT_PARAMS]]) {
     if (url.searchParams.get('view') !== view) continue
     const openedFrom = {}
     for (const [field, param] of Object.entries(params)) {

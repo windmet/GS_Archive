@@ -15,7 +15,7 @@ export const ROUTE_SCHEMA = Object.freeze({
   song_catalog: ['idol', 'q', 'song_scope'], song_detail: ['song'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
   experiments: [], live: [], studio: [], about: [], unused_archive: ['voices'], score_archive: ['sound'], archive_status: [], spine_lab: [],
   story_catalog: ['story_mode', 'story_type', 'story_section', 'event_scope', 'availability', 'sort', 'idol', 'q'],
-  external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'idol'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
+  external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'song', 'idol', 'unit', 'category'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
   seasonal_campaign: ['story_type', 'story_section', 'idol'], work_archive: ['idol', 'story', 'work_mode', 'story_type'],
   idol_story_archive: ['idol', 'story_type', 'story_section', 'episode'], mobile_archive: ['idol', 'unit', 'mobile_mode', 'mobile_scenario'],
   unit_catalog: [], unit_detail: ['unit'],
@@ -44,6 +44,8 @@ export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
   'idol_detail', 'unit_detail', 'card_detail', 'song_detail',
   // Their address is only the event or gasha; the owned opened-from fields move to history state on write (archiveRoute.js).
   'event_detail', 'gasha_detail',
+  // Story owners retain their selection; collection opener identity moves to history.
+  'story_collection', 'seasonal_campaign', 'idol_story_archive', 'work_archive', 'external_story_resources',
   // Published at /office/<idol>/ and /mobile/<idol>/; App.vue applyRoute reads only their entries' fields.
   'home', 'mobile_archive',
   // Audited directory props; section identity is supplied by the public registry.
