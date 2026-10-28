@@ -1,3 +1,4 @@
+import { PORTAL_PRELOAD } from './lib/portal-preload.mjs'
 // Entity head shells: one shell per bootstrap idol, unit, published card, song, event, gasha and section root, each with exactly one title/description/canonical/OG
 // set pointing at its path locator, escaped text, and a body byte-identical to index.html.
 //   node scripts/verify-entity-head-shells.mjs              pure checks against a synthetic template (CI)
@@ -46,7 +47,7 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   assert.deepEqual(shells.filter(s => s.kind === 'card').map(s => s.path).sort(), cards.map(c => `cards/${c.resource_id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'idol').map(s => s.path).sort(), idols.map(i => `idols/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'unit').map(s => s.path).sort(), unitCodes.map(c => `units/${c}/index.html`).sort())
-  assert.ok(shells.every(s => !s.html.includes('/portal/index.json')), 'entity pages do not preload the Portal index')
+  assert.ok(shells.every(s => !(s.html.match(PORTAL_PRELOAD) || []).length), 'entity pages do not preload the Portal index')
   for (const shell of shells) {
     const { html } = shell
     const location = `${origin}/${shell.path.replace(/index\.html$/, '')}`
@@ -176,7 +177,11 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   // Section roots carry their section name, as their shells do; other pages keep the site title.
   assert.equal(archiveDocumentTitle('cards'), '卡片 · GROWING STARS 资料馆')
   assert.equal(archiveDocumentTitle('collection_catalog', '称号'), '称号 · GROWING STARS 资料馆')
-  assert.equal(archiveDocumentTitle('about', 'x'), ARCHIVE_SITE_TITLE)
+  assert.equal(archiveDocumentTitle('about'), '关于本站 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('live'), 'LIVE · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('studio'), '摄影工作台 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('archive_status'), '资源 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('spine_lab'), ARCHIVE_SITE_TITLE)
   assert.ok(template.includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'the site title constant matches index.html')
   assert.ok(readFileSync(path.join(root, 'index.html'), 'utf8').includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'index.html still ships the site title')
 }

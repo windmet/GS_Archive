@@ -1,3 +1,4 @@
+import { COLLECTION_KINDS } from '../src/core/CollectionRouteState.js'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -88,7 +89,7 @@ context.view.value='home';context.openPortalDirectory({domain:'songs'})
 assert.equal(calls.length,before)
 const directoryState = useArchiveNavigationState()
 const opened=[]
-const adapters={ ...directoryState,
+const adapters={ ...directoryState, COLLECTION_KINDS,
   songReadModelCatalog:{value:{songs:{}}},
   normalizeEventBrowseState:()=>({kind:'',sort:'newest',page:0}),
   commitView:next=>{directoryState.view.value=next;opened.push(next)},

@@ -1,7 +1,7 @@
 // Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/,
 // /songs/<song_code>/, /events/<id>/): plan section 3.6, P1-P15, the card steps P16-P19, the song steps P20-P24
 // the event steps P25-P31, the song/event/main-story relation steps P32-P36, the Reader revision step P37, the gasha and
-// section-root steps P38-P41 and the office/mobile steps P42-P46.
+// section-root steps P38-P41, office/mobile steps P42-P46 and directory pruning steps P47-P50.
 //   node scripts/verify-portal-path-locator-browser.mjs [base] [outDir]
 // Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server with the read-model candidate (picked
 // automatically, or SIDEM_READMODEL_CANDIDATE) and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
@@ -14,13 +14,18 @@ const base = process.argv[2] || 'http://127.0.0.1:5177'
 const out = process.argv[3] || '.analysis/path-locator'
 mkdirSync(out, { recursive: true })
 const cache = path.join(os.homedir(), 'AppData/Local/ms-playwright')
-const dir = readdirSync(cache).filter(n => /^chromium-\d+$/.test(n)).sort().reverse().find(n => existsSync(path.join(cache, n, 'chrome-win64/chrome.exe')))
+const binaries = readdirSync(cache).sort().reverse().flatMap(dir => [
+  path.join(cache, dir, 'chrome-headless-shell-win64/chrome-headless-shell.exe'), path.join(cache, dir, 'chrome-win64/chrome.exe')])
+  .filter(file => existsSync(file)).sort((a, b) => Number(b.includes('headless-shell')) - Number(a.includes('headless-shell')))
+if (!binaries.length) throw new Error('No cached Playwright Chromium found')
 const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-journey-'))
 const port = 9700 + Math.floor(Math.random() * 200)
-const chrome = spawn(path.join(cache, dir, 'chrome-win64/chrome.exe'), [`--remote-debugging-port=${port}`, '--headless=new', `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' })
+const headless = binaries[0].includes('headless-shell') ? [] : ['--headless=new']
+const chrome = spawn(binaries[0], [`--remote-debugging-port=${port}`, ...headless, `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' })
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 let targets
 for (let i = 0; i < 50 && !targets?.length; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() } catch { await sleep(200) } }
+if (!targets?.some(target => target.type === 'page')) { chrome.kill(); throw new Error(`${binaries[0]} did not expose a browser page`) }
 const socket = new WebSocket(targets.find(t => t.type === 'page').webSocketDebuggerUrl)
 await new Promise(r => socket.addEventListener('open', r))
 let seq = 0, errors = []
@@ -146,7 +151,7 @@ try {
   await open('/?view=unit_detail&unit=01jup&q=x', `!!document.querySelector('.unit-members')`)
   const shown = await loc(); const lengthAfter = await ev('history.length')
   await historyStep('back'); const previous = await loc()
-  check('P9 legacy link becomes its path in place', shown === '/units/01jup/' && lengthAfter === lengthBefore + 1 && previous === '/?view=about', `shown=${shown}; history ${lengthBefore}->${lengthAfter}; previous=${previous}`)
+  check('P9 legacy link becomes its path in place', shown === '/units/01jup/' && lengthAfter === lengthBefore + 1 && previous === '/about/', `shown=${shown}; history ${lengthBefore}->${lengthAfter}; previous=${previous}`)
   // P10: malformed locator falls back without an uncaught error.
   await open('/idols/xyz/', `document.body.innerText.trim().length > 40`)
   check('P10 malformed path falls back', errors.length === 0, `${await loc()}; errors=${errors.join(' | ') || 0}`)
@@ -167,7 +172,8 @@ try {
   // The title waits for the translation pack, so it never shows the source name first.
   await open('/idols/001tom/', idolReady); await waitFor(`/^天濑冬马 · GROWING STARS 资料馆$/.test(document.title)`)
   const idolTitle = await ev('document.title')
-  await clickTo('[data-archive-focus-id^="idol-domain:001tom:"]'); await waitFor(`location.pathname === '/'`)
+  // Cards now have their own section path/title; use the unpublished personal-story page for the generic-title check.
+  await clickTo('[data-archive-focus-id="idol-domain:001tom:stories"]'); await waitFor(`location.pathname === '/' && location.search.includes('view=idol_story_archive')`)
   const otherTitle = await ev('document.title')
   check('P15 tab title follows the entity', unitTitle === 'W · GROWING STARS 资料馆' && /^天濑冬马 · GROWING STARS 资料馆$/.test(idolTitle) && otherTitle === 'GROWING STARS 资料馆 · 偶像大师 SideM', `unit="${unitTitle}" idol="${idolTitle}" other="${otherTitle}"`)
   // P16: a card path opens cold, keeps its address and titles the tab with the card and its idol, never the source text.
@@ -380,6 +386,12 @@ try {
   const sidebarGashas = await loc()
   check('P41 section roots open at their path with section titles', roots.length === 5 && roots.every(row => row.endsWith(' · GROWING STARS 资料馆')) && sidebarEvents === '/events/' && sidebarGashas === '/gashas/' && errors.length === 0,
     `${roots.join(' ')}; sidebar ${sidebarEvents} -> ${sidebarGashas}; errors=${errors.join(' | ') || 0}`)
+  // D1: tool entry paths carry their section titles, including on reload.
+  for (const [prefix, title] of [['live', 'LIVE'], ['studio', '摄影工作台'], ['about', '关于本站'], ['status', '资源']]) {
+    await open(`/${prefix}/`, `!!document.querySelector('main') && document.title === '${title} · GROWING STARS 资料馆'`)
+    await send('Page.reload', { ignoreCache: true }); await waitFor(`document.title === '${title} · GROWING STARS 资料馆'`); await settle()
+    check(`P41 ${prefix} tool root`, (await loc()) === `/${prefix}/` && (await ev('document.title')) === `${title} · GROWING STARS 资料馆` && errors.length === 0, `${await loc()}; errors=${errors.join(' | ') || 0}`)
+  }
   // P42: an idol's office opens cold at /office/<idol>/ with the place title; the legacy query link is rewritten to it.
   const atOffice = idol => `location.pathname === '/office/${idol}/' && / · 事务所 · GROWING STARS 资料馆$/.test(document.title)`
   const atMobile = idol => `location.pathname === '/mobile/${idol}/' && / · 通信 · GROWING STARS 资料馆$/.test(document.title)`
@@ -423,6 +435,23 @@ try {
   await usePreferences('portal')
   check('P46 malformed paths start like the bare entry', bareStart.startsWith('/?view=portal') && malformed.every(row => row.endsWith('->' + bareStart)) && homeStart.startsWith('/office/002sht/'),
     `/ -> ${bareStart}; ${malformed.join(' ')}; home preference /office/xyz/ -> ${homeStart}`)
+  // P47: real sidebar transition must not carry a birthday collection's state.
+  await open('/?view=story_collection&story_type=birthday&story_section=029ass', `!!document.querySelector('main article')`)
+  await clickText('.archive-nav button', '卡片'); await waitFor(atRoot('cards')); await settle()
+  check('P47 birthday collection to cards drops story context', (await loc()) === '/cards/' && errors.length === 0, `${await loc()}; errors=${errors.join(' | ') || 0}`)
+  // P48/P49 check loaded controls, not just the address, after a cold refresh.
+  await open('/songs/?idol=001tom', `document.body.innerText.includes('天濑冬马')`)
+  await send('Page.reload', { ignoreCache: true }); await waitFor(`document.body.innerText.includes('天濑冬马')`); await settle()
+  check('P48 song idol filter survives refresh', (await loc()) === '/songs/?idol=001tom' && (await ev(`document.body.innerText.includes('天濑冬马')`)) && errors.length === 0, `${await loc()}; errors=${errors.join(' | ') || 0}`)
+  await open('/events/?idol=001tom&q=315', `!!document.querySelector('input[type=search]')`)
+  await send('Page.reload', { ignoreCache: true }); await waitFor(`document.body.innerText.includes('天濑冬马') && document.querySelector('input[type=search]')?.value === '315'`); await settle()
+  check('P49 event idol and search survive refresh', (await loc()) === '/events/?idol=001tom&q=315' && (await ev(`document.body.innerText.includes('天濑冬马') && document.querySelector('input[type=search]')?.value === '315'`)) && errors.length === 0, `${await loc()}; errors=${errors.join(' | ') || 0}`)
+  await open('/about/', `document.title.startsWith('关于本站')`)
+  const cardsHistoryBefore = await ev('history.length')
+  await open('/?view=cards&story_type=main&rarity=SSR', `location.pathname === '/cards/' && !!document.querySelector('main')`)
+  const legacyCards = await loc(), cardsHistoryAfter = await ev('history.length')
+  await historyStep('back')
+  check('P50 old card URL is replaced without adding history', legacyCards === '/cards/?rarity=SSR' && cardsHistoryAfter === cardsHistoryBefore + 1 && (await loc()) === '/about/' && errors.length === 0, `${legacyCards}; history ${cardsHistoryBefore}->${cardsHistoryAfter}; back ${await loc()}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {
