@@ -11,7 +11,7 @@ export const ROUTE_SCHEMA = Object.freeze({
   cards: ['idol', 'q', 'rarity', 'card_attribute', 'asset_state', 'relation_state'], card_detail: ['card'],
   event_catalog: ['idol', 'q', 'event_kind', 'event_sort', 'event_page'], event_detail: ['event', 'parent', 'category', 'unit', 'card', 'idol'],
   collection_catalog: ['q', 'entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
-  photo_catalog: ['q', 'photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type'], gasha_detail: ['gasha', 'parent', 'story_type', 'story_section'],
+  photo_catalog: ['q', 'photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type', 'q'], gasha_detail: ['gasha', 'parent', 'story_type', 'story_section'],
   song_catalog: ['idol', 'q', 'song_scope'], song_detail: ['song'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
   experiments: [], live: [], studio: [], about: [], unused_archive: ['voices'], score_archive: ['sound'], archive_status: [], spine_lab: [],
   story_catalog: ['story_mode', 'story_type', 'story_section', 'event_scope', 'availability', 'sort', 'idol', 'q'],

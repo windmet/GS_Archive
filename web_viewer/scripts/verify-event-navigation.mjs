@@ -57,7 +57,7 @@ function fixture({ story = false } = {}) {
     loadCardCatalog: async () => { c.cardReadModelCatalog.value = [{ resource_id: 'card' }] },
     openCard: (...args) => calls.push(['card', ...args]), openIdolReadModel: (...args) => calls.push(['idol', ...args]),
     openArchiveUnit: (...args) => calls.push(['unit', ...args]),
-    applyArchiveRoute: async route => { calls.push(['apply', route]) },
+    applyArchiveRoute: async route => { c.view.value = route.view; calls.push(['apply', route]) },
     prepareRouteData: async route => { calls.push(['prepare', route]); return route },
   }
   if (story) {
@@ -170,8 +170,24 @@ try {
     c.currentEventId.value = '410001'; c.eventParentView.value = parent; c.currentCategoryId.value = 'idol'; c.currentCharacterId.value = '001tom'
     for (const [key, value] of Object.entries(identity)) c[key].value = value
     await c.goBackFromEvent(); await flush()
-    if (expected) assert.deepEqual(t.calls.filter(x => ['prepare', 'apply'].includes(x[0])), [['prepare', expected], ['apply', expected]], `cold ${parent} return prepares then applies`)
-    else assert.deepEqual(t.calls.at(-1), ['events'], 'no identity falls back to the event catalog')
+    if (expected) {
+      assert.deepEqual(t.calls.filter(x => ['prepare', 'apply'].includes(x[0])), [['prepare', expected], ['apply', expected]], `cold ${parent} return prepares then applies`)
+      assert.deepEqual(t.calls.at(-1), ['view', expected.view], `cold ${parent} return commits its address after applying page state`)
+    } else assert.deepEqual(t.calls.at(-1), ['events'], 'no identity falls back to the event catalog')
+    t.stop()
+  }
+  // A late cold-return application must never write history after a newer navigation or disposal.
+  for (const cancel of ['navigate', 'dispose']) {
+    const t = fixture(), c = t.c, job = deferred()
+    c.currentEventId.value = '410001'; c.eventParentView.value = 'unit_detail'; c.currentArchiveUnitCode.value = '01jup'
+    c.applyArchiveRoute = async route => { c.view.value = route.view; t.calls.push(['apply', route]); await job.promise }
+    // Bind again so the production composable receives the deferred page application.
+    bindEventNavigation(app, c).stop()
+    const pending = c.goBackFromEvent(); await flush()
+    if (cancel === 'navigate') { c.navigation.invalidate(); c.currentArchiveUnitCode.value = '02dra' }
+    else c.navigation.dispose()
+    job.resolve(); await pending
+    assert.equal(t.calls.some(call => call[0] === 'view'), false, `${cancel}: stale cold return never commits history`)
     t.stop()
   }
   for (const kind of ['success', 'failure', 'stale', 'direct']) {

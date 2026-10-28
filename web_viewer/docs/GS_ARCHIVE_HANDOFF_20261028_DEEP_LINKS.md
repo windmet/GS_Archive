@@ -208,7 +208,7 @@ R1 和 R2 可以作为两个 PR 依次提交。门户 PR 合入后，本分支�
 | `story_catalog` | `story_mode story_type event_scope availability sort idol q` | 另读 `:section`，按 `sectionId` 过滤（`useStoryCatalogProjection.js:33`） | 加 `story_section` |
 | `collection_catalog` / `photo_catalog` | 无 `q` | 都有 `:query` 输入（:287–290） | 加 `q` |
 
-`gashas` 不变。
+`gashas` 补 `q`：Browser 实测顶部搜索 FES 会过滤卡池列表；`useGashaNavigation.js` 的 `filteredGashas` 消费 `filterQuery`，`App.vue` 传入的是已经过滤的列表。仅看组件 props 会漏掉该状态所有权。类型与搜索应共同保留为 `/gashas/?gasha_type=growing_fes&q=FES`。
 
 **③ 站内几乎没有 `<a href>`，唯一用公开地址的面包屑还会整页重载。**
 
@@ -527,7 +527,7 @@ R1 和 R2 可以作为两个 PR 依次提交。门户 PR 合入后，本分支�
 
 **交给门户线的事项**（组件不在本线做）：
 
-- R1 Browser P48 在基线 `36743743` 发现 `ArchiveSongCatalog.vue:177` 调用未定义的 `techCount`，歌曲目录主体无法渲染；本线不改组件。需门户线修复合入后重跑歌曲目录刷新和 P1–P46 全矩阵。
+- R1 Browser P48 在基线 `36743743` 发现 `ArchiveSongCatalog.vue:177` 调用未定义的 `techCount`。用户已授权独立小修，`fix/20261028-song-summary` 的 `3142c10e` / [PR #122](https://github.com/windmet/GS_Archive/pull/122) 将三处调用改为已有 `filterCount`，未改模板/样式。独立工作树 Browser 已通过冷开、筛选、详情返回和刷新；待合入后在地址线重跑集成 P48。本线未混入组件改动。
 
 - 详情页加「复制链接」：`href` 用 `buildPublicArchiveUrl`。
 - 卡片、目录行改成真 `<a href>`：支持中键新标签页和右键复制。普通点击 `preventDefault` 后仍走 `open*`（保留来源）；只有本来就不带来源的链接才交给 `followArchiveLink`。做法照 #120 的面包屑。

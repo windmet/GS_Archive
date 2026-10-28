@@ -140,7 +140,7 @@ for (const [route, href] of [
   same(read(href.replace(/\/(\?|$)/, '$1')), read(href), `${href} without its trailing slash`)
 }
 // Audited directory filters survive path -> query -> path; stale story context does not.
-for (const location of ['/songs/?idol=001tom&q=x', '/events/?idol=001tom&q=x&event_kind=theater', '/stories/?story_type=main&story_section=101', '/items/?q=x', '/photos/?q=x']) {
+for (const location of ['/songs/?idol=001tom&q=x', '/events/?idol=001tom&q=x&event_kind=theater', '/stories/?story_type=main&story_section=101', '/items/?q=x', '/photos/?q=x', '/gashas/?gasha_type=growing_fes&q=x']) {
   const url = new URL(location, 'http://x/')
   const roundTrip = buildPublicArchiveUrl('http://x/', read(url))
   assert.equal(roundTrip.pathname, url.pathname, location)

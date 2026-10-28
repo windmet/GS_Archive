@@ -71,7 +71,14 @@ export function useEventNavigation({
     else if (coldTarget && applyArchiveRoute) {
       const entryRevision = navigation.getRevision()
       return prepareReturnRoute(coldTarget, () => navigation.getRevision() === entryRevision).then(route => {
-        if (route && navigation.getRevision() === entryRevision) return applyArchiveRoute(route, { restoring: false })
+        if (!route || navigation.getRevision() !== entryRevision) return
+        const pending = applyArchiveRoute(route, { restoring: false })
+        const appliedRevision = navigation.getRevision()
+        return Promise.resolve(pending).then(() => {
+          // applyArchiveRoute restores page state; a cold return still needs its own history entry.
+          if (navigation.isDisposed() || navigation.getRevision() !== appliedRevision || view.value !== route.view) return
+          commitView(route.view)
+        })
       })
     }
     // Events are their own section: a cold link or a lost opener returns to the event catalog.
