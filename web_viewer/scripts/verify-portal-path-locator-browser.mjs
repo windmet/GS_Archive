@@ -172,7 +172,8 @@ try {
   // The title waits for the translation pack, so it never shows the source name first.
   await open('/idols/001tom/', idolReady); await waitFor(`/^天濑冬马 · GROWING STARS 资料馆$/.test(document.title)`)
   const idolTitle = await ev('document.title')
-  await clickTo('[data-archive-focus-id^="idol-domain:001tom:"]'); await waitFor(`location.pathname === '/'`)
+  // Cards now have their own section path/title; use the unpublished personal-story page for the generic-title check.
+  await clickTo('[data-archive-focus-id="idol-domain:001tom:stories"]'); await waitFor(`location.pathname === '/' && location.search.includes('view=idol_story_archive')`)
   const otherTitle = await ev('document.title')
   check('P15 tab title follows the entity', unitTitle === 'W · GROWING STARS 资料馆' && /^天濑冬马 · GROWING STARS 资料馆$/.test(idolTitle) && otherTitle === 'GROWING STARS 资料馆 · 偶像大师 SideM', `unit="${unitTitle}" idol="${idolTitle}" other="${otherTitle}"`)
   // P16: a card path opens cold, keeps its address and titles the tab with the card and its idol, never the source text.
