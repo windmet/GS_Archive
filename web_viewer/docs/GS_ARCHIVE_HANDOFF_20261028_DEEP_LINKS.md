@@ -527,7 +527,7 @@ R1 和 R2 可以作为两个 PR 依次提交。门户 PR 合入后，本分支�
 
 **交给门户线的事项**（组件不在本线做）：
 
-- R1 Browser P48 在基线 `36743743` 发现 `ArchiveSongCatalog.vue:177` 调用未定义的 `techCount`。用户已授权独立小修，`fix/20261028-song-summary` 的 `3142c10e` / [PR #122](https://github.com/windmet/GS_Archive/pull/122) 将三处调用改为已有 `filterCount`，未改模板/样式。独立工作树 Browser 已通过冷开、筛选、详情返回和刷新；待合入后在地址线重跑集成 P48。本线未混入组件改动。
+- R1 Browser P48 在基线 `36743743` 发现 `ArchiveSongCatalog.vue:177` 调用未定义的 `techCount`。用户授权独立小修 `3142c10e` / [PR #122](https://github.com/windmet/GS_Archive/pull/122)，组件仅一行复用 `filterCount`。随后用户明确授权仅合并 #122，已以 merge commit `dd7b28de` 合入；地址线以 `c1d526a9` merge 跟进。集成 P48 已通过冷开、筛选、详情返回和刷新，实际统计 4/1/0/0；详见 R1 执行记录。#121 未自行合并，R2 前置条件仍保留。
 
 - 详情页加「复制链接」：`href` 用 `buildPublicArchiveUrl`。
 - 卡片、目录行改成真 `<a href>`：支持中键新标签页和右键复制。普通点击 `preventDefault` 后仍走 `open*`（保留来源）；只有本来就不带来源的链接才交给 `followArchiveLink`。做法照 #120 的面包屑。

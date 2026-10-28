@@ -113,11 +113,33 @@ tab 4 的控制台复核没有 error，但有 Pixi Spine `update`/`tint` 的既�
 
 本轮 tab 3 error 日志为空。临时担当、事务所默认偶像、启动偏好均通过设置界面恢复到验收前的“无担当 / 打开时选择 / 资料馆”。配置未导出或重置。P15 脚本做语法检查及对应直接 Browser 旅程，不为仅测试选择器/文档改动重跑应用构建。
 
-尚未形成完整矩阵：P9/P19/P50 数值 history、P12 完整同源请求清单/失败状态及 P16 加载全程标题采样仍未被当前 Browser 能力证明。集成 P48 等独立修复合入；已完成的宽度模拟不等于真机验收。
+尚未形成完整矩阵：P9/P19/P50 数值 history、P12 完整同源请求清单/失败状态及 P16 加载全程标题采样仍未被当前 Browser 能力证明。已完成的宽度模拟不等于真机验收。
+
+### #122 合入后的集成 P48
+
+用户明确授权仅合并 #122。核对精确 head `3142c10e` 的 CI 成功后，以 merge commit `dd7b28de` 合入 master；地址线用 merge commit `c1d526a9` 跟进，没有 cherry-pick、rebase 或自行合并 #121。组件修复已成为 master 基线，不是地址 PR 的额外组件改动。
+
+核对现有 5240 的 PID 13696、进程命令和实际 HTTP 模块，确认使用地址工作树且 scoped summary 已消费 `filterCount`；未重启既有服务，候选仍为 `rm-release-20261022` / release `1accd9d0`。集成 Browser：
+
+- 冷开并刷新 `/songs/?idol=001tom`，实际主体保留天濑冬马范围，统计为作品 4、3DMV 1、MV LIVE 0、分轨演唱 0。
+- 点击 3DMV，只显示 Inner Dignity；进入已加载的歌曲详情，页面返回后冷刷新，URL 保持 `/songs/?idol=001tom&song_scope=movie`，范围、统计和一首结果均保留。
+- 明确 1280×900 桌面复核并展示截图；恢复临时视口。当前 tab error 日志为空。该证据是 dev Browser，不是生产 bundle 或真机验收。
+
+集成 `verify-song-domain-landing.mjs` 通过，`build:check` 通过（26.63 秒，无 public 复制），重新生成并核验 1,213 个真实 head 外壳通过。日志 `.analysis/deep-links/integrated-song-regression.log` 与 `integrated-build.log`。
+
+合并后的 `npm run gate:source` **116/116 通过**（HEAD `c1d526a9`，base `dd7b28de`；执行期间仅手工更新本节等三份文档）。汇总回归 232.5 秒、门禁内代码编译 35.4 秒、构建审计 2.0 秒。最终构建后再次生成并核验 1,213 个外壳通过；日志 `gate-source-integrated.log`。生成的 resource-audit 恢复不提交。三份文档是人工编辑，不是 gate 的生成结果；不复用两个未组合 head 的 CI 作为集成通过证据。
+
+### P12 请求状态补证及媒体缺口
+
+Browser 没有完整网络日志接口，因此临时本地 HTTP 转发服务将 5243 请求原样转发到既有 5240，并记录响应状态；支持 Vite WebSocket upgrade，不注入页面脚本或改变产品源码。实际 Browser 走了偶像目录 → 冬马详情 → 冷刷新 → 关联卡片 → SSR 详情 → 历史返回，以及组合目录 → W → 悠介 → 返回组合、关于页 → 旧 Jupiter query → 单次 Browser 后退。检查后转发服务已停止、临时标签页已关闭；未生成媒体副本。
+
+日志 `.analysis/deep-links/browser-request-evidence.jsonl`，摘要 `browser-request-summary.json`：2,996 个 HTTP 响应，2,309 个 200、686 个 304、1 个 404；按 P12 原有规则检查，没有请求误拼成实体路径下的相对资源。这个记录是服务端响应清单，不能冒称浏览器侧全量传输追踪。
+
+唯一 404 是扩展 SSR 旅程中的 `/assets/card-skill-movies/001tom_ssr01.jpg`。当前主素材目录缺少该 JPG，相关 MP4 也不在本地；受跟踪 `card_skill_movies.json` 与最新 master 完全相同，地址以 `/assets/` 起始，没有被本批路径改写。此项是本地媒体缺口，未改组件/资源表或重新导出媒体；不将扩展旅程记成“所有同源请求成功”。Browser error 日志为空也不替代这个 HTTP 404 事实。媒体补齐/已发布资源验收留在对应资源工作流，不扩大地址线范围。
 
 ## 尚未完成与范围
 
-- P48 既有组件错误已获用户授权独立修复：`3142c10e` / [PR #122](https://github.com/windmet/GS_Archive/pull/122)。fix 工作树 5242 的真实 SFC 回归、build:check 与 Browser 冷开/筛选/详情返回/刷新均通过，详见该 PR 记录。组件修复未合入地址线，集成 P48 仍待其合入。
+- P48 已在 #122 合入后的地址工作树完成集成验收，见上节；数值 history、完整请求清单与加载全程标题采样边界仍保留。
 - R1 保持可审阅状态；不自行合并。R2、R3、R4 未动，分别遵守交接前置条件。
 - 没有 R2 上传、read-model 绑定、正式/测试站部署、sitemap/noindex/origin 决定，也未创建 public 全库副本。
 - 本批产生的代码构建只复用当前 checkout `.analysis/build-check`，`copyPublicDir:false`。日志、审计与变异证据在 `.analysis/deep-links/`；生成的 `config/resource-audit.json` 不提交。
