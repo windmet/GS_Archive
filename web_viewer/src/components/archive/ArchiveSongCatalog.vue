@@ -174,7 +174,7 @@ const songs = computed(() => {
 })
 
 const summary = computed(() => props.scopeIdol ? {
-  three_d_movie_count: techCount('movie'), mvlive_count: techCount('mvlive'), layered_song_count: techCount('layered'),
+  three_d_movie_count: filterCount('movie'), mvlive_count: filterCount('mvlive'), layered_song_count: filterCount('layered'),
 } : props.catalog?.summary || {})
 
 const VIEW_OPTIONS = [{ value: 'unit', label: '按组合' }, { value: 'title', label: '按曲名' }]
