@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url'
 import { matchingCandidate } from './lib/archive-bootstrap-plugin.mjs'
 import { loadArchiveSources } from './lib/archive-sources.mjs'
 import { landingCollectionSections, storyOwner, storyOwnerNeedsLanding } from '../src/core/StoryOwner.js'
+import { communicationOwnerId } from '../src/core/story-runtime/CommunicationPresentationContext.js'
+import { buildPublicArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const webViewer = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const release = JSON.parse(readFileSync(path.join(webViewer, 'readmodels/bootstrap.inline.json'), 'utf8')).release
@@ -34,6 +36,12 @@ const ownerRows = {
   event_detail: new Map(rowsOf(bootstrap.domains.events).map(row => [String(row.id), row])),
   idol_story_archive: new Map(rowsOf(bootstrap.domains['idol-stories']).map(row => [String(row.id), row])),
   work_archive: new Map(rowsOf(bootstrap.domains.work).map(row => [String(row.id), row])),
+  mobile_archive: new Map(rowsOf(bootstrap.domains['mobile-idols']).map(row => [String(row.id), row])),
+}
+const details = new Map()
+const detailFor = row => {
+  if (!details.has(row.detail.url)) details.set(row.detail.url, load(row.detail.url))
+  return details.get(row.detail.url)
 }
 
 const tally = new Map(), failures = []
@@ -51,6 +59,28 @@ for (const story of stories) {
     const row = ownerRows[owner.view].get(owner.view === 'event_detail' ? owner.event : owner.idol)
     if (!row || !lists(row.detail.url, story.file)) failures.push(`${story.file}: ${owner.view} ${owner.event || owner.idol} does not list it`)
   }
+  // Project the resolver's page identity, using the same selected record its page already advertises.
+  const route = { view: owner.view }
+  if (owner.view === 'story_collection') Object.assign(route, { storyType: owner.domain, storySection: owner.section, story: owner.file })
+  if (owner.view === 'work_archive') Object.assign(route, { idol: owner.idol, storyType: 'work', story: owner.file })
+  if (owner.view === 'event_detail') route.event = owner.event
+  if (owner.view === 'idol_story_archive') {
+    const page = detailFor(ownerRows.idol_story_archive.get(owner.idol)).view.page
+    const section = page.sections.find(section => section.episodes.some(episode => episode.compiled_file === owner.file))
+    Object.assign(route, { idol: owner.idol, storyType: 'idol_story', storySection: String(section?.id || '') })
+  }
+  if (owner.view === 'mobile_archive') {
+    const idol = communicationOwnerId(owner.file), row = ownerRows.mobile_archive.get(idol)
+    assert.ok(row && lists(row.detail.url, owner.file), `${owner.file}: phone owner page lists it`)
+    const page = detailFor(row).view
+    const scenario = [...(page.phoneBundles || []), ...(page.personalBundles || [])].flatMap(bundle => bundle.scenarios)
+      .find(scenario => scenario.compiled_file === owner.file)
+    assert.ok(scenario, `${owner.file}: selected phone record exists`)
+    Object.assign(route, { idol, mobileMode: 'phone', mobileScenario: String(scenario.id) })
+  }
+  const url = buildPublicArchiveUrl('http://localhost/', route), restored = readArchiveRoute(url, { history: false })
+  assert.notEqual(url.pathname, '/', `${story.file}: owner publishes a path`)
+  for (const [key, value] of Object.entries(route)) assert.equal(restored[key], value, `${story.file}: owner ${key} round-trips`)
 }
 
 console.table(Object.fromEntries([...tally].sort()))
@@ -59,4 +89,4 @@ assert.deepEqual(failures.slice(0, 20), [], `${failures.length} stories have no 
 for (const [domain, view] of [['main', 'story_collection'], ['unit_story', 'story_collection'], ['extra', 'story_collection'],
   ['birthday', 'story_collection'], ['event', 'event_detail'], ['idol_story', 'idol_story_archive'], ['work', 'work_archive'],
   ['card_scenarios', 'mobile_archive']]) assert.ok(tally.get(`${domain} → ${view}`) > 0, `no ${domain} story resolved to ${view}`)
-console.log(`Story owner: all ${stories.length} stories open a page that lists them; none falls back to the story detail page`)
+console.log(`Story owner: all ${stories.length} stories open a page that lists them and round-trip through its public path; none falls back to the story detail page`)

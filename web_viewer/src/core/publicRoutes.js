@@ -17,6 +17,23 @@ export const PUBLIC_ROUTES = Object.freeze([
   // An idol's 事务所 and 通信 are addressed by the idol; the cue and costume, or the mode, unit and open call, stay in the query.
   Object.freeze({ kind: 'place', section: 'home', view: 'home', prefix: 'office', param: 'home_idol', implied: {}, pattern: /^[0-9]{3}[a-z]{3}$/ }),
   Object.freeze({ kind: 'place', section: 'interactions', view: 'mobile_archive', prefix: 'mobile', param: 'idol', implied: {}, pattern: /^[0-9]{3}[a-z]{3}$/ }),
+  // Story owner ids are the read-model domain and section, without slug translations.
+  ...[
+    ['main', /^1[0-9]{2}$/], ['unit_story', /^[1-9][0-9]*$/], ['extra', /^6[0-9]{2}$/],
+    ['birthday', /^(?:[0-9]{3}[a-z]{3}|producer_birthday_common)$/],
+  ].map(([domain, pattern]) => Object.freeze({ kind: 'entity', view: 'story_collection', prefix: 'stories',
+    implied: { story_type: domain }, segments: [{ value: domain }, { param: 'story_section', pattern }] })),
+  Object.freeze({ kind: 'entity', view: 'seasonal_campaign', prefix: 'stories', implied: {},
+    segments: [{ value: 'seasonal_campaign', param: 'story_type' }, { param: 'story_section', pattern: /^(?:valentine|white_day)_[0-9]{4}$/ }] }),
+  ...[['idol_story_archive', 'idol_story'], ['work_archive', 'work']].map(([view, domain]) => Object.freeze({
+    kind: 'place', view, prefix: 'stories', storyKind: domain, implied: {},
+    segments: [{ value: domain, param: 'story_type' }, { param: 'idol', pattern: /^[0-9]{3}[a-z]{3}$/ }],
+  })),
+  ...['main', 'extra', 'birthday', 'unit_story', 'event'].map(domain => Object.freeze({
+    kind: 'section', view: 'story_catalog', prefix: `stories/${domain}`, section: 'stories', storyKind: domain,
+    implied: { story_type: domain, story_mode: 'portal' }, defaults: { story_mode: 'portal' },
+  })),
+  Object.freeze({ kind: 'section', view: 'external_story_resources', prefix: 'stories/external', section: 'stories', storyKind: 'external', implied: {} }),
   // Directory roots retain their filters in the query.
   Object.freeze({ kind: 'section', view: 'idols', prefix: 'idols', section: 'idols', implied: { category: 'idol' } }),
   Object.freeze({ kind: 'section', view: 'unit_catalog', prefix: 'units', section: 'units', implied: {} }),
@@ -42,3 +59,41 @@ export const PUBLIC_ROUTES = Object.freeze([
 export const PUBLIC_PATH_ROUTES = Object.freeze(PUBLIC_ROUTES.filter(route => route.kind !== 'section'))
 export const SECTION_PATH_ROUTES = Object.freeze(PUBLIC_ROUTES.filter(route => route.kind === 'section'))
 export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(route => route.prefix))
+
+// All path consumers use these descriptors, including the original two-segment identities.
+export function publicRouteSegments(route) {
+  return [...route.prefix.split('/').map(value => ({ value })), ...(route.segments ||
+    (route.param ? [{ param: route.param, pattern: route.pattern, fromPath: route.fromPath, toPath: route.toPath }] : []))]
+}
+
+export function matchPublicRoute(route, pathname) {
+  const match = /^\/([^/]+(?:\/[^/]+)*)\/?$/.exec(pathname)
+  if (!match) return null
+  const parts = match[1].split('/'), segments = publicRouteSegments(route)
+  if (parts.length !== segments.length) return null
+  const params = { ...route.implied, view: route.view }
+  for (const [index, segment] of segments.entries()) {
+    const value = parts[index]
+    if (segment.value !== undefined) {
+      if (value !== segment.value) return null
+      if (segment.param) params[segment.param] = value
+      continue
+    }
+    if (!segment.pattern.test(value)) return null
+    params[segment.param] = segment.fromPath ? segment.fromPath(value) : value
+  }
+  return params
+}
+
+export function publicRoutePath(route, params) {
+  const valueOf = key => (typeof params.get === 'function' ? params.get(key) : params[key]) ?? route.defaults?.[key]
+  if (!Object.entries(route.implied).every(([key, value]) => valueOf(key) === value)) return null
+  const parts = []
+  for (const segment of publicRouteSegments(route)) {
+    if (segment.value !== undefined) { parts.push(segment.value); continue }
+    const raw = valueOf(segment.param) || '', value = segment.toPath ? segment.toPath(raw) : raw
+    if (!segment.pattern.test(value)) return null
+    parts.push(value)
+  }
+  return `/${parts.join('/')}/`
+}

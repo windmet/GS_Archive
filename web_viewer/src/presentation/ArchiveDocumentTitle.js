@@ -1,6 +1,6 @@
 import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES } from '../core/publicRoutes.js'
 import { collectionKindLabel } from '../core/CollectionRouteState.js'
-import { sectionLabel } from '../core/archiveSections.js'
+import { sectionLabel, STORY_KINDS } from '../core/archiveSections.js'
 // Browser tab titles. Pages published at a path locator (idol, unit, card, song, event and gasha detail, and an idol's
 // 事务所 and 通信) carry their entity name,
 // section roots (/cards/, /items/, …) their section name, the
@@ -9,9 +9,10 @@ import { sectionLabel } from '../core/archiveSections.js'
 const COLLECTION_PAGE_LABEL = '图鉴'
 export const ARCHIVE_SITE_TITLE = 'GROWING STARS 资料馆 · 偶像大师 SideM'
 export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(PUBLIC_PATH_ROUTES.map(route => route.view)))
-const IDOL_PLACE_SECTIONS = Object.freeze(Object.fromEntries(PUBLIC_PATH_ROUTES.filter(route => route.kind === 'place').map(route => [route.view, route.section])))
-export const SECTION_TITLES = Object.freeze(Object.fromEntries(SECTION_PATH_ROUTES.filter(route => route.view !== 'collection_catalog')
-  .map(route => [route.view, sectionLabel(route.section)])))
+const IDOL_PLACE_SECTIONS = Object.freeze(Object.fromEntries(PUBLIC_PATH_ROUTES.filter(route => route.kind === 'place').map(route => [route.view, route])))
+export const SECTION_TITLES = Object.freeze(Object.fromEntries(SECTION_PATH_ROUTES.filter(route => route.view !== 'collection_catalog' &&
+  (!route.storyKind || route.view === 'external_story_resources'))
+  .map(route => [route.view, route.storyKind ? STORY_KINDS[route.storyKind].label : sectionLabel(route.section)])))
 
 // The collection catalogue is four sections, /items/, /honors/, /currencies/ and /costumes/.
 export function archiveSectionTitle(view, collectionKind = 'items') {
@@ -31,7 +32,8 @@ export function archiveEntityTitle(name) {
 }
 
 export function archiveIdolPlaceName(view, idolName) {
-  return idolName && IDOL_PLACE_SECTIONS[view] ? `${idolName} · ${sectionLabel(IDOL_PLACE_SECTIONS[view])}` : ''
+  const place = IDOL_PLACE_SECTIONS[view]
+  return idolName && place ? `${idolName}${place.storyKind ? ' ' : ' · '}${place.storyKind ? STORY_KINDS[place.storyKind].label : sectionLabel(place.section)}` : ''
 }
 
 // A card title is shared by many idols (【起跑线】 ×49), so the card's name carries its idol.

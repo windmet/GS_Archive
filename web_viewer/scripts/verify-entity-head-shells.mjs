@@ -5,10 +5,11 @@ import { PORTAL_PRELOAD } from './lib/portal-preload.mjs'
 //   node scripts/verify-entity-head-shells.mjs --dist=DIR   also checks the shells written into a built DIR
 //     [--origin=https://…]   the origin that build's shells were rendered for (default DEFAULT_ORIGIN)
 import assert from 'node:assert/strict'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
+import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, loadStoryHeadSources, storyHeadCandidate, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
 import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { archiveBootstrapPlugin } from './lib/archive-bootstrap-plugin.mjs'
@@ -32,11 +33,12 @@ const body = html => html.slice(html.indexOf('</head>'))
 const count = (html, pattern) => (html.match(pattern) || []).length
 const attr = (html, selector) => html.match(new RegExp(`<${selector} content="([^"]*)"`))?.[1]
 
-function checkShells(shells, { idols, cards = [], songs = [], events = [], gashas = [], sections = false, origin, sourceTemplate }) {
+function checkShells(shells, { idols, cards = [], songs = [], events = [], gashas = [], storySources = null, sections = false, origin, sourceTemplate }) {
   const unitCodes = [...new Set(idols.map(idol => idol.unitCode).filter(Boolean))]
   const sectionCount = sections ? ARCHIVE_SECTION_PATHS.length : 0
   const offices = idols.filter(idol => idol.home_available !== false)
-  assert.equal(shells.length, idols.length + offices.length + idols.length + unitCodes.length + cards.length + songs.length + events.length + gashas.length + sectionCount,
+  const storyCount = storySources ? storySources.collections.length + storySources.campaigns.length + 2 * idols.length : 0
+  assert.equal(shells.length, idols.length + offices.length + idols.length + unitCodes.length + cards.length + songs.length + events.length + gashas.length + sectionCount + storyCount,
     'one shell per idol, office, mobile page, unit, card, song, event, gasha and section root')
   assert.deepEqual(shells.filter(s => s.kind === 'office').map(s => s.path).sort(), offices.map(i => `office/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'mobile').map(s => s.path).sort(), idols.map(i => `mobile/${i.id}/index.html`).sort())
@@ -249,9 +251,61 @@ const sources = loadEntitySources(root)
   for (const prefix of ARCHIVE_SECTION_PATHS) {
     const route = readArchiveRoute(`http://x/${prefix}/`, { history: false })
     assert.equal(route.view, SECTION_SHELLS[prefix].view, prefix)
-    const kind = route.collection?.kind
-    assert.ok(shells.find(s => s.kind === 'section' && s.id === prefix).html.includes(`<title>${archiveDocumentTitle(route.view, route.view === 'collection_catalog' ? archiveTabSectionTitle(route.view, kind) : '')}</title>`), prefix)
+    assert.ok(shells.find(s => s.kind === 'section' && s.id === prefix).html.includes(`<title>${archiveDocumentTitle(route.view, SECTION_SHELLS[prefix].title)}</title>`), prefix)
   }
+}
+
+// Story heads are tested without any corpus/candidate in CI; the fixture also exercises verified loading.
+{
+  const idols = [{ id: '001tom', name: '天ヶ瀬 冬馬', unitCode: '01jup', unitName: 'Jupiter' }]
+  const collections = [
+    { id: 'main:101', domain: 'main', sectionId: '101', title: '第1章' },
+    { id: 'unit_story:1', domain: 'unit_story', sectionId: '1', title: 'Jupiter 前传' },
+    { id: 'extra:601', domain: 'extra', sectionId: '601', title: 'A<&" story' },
+    { id: 'birthday:001tom', domain: 'birthday', sectionId: '001tom', title: '原文', subject: { kind: 'idol', code: '001tom' } },
+    { id: 'birthday:producer_birthday_common', domain: 'birthday', sectionId: 'producer_birthday_common', title: '制作人生日剧情' },
+    { id: 'birthday:101ken', domain: 'birthday', sectionId: '101ken', title: '山村生日剧情' },
+  ]
+  const campaigns = [{ id: 'valentine_2022', year: 2022, season: 'valentine' }]
+  const storySources = { collections, campaigns }
+  const shells = renderEntityHeadShells({ template, idols, idolNames: { '001tom': '天濑冬马' }, storySources, sections: true })
+  checkShells(shells, { idols, storySources, sections: true, origin: DEFAULT_ORIGIN, sourceTemplate: template })
+  for (const [location, title] of [
+    ['stories/main/101', '第1章'], ['stories/unit_story/1', 'Jupiter 前传'],
+    ['stories/extra/601', 'A&lt;&amp;&quot; story'], ['stories/birthday/001tom', '天濑冬马 生日剧情'],
+    ['stories/birthday/producer_birthday_common', '制作人生日剧情'], ['stories/birthday/101ken', '山村生日剧情'],
+    ['stories/seasonal_campaign/valentine_2022', '2022 情人节'],
+    ['stories/idol_story/001tom', '天濑冬马 个人剧情'], ['stories/work/001tom', '天濑冬马 工作剧情'],
+    ['stories/main', '主线剧情'], ['stories/extra', '额外剧情'], ['stories/external', '社区剧情'],
+  ]) assert.ok(shells.find(shell => shell.path === `${location}/index.html`)?.html.includes(`<title>${title} · GROWING STARS 资料馆</title>`), location)
+
+  const fixture = path.join(root, '.analysis/story-head-fixture'), release = 'a'.repeat(64)
+  mkdirSync(fixture, { recursive: true })
+  let serial = 0
+  const descriptor = (kind, data) => {
+    const bytes = JSON.stringify({ schema_version: 1, release, kind, data })
+    const url = `/_catalog/v/${release}/fixture/${serial++}.json`, file = path.join(fixture, 'pages', url.slice(1))
+    mkdirSync(path.dirname(file), { recursive: true }); writeFileSync(file, bytes)
+    return { kind, url, sha256: createHash('sha256').update(bytes).digest('hex') }
+  }
+  const index = (kind, rows) => descriptor(`${kind}.index`, { count: rows.length, pages: [descriptor(`${kind}.page`, { rows })] })
+  const expected = { release, idols }
+  const boot = { ...expected, domains: {
+    collections: index('collections', collections.map(collection => ({ id: collection.id, domain: collection.domain, sectionId: collection.sectionId,
+      detail: descriptor('collections.detail', { id: collection.id, view: { collection } }) }))),
+    seasonal: index('seasonal', campaigns.map(campaign => ({ id: campaign.id, detail: descriptor('seasonal.detail', { id: campaign.id, view: { campaign } }) }))),
+    'idol-stories': index('idol-stories', [{ id: '001tom' }]), work: index('work', [{ id: '001tom' }]),
+  } }
+  const bootstrapFile = path.join(fixture, 'bootstrap.inline.json')
+  writeFileSync(bootstrapFile, JSON.stringify(boot))
+  assert.deepEqual(loadStoryHeadSources(fixture, expected), storySources)
+  writeFileSync(bootstrapFile, JSON.stringify({ ...boot, release: 'b'.repeat(64) }))
+  assert.throws(() => loadStoryHeadSources(fixture, expected), /release mismatch/)
+  writeFileSync(bootstrapFile, JSON.stringify(boot))
+  const pageFile = path.join(fixture, 'pages', boot.domains.collections.url.slice(1)), original = readFileSync(pageFile)
+  writeFileSync(pageFile, 'changed')
+  assert.throws(() => loadStoryHeadSources(fixture, expected), /checksum mismatch/)
+  writeFileSync(pageFile, original)
 }
 
 // Built output: the written shells match a fresh render of that build's index.html.
@@ -260,9 +314,11 @@ const distOrigin = (process.argv.slice(2).find(arg => arg.startsWith('--origin='
 let built = ''
 if (distOption) {
   const dist = path.resolve(root, distOption)
+  const candidateOption = process.argv.slice(2).find(arg => arg.startsWith('--candidate='))?.slice('--candidate='.length)
+  const distSources = loadEntitySources(root, { candidate: storyHeadCandidate(root, candidateOption) })
   const builtTemplate = readFileSync(path.join(dist, 'index.html'), 'utf8')
-  const shells = renderEntityHeadShells({ template: builtTemplate, ...sources, origin: distOrigin })
-  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, gashas: sources.gashas, sections: true, origin: distOrigin, sourceTemplate: builtTemplate })
+  const shells = renderEntityHeadShells({ template: builtTemplate, ...distSources, origin: distOrigin })
+  checkShells(shells, { ...distSources, origin: distOrigin, sourceTemplate: builtTemplate })
   for (const shell of shells) {
     const file = path.join(dist, shell.path)
     assert.ok(existsSync(file), `${shell.path} exists in ${distOption}`)

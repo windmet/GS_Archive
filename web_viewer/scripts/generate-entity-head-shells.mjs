@@ -12,14 +12,20 @@
 // index, event media and the archive manifest's legacy event ids for events (song and event titles are not
 // translated anywhere in the app).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { archiveCardName, archiveEntityTitle, archiveIdolPlaceName, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
-import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES, ARCHIVE_SECTION_PATHS } from '../src/core/publicRoutes.js'
+import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES, ARCHIVE_SECTION_PATHS, publicRoutePath } from '../src/core/publicRoutes.js'
 import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
 import { eventKindLabels, historicalDate } from '../src/presentation/DomainPresentation.mjs'
 import { PORTAL_PRELOAD } from './lib/portal-preload.mjs'
+import { STORY_KINDS } from '../src/core/archiveSections.js'
+import { STORY_DOMAIN_LABELS } from '../src/data/storyCatalog.js'
+import { storyCollectionTitle, seasonalCampaignTitle } from '../src/presentation/StoryPageTitle.js'
+import { matchingCandidate } from './lib/archive-bootstrap-plugin.mjs'
+import { loadArchiveSources } from './lib/archive-sources.mjs'
 
 export const DEFAULT_ORIGIN = 'https://gs-archive-preview.pages.dev'
 const SITE = 'GS Archive'
@@ -52,9 +58,11 @@ const SECTION_DESCRIPTIONS = Object.freeze({
   unused: { description: 'SideM GROWING STARS 其他语音：事务所系统语音、登录标题呼号，以及游戏内留有音频但未使用的语音。' },
 })
 export const SECTION_SHELLS = Object.freeze(Object.fromEntries(SECTION_PATH_ROUTES.map(route => {
-  const description = SECTION_DESCRIPTIONS[route.prefix]?.description
+  const storyTitle = route.storyKind && (STORY_KINDS[route.storyKind]?.label || STORY_DOMAIN_LABELS[route.storyKind])
+  const description = route.storyKind ? `SideM GROWING STARS ${storyTitle}：浏览已收录的剧情与相关档案。` : SECTION_DESCRIPTIONS[route.prefix]?.description
   if (!description) throw new Error(`Section ${route.prefix} has no head shell`)
-  return [route.prefix, Object.freeze({ view: route.view, kind: route.implied.collection_kind, description })]
+  return [route.prefix, Object.freeze({ view: route.view, kind: route.implied.collection_kind, description,
+    title: storyTitle || archiveTabSectionTitle(route.view, route.implied.collection_kind) })]
 })))
 
 export function escapeHtml(value) {
@@ -93,7 +101,7 @@ function withHead(template, tags) {
 // songs: song catalog rows ({ song_code, title, jacket_url, performance_mapping });
 // events: publishedEvents() rows ({ id, code, title, kind, openAt, image }).
 // gashas: publishedGashas() rows ({ id, name, openAt, image }); sections: include the section root shells.
-export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], events = [], gashas = [], sections = false, origin = DEFAULT_ORIGIN }) {
+export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], events = [], gashas = [], storySources = null, sections = false, origin = DEFAULT_ORIGIN }) {
   const base = origin.replace(/\/$/, '')
   const display = idol => idolNames[idol.id] || idol.name
   const shells = []
@@ -228,6 +236,28 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
       })),
     })
   }
+  if (storySources) {
+    const addStory = (view, params, id, title, description, image = '') => {
+      const location = PUBLIC_PATH_ROUTES.filter(route => route.view === view).map(route => publicRoutePath(route, params)).find(Boolean)
+      if (!location || !title) throw new Error(`Invalid story head identity or title: ${view} ${id}`)
+      shells.push({ path: `${location.slice(1)}index.html`, kind: view, id, url: base + location,
+        html: withHead(template, headTags({ title: archiveEntityTitle(title), description, url: base + location,
+          image: base + (image.startsWith('/assets/') ? image : '/assets/brand/image_chara_icon_producer.png'), type: 'website' })) })
+    }
+    for (const collection of storySources.collections) {
+      const title = storyCollectionTitle(collection, code => idolNames[code] || '')
+      addStory('story_collection', { story_type: collection.domain, story_section: collection.sectionId }, collection.id,
+        title, collection.description || `${title}：已收录的章节、剧情阅读与播放。`, collection.visualUrl || '')
+    }
+    for (const campaign of storySources.campaigns) {
+      const title = seasonalCampaignTitle(campaign)
+      addStory('seasonal_campaign', { story_section: campaign.id }, campaign.id, title, `${title}：季节企划的参与者、交换记录与剧情。`)
+    }
+    for (const idol of idols) for (const view of ['idol_story_archive', 'work_archive']) {
+      const title = archiveIdolPlaceName(view, display(idol))
+      addStory(view, { idol: idol.id }, idol.id, title, `${title}：已收录的剧情、阅读与播放。`, `/assets/idols/icons/image_chara_icon_${idol.id}.png`)
+    }
+  }
   if (sections) for (const prefix of ARCHIVE_SECTION_PATHS) {
     const section = SECTION_SHELLS[prefix]
     if (!section) throw new Error(`Section ${prefix} has no head shell`)
@@ -236,7 +266,7 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
       path: `${prefix}/index.html`,
       kind: 'section', id: prefix, url: base + location,
       html: withHead(template, headTags({
-        title: archiveEntityTitle(archiveTabSectionTitle(section.view, section.kind)),
+        title: archiveEntityTitle(section.title),
         description: section.description,
         url: base + location,
         image: `${base}/assets/brand/image_chara_icon_producer.png`,  // the site icon, as index.html
@@ -283,7 +313,48 @@ export function publishedCards(cardIndex) {
   return cards
 }
 
-export function loadEntitySources(root) {
+// Read the same release as the code bootstrap. Candidate JSON is verified before its titles reach HTML.
+export function loadStoryHeadSources(candidate, bootstrap) {
+  const actual = JSON.parse(readFileSync(path.join(candidate, 'bootstrap.inline.json'), 'utf8'))
+  if (actual.release !== bootstrap.release) throw new Error('Story head candidate release mismatch')
+  const load = descriptor => {
+    if (!descriptor?.url?.startsWith(`/_catalog/v/${bootstrap.release}/`) || descriptor.url.includes('..')) throw new Error('Invalid story head descriptor')
+    const bytes = readFileSync(path.join(candidate, 'pages', descriptor.url.slice(1)))
+    if (createHash('sha256').update(bytes).digest('hex') !== descriptor.sha256) throw new Error(`Story head checksum mismatch: ${descriptor.url}`)
+    const envelope = JSON.parse(bytes)
+    if (envelope.release !== bootstrap.release || envelope.kind !== descriptor.kind || envelope.schema_version !== 1) throw new Error('Story head envelope mismatch')
+    return envelope.data
+  }
+  const rows = domain => {
+    const index = load(actual.domains[domain]), result = index.pages.flatMap(page => load(page).rows)
+    if (result.length !== index.count || new Set(result.map(row => row.id)).size !== result.length) throw new Error(`Story head ${domain} inventory mismatch`)
+    return result
+  }
+  const collections = rows('collections').map(row => {
+    const data = load(row.detail), collection = data.view?.collection
+    if (data.id !== row.id || collection?.id !== row.id || collection.domain !== row.domain || collection.sectionId !== row.sectionId) throw new Error('Story collection head identity mismatch')
+    return collection
+  })
+  const campaigns = rows('seasonal').map(row => {
+    const data = load(row.detail), campaign = data.view?.campaign
+    if (data.id !== row.id || campaign?.id !== row.id) throw new Error('Seasonal head identity mismatch')
+    return campaign
+  })
+  for (const domain of ['idol-stories', 'work']) {
+    const ids = rows(domain).map(row => row.id).sort(), expected = bootstrap.idols.map(idol => idol.id).sort()
+    if (JSON.stringify(ids) !== JSON.stringify(expected)) throw new Error(`${domain} head idols differ from the candidate`)
+  }
+  return { collections, campaigns }
+}
+
+export function storyHeadCandidate(root, explicit = '') {
+  const bootstrap = JSON.parse(readFileSync(path.join(root, 'readmodels/bootstrap.inline.json'), 'utf8'))
+  const candidate = explicit || process.env.SIDEM_READMODEL_CANDIDATE || matchingCandidate(loadArchiveSources().readmodelCandidatesRoot, bootstrap.release)
+  if (!candidate) throw new Error(`No story head candidate for release ${bootstrap.release}`)
+  return candidate
+}
+
+export function loadEntitySources(root, { candidate = null } = {}) {
   const bootstrap = JSON.parse(readFileSync(path.join(root, 'readmodels/bootstrap.inline.json'), 'utf8'))
   const translations = JSON.parse(readFileSync(path.join(root, 'public/translations/zh-CN/entities/idols.json'), 'utf8'))
   const idolNames = Object.fromEntries(Object.entries(translations.entries || {}).map(([id, entry]) => [id, entry?.name]).filter(([, name]) => name))
@@ -295,7 +366,8 @@ export function loadEntitySources(root) {
   const json = file => JSON.parse(readFileSync(path.join(root, 'public/data', file), 'utf8'))
   const events = publishedEvents(json('masterdata/domains/event_supplement_index.json'), json('masterdata/domains/event_media.json'), json('archive_manifest.json'))
   const gashas = publishedGashas(json('masterdata/gasha_index.json'), json('editorial/gasha-ticket-evidence.json'))
-  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, events, gashas, sections: true, release: bootstrap.release }
+  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, events, gashas,
+    ...(candidate ? { storySources: loadStoryHeadSources(candidate, bootstrap) } : {}), sections: true, release: bootstrap.release }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -307,7 +379,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const templatePath = path.join(dist, 'index.html')
   if (!existsSync(templatePath)) throw new Error(`No built index.html at ${templatePath}; run npm run build:check first`)
   const template = readFileSync(templatePath, 'utf8')
-  const shells = renderEntityHeadShells({ template, ...loadEntitySources(root), origin })
+  const shells = renderEntityHeadShells({ template, ...loadEntitySources(root, { candidate: storyHeadCandidate(root, option('candidate')) }), origin })
   let stale = 0
   for (const shell of shells) {
     const file = path.join(dist, shell.path)
@@ -317,5 +389,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events + ${count('gasha')} gashas + ${count('office')} offices + ${count('mobile')} mobile pages + ${count('section')} section roots in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events + ${count('gasha')} gashas + ${count('office')} offices + ${count('mobile')} mobile pages + ${count('section')} section roots + ${count('story_collection')} story collections + ${count('seasonal_campaign')} campaigns + ${count('idol_story_archive')} personal + ${count('work_archive')} work pages in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }

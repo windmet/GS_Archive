@@ -59,7 +59,7 @@ const portalIndex = JSON.parse(await fs.readFile(path.join(dist, ...boot.domains
 await fs.writeFile(path.join(dist, 'index.html'), withPortalScopePreload(await fs.readFile(path.join(dist, 'index.html'), 'utf8'), boot, portalIndex))
 // Idol, unit, card, song and event head shells (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_L2_20261013.md): rendered from this package's
 // final index.html, which already carries the inline bootstrap, so they boot exactly like the root page.
-const entitySources = loadEntitySources(root)
+const entitySources = loadEntitySources(root, { candidate: models })
 assert(entitySources.release === boot.release, 'Entity head shells must come from the same read-model release')
 const entityShells = renderEntityHeadShells({ template: await fs.readFile(path.join(dist, 'index.html'), 'utf8'), ...entitySources, origin: shellOrigin })
 for (const shell of entityShells) {
