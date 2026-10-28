@@ -2,7 +2,7 @@
 
 日期：2026-10-28。输入 master `b1065a8f`（#121 merge）；分支 `portal/20261028-story-owner-paths`。复用 `E:/Web_build/GS_Archive_Domain_Work/deep-links-20261028/web_viewer` 专用 LF 工作树，未改主 checkout。
 
-用户已授权 #122、#121 按顺序以 merge commit 合入：`dd7b28de`、`b1065a8f`，并继续 R2。R2 的路径采用已确认的方案 A：读模型 domain/section 原样。范围见 [交接 §5](GS_ARCHIVE_HANDOFF_20261028_DEEP_LINKS.md)。本 R2 PR 尚未获得合并授权。
+用户已授权 #122、#121 按顺序以 merge commit 合入：`dd7b28de`、`b1065a8f`，并继续 R2。R2 的路径采用已确认的方案 A：读模型 domain/section 原样。范围见 [交接 §5](GS_ARCHIVE_HANDOFF_20261028_DEEP_LINKS.md)。源码提交 `9fb612bda719a51f22caa65656776de4aca6d7c5` 的 [PR #123](https://github.com/windmet/GS_Archive/pull/123) 已按用户授权在 [远端 CI 40647673729](https://github.com/windmet/GS_Archive/actions/runs/40647673729) 成功后，以 merge commit `11e7418c60333f2473c15b53f07b8ea04f87f91e` 合入 master。用户随后明确本任务后续不再逐次询问授权，按既有门禁直接推进。
 
 ## 实现与来源
 
@@ -23,7 +23,7 @@
 
 `npm run build:check` 通过（26.18 秒）；只复用本工作树 `.analysis/build-check`，无 public 复制。真实候选生成及 `verify-entity-head-shells --dist` 核验 1,401 个外壳通过。`check_cutover_routes.mjs --progress` 与 `verify-archive-build-audit.mjs --progress` 通过，不代表全站 cutover/device final。旧 Browser 脚本 P15 改用通用设置页检查站点标题（个人剧情如今也有路径），P34 使用主线合集路径；相同语义已用直接 Browser 验证，未另起缓存 Chromium。
 
-## Browser P51–P65
+## Browser P51–P66
 
 直接 Codex In-app Browser，5240，PID 13696；确认该进程和实际 HTTP 注册表来自本工作树新分支，候选 release 如上；未换服务或消费绑定。新 tab 5 的 error 日志为空。
 
@@ -57,3 +57,5 @@ P60 第一次切人后过早刷新，尚未等待地址写入；重新等待确�
 所有本轮日志复用 `.analysis/deep-links-r2/`，不创建 public 语料包。`prepare-readmodel-preview.mjs` 只在外壳段传入它已有的 models 目录，本轮未执行完整预览包/发布验证。不部署、不上传资源，不改变 read-model 绑定。已合入的 #122 临时工作树已通过应用工具归档，其三份小日志保留在 `merged-fix-logs/`；已删除两个完成的本地分支，R1/小修提交均保留于 master。
 
 R3/R4 继续遵守原交接的门户/语料/决策前置条件。当前 master 的已合入门户批次没有 P3、P4、P7；本批没有擅自实现这些后续路径。
+
+收口时 R2 实现分支已完成；后续依赖核对见 [交接最新记录](GS_ARCHIVE_HANDOFF_20261028_DEEP_LINKS.md#后续前置核对2026-10-28)。收口只更新文档，不改变前述代码验证的输入或证据等级。
