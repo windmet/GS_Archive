@@ -38,7 +38,7 @@
       </template>
       <template #title>
         <div class="archive-heading">
-          <ArchiveBreadcrumb :items="breadcrumbs" />
+          <ArchiveBreadcrumb :items="breadcrumbs" @follow="emit('follow', $event)" />
           <h1>{{ title }}</h1>
         </div>
       </template>
@@ -130,7 +130,7 @@ const mobileSearchOpen = ref(Boolean(props.modelValue))
 watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
 watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = true })
 
-const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
+const emit = defineEmits(['navigate', 'follow', 'back', 'update:modelValue'])
 
 // Same destinations and labels as the portal; only the glyphs are shell-specific.
 const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, live: Clapperboard, studio: Layers, resources: FolderOpen }

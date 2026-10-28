@@ -2,7 +2,7 @@
   <nav v-if="parents.length" class="archive-breadcrumb" :aria-label="accessibleLabel">
     <ol>
       <li v-for="(item, index) in parents" :key="`${index}-${item.label}`">
-        <a v-if="item.route" :href="itemHref(item)">{{ item.label }}</a>
+        <a v-if="item.route" :href="itemHref(item)" @click="follow($event, item)">{{ item.label }}</a>
         <span v-else>{{ item.label }}</span>
       </li>
     </ol>
@@ -26,8 +26,17 @@ const parents = computed(() => {
 })
 const accessibleLabel = computed(() => `面包屑：${props.items.map(item => item.label).join('，')}`)
 
+const emit = defineEmits(['follow'])
+
 function itemHref(item) {
   return buildPublicArchiveUrl(window.location.href, item.route).href
+}
+
+// Each level is a real link (new tab, copy link); a plain click opens it in place instead of reloading the archive.
+function follow(event, item) {
+  if (event.button || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return
+  event.preventDefault()
+  emit('follow', itemHref(item))
 }
 </script>
 
