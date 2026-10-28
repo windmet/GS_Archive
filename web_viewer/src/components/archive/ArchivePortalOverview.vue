@@ -542,7 +542,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
    the figure placed by where the person stands. It gets the media radius and nothing else. */
 .overview-identity { position:relative;height:228px;overflow:hidden;border-radius:var(--gs-radius-media);background:radial-gradient(circle at 76% 62%,var(--gs-surface) 0,var(--hero-wash,var(--gs-paper)) 58%); }
 .overview-portrait-slot { position:absolute;inset:0; }
-.overview-idol-art { position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;max-width:none;height:300px;object-fit:contain;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent);filter:drop-shadow(14px 8px 0 color-mix(in oklab,var(--hero-ink,var(--gs-ink)) 24%,transparent)); }
+.overview-idol-art { position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;max-width:none;height:300px;object-fit:contain;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent);filter:drop-shadow(6px 4px 0 color-mix(in oklab,var(--hero-ink,var(--gs-ink)) 24%,transparent)); }
 .overview-signature { position:absolute;top:86px;left:148px;z-index:3;display:block;width:130px;height:52px;opacity:.8;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance; }
 .overview-identity-copy { position:relative;z-index:3;display:flex;flex-direction:column;width:170px;padding:var(--gs-space-6) var(--gs-space-5); }
 .overview-eyebrow { order:0;margin:0;color:var(--hero-ink,var(--gs-ink-3));font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
