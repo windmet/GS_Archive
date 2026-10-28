@@ -5,7 +5,7 @@
 起点：`origin/master` `36743743`（#117 合入后）。下文 `App.vue` 行号按这个提交。
 worktree：`E:/Web_build/GS_Archive_Domain_Work/deep-links-20261028`，LF 检出，`node_modules` 是联接。
 
-执行确认（2026-10-28）：用户已确认 D1 使用 `/live/ /studio/ /about/ /status/`，D2 使用方案 A（读模型 id 原样）。R1 的实现、验证与剩余阻塞见 [R1 执行记录](GS_ARCHIVE_DEEP_LINKS_R1_20261028.md)。R2 仍等 R1 合入后开始。
+执行确认（2026-10-28）：用户已确认 D1 使用 `/live/ /studio/ /about/ /status/`，D2 使用方案 A（读模型 id 原样）。R1 #121 已以 `b1065a8f` 合入，见 [R1 执行记录](GS_ARCHIVE_DEEP_LINKS_R1_20261028.md)。R2 #123 已经 CI 成功后以 `11e7418c` 合入，见 [R2 执行记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md)。用户随后要求“之后不需要问授权，直接做下去”：本任务内继续按验证门禁提交、建 PR 和合并，不再逐次询问。R3/R4 的技术前置继续生效。
 
 本文是执行文档。外部审计稿《GS_Archive 短链接与正式路由迁移审计》（基线 `2bdd3de4`）只当背景。审计稿和本文有出入时，以本文 §3 的核对为准。
 
@@ -103,7 +103,7 @@ worktree：`E:/Web_build/GS_Archive_Domain_Work/deep-links-20261028`，LF 检出
   - 外壳 `--dist` 检查；
   - 浏览器旅程，从 P47 起续号。
 - **不做的事：**
-  - 不部署，不上传 R2，不自行合并 PR；
+  - 不部署，不上传 R2；原“不自行合并 PR”已由上方用户后续指示替代，本任务通过门禁后直接合并；
   - 不在主 checkout 暂存；
   - 门户 PR 先合并时，冲突由本分支解决，不要求门户线让路。
 
@@ -527,7 +527,7 @@ R1 和 R2 可以作为两个 PR 依次提交。门户 PR 合入后，本分支�
 
 **交给门户线的事项**（组件不在本线做）：
 
-- R1 Browser P48 在基线 `36743743` 发现 `ArchiveSongCatalog.vue:177` 调用未定义的 `techCount`。用户授权独立小修 `3142c10e` / [PR #122](https://github.com/windmet/GS_Archive/pull/122)，组件仅一行复用 `filterCount`。随后用户明确授权仅合并 #122，已以 merge commit `dd7b28de` 合入；地址线以 `c1d526a9` merge 跟进。集成 P48 已通过冷开、筛选、详情返回和刷新，实际统计 4/1/0/0；详见 R1 执行记录。#121 未自行合并，R2 前置条件仍保留。
+- R1 Browser P48 在基线 `36743743` 发现 `ArchiveSongCatalog.vue:177` 调用未定义的 `techCount`。用户授权独立小修 `3142c10e` / [PR #122](https://github.com/windmet/GS_Archive/pull/122)，组件仅一行复用 `filterCount`。随后用户明确授权仅合并 #122，已以 merge commit `dd7b28de` 合入；地址线以 `c1d526a9` merge 跟进。集成 P48 已通过冷开、筛选、详情返回和刷新，实际统计 4/1/0/0；详见 R1 执行记录。#121 后经用户授权合入，R2 #123 亦已合入；此处保留缺陷发现与独立修复的历史。
 
 - 详情页加「复制链接」：`href` 用 `buildPublicArchiveUrl`。
 - 卡片、目录行改成真 `<a href>`：支持中键新标签页和右键复制。普通点击 `preventDefault` 后仍走 `open*`（保留来源）；只有本来就不带来源的链接才交给 `followArchiveLink`。做法照 #120 的面包屑。
@@ -596,3 +596,20 @@ node scripts/verify-story-owner.mjs       # 需要候选包，dev 服务自动�
 - 外壳数量变化；
 - `audit-route-schema` 前后数字；
 - 没做的事项。
+
+
+## 后续前置核对（2026-10-28）
+
+核对基线：`origin/master` `11e7418c`。这是地址线后续开工条件，不代表门户或语料工作的验收。
+
+| 后续项 | 当前事实与下一步 |
+|---|---|
+| R3 谱面 | P3 未合入；等谱面页面结构收束，再实现 `/songs/<code>/chart/`，沿用 #116 的难度不进地址决定 |
+| R3 舞台 | P4 未合入；无歌曲入口形状仍待收束。当前 `useStageNavigation.js` 写入 `target.choreographyId` 至 stageTargetId，`currentArchiveRoute()` 输出 stageId；不能把编舞身份当歌曲 code |
+| R3 摄影 | P7 摄影未合入；开始方式尚未在本轮确认 |
+| R3 图鉴实体 | 等 P6 图鉴的实际详情边界，再定实体路径集合（D3）；不批量创建实体路径 |
+| R4 Reader / Player | P7 与剧情语料晋升仍未完成；CURRENT_STATE 的 13 个 RAW 核对文件与 Valentine b 段语音补抽门槛仍在。暂保留 Reader 方案丙与 Player query；晋升后再核对 D4、别名/稳定话序与 returnView 覆盖 |
+
+核对时远端开放 PR 只有 #118（P6 活动详情）、#119（人物色影）、#120（面包屑站内打开），没有 P3/P4/P7 交付；未越过本任务范围合并其他门户 PR。后续从最新 master 重查这些前置，再开新地址分支。提交/建 PR/合并不再逐次征询，不把这一约定扩展为部署、资源上传或跨线改造授权。
+
+本次收口只改文档，执行事实/相对链接/差异检查，不新增应用构建或 Browser 验收；前序代码、dev Browser、候选外壳证据及 R1 本地技能海报 404 边界仍按对应执行记录保留。

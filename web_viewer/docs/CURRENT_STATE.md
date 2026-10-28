@@ -2,7 +2,7 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-27（开发 master 已含 #98–#104；本更新随 #103 之后的交接 PR 合入；站点/R2 发布快照未重新验收）
+更新：2026-10-28（深链接状态已核对至 #123 / `11e7418c`；其他条线保留各自交接记录，站点/R2 发布快照未重新验收）
 
 ## 开发基线
 
@@ -36,7 +36,7 @@
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
 | 谱面 chart | 无进行中分支（#98 原生投影、#100 自动演示时间线已合入） | 最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，下一批按其「下一批建议顺序」；另见 [开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)、[原生证据审计](CHART_ASSUMPTION_AUDIT_20261023.md)。仍开放：输入判定、完整原机粒子 / GPU 等价、共享 hold 循环与 Special 等音效 cue、物理手机验收。谱面界面改版并入门户交接 P3 |
 | 舞台 stage | 无进行中分支（#103 舞台衣装归族、#95 粒子/Smoke 已合入） | 舞台面板改版（曲目页、编队页、画面页）并入门户交接 P4。#103 内容：549 个 Live 模型按适用范围→款式→普通/另一款→逐人 ID→当前出演位覆盖分层，个人衣装下拉分组；全员/组合/属性/跨组合套服可按可用成员应用，缺版本者保留原装。设计、来源和验收见 [STAGE_COSTUME_FAMILIES_20261025.md](STAGE_COSTUME_FAMILIES_20261025.md)。已再核对 141 个常服/剧情专用模型只有 comu、无 cos，不加入舞台舞蹈资源；摄影/图鉴 comu 预览留待办。前轮[收口记录](STAGE_PR_CLOSEOUT_20261023.md)的边界（Smoke partial、原机/GPU、RNG、Noise、参考时钟等）继续保留；本轮未部署 |
-| 深链接（portal 线的地址层） | `portal/20261028-story-owner-paths`（复用 worktree `deep-links-20261028`） | R1 #121 已经授权以 merge commit `b1065a8f` 合入；独立歌曲小修 #122 为 `dd7b28de`。R2 采用已确认的原始读模型 id 方案：多段剧情归属路径、来源 history、共享标题和候选外壳已实现，1,394 个 StoryOwner 往返及直接 Browser P51–P65 通过，完整门禁 116/116 与 1,401 个真实 head 外壳通过，待 PR 审阅；见 [R2 执行记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md)。R3/R4 仍等对应门户批次与剧情语料前置条件。 |
+| 深链接（portal 线的地址层） | 无进行中实现分支；收口记录 `portal/20261028-deep-links-closeout` | R1 #121 已以 merge commit `b1065a8f` 合入；独立歌曲小修 #122 为 `dd7b28de`。R2 #123（源码 `9fb612bd`）经远端 CI 成功后以 `11e7418c` 合入：1,394 个 StoryOwner 往返、Browser P51–P66、完整门禁 116/116 和 1,401 个真实 head 外壳通过。见 [R2 执行记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md)。R3/R4 等 P3/P4/P6 图鉴/P7 与剧情语料前置条件，见 [后续核对](GS_ARCHIVE_HANDOFF_20261028_DEEP_LINKS.md#后续前置核对2026-10-28)。用户已要求本任务后续按门禁直接提交、建 PR、合并，不再逐次询问；发布仍是独立范围。 |
 
 舞台 Smoke 补证（同分支，输入 `91f61d32` / `8290ec28` / `84350bde`）：6系统/120个受控出生位置与单位方向、+1.5/+7/−7原生startSpeed及down两系统的6条无外力轨迹已核对。side四系统确认快速缓存拒绝非0/1端点，改走原生通用曲线，双常量重力→限速→积分16轨迹/320粒子检查点同新增JS运动核对照，最大误差1.06e−5。对照已纳入object-emitter门禁，见[Smoke来源记录](NATIVE_SMOKE_SOURCE_20261023.md)。此段为当时补证边界；随后已接入确定性 Web 场景预览，原机时钟/退休调度及完整场景等价仍开放。
 
