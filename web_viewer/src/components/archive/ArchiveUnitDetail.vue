@@ -1,39 +1,37 @@
 <template>
-  <article v-if="unit" class="unit-detail" data-archive-scroll-container>
-    <header class="unit-hero" :style="{ backgroundImage: `url(${getBgUrl(unit.representative_bg)})` }">
-      <span class="unit-hero-shade" aria-hidden="true"></span>
+  <article v-if="unit" class="unit-detail" :style="themeStyle" data-archive-scroll-container>
+    <!-- 人物幕 on the unit colour's wash: the logo, the name after a 3px colour bar, the reading and the
+         profile; the members' group picture (the prequel banner) opens the unit's prequel. The paper stays
+         light: the dark stage art is not a reading surface. -->
+    <header class="unit-hero">
       <div class="unit-hero-copy">
-        <h2>
-          <span
-            class="unit-swatch"
-            :style="{ backgroundColor: unit.unit_color || 'var(--gs-mint)' }"
-            :title="unit.unit_color"
-            aria-hidden="true"
-          ></span>
-          {{ unit.unit_name }}
-        </h2>
+        <img v-if="!logoFailed" class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" decoding="async" @error="logoFailed = true" />
+        <h2 class="unit-hero-name">{{ unit.unit_name }}</h2>
         <p lang="ja" class="unit-hero-kana">{{ unit.unit_kana }}</p>
         <p v-if="unitDescription" class="unit-hero-desc gs-flow">{{ unitDescription }}</p>
-        <button
-          v-if="cardStats?.total"
-          type="button"
-          class="unit-card-pill"
-          :data-archive-focus-id="`unit-cards:${unit.unit_code}`"
-          @click="emit('open-cards')"
-        >
-          <Images :size="15" aria-hidden="true" />
-          <span>{{ cardSummaryPill }}</span>
-          <ChevronRight :size="14" aria-hidden="true" />
-        </button>
       </div>
-      <div class="unit-hero-logo-wrap">
-        <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-      </div>
+      <button
+        v-if="unitStoryBanner && !bannerError"
+        type="button"
+        class="unit-hero-photo"
+        :aria-label="`阅读 ${unit.unit_name} 的组合前传`"
+        :data-archive-focus-id="`unit-story-banner:${unit.unit_code}`"
+        @click="emit('open-story', { domain: 'unit_story', section: String(unit.unit_id) })"
+      >
+        <img :src="unitStoryBanner" alt="" @error="bannerError = true" />
+      </button>
     </header>
 
-    <section v-if="unitDescription" class="unit-description">
-      <p class="gs-flow">{{ unitDescription }}</p>
-    </section>
+    <!-- Facts: four short numbers in a row; the card count opens the unit's cards. -->
+    <dl class="unit-facts">
+      <div><dt>成员</dt><dd><b>{{ members.length }}</b>位</dd></div>
+      <div><dt>组合歌曲</dt><dd><b>{{ songs.length }}</b>首</dd></div>
+      <div><dt>组合剧情</dt><dd><b>{{ stories.length }}</b>篇</dd></div>
+      <div v-if="cardStats?.total">
+        <dt>卡片</dt>
+        <dd><button type="button" class="unit-facts-cards" :data-archive-focus-id="`unit-cards:${unit.unit_code}`" @click="emit('open-cards')"><b>{{ cardStats.total }}</b>张<small v-if="cardStats.rarity_counts?.SSR">SSR {{ cardStats.rarity_counts.SSR }}</small><ChevronRight :size="15" aria-hidden="true" /></button></dd>
+      </div>
+    </dl>
 
     <section class="unit-section" aria-labelledby="unit-members-title">
       <div class="section-heading">
@@ -78,15 +76,6 @@
           <h3 id="unit-stories-title">组合剧情</h3>
           <span>{{ stories.length }}</span>
         </div>
-        <button
-          v-if="unitStoryBanner && !bannerError"
-          type="button"
-          class="unit-story-banner-btn"
-          :data-archive-focus-id="`unit-story-banner:${unit.unit_code}`"
-          @click="emit('open-story', { domain: 'unit_story', section: String(unit.unit_id) })"
-        >
-          <img :src="unitStoryBanner" alt="组合前传" @error="bannerError = true" />
-        </button>
         <div class="unit-stories">
           <button
             v-for="story in stories"
@@ -140,13 +129,14 @@
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 void loadArchiveNames('profiles').catch(() => {})
 import { computed, ref, watch } from 'vue'
-import { ChevronRight, Images, Music, Play } from '@lucide/vue'
+import { ChevronRight, Music, Play } from '@lucide/vue'
+import { idolThemeProperties } from '../../presentation/idolStageLight.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
-import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { reflowText } from '../../../shared/reading/ReadingTypography.js'
 import { unitStoryBannerUrl } from '../../data/storyCollections.js'
 
@@ -171,16 +161,9 @@ const unitDescription = computed(() => {
   return reflowText(raw)
 })
 
-const cardSummaryPill = computed(() => {
-  const parts = []
-  const total = props.cardStats?.total || 0
-  parts.push(`${total} 张卡片`)
-  const ssr = props.cardStats?.rarity_counts?.SSR || 0
-  if (ssr > 0) parts.push(`${ssr} SSR`)
-  const withStory = props.cardStats?.cards_with_story || 0
-  if (withStory > 0) parts.push(`${withStory} 有卡片小剧情`)
-  return parts.join(' · ')
-})
+// The unit colour gives the hero its wash, ink and bar the same way an idol's colour does on the idol page.
+const themeStyle = computed(() => idolThemeProperties(props.unit?.unit_color))
+const logoFailed = ref(false)
 
 const memberReferences = computed(() => props.members.map(member => {
   const reference = buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`, { subtitle: 'cv' })
@@ -243,6 +226,7 @@ const activeEventCategory = ref('all')
 watch(() => props.unit?.unit_code, () => {
   activeEventCategory.value = 'all'
   bannerError.value = false
+  logoFailed.value = false
 })
 
 const eventCategories = computed(() => {
@@ -264,26 +248,32 @@ const displayedEventItems = computed(() => {
 </script>
 
 <style scoped>
-/* Unit detail: the unit's own stage art as a cover image, then flat sections on paper. */
-.unit-detail { display: grid; align-content: start; gap: var(--gs-space-section); container: unit-detail / inline-size; height: 100%; padding: var(--gs-space-8); overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
+/* Unit detail: the unit-colour hero, then flat sections on paper. One explicit shrinkable column, so a
+   wide row inside cannot widen the page past a phone screen. */
+.unit-detail { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--gs-space-section); container: unit-detail / inline-size; height: 100%; padding: var(--gs-space-8); overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
 .unit-detail > * { width: 100%; max-width: var(--gs-content-width); margin-inline: auto; }
-.unit-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-6); min-height: 280px; padding: var(--gs-space-8); overflow: hidden; border-radius: var(--gs-radius-media); background-position: center; background-size: cover; color: var(--gs-media-ink); }
-.unit-hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(15 23 42 / 92%) 0%, rgb(15 23 42 / 84%) 48%, rgb(15 23 42 / 28%) 80%), linear-gradient(0deg, rgb(15 23 42 / 80%) 0%, transparent 60%); }
-.unit-hero-copy { position: relative; z-index: 1; min-width: 0; }
-.unit-hero-logo-wrap { position: relative; z-index: 1; align-self: center; display: flex; align-items: center; justify-content: center; }
-.unit-hero-logo { display: block; max-width: 200px; max-height: 110px; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 45%)); }
-.unit-hero h2 { display: flex; align-items: center; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
-.unit-hero p.unit-hero-kana { margin: 0; color: rgb(255 255 255 / 78%); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
-.unit-hero-desc { margin: var(--gs-space-3) 0 var(--gs-space-5); color: rgb(255 255 255 / 88%); font-size: var(--gs-text-ui); line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
-.unit-card-pill { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 24%); border-radius: var(--gs-radius-pill); background: rgb(255 255 255 / 16%); backdrop-filter: blur(8px); color: var(--gs-media-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; transition: background var(--gs-motion-feedback) var(--gs-ease-out), border-color var(--gs-motion-feedback) var(--gs-ease-out); }
-.unit-card-pill svg { flex: none; }
-.unit-card-pill:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-.unit-swatch { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgb(255 255 255); }
-.unit-story-banner-btn { display: block; width: 100%; max-width: 446px; padding: 0; border: 0; border-radius: var(--gs-radius-media); background: none; cursor: pointer; margin-bottom: var(--gs-space-4); transition: opacity var(--gs-motion-feedback) var(--gs-ease-out); }
-.unit-story-banner-btn img { display: block; width: 100%; height: auto; aspect-ratio: 446 / 150; border-radius: var(--gs-radius-media); object-fit: cover; }
-.unit-story-banner-btn:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-.unit-description { display: none; }
-.unit-description p { max-width: 70ch; margin: 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.9; overflow-wrap: anywhere; }
+/* 人物幕: the unit colour's wash (light, like the idol page), copy on the left, the members' group
+   picture on the right. The picture is the prequel banner, cropped to its people (its own logo sits at
+   the right end, and the hero already shows the logo). */
+.unit-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 40%); align-items: center; gap: var(--gs-space-7); min-height: 260px; padding: var(--gs-space-7) 0 var(--gs-space-7) var(--gs-space-8); overflow: clip; border-radius: var(--gs-radius-media); background: var(--gs-idol-wash); }
+.unit-hero-copy { display: grid; justify-items: start; gap: var(--gs-space-2); min-width: 0; }
+.unit-hero-logo { display: block; max-width: 180px; max-height: 72px; margin-bottom: var(--gs-space-3); object-fit: contain; object-position: left center; }
+.unit-hero-name { margin: 0; padding-left: var(--gs-space-4); border-left: 3px solid var(--gs-idol); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
+.unit-hero-kana { margin: 0; padding-left: calc(var(--gs-space-4) + 3px); color: var(--gs-ink-2); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
+.unit-hero-desc { margin: var(--gs-space-3) 0 0; max-width: 34em; color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* The banner carries a white rounded frame and its own logo at the right end: the image is scaled past
+   the frame and the window sits on the people. */
+.unit-hero-photo { align-self: stretch; min-width: 0; overflow: hidden; margin-block: calc(-1 * var(--gs-space-7)); padding: 0; border: 0; background: none; cursor: pointer; -webkit-mask-image: linear-gradient(90deg, transparent, black 18%); mask-image: linear-gradient(90deg, transparent, black 18%); }
+.unit-hero-photo img { display: block; width: 100%; height: 100%; min-height: 200px; object-fit: cover; object-position: 30% center; scale: 1.08; }
+/* Facts: four short numbers on one hairline row. */
+.unit-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0; border-top: 1px solid var(--gs-rule); }
+.unit-facts > div { min-width: 0; padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
+.unit-facts dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.unit-facts dd { display: flex; align-items: baseline; gap: 3px; margin: var(--gs-space-1) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.unit-facts b { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; }
+.unit-facts-cards { display: inline-flex; align-items: baseline; gap: 3px; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; }
+.unit-facts-cards small { margin-left: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.unit-facts-cards svg { align-self: center; color: var(--gs-ink-3); }
 .section-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .section-heading h3 { margin: 0; min-width: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
 .section-heading > span { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
@@ -312,23 +302,26 @@ const displayedEventItems = computed(() => {
 .unit-detail :deep(.relation-labels strong), .unit-detail :deep(.relation-labels small), .unit-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
 .unit-detail button:focus-visible, .unit-detail :deep(button.archive-idol-reference:focus-visible), .unit-detail :deep(.relation-row:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (hover: hover) {
-  .unit-card-pill:hover { background: rgb(255 255 255 / 26%); border-color: rgb(255 255 255 / 40%); }
-  .unit-story-banner-btn:hover { opacity: 0.88; }
+  .unit-hero-photo:hover { opacity: .9; }
+  .unit-facts-cards:hover b { color: var(--gs-ink-2); }
   .event-filter-chip:hover { background: var(--gs-mint-wash); border-color: var(--gs-mint-line); }
-  .unit-songs button:hover strong, .unit-stories button:hover strong { color: var(--gs-mint-ink); }
+  .unit-songs button:hover strong, .unit-stories button:hover strong { color: var(--gs-ink-2); }
 }
 @container unit-detail (max-width: 980px) {
   .unit-content-split { grid-template-columns: 1fr; gap: var(--gs-space-section); }
 }
 @media (max-width: 760px) {
   .unit-detail { gap: var(--gs-space-8); padding: var(--gs-space-5); }
-  .unit-hero { grid-template-columns: 1fr; min-height: 180px; padding: var(--gs-space-6); }
-  .unit-hero-copy { max-width: 100%; }
-  .unit-hero-logo-wrap { order: -1; justify-content: flex-start; }
+  /* Phones: the group picture runs edge to edge on top, the copy under it on the wash. */
+  /* min-height stays auto: in the fixed-height page grid an explicit 0 lets the row collapse. */
+  .unit-hero { grid-template-columns: 1fr; gap: var(--gs-space-4); min-height: auto; margin: calc(-1 * var(--gs-space-5)) calc(-1 * var(--gs-space-5)) 0; width: auto; max-width: none; padding: 0 var(--gs-space-5) var(--gs-space-6); border-radius: 0; }
+  .unit-hero-photo { order: -1; margin: 0 calc(-1 * var(--gs-space-5)); -webkit-mask-image: none; mask-image: none; }
+  .unit-hero-photo img { min-height: 0; height: auto; aspect-ratio: 446 / 150; object-position: center; scale: 1.08; }
+  /* The whole banner shows here, with its own logo, so the separate logo steps aside (only while the banner is there). */
+  .unit-hero:has(.unit-hero-photo) .unit-hero-logo { display: none; }
   .unit-hero-logo { max-width: 140px; max-height: 54px; }
-  .unit-hero h2 { font-size: var(--gs-text-section); }
-  .unit-hero-desc { display: none; }
-  .unit-description { display: block; }
+  .unit-hero-name { font-size: var(--gs-text-section); }
+  .unit-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .unit-members, .unit-songs { grid-template-columns: 1fr; }
   .unit-stories button { grid-template-columns: 20px minmax(0, 1fr); }
   .unit-stories button > small { grid-column: 2; }
