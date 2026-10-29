@@ -16,7 +16,7 @@
               <button v-for="section in versionSections" :key="section.kind" type="button" role="radio" :aria-checked="section.kind === selectedKind" :disabled="disabled" @click="chooseKind(section)">{{ section.label }}<span v-if="section.versions.length > 1"> {{ section.versions.length }}</span></button>
             </div>
             <div v-if="visibleVersions.length > 1" class="arrangement-options" :class="`is-${selectedKind}`" role="radiogroup" aria-label="演出编排版本">
-              <button v-for="version in visibleVersions" :key="version.id" type="button" role="radio" :data-version-id="version.id" :aria-checked="version.id === selectedScript?.id" :disabled="disabled" @click="chooseVersion(version.id)">{{ version.label }}<small v-if="version.participantCount"> {{ version.participantCount }}人</small></button>
+              <button v-for="version in visibleVersions" :key="version.id" type="button" role="radio" :data-version-id="version.id" :aria-checked="version.id === selectedScript?.id" :disabled="disabled" :aria-label="unitLogo(version) ? `${version.label}${version.participantCount ? ` ${version.participantCount}人` : ''}` : undefined" @click="chooseVersion(version.id)"><img v-if="unitLogo(version)" :src="unitLogo(version)" alt="" loading="lazy" decoding="async" @error="failedLogos = new Set(failedLogos).add(version.unitCode)" /><template v-else>{{ version.label }}<small v-if="version.participantCount"> {{ version.participantCount }}人</small></template></button>
             </div>
           </div>
           <p v-else class="single-arrangement"><span>编排</span><strong>{{ selectedScript?.label || selectedGroup.versions[0]?.label }}</strong></p>
@@ -60,6 +60,7 @@
 import { computed, ref, watch } from 'vue'
 import { Music2, Search } from '@lucide/vue'
 import { buildStageSongLibrary, filterStageSongLibrary, findStageSongGroup, stageSongCategoryOptions } from '../presentation/ChibiSongLibrary.js'
+import { getUnitLogoUrl } from '../utils/AssetResolver.js'
 
 const props = defineProps({
   songs: { type: Array, default: () => [] },
@@ -72,6 +73,9 @@ const compactCategoryLabels = { all: '全部', collective: '代表曲', unit: '�
 const query = ref('')
 const category = ref('all')
 const failedJackets = ref(new Set())
+// 组合版 is chosen by the unit's logo, as on the song catalogue; the name stays as the label and returns if the logo fails.
+const failedLogos = ref(new Set())
+const unitLogo = version => version.kind === 'unit' && version.unitCode && !failedLogos.value.has(version.unitCode) ? getUnitLogoUrl(version.unitCode) : ''
 const library = computed(() => buildStageSongLibrary(props.songs, props.songDirectory))
 const categoryOptions = computed(() => stageSongCategoryOptions(library.value))
 const matches = computed(() => filterStageSongLibrary(library.value, { query: query.value, category: category.value }))
@@ -153,6 +157,7 @@ function chooseVersion(id) {
 .arrangement-options > button { display: flex; align-items: center; justify-content: center; gap: var(--gs-space-1); min-width: 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-meta); text-align: center; cursor: pointer; }
 .arrangement-options.is-center > button { justify-content: flex-start; padding: 0 var(--gs-space-4); font-size: var(--gs-text-ui); text-align: left; }
 .arrangement-options > button small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.arrangement-options > button img { display: block; width: 100%; max-width: 76px; height: 28px; object-fit: contain; }
 .arrangement-options > button:hover { background: var(--gs-hover); }
 .arrangement-options > button[aria-checked="true"] { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
 .arrangement-options > button:disabled { opacity: .6; cursor: default; }

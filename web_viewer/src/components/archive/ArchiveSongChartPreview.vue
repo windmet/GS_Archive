@@ -8,7 +8,7 @@
         <button v-if="mode === 'long'" type="button" :aria-pressed="followPlayback" @click="followPlayback = !followPlayback">跟随播放</button>
         <button v-if="chart && !immersive" type="button" class="chart-immersive-enter" @click="enterImmersive"><Maximize :size="15" aria-hidden="true" />沉浸查看</button>
         <button v-if="immersive" type="button" class="chart-immersive-exit" @click="leaveImmersive"><Minimize :size="15" aria-hidden="true" />退出沉浸</button>
-        <div class="chart-actions"><button v-if="!wide" ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
+        <div class="chart-actions"><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
       </header>
       <div class="chart-layout" :class="{ 'has-panel': residentPanel }">
       <div class="chart-main">
@@ -29,30 +29,28 @@
         </footer>
       </template>
       </div>
-      <Teleport to="body" :disabled="wide">
-        <div v-if="panelVisible" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :class="{ 'is-resident': wide }" :style="wide ? undefined : settingsPosition" :role="wide ? 'group' : 'dialog'" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
-          <header v-if="!wide" class="settings-heading"><strong>显示与播放</strong><button type="button" aria-label="关闭视图设置" @click="closeSettings()"><X :size="18" aria-hidden="true" /></button></header>
-          <section class="chart-group" :aria-labelledby="`${uid}-g-view`">
-            <h3 :id="`${uid}-g-view`">观看</h3>
+        <div v-if="panelVisible" :id="`${uid}-settings`" class="chart-settings" :class="wide ? 'is-resident' : 'is-tabbed'" role="group" aria-label="谱面视图设置">
+          <div v-if="!wide" class="chart-settings-tabs" role="tablist" aria-label="谱面设置分组" @keydown="onSettingsTabKey"><button v-for="group in SETTINGS_GROUPS" :id="`${uid}-tab-${group.id}`" :key="group.id" type="button" role="tab" :aria-selected="settingsTab === group.id" :aria-controls="`${uid}-panel-${group.id}`" :tabindex="settingsTab === group.id ? 0 : -1" @click="settingsTab = group.id">{{ group.label }}</button></div>
+          <section v-show="wide || settingsTab === 'view'" :id="`${uid}-panel-view`" class="chart-group" :role="wide ? undefined : 'tabpanel'" :aria-labelledby="wide ? `${uid}-g-view` : `${uid}-tab-view`">
+            <h3 v-if="wide" :id="`${uid}-g-view`">观看</h3>
             <GsRow label="贴图样式"><select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></GsRow>
             <template v-if="mode === 'perspective'"><GsRow label="音符速度"><template #info>1.0–11.0，沿用原作设置刻度；越大落下越快。</template><input v-model.number="speed" class="chart-number" type="number" min="1" max="11" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" class="chart-range" type="range" min="1" max="11" step="0.1" aria-label="轨道配速滑杆" /></GsRow></template>
             <template v-else><GsRow label="纵向缩放"><select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></GsRow><GsRow label="长轨排布"><select v-model="longLayout" aria-label="长轨排布"><option value="auto">自动</option><option value="columns">分栏横向阅读</option><option value="continuous">单栏纵向阅读</option></select></GsRow></template>
           </section>
-          <section class="chart-group" :aria-labelledby="`${uid}-g-sound`">
-            <h3 :id="`${uid}-g-sound`">声音</h3>
+          <section v-show="wide || settingsTab === 'sound'" :id="`${uid}-panel-sound`" class="chart-group" :role="wide ? undefined : 'tabpanel'" :aria-labelledby="wide ? `${uid}-g-sound` : `${uid}-tab-sound`">
+            <h3 v-if="wide" :id="`${uid}-g-sound`">声音</h3>
             <GsRow label="播放速度"><select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></GsRow>
             <GsRow label="音量"><input v-model.number="volume" class="chart-range" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></GsRow>
             <GsRow label="打击音"><template #info>所有套装均可用于任意歌曲，播放时独立于自动演示开关。</template><select v-model="soundSet" aria-label="谱面打击音套装"><option value="off">关闭</option><option value="se1">SE1</option><option value="se2">SE2</option><option value="se3">SE3</option><option value="president">社长愚人节</option></select></GsRow>
             <GsRow label="音效音量"><input v-model.number="soundVolume" class="chart-range" type="range" min="0" max="1" step="0.01" aria-label="谱面音效音量" /></GsRow>
             <GsRow label="音符时机"><template #info>{{ noteTimingMilliseconds }} ms · 原作刻度 -30～30，每格约 16.67ms。正值延后、负值提前谱面与打击音，0 为关闭；歌曲音频不变。</template><input v-model.number="noteTiming" class="chart-number" type="number" min="-30" max="30" step="1" aria-label="音符时机调整" @change="noteTiming = Math.max(-30,Math.min(30,Math.round(Number(noteTiming)||0)))" /></GsRow>
           </section>
-          <section class="chart-group" :aria-labelledby="`${uid}-g-demo`">
-            <h3 :id="`${uid}-g-demo`">演示</h3>
+          <section v-show="wide || settingsTab === 'demo'" :id="`${uid}-panel-demo`" class="chart-group" :role="wide ? undefined : 'tabpanel'" :aria-labelledby="wide ? `${uid}-g-demo` : `${uid}-tab-demo`">
+            <h3 v-if="wide" :id="`${uid}-g-demo`">演示</h3>
             <GsRow label="自动演示"><template #info>显示当前位置已过事件与持续长条，不进行触摸判定或评分。</template><GsSwitch v-model="demonstrationEnabled" aria-label="自动演示事件统计" /></GsRow>
             <GsRow label="Combo 提示"><template #info>显示已过谱面事件的 Combo，数字动画随播放暂停，不进行评分。</template><GsSwitch v-model="comboEnabled" aria-label="Combo 提示动画" /></GsRow>
           </section>
         </div>
-      </Teleport>
       </div>
       <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p v-if="maintainer">五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条依照原生 poly 内部索引生成；预览不进行游戏判定。</p><p v-if="maintainer">完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长、逐音符速度（含 Special）、轨道坐标、音符四角及长条网格已有原生依据；滑键箭头随歌曲时间循环移动，暂停时冻结。打击音的四套样式可用于任意歌曲，也可单独关闭；预览不进行触摸判定。</p></div>
     </template>
@@ -63,7 +61,7 @@
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import { ChevronLeft, ChevronRight, Download, Info, Maximize, Minimize, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
+import { ChevronLeft, ChevronRight, Download, Info, Maximize, Minimize, Pause, Play, SkipBack, SkipForward, X } from '@lucide/vue'
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js'
 import { playableSongChart, validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
@@ -89,7 +87,7 @@ const emit = defineEmits(['request-play'])
 const previewRoot = ref(null), immersive = ref(false)
 const { active: fullscreenActive, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
 function enterImmersive() {
-  mode.value = 'perspective'; settingsOpen.value = false; infoOpen.value = false
+  mode.value = 'perspective'; infoOpen.value = false
   immersive.value = true
   void enterFullscreen(previewRoot.value)
 }
@@ -103,14 +101,16 @@ const uid = `chart-viewer-${getCurrentInstance().uid}`
 const startDifficulty = props.difficulties.some(d => d.type === props.initialDifficulty) ? props.initialDifficulty : props.difficulties[0]?.type || 1
 const opened = ref(props.standalone), selected = ref(startDifficulty), mode = ref('perspective')
 const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(5), longLayout = ref('auto'), followPlayback = ref(false)
-const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
-const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
-// Wide viewers keep the settings as a resident 292px column beside the canvas; narrow ones open them as a popover.
+const infoOpen = ref(false), longPreview = ref(null)
+// Wide viewers keep the settings as a resident 292px column beside the canvas; narrow ones put the same three
+// groups under the canvas as underline tabs, adjusted in place instead of in a popover that has to scroll.
 const MODE_OPTIONS = [{ value: 'perspective', label: '透视' }, { value: 'long', label: '长轨' }]
 const maintainer = isMaintainerMode()
 const wide = ref(false)
 const residentPanel = computed(() => wide.value && !immersive.value && opened.value)
-const panelVisible = computed(() => residentPanel.value || settingsOpen.value)
+const panelVisible = computed(() => opened.value && !immersive.value)
+const SETTINGS_GROUPS = [{ id: 'view', label: '观看' }, { id: 'sound', label: '声音' }, { id: 'demo', label: '演示' }]
+const settingsTab = ref('view')
 let widthObserver
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
 const chart = shallowRef(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
@@ -211,7 +211,7 @@ async function loadChart() {
   editingTick.value = false
   chart.value = null; error.value = ''; loading.value = false; locateMessage.value = ''; exportError.value = ''; audioError.value = ''
   demonstration = null; demonstrationFrame = null; demonstrationState.value = null; effectPool?.clear(); effectPool = null; trackEffects.state.value = null
-  if (!opened.value) { settingsOpen.value = false; return }
+  if (!opened.value) return
   controller = new AbortController(); loading.value = true
   const difficulty = activeDifficulty.value
   try {
@@ -238,18 +238,10 @@ watch([opened, selected, () => props.songCode], loadChart)
 onMounted(() => {
   if (props.standalone) void loadChart()
   if (typeof ResizeObserver === 'function' && previewRoot.value) { widthObserver = new ResizeObserver(([entry]) => { wide.value = entry.contentRect.width >= 860 }); widthObserver.observe(previewRoot.value) }
-  document.addEventListener('pointerdown', onOutsideSettings)
-  document.addEventListener('keydown', onSettingsEscape)
-  window.addEventListener('resize', positionSettings)
-  window.addEventListener('scroll', positionSettings, true)
 })
 onBeforeUnmount(() => {
   widthObserver?.disconnect()
   stopPlayback(); sounds.dispose(); generation++; controller?.abort(); clock.dispose()
-  document.removeEventListener('pointerdown', onOutsideSettings)
-  document.removeEventListener('keydown', onSettingsEscape)
-  window.removeEventListener('resize', positionSettings)
-  window.removeEventListener('scroll', positionSettings, true)
 })
 function applyPendingSeek() { clock.seek(pendingSeconds) }
 function seekSeconds(seconds) {
@@ -324,37 +316,14 @@ function onCanvasKey(event) {
   else if (event.key === 'End') seekSeconds(totalSeconds.value)
   else step(event.key === 'ArrowRight' ? 1 : -1)
 }
-function positionSettings() {
-  if (!settingsOpen.value || !settingsButton.value || !settingsPanel.value) return
-  const box = settingsButton.value.getBoundingClientRect(), width = Math.min(384, window.innerWidth - 24)
-  if (box.bottom < 12 || box.top > window.innerHeight - 12) { void closeSettings(false); return }
-  const below = Math.max(0, window.innerHeight - box.bottom - 20), above = Math.max(0, box.top - 20)
-  const openAbove = below < settingsPanel.value.scrollHeight && above > below
-  const height = Math.min(settingsPanel.value.scrollHeight, openAbove ? above : below)
-  settingsPosition.value = {
-    width: `${width}px`, left: `${Math.max(12, Math.min(box.right - width, window.innerWidth - width - 12))}px`,
-    top: `${openAbove ? Math.max(12, box.top - height - 8) : box.bottom + 8}px`,
-    maxHeight: `${Math.max(0, openAbove ? above : below)}px`,
-  }
-}
-watch([settingsOpen, mode], async ([open]) => {
-  if (!open) return
-  await nextTick(); positionSettings()
-})
-async function toggleSettings() {
-  if (settingsOpen.value) { await closeSettings(); return }
-  settingsOpen.value = true
-  await nextTick(); positionSettings(); settingsPanel.value?.querySelector('select')?.focus({ preventScroll: true })
-}
-async function closeSettings(restoreFocus = true) {
-  settingsOpen.value = false
-  if (restoreFocus) { await nextTick(); settingsButton.value?.focus({ preventScroll: true }) }
-}
-function onOutsideSettings(event) {
-  if (settingsOpen.value && !settingsPanel.value?.contains(event.target) && !settingsButton.value?.contains(event.target)) void closeSettings(false)
-}
-function onSettingsEscape(event) {
-  if (settingsOpen.value && event.key === 'Escape') { event.preventDefault(); void closeSettings() }
+// Arrow keys move between the three tabs, as a tablist does.
+function onSettingsTabKey(event) {
+  const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
+  if (!step) return
+  event.preventDefault()
+  const index = SETTINGS_GROUPS.findIndex(group => group.id === settingsTab.value)
+  settingsTab.value = SETTINGS_GROUPS[(index + step + SETTINGS_GROUPS.length) % SETTINGS_GROUPS.length].id
+  void nextTick(() => document.getElementById(`${uid}-tab-${settingsTab.value}`)?.focus())
 }
 async function editTick() {
   syncMediaPosition()
@@ -417,13 +386,18 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-actions button { height: var(--gs-control-touch); gap: 6px; }
 .chart-actions svg { flex-shrink: 0; }
 .chart-export-actions { display: flex; align-items: center; gap: var(--gs-space-2); }
-.chart-settings { position: fixed; z-index: 1200; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 15px; padding: 16px; border: 0; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); color: var(--gs-ink); }
-.settings-heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-body); }
-.settings-heading button { width: var(--gs-control-touch); min-height: var(--gs-control-touch); padding: 0; border: 0; background: none; }
+.chart-settings { box-sizing: border-box; display: flex; flex-direction: column; color: var(--gs-ink); }
+/* Under the canvas: three panel tabs (40px, underline), then the chosen group's rows. */
+.chart-settings.is-tabbed { margin-top: var(--gs-gap-group); }
+.chart-settings-tabs { display: flex; height: 40px; border-bottom: 1px solid var(--gs-line); }
+.chart-settings-tabs button { flex: 1; min-width: 0; padding: 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); cursor: pointer; }
+.chart-settings-tabs button:hover { color: var(--gs-ink); }
+.chart-settings-tabs button[aria-selected=true] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.chart-settings-tabs button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 .chart-layout.has-panel { display: grid; grid-template-columns: minmax(0, 1fr) var(--gs-tool-panel-compact); gap: var(--gs-gap-group); align-items: start; }
 .chart-main { min-width: 0; }
 /* Resident column: three groups on the paper, a hairline under each heading; no box. */
-.chart-settings.is-resident { position: static; z-index: auto; max-height: none; padding: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; gap: var(--gs-gap-group); }
+.chart-settings.is-resident { gap: var(--gs-gap-group); }
 .chart-group { display: flex; flex-direction: column; }
 .chart-group h3 { margin: 0; padding-bottom: var(--gs-space-2); border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
 .chart-group select { min-width: 0; max-width: 150px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
