@@ -32,13 +32,14 @@ const nameOf = mate => props.idolName(mate.idol_code, mate.display_name) || mate
 .archive-unit-mates button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: 3px; }
 @media (hover: hover) { .archive-unit-mates button:not(.is-current):hover { opacity: .85; } }
 /* Phones: faces only; the bar has no room for the label. Four or five faces overlap into one strip
-   so the page title keeps its room; the current face sits on top. */
+   so the page title keeps its room; the current face sits on top. The 4px inline padding keeps the
+   current face's ring clear of the back arrow and the 「中 / 日」 toggle beside it. */
 @media (max-width: 760px) {
-  .archive-unit-mates { gap: 6px; margin-right: 0; }
+  .archive-unit-mates { gap: 6px; margin-right: 0; padding-inline: 4px; }
   .archive-unit-mates-label { display: none; }
   .archive-unit-mates.is-crowded { gap: 0; }
   .archive-unit-mates.is-crowded button { position: relative; box-shadow: 0 0 0 2px var(--gs-paper); }
-  .archive-unit-mates.is-crowded button + button { margin-left: -9px; }
+  .archive-unit-mates.is-crowded button + button { margin-left: -12px; }
   .archive-unit-mates.is-crowded button.is-current { z-index: 1; box-shadow: 0 0 0 2px var(--gs-paper), 0 0 0 4px var(--gs-mint); }
 }
 </style>
