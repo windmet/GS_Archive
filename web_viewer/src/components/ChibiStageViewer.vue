@@ -223,6 +223,7 @@
             :data-shadow-width="runtimes.get(position)?.groundShadow?.width?.toFixed(2) || ''"
           >
             <ArchiveIdolAvatar :idol-code="activePositions.includes(position) ? slotByPosition(position)?.characterId || '' : ''" :accent-color="activePositions.includes(position) ? stageIdolColor(characterForSlot(slotByPosition(position))) : ''" :size="40" decorative :fallback-text="String(position)" />
+            <span v-if="activePositions.includes(position) && position === centerStagePosition" class="center-mark" title="Center · 演出编成 1 号卡" aria-hidden="true">C</span>
             <span v-if="!activePositions.includes(position)" class="rest-position" aria-hidden="true">{{ position }} 号位<small>休息</small></span>
             <span v-if="activePositions.includes(position)" class="position-caption">{{ position }} <span v-if="currentSingerPositions.includes(position)" class="singing-status" role="img" aria-label="当前段演唱"><Mic2 :size="12" aria-hidden="true" /><span class="singing-label">演唱</span></span></span>
             <small v-if="activePositions.includes(position)">{{ stageIdolName(characterForSlot(slotByPosition(position))) || '空位' }}</small>
@@ -274,15 +275,22 @@
           </section>
 
           <section v-if="!isSpecialSingle" v-show="panelTab === 'lineup'" :id="`${inspectorTitleId}-lineup`" class="control-section panel-section lineup-section">
-            <div class="section-heading">
-              <div>
-                <h2>演出编队</h2>
-              </div>
-              <UsersRound :size="18" />
-            </div>
-
-            <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
-            <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSelection.basis === 'table2-selected-unit' ? '所选组合按原生槽序排列，可调整' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+            <!-- Four groups, 24 apart: 站位 → the chosen position → 演唱 → 套服. The 站位条 itself is the rail under the canvas. -->
+            <section class="stage-group" aria-labelledby="stage-group-formation">
+              <header class="stage-group-head"><h3 id="stage-group-formation">站位</h3><div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机</button></div></header>
+              <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSelection.basis === 'table2-selected-unit' ? '所选组合按原生槽序排列，可调整' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+            </section>
+            <section v-if="editingSlot" class="stage-group slot-editor" aria-labelledby="stage-group-slot">
+              <header class="stage-group-head"><h3 id="stage-group-slot">{{ editingSlot.position }} 号位<span v-if="editingSlot.position === centerStagePosition"> · Center</span> · {{ editingSlot.loading ? '加载中' : currentSingerPositions.includes(editingSlot.position) ? '正在演唱' : '出演' }}</h3></header>
+              <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
+                <span class="stage-row-label">偶像</span>
+                <span class="slot-editor-copy"><ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="28" decorative /><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronRight :size="17" />
+              </button>
+              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><optgroup v-for="group in editingCostumeGroups" :key="group.id" :label="group.label"><option v-for="costume in group.costumes" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></optgroup></select></label>
+              <button class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
+            </section>
+            <section v-if="stageVocalAvailable || oneshotAvailable" class="stage-group" aria-labelledby="stage-group-vocal">
+            <header class="stage-group-head"><h3 id="stage-group-vocal">演唱</h3></header>
             <!-- Who is heard: the official mix, or each formation idol's own part following SwitchSinger. -->
             <div v-if="stageVocalAvailable" class="lineup-vocal">
               <label class="camera-toggle"><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span><GsSwitch :model-value="stageVocalEnabled" aria-label="按编成偶像演唱" :disabled="booting" @update:model-value="stageVocalEnabled = $event; handleStageVocalToggle()" /></label>
@@ -293,16 +301,9 @@
               <label><span>Center 台词</span><select v-model="oneshotSelection" aria-label="Center 台词音轨" :disabled="booting"><option :value="ONESHOT_CENTER">跟随 Center · {{ oneshotIdolLabel(oneshotCenterIdolCode) || '空位' }}</option><option v-for="code in oneshotIdolCodes" :key="code" :value="code">{{ oneshotIdolLabel(code) }}</option><option :value="ONESHOT_OFF">关闭 · 保留原曲留白</option></select></label>
               <small>{{ oneshotTriggerLabel }} 原曲在此留白，游戏播放编成 Center 卡偶像的台词；此处可任选 {{ oneshotIdolCodes.length }} 人试听。</small>
             </div>
-            <div v-if="editingSlot" class="slot-editor">
-              <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
-                <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
-                <span class="slot-editor-copy"><small>{{ editingSlot.position }} 号位 · {{ editingSlot.loading ? '加载中' : currentSingerPositions.includes(editingSlot.position) ? '正在演唱' : '出演' }}</small><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronDown :size="17" />
-              </button>
-              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><optgroup v-for="group in editingCostumeGroups" :key="group.id" :label="group.label"><option v-for="costume in group.costumes" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></optgroup></select></label>
-            </div>
-            <button v-if="editingSlot" class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
-            <section class="common-costume-actions" aria-label="套服搭配" :data-stage-costume-scope="costumeScope" :data-stage-costume-family="selectedCostumeFamily?.id" :data-stage-costume-version="selectedCostumeChoice?.version.sourceName">
-              <h3>套服搭配</h3>
+            </section>
+            <section class="stage-group common-costume-actions" aria-label="套服搭配" :data-stage-costume-scope="costumeScope" :data-stage-costume-family="selectedCostumeFamily?.id" :data-stage-costume-version="selectedCostumeChoice?.version.sourceName">
+              <header class="stage-group-head"><h3>套服</h3></header>
               <label class="costume-control"><span>适用范围</span><select v-model="costumeScope" aria-label="套服适用范围" :disabled="costumeSelectionBusy" @change="costumeNotice = ''; costumeFamilyId = ''; costumeVersionKey = ''"><option v-for="scope in sharedCostumeScopes" :key="scope.id" :value="scope.id">{{ scope.label }}</option></select></label>
               <template v-if="selectedCostumeFamily">
                 <label class="costume-control"><span>款式</span><select :value="selectedCostumeFamily.id" aria-label="套服款式" :disabled="costumeSelectionBusy" @change="costumeFamilyId = $event.target.value; costumeVersionKey = ''; costumeNotice = ''"><option v-for="family in availableCostumeFamilies" :key="family.id" :value="family.id">{{ stageFamilyLabel(family) }}</option></select></label>
@@ -316,14 +317,22 @@
           </section>
 
           <section v-show="panelTab === 'viewing'" :id="`${inspectorTitleId}-viewing`" class="control-section panel-section viewing-section" aria-label="观看设置">
-            <div class="viewing-toggles">
+            <section class="stage-group" aria-labelledby="stage-group-view">
+            <header class="stage-group-head"><h3 id="stage-group-view">观看</h3></header>
             <label class="camera-toggle"><span>演出镜头</span><GsSwitch :model-value="cameraEnabled" aria-label="演出镜头" @update:model-value="cameraEnabled = $event; applyCameraTransform()" /></label>
             <label class="camera-toggle"><span>显示歌词</span><GsSwitch :model-value="lyricsEnabled" aria-label="显示歌词" @update:model-value="lyricsEnabled = $event" /></label>
-            </div>
-            <label class="viewing-select"><span>加载</span><select v-model="stageQuality" aria-label="舞台加载方式" @change="applyStageQuality"><option value="lite">轻量 · 舞台、人物与应援棒</option><option value="full">完整 · 含灯光与动态物件</option></select></label>
-            <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
-            <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
             <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
+            </section>
+            <section class="stage-group" aria-labelledby="stage-group-play">
+            <header class="stage-group-head"><h3 id="stage-group-play">播放</h3></header>
+            <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
+            <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
+            </section>
+            <!-- 加载方式 is a row that reopens the same two-step dialog; choosing there rebuilds the stage, not a dropdown here. -->
+            <section class="stage-group" aria-labelledby="stage-group-load">
+            <header class="stage-group-head"><h3 id="stage-group-load">加载</h3></header>
+            <div class="viewing-select viewing-load"><span>加载方式</span><strong>{{ stageQuality === 'full' ? '完整' : '轻量' }}</strong><button type="button" aria-label="更改舞台加载方式" @click="pendingQuality = stageQuality; qualityPromptOpen = true">更改</button></div>
+            </section>
             <div class="viewing-actions"><button type="button" @click="toggleImmersive"><Maximize :size="16" />沉浸观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
           </section>
           <ArchiveErrorNote v-if="audioError" class="audio-error">{{ audioError }}</ArchiveErrorNote>
@@ -541,7 +550,7 @@ import {
   CircleAlert,
   CircleHelp,
   Camera,
-  ChevronDown,
+  ChevronRight,
   Maximize,
   Minimize,
   Settings2,
@@ -553,7 +562,6 @@ import {
   Play,
   RefreshCw,
   RotateCcw,
-  UsersRound,
   X,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
@@ -1129,6 +1137,8 @@ const stageVocalAvailable = computed(() => Boolean(
 ))
 // The game picks the oneshot line by deck slot 1 (the center card); the stage page has
 // no deck, so "center" follows whoever stands in performer slot 1 of the lineup.
+// The rail marks this position with C; it is the same 1st performer slot the Center line follows.
+const centerStagePosition = computed(() => stagePositionForPerformerSlot(1))
 const oneshotCenterIdolCode = computed(() => {
   const stagePosition = stagePositionForPerformerSlot(1)
   return (handoffLineup.value
@@ -4451,7 +4461,15 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .raw-command-table th, .raw-command-table td { padding: 7px; border: 1px solid var(--gs-rule); text-align: left; vertical-align: top; overflow-wrap: anywhere; font-size: var(--gs-text-meta); }
 
 .lineup-section { display: grid; gap: 8px; }
-.lineup-section .section-heading { margin-bottom: 0; }
+/* 编队 / 画面: groups 24 apart, each a 12px label over a hairline, then 44px rows on hairlines. */
+.lineup-section, .viewing-section { gap: var(--gs-gap-group); }
+.stage-group { display: grid; min-width: 0; }
+.stage-group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; border-bottom: 1px solid var(--line); }
+.stage-group-head h3 { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
+.stage-group > .camera-toggle, .stage-group > .viewing-range, .stage-group > .viewing-select, .stage-group > .costume-control, .stage-group > .idol-change-action { min-height: 44px; border-bottom: 1px solid var(--line); }
+/* Center: a small white disc with C at the marker's corner, on the dark rail. */
+.position-marker { position: relative; }
+.center-mark { position: absolute; top: 4px; right: 6px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--gs-surface); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-bold); line-height: 1; }
 .singing-icon { color: var(--idol-accent, #258e81); }
 .rebuild-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; margin-top: 3px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 8px; font: 650 11px/1 inherit; cursor: pointer; }
 
@@ -4484,7 +4502,10 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); cursor: pointer; }
 .lineup-actions button:disabled { opacity: .4; cursor: default; }
 .lineup-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
-.viewing-select { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.viewing-select { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.viewing-load { grid-template-columns: 72px minmax(0, 1fr) auto; }
+.viewing-load strong { color: var(--gs-ink); font-weight: var(--gs-weight-medium); }
+.viewing-load button { min-height: 44px; padding: 0 4px; border: 0; background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .viewing-select select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
 .immersive-hint { position: absolute; z-index: 5; top: 10px; left: 50%; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 4px 4px 4px 12px; border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); translate: -50% 0; box-shadow: var(--gs-shadow-float); }
 .immersive-hint span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4502,7 +4523,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .quality-tip { display: flex; align-items: center; gap: 6px; margin: 12px 0 4px; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
 .quality-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .touch-help dt { display: flex; align-items: center; color: var(--gs-ink-2); }
-.lineup-vocal { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.lineup-vocal { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); }
 .lineup-vocal .camera-toggle { flex: 1; min-width: 0; }
 .lineup-vocal .camera-toggle span { display: grid; gap: 2px; }
 .lineup-vocal small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
@@ -4511,24 +4532,23 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-oneshot select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
 .lineup-oneshot small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
 .lineup-vocal-mix { display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
-.slot-editor { display: grid; gap: 8px; min-width: 0; }
-.idol-change-action { display: flex; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; cursor: pointer; text-align: left; }
-.slot-editor-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
-.idol-change-action strong { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
-.idol-change-action small { font-size: 12px; color: var(--muted); }
-.costume-control { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.costume-sync-action { justify-self: start; min-height: 44px; padding: 0 8px; border: 0; border-radius: var(--gs-radius-control); color: var(--gs-mint-ink); background: transparent; cursor: pointer; font-size: var(--gs-text-ui); text-decoration: none; }
+.slot-editor { min-width: 0; }
+.idol-change-action { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; width: 100%; align-items: center; gap: 8px; padding: 4px 0; color: var(--text); background: transparent; border: 0; border-radius: 0; cursor: pointer; text-align: left; font: inherit; }
+.stage-row-label { color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.slot-editor-copy { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.idol-change-action strong { min-width: 0; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.costume-control { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.costume-sync-action { justify-self: start; min-height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); color: var(--gs-ink-2); background: transparent; cursor: pointer; font-size: var(--gs-text-ui); text-decoration: underline; text-underline-offset: 3px; }
 .costume-sync-action:disabled { opacity: .4; cursor: default; }
-.common-costume-actions { padding-top: 8px; border-top: 1px solid var(--line); }
-.common-costume-actions h3 { margin: 0 0 8px; color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.common-costume-actions { display: grid; gap: 8px; min-width: 0; }
+.common-costume-actions .costume-coverage { margin-top: 8px; }
+.common-costume-actions .costume-family-apply { margin-top: 12px; }
 .costume-coverage { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
 .costume-family-apply { min-height: 44px; width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); color: var(--gs-ink); background: var(--gs-surface); cursor: pointer; font-size: var(--gs-text-ui); }
 .costume-family-apply:disabled { opacity: .4; cursor: default; }
 .costume-notice { margin: 0; color: var(--gs-ink-2); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
-.viewing-section { display: grid; gap: 4px; }
-.viewing-toggles, .viewing-actions { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.viewing-range { min-height: 44px; font-size: 12px; }
+.viewing-section { display: grid; }
+.viewing-actions { display: flex; flex-wrap: wrap; }
+.viewing-range { grid-template-columns: 72px minmax(0, 1fr) 48px; min-height: 44px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .viewing-range input { min-height: 44px; margin: 0; }
 .viewing-actions { gap: 8px; }
 .viewing-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 12px; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-control); cursor: pointer; font-size: var(--gs-text-ui); }
@@ -4598,6 +4618,7 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
 }
 
 @media (max-width: 620px) {
+  .center-mark { top: 0; right: 0; }
   .stage-header { padding-right: max(8px, var(--stage-safe-right)); padding-left: max(8px, var(--stage-safe-left)); gap: 4px; }
   .stage-header-title { flex: 1; min-width: 0; }
   .stage-header h1 { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
