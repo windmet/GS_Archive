@@ -28,11 +28,13 @@
         <small class="event-zone">日本时间</small>
         <div v-if="castReferences.length || units.length" class="event-cast-line">
           <span class="event-cast-label">出演</span>
-          <span class="event-cast-faces">
-            <ArchiveIdolReference v-for="entry in castReferences" :key="entry.reference.idolCode || entry.reference.displayName"
-              :reference="entry.reference" density="face" @open="emit('open-idol', entry.idol)" />
+          <span class="event-cast-body">
+            <span v-if="castReferences.length" class="event-cast-faces">
+              <ArchiveIdolReference v-for="entry in castReferences" :key="entry.reference.idolCode || entry.reference.displayName"
+                :reference="entry.reference" density="face" @open="emit('open-idol', entry.idol)" />
+            </span>
+            <span v-if="units.length" class="event-cast-units"><button v-for="unit in units" :key="unit.unit_id" type="button" class="event-cast-unit" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">{{ unit.unit_name }}</button></span>
           </span>
-          <button v-for="unit in units" :key="unit.unit_id" type="button" class="event-cast-unit" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">{{ unit.unit_name }}</button>
         </div>
         <ArchiveSourceLink v-if="exchangeRewards" :url="exchangeRewards.source.url" :label="exchangeRewards.source.title" />
       </div>
@@ -347,9 +349,12 @@ function formatDateTime(timestamp) {
 .event-logo { display: block; max-width: 140px; max-height: 64px; margin-top: var(--gs-space-3); object-fit: contain; object-position: left center; }
 .event-zone { display: block; margin-top: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
 /* Cast as faces, then the unit's name; each opens its page. */
-.event-cast-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-3); margin-top: var(--gs-space-5); }
-.event-cast-label { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+/* Label in its own column; faces on one line, the units under them, both starting at the faces' edge. */
+.event-cast-line { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: var(--gs-space-3); margin-top: var(--gs-space-5); }
+.event-cast-label { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: var(--gs-control-compact); }
+.event-cast-body { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
 .event-cast-faces { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); }
+.event-cast-units { display: flex; flex-wrap: wrap; column-gap: var(--gs-space-4); }
 .event-cast-faces button { display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
 .event-cast-unit { min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .episode-more { display: none; }

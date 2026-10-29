@@ -11,7 +11,8 @@
       <button type="button" class="unit-preset-change-btn" @click="unitSelectorOpen = true">更换</button>
     </div>
     <template v-else>
-      <!-- 演唱版本: the first choice on this page, a segmented switch rather than a dropdown. -->
+      <!-- 演唱版本: the first choice on this page. Five choices are more than a segmented switch holds (three at most),
+           so they are panel tabs: one row with an underline, scrolling sideways on a phone instead of wrapping. -->
       <div class="song-mode-selector" data-vocal-setting-selector>
         <span class="song-mode-title" id="song-mode-title">演唱版本</span>
         <div class="song-mode-segment" role="radiogroup" aria-labelledby="song-mode-title">
@@ -466,8 +467,10 @@ summary { display: flex; align-items: center; min-height: var(--gs-control-touch
 }
 .song-mode-selector { display: flex; flex-direction: column; gap: var(--gs-space-3); }
 .song-mode-title { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
-.song-mode-segment { display: flex; flex-wrap: wrap; gap: var(--gs-space-1); padding: var(--gs-space-2); border-radius: var(--gs-radius-control); background: var(--gs-mode-track); }
-.song-mode-segment button { flex: 1 1 auto; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-segment); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
-.song-mode-segment button[aria-checked="true"] { background: var(--gs-mode-thumb); box-shadow: var(--gs-shadow-1); color: var(--gs-mode-ink); }
-.song-mode-segment button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.song-mode-segment { display: flex; gap: var(--gs-space-5); height: 40px; border-bottom: 1px solid var(--gs-line); overflow-x: auto; scrollbar-width: none; }
+.song-mode-segment::-webkit-scrollbar { display: none; }
+.song-mode-segment button { flex: none; padding: 0 var(--gs-space-1); border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
+.song-mode-segment button:hover { color: var(--gs-ink); }
+.song-mode-segment button[aria-checked="true"] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.song-mode-segment button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 </style>
