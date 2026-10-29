@@ -13,9 +13,9 @@
           </button>
         </li>
         <li>
-          <button type="button" class="start-row" @click="emit('photo', {})">
-            <span class="start-glyph" aria-hidden="true"><FilePlus2 :size="18" /></span>
-            <span class="start-copy"><strong>新建空白构图</strong><small>从地点开始，再一个个加人物</small></span>
+          <button type="button" class="start-row" @click="emit('photo', { background: true })">
+            <span class="start-glyph" aria-hidden="true"><Images :size="18" /></span>
+            <span class="start-copy"><strong>从背景开始</strong><small>先选地点，再一个个加人物</small></span>
             <ChevronRight :size="18" aria-hidden="true" />
           </button>
         </li>
@@ -24,13 +24,6 @@
             <span class="start-glyph" aria-hidden="true"><History :size="18" /></span>
             <span class="start-copy"><strong>继续上次的构图</strong><small>载入这台设备上保存的构图</small></span>
             <ChevronRight :size="18" aria-hidden="true" />
-          </button>
-        </li>
-        <li>
-          <button type="button" class="start-row" @click="emit('photo-catalog')">
-            <span class="start-glyph" aria-hidden="true"><Images :size="18" /></span>
-            <span class="start-copy"><strong>先看背景与人像资源</strong><small>133 个地点，49 位偶像，184 张贴纸</small></span>
-            <ArrowUpRight :size="18" aria-hidden="true" />
           </button>
         </li>
       </ul>
@@ -83,7 +76,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { ArrowUpRight, ChevronRight, FilePlus2, History, Images, Search, UserRound } from '@lucide/vue'
+import { ArrowUpRight, ChevronRight, History, Images, Search, UserRound } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import GsSegmented from '../gs/GsSegmented.vue'
 import { groupSongTiers } from '../../presentation/SongTiers.js'
@@ -102,7 +95,7 @@ const props = defineProps({
   preferredIdol: { type: Object, default: null },
   preferredName: { type: String, default: '' },
 })
-const emit = defineEmits(['charts', 'stage', 'photo', 'photo-catalog', 'chart-song', 'stage-song'])
+const emit = defineEmits(['charts', 'stage', 'photo', 'chart-song', 'stage-song'])
 const TOOLS = [
   { id: 'charts', heading: '谱面预览', image: chartImage, imageAlt: '谱面预览：DRIVE A LIVE EXPERT 的透视轨道',
     summary: '像在游戏里一样看音符落下，或展开成整首的长轨图。', size: '3 MB', sizeNote: '之后每首不到 0.1 MB' },
