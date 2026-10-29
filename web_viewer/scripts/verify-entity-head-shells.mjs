@@ -12,8 +12,8 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, loadStoryHeadSources, storyHeadCandidate, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
-import { ARCHIVE_SITE_TITLE, archiveCardName, archiveSongChartName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, loadStoryHeadSources, storyHeadCandidate, publishedStageSongCodes, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
+import { ARCHIVE_SITE_TITLE, archiveCardName, archiveSongChartName, archiveSongStageName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { archiveBootstrapPlugin } from './lib/archive-bootstrap-plugin.mjs'
 import { portalPreloadLink, withPortalScopePreload } from './lib/portal-preload.mjs'
@@ -36,12 +36,12 @@ const body = html => html.slice(html.indexOf('</head>'))
 const count = (html, pattern) => (html.match(pattern) || []).length
 const attr = (html, selector) => html.match(new RegExp(`<${selector} content="([^"]*)"`))?.[1]
 
-function checkShells(shells, { idols, cards = [], songs = [], events = [], gashas = [], storySources = null, sections = false, origin, sourceTemplate }) {
+function checkShells(shells, { idols, cards = [], songs = [], stageSongCodes = [], events = [], gashas = [], storySources = null, sections = false, origin, sourceTemplate }) {
   const unitCodes = [...new Set(idols.map(idol => idol.unitCode).filter(Boolean))]
   const sectionCount = sections ? ARCHIVE_SECTION_PATHS.length : 0
   const offices = idols.filter(idol => idol.home_available !== false)
   const storyCount = storySources ? storySources.collections.length + storySources.campaigns.length + 2 * idols.length : 0
-  assert.equal(shells.length, idols.length + offices.length + idols.length + unitCodes.length + cards.length + 2 * songs.length + events.length + gashas.length + sectionCount + storyCount,
+  assert.equal(shells.length, idols.length + offices.length + idols.length + unitCodes.length + cards.length + 2 * songs.length + stageSongCodes.length + events.length + gashas.length + sectionCount + storyCount,
     'one shell per idol, office, mobile page, unit, card, song, event, gasha and section root')
   assert.deepEqual(shells.filter(s => s.kind === 'office').map(s => s.path).sort(), offices.map(i => `office/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'mobile').map(s => s.path).sort(), idols.map(i => `mobile/${i.id}/index.html`).sort())
@@ -59,6 +59,14 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   assert.deepEqual(shells.filter(s => s.kind === 'card').map(s => s.path).sort(), cards.map(c => `cards/${c.resource_id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'idol').map(s => s.path).sort(), idols.map(i => `idols/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'unit').map(s => s.path).sort(), unitCodes.map(c => `units/${c}/index.html`).sort())
+  assert.deepEqual(shells.filter(s => s.kind === 'stage').map(s => s.path).sort(), stageSongCodes.map(code => `songs/${code}/stage/index.html`).sort())
+  for (const code of stageSongCodes) {
+    const shell = shells.find(s => s.kind === 'stage' && s.id === code)
+    const song = songs.find(s => s.song_code === code)
+    assert.ok(shell.html.includes(`<title>${escapeHtml(archiveDocumentTitle('chibi_stage', archiveSongStageName(song.title)))}</title>`))
+    assert.equal(readArchiveRoute(shell.url).view, 'chibi_stage')
+    assert.equal(readArchiveRoute(shell.url).stageId, `${code}_live_effect`)
+  }
   assert.ok(shells.every(s => !(s.html.match(PORTAL_PRELOAD) || []).length), 'entity pages do not preload the Portal index')
   for (const shell of shells) {
     const { html } = shell
@@ -182,13 +190,32 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
     .find(node => node.id?.name === 'archiveTabEntityName')
   const callback = binding.init.arguments[0]
   const context = { view: { value: 'chart_lab' }, currentSongId: { value: 'brndnf' },
-    currentSong: { value: { title: 'BRAND NEW FIELD' } }, idolNamesSettled: { value: false }, archiveSongChartName }
+    currentSong: { value: { title: 'BRAND NEW FIELD' } }, idolNamesSettled: { value: false }, archiveSongChartName, archiveSongStageName }
   const name = vm.runInNewContext(`(${script.slice(callback.start, callback.end)})`, context)
   assert.equal(name(), 'BRAND NEW FIELD · 谱面', 'App chart title uses the selected song')
   context.currentSong.value = null
   assert.equal(name(), '', 'pending song leaves the existing shell title')
   context.currentSongId.value = ''
   assert.equal(name(), '谱面预览', 'song picker has a tool title')
+  context.view.value = 'chibi_stage'; context.currentSongId.value = 'brndnf'; context.currentSong.value = { title: 'BRAND NEW FIELD' }
+  assert.equal(name(), 'BRAND NEW FIELD · 2D舞台', 'App stage title uses the song')
+  context.currentSong.value = null; assert.equal(name(), '', 'pending stage preserves shell title')
+  context.currentSongId.value = ''; assert.equal(name(), '2D舞台', 'unselected stage entry has a tool title')
+}
+
+// Minimal stage inventory proves default identity, variants and rejection paths.
+{
+  const songs = [{ song_code: 'brndnf', title: 'A<&', jacket_url: '/assets/songs/brndnf.png' },
+    { song_code: 'reason', title: 'No stage', jacket_url: '/assets/songs/reason.png' }]
+  const timeline = { songs: { brndnf: [{ id: 'brndnf_live_effect' }, { id: 'brndnf_live_effect_alt' }] } }
+  const native = { index: { songs: [{ songCode: 'brndnf', id: 'brndnf_live_effect' }, { songCode: 'brndnf', id: 'brndnf_live_effect_alt' }] } }
+  const stageSongCodes = publishedStageSongCodes(timeline, native, songs)
+  assert.deepEqual(stageSongCodes, ['brndnf'])
+  const shells = renderEntityHeadShells({ template, idols: [], songs, stageSongCodes, origin: 'https://example.test' })
+  checkShells(shells, { idols: [], songs, stageSongCodes, origin: 'https://example.test', sourceTemplate: template })
+  assert.throws(() => publishedStageSongCodes({ songs: { brndnf: [{ id: 'brndnf_live_effect_alt' }] } }, { index: { songs: [{ songCode: 'brndnf', id: 'brndnf_live_effect_alt' }] } }, songs), /default/)
+  assert.throws(() => publishedStageSongCodes(timeline, { index: { songs: [] } }, songs), /identities/)
+  assert.throws(() => publishedStageSongCodes(timeline, native, []), /published/)
 }
 
 // The app's tab title matches the shell title for the same entity, and other pages keep the site title.
@@ -246,7 +273,9 @@ const sources = loadEntitySources(root)
   const missing = sources.idols.filter(idol => !sources.idolNames[idol.id]).map(idol => idol.id)
   assert.deepEqual(missing, [], 'every bootstrap idol has a zh-CN display name')
   const shells = renderEntityHeadShells({ template, ...sources })
-  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, gashas: sources.gashas, sections: true, origin: DEFAULT_ORIGIN, sourceTemplate: template })
+  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, stageSongCodes: sources.stageSongCodes, events: sources.events, gashas: sources.gashas, sections: true, origin: DEFAULT_ORIGIN, sourceTemplate: template })
+  assert.equal(sources.stageSongCodes.length, 60, 'only songs with verified stage inventory receive stage shells')
+  assert.ok(!sources.stageSongCodes.includes('reason'), 'Reason!! has a chart but no stage')
   assert.equal(sources.cards.length, 826, 'the published card catalog: 836 index rows less 10 tutorial copies')
   const untitled = sources.cards.filter(card => !sources.cardTitles[card.title]).map(card => card.resource_id)
   assert.deepEqual(untitled, [], 'every card title has a zh-CN translation')

@@ -17,6 +17,36 @@ const song = { view: 'song_detail', song: 'brndnf' }
 const event = { view: 'event_detail', event: '410018' }
 const same = (a, b, message) => assert.equal(buildArchiveUrl('http://localhost/', a).search, buildArchiveUrl('http://localhost/', b).search, message)
 
+// Stage paths identify the song; a nondefault choreography remains explicit.
+{
+  const href = 'http://x/songs/drvalv/stage/'
+  const base = { view: 'chibi_stage', song: 'drvalv', stageId: 'drvalv_live_effect' }
+  same(read(href), base, 'bare stage path selects its verified default')
+  assert.equal(buildPublicArchiveUrl('http://x/', base).href, href, 'default stage is implicit')
+  assert.equal(read(href.slice(0, -1)).stageId, base.stageId, 'optional trailing slash')
+  assert.equal(read(href + '?stage=drvalv_live_effect_03alt').stageId, 'drvalv_live_effect_03alt', 'explicit variant wins over default')
+  assert.equal(read(href + '?view=cards').view, 'cards', 'legacy query takes priority')
+  assert.equal(resolveArchiveStartup(href, { startupPage: 'home', startupIdol: '001tom' }, ['001tom']).route.view, 'chibi_stage')
+  for (const path of ['/songs/DRVALV/stage/', '/songs/drvalv/stages/', '/songs/drvalv/stage/extra/', '/songs//stage/'])
+    assert.notEqual(read('http://x' + path).view, 'chibi_stage', path)
+  const legacy = read('http://x/?view=chibi_stage&song=drvalv&stage=drvalv_live_effect&song_scope=movie&idol=001tom&q=old')
+  assert.equal(buildPublicArchiveUrl('http://x/', legacy).href, href, 'known stale parameters are pruned')
+  assert.equal(buildPublicArchiveUrl('http://x/', { ...base, sourceRoute: '?view=song_detail&song=drvalv' }).href, href, 'stage shares no opener')
+  assert.equal(buildPublicArchiveUrl('http://x/', { view: 'chibi_stage' }).href, 'http://x/?view=chibi_stage', 'generic stage entry remains query based')
+  assert.equal(buildPublicArchiveUrl('http://x/', { view: 'chibi_stage', sourceRoute: '?view=live' }).href, 'http://x/?view=chibi_stage', 'generic stage share also drops its source')
+  const timeline = JSON.parse(readFileSync(new URL('../public/data/song_timelines/manifest.json', import.meta.url), 'utf8'))
+  let count = 0
+  for (const [song, rows] of Object.entries(timeline.songs)) for (const row of rows) {
+    const route = { view: 'chibi_stage', song, stageId: row.id }
+    const url = buildPublicArchiveUrl('http://x/', route)
+    assert.equal(url.pathname, `/songs/${song}/stage/`)
+    assert.equal(url.searchParams.get('stage'), row.id === `${song}_live_effect` ? null : row.id)
+    same(read(url), route, `${song}:${row.id} stage round trip`)
+    count++
+  }
+  assert.equal(count, 118)
+}
+
 // Chart identity is the song; filters and starting difficulty do not belong to it.
 {
   const chart = { view: 'chart_lab', song: 'brndnf' }
@@ -286,6 +316,15 @@ assert.equal(isBareArchiveEntry('http://x/idols/xyz/?view=cards'), false, 'a que
   assert.equal(entries.at(-1).url, 'http://x/idols/001tom/')
   assert.equal(entries.at(-1).state.sidemArchiveNav?.source, '?view=portal', 'the source rides history state')
   assert.equal(readArchiveRoute().sourceRoute, '?view=portal', 'the live location reads the path and its history source')
+  writeArchiveRoute({ view: 'chibi_stage', song: 'drvalv', stageId: 'drvalv_live_effect_03alt', sourceRoute: '?view=song_detail&song=brndnf' })
+  assert.equal(entries.at(-1).url, 'http://x/songs/drvalv/stage/?stage=drvalv_live_effect_03alt')
+  assert.equal(readArchiveRoute().stageId, 'drvalv_live_effect_03alt')
+  assert.equal(readArchiveRoute().sourceRoute, '?view=song_detail&song=brndnf')
+  writeArchiveRoute({ view: 'chibi_stage', song: 'brndnf', stageId: 'brndnf_live_effect', sourceRoute: '?view=song_detail&song=brndnf' }, { replace: true })
+  assert.equal(entries.at(-1).url, 'http://x/songs/brndnf/stage/')
+  assert.equal(entries.at(-1).replace, true)
+  assert.equal(readArchiveRoute().stageId, 'brndnf_live_effect')
+  assert.ok(!read('http://x/songs/brndnf/stage/').sourceRoute, 'independent stage share has no inherited source')
   // A chart selected in the tool replaces its entry and keeps only the opener in history.
   writeArchiveRoute({ view: 'chart_lab', song: 'brndnf', songScope: 'movie', sourceRoute: '?view=song_detail&song=brndnf' })
   assert.equal(entries.at(-1).url, 'http://x/songs/brndnf/chart/')
