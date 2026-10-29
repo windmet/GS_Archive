@@ -36,6 +36,10 @@ export function archiveIdolPlaceName(view, idolName) {
   return idolName && place ? `${idolName}${place.storyKind ? ' ' : ' · '}${place.storyKind ? STORY_KINDS[place.storyKind].label : sectionLabel(place.section)}` : ''
 }
 
+export function archiveSongChartName(title) {
+  return title ? `${title} · 谱面` : ''
+}
+
 // A card title is shared by many idols (【起跑线】 ×49), so the card's name carries its idol.
 export function archiveCardName(title, idolName) {
   return title && idolName ? `【${title}】${idolName}` : ''

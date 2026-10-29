@@ -1,12 +1,15 @@
 // Public addresses shared by the locator, document titles and static head shells.
 // Internal routes remain query-based. Add a public view only after auditing and enforcing its schema.
+const SONG_CODE_PATTERN = /^[a-z0-9]{6}$/
 export const PUBLIC_ROUTES = Object.freeze([
   Object.freeze({ kind: 'entity', view: 'idol_detail', prefix: 'idols', param: 'idol', implied: { category: 'idol' }, pattern: /^[0-9]{3}[a-z]{3}$/ }),
   Object.freeze({ kind: 'entity', view: 'unit_detail', prefix: 'units', param: 'unit', implied: {}, pattern: /^[0-9]{2}[a-z0-9]{3}$/ }),
   // Cards are addressed by resource_id (001tom_n01), the id every card link and read-model row carries.
   Object.freeze({ kind: 'entity', view: 'card_detail', prefix: 'cards', param: 'card', implied: {}, pattern: /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/ }),
   // Songs are addressed by their six-character song_code (brndnf, drv999), primaries and variants alike.
-  Object.freeze({ kind: 'entity', view: 'song_detail', prefix: 'songs', param: 'song', implied: {}, pattern: /^[a-z0-9]{6}$/ }),
+  Object.freeze({ kind: 'entity', view: 'song_detail', prefix: 'songs', param: 'song', implied: {}, pattern: SONG_CODE_PATTERN }),
+  Object.freeze({ kind: 'entity', view: 'chart_lab', prefix: 'songs', implied: {},
+    segments: [{ param: 'song', pattern: SONG_CODE_PATTERN }, { value: 'chart' }] }),
   // Events keep their read-model id: theater and tour events are 4 + event code (410001, 430001), every
   // other event is `event:<code>` (event:10019, event:20001). The path drops that prefix, so both forms map
   // to a path and back without the catalogue: six digits are the legacy id, five digits are a code.

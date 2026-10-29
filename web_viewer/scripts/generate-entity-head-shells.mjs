@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { archiveCardName, archiveEntityTitle, archiveIdolPlaceName, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveSongChartName, archiveEntityTitle, archiveIdolPlaceName, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES, ARCHIVE_SECTION_PATHS, publicRoutePath } from '../src/core/publicRoutes.js'
 import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
@@ -198,6 +198,16 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
         url: base + location,
         image: base + song.jacket_url,
         type: 'website',
+      })),
+    })
+    const chartLocation = publicRoutePath(routeFor('chart_lab'), { song: song.song_code })
+    if (!chartLocation) throw new Error(`Unexpected chart song code ${song.song_code}`)
+    shells.push({
+      path: `${chartLocation.slice(1)}index.html`, kind: 'chart', id: song.song_code, url: base + chartLocation,
+      html: withHead(template, headTags({
+        title: archiveEntityTitle(archiveSongChartName(song.title)),
+        description: `歌曲「${song.title}」的谱面预览：难度、透视轨道与长轨图、声音和自动演示。`,
+        url: base + chartLocation, image: base + song.jacket_url, type: 'website',
       })),
     })
   }
@@ -389,5 +399,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events + ${count('gasha')} gashas + ${count('office')} offices + ${count('mobile')} mobile pages + ${count('section')} section roots + ${count('story_collection')} story collections + ${count('seasonal_campaign')} campaigns + ${count('idol_story_archive')} personal + ${count('work_archive')} work pages in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('chart')} charts + ${count('event')} events + ${count('gasha')} gashas + ${count('office')} offices + ${count('mobile')} mobile pages + ${count('section')} section roots + ${count('story_collection')} story collections + ${count('seasonal_campaign')} campaigns + ${count('idol_story_archive')} personal + ${count('work_archive')} work pages in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }

@@ -17,6 +17,30 @@ const song = { view: 'song_detail', song: 'brndnf' }
 const event = { view: 'event_detail', event: '410018' }
 const same = (a, b, message) => assert.equal(buildArchiveUrl('http://localhost/', a).search, buildArchiveUrl('http://localhost/', b).search, message)
 
+// Chart identity is the song; filters and starting difficulty do not belong to it.
+{
+  const chart = { view: 'chart_lab', song: 'brndnf' }
+  const href = 'http://x/songs/brndnf/chart/'
+  assert.equal(buildPublicArchiveUrl('http://x/', chart).href, href)
+  same(read(href), chart, 'chart path and legacy query identify the same tool')
+  assert.equal(read('http://x/songs/brndnf/chart').view, 'chart_lab', 'optional trailing slash')
+  assert.equal(read(href + '?view=cards&rarity=SSR').view, 'cards', 'legacy query wins')
+  assert.equal(resolveArchiveStartup(href, { startupPage: 'home', startupIdol: '001tom' }, ['001tom']).route.view, 'chart_lab')
+  for (const pathname of ['/songs/BRNDNF/chart/', '/songs/brndnf/charts/', '/songs/brndnf/chart/extra/', '/songs//chart/'])
+    assert.notEqual(read('http://x' + pathname).view, 'chart_lab', `reject malformed chart path ${pathname}`)
+  const legacy = read('http://x/?view=chart_lab&song=brndnf&song_scope=movie&idol=001tom&event=410018&q=old&difficulty=4')
+  assert.equal(buildPublicArchiveUrl('http://x/', legacy).href, href, 'legacy selection and stale fields are cleaned')
+  assert.equal(buildPublicArchiveUrl('http://x/', { ...chart, sourceRoute: '?view=song_detail&song=brndnf' }).href, href, 'shared chart carries no source')
+  assert.equal(buildPublicArchiveUrl('http://x/', { view: 'chart_lab' }).href, 'http://x/?view=chart_lab', 'song picker keeps query entry')
+  const songs = loadEntitySources(fileURLToPath(new URL('..', import.meta.url))).songs
+  for (const song of songs) {
+    const url = buildPublicArchiveUrl('http://x/', { view: 'chart_lab', song: song.song_code })
+    assert.equal(url.pathname, `/songs/${song.song_code}/chart/`)
+    assert.equal(read(url).view, 'chart_lab')
+    assert.equal(read(url).song, song.song_code)
+  }
+}
+
 // Story owners keep the read-model domain/section; selected chapters or participants remain query state.
 for (const [route, location] of [
   ...['main', 'extra', 'birthday', 'unit_story', 'event'].map(storyType => [{ view: 'story_catalog', storyType }, `/stories/${storyType}/`]),
@@ -262,6 +286,15 @@ assert.equal(isBareArchiveEntry('http://x/idols/xyz/?view=cards'), false, 'a que
   assert.equal(entries.at(-1).url, 'http://x/idols/001tom/')
   assert.equal(entries.at(-1).state.sidemArchiveNav?.source, '?view=portal', 'the source rides history state')
   assert.equal(readArchiveRoute().sourceRoute, '?view=portal', 'the live location reads the path and its history source')
+  // A chart selected in the tool replaces its entry and keeps only the opener in history.
+  writeArchiveRoute({ view: 'chart_lab', song: 'brndnf', songScope: 'movie', sourceRoute: '?view=song_detail&song=brndnf' })
+  assert.equal(entries.at(-1).url, 'http://x/songs/brndnf/chart/')
+  assert.equal(readArchiveRoute().sourceRoute, '?view=song_detail&song=brndnf')
+  writeArchiveRoute({ view: 'chart_lab', song: 'drv999', sourceRoute: '?view=song_detail&song=brndnf' }, { replace: true })
+  assert.equal(entries.at(-1).url, 'http://x/songs/drv999/chart/')
+  assert.equal(entries.at(-1).replace, true)
+  assert.equal(readArchiveRoute().sourceRoute, '?view=song_detail&song=brndnf')
+  assert.ok(!read('http://x/songs/drv999/chart/').sourceRoute, 'cold share has no inherited opener')
   // Leaving a path page for a catalogue writes the section root with its filters, never /idols/001tom/?view=cards;
   // a page without a path resets to `/`.
   writeArchiveRoute({ view: 'cards', idol: '001tom' })

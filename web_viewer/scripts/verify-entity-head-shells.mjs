@@ -5,12 +5,15 @@ import { PORTAL_PRELOAD } from './lib/portal-preload.mjs'
 //   node scripts/verify-entity-head-shells.mjs --dist=DIR   also checks the shells written into a built DIR
 //     [--origin=https://…]   the origin that build's shells were rendered for (default DEFAULT_ORIGIN)
 import assert from 'node:assert/strict'
+import vm from 'node:vm'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { parse as parseJavascript } from '@babel/parser'
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, loadStoryHeadSources, storyHeadCandidate, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
-import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_SITE_TITLE, archiveCardName, archiveSongChartName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { archiveBootstrapPlugin } from './lib/archive-bootstrap-plugin.mjs'
 import { portalPreloadLink, withPortalScopePreload } from './lib/portal-preload.mjs'
@@ -38,7 +41,7 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   const sectionCount = sections ? ARCHIVE_SECTION_PATHS.length : 0
   const offices = idols.filter(idol => idol.home_available !== false)
   const storyCount = storySources ? storySources.collections.length + storySources.campaigns.length + 2 * idols.length : 0
-  assert.equal(shells.length, idols.length + offices.length + idols.length + unitCodes.length + cards.length + songs.length + events.length + gashas.length + sectionCount + storyCount,
+  assert.equal(shells.length, idols.length + offices.length + idols.length + unitCodes.length + cards.length + 2 * songs.length + events.length + gashas.length + sectionCount + storyCount,
     'one shell per idol, office, mobile page, unit, card, song, event, gasha and section root')
   assert.deepEqual(shells.filter(s => s.kind === 'office').map(s => s.path).sort(), offices.map(i => `office/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'mobile').map(s => s.path).sort(), idols.map(i => `mobile/${i.id}/index.html`).sort())
@@ -46,6 +49,13 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   assert.deepEqual(shells.filter(s => s.kind === 'section').map(s => s.path).sort(), sections ? ARCHIVE_SECTION_PATHS.map(p => `${p}/index.html`).sort() : [])
   assert.deepEqual(shells.filter(s => s.kind === 'event').map(s => s.path).sort(), events.map(e => `events/${eventPathSegment(e.id)}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'song').map(s => s.path).sort(), songs.map(s => `songs/${s.song_code}/index.html`).sort())
+  assert.deepEqual(shells.filter(s => s.kind === 'chart').map(s => s.path).sort(), songs.map(s => `songs/${s.song_code}/chart/index.html`).sort())
+  for (const song of songs) {
+    const chart = shells.find(s => s.kind === 'chart' && s.id === song.song_code)
+    assert.ok(chart.html.includes(`<title>${escapeHtml(archiveDocumentTitle('chart_lab', archiveSongChartName(song.title)))}</title>`), 'chart shell shares runtime title')
+    assert.equal(readArchiveRoute(chart.url).song, song.song_code)
+    assert.equal(readArchiveRoute(chart.url).view, 'chart_lab')
+  }
   assert.deepEqual(shells.filter(s => s.kind === 'card').map(s => s.path).sort(), cards.map(c => `cards/${c.resource_id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'idol').map(s => s.path).sort(), idols.map(i => `idols/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'unit').map(s => s.path).sort(), unitCodes.map(c => `units/${c}/index.html`).sort())
@@ -163,12 +173,32 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], gasha
   assert.throws(() => renderEntityHeadShells({ template, idols, events: [{ ...events[0], image: '' }] }), /has no image/)
 }
 
+// Execute App's actual computed callback so the runtime wiring cannot silently
+// keep a generic/previous song title while the pure head helper remains correct.
+{
+  const script = parseSfc(readFileSync(path.join(root, 'src/App.vue'), 'utf8')).descriptor.scriptSetup.content
+  const nodes = parseJavascript(script, { sourceType: 'module' }).program.body
+  const binding = nodes.filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
+    .find(node => node.id?.name === 'archiveTabEntityName')
+  const callback = binding.init.arguments[0]
+  const context = { view: { value: 'chart_lab' }, currentSongId: { value: 'brndnf' },
+    currentSong: { value: { title: 'BRAND NEW FIELD' } }, idolNamesSettled: { value: false }, archiveSongChartName }
+  const name = vm.runInNewContext(`(${script.slice(callback.start, callback.end)})`, context)
+  assert.equal(name(), 'BRAND NEW FIELD · 谱面', 'App chart title uses the selected song')
+  context.currentSong.value = null
+  assert.equal(name(), '', 'pending song leaves the existing shell title')
+  context.currentSongId.value = ''
+  assert.equal(name(), '谱面预览', 'song picker has a tool title')
+}
+
 // The app's tab title matches the shell title for the same entity, and other pages keep the site title.
 {
   assert.equal(archiveDocumentTitle('idol_detail', '天濑冬马'), '天濑冬马 · GROWING STARS 资料馆')
   assert.equal(archiveDocumentTitle('unit_detail', 'W'), 'W · GROWING STARS 资料馆')
   assert.equal(archiveDocumentTitle('card_detail', archiveCardName('起跑线', '天濑冬马')), '【起跑线】天濑冬马 · GROWING STARS 资料馆')
   assert.equal(archiveDocumentTitle('song_detail', 'BRAND NEW FIELD'), 'BRAND NEW FIELD · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('chart_lab', archiveSongChartName('BRAND NEW FIELD')), 'BRAND NEW FIELD · 谱面 · GROWING STARS 资料馆')
+  assert.equal(archiveDocumentTitle('chart_lab', archiveSongChartName('')), null, 'chart loading keeps the shell title')
   assert.equal(archiveDocumentTitle('event_detail', '315カーニバル'), '315カーニバル · GROWING STARS 资料馆')
   assert.equal(archiveCardName('起跑线', ''), '', 'a card without its idol name has no title yet')
   assert.equal(archiveDocumentTitle('idol_detail', ''), null, 'no name yet keeps the current (shell) title')
@@ -223,6 +253,8 @@ const sources = loadEntitySources(root)
   // Every song detail in the read model: the catalogue's primaries plus their variants (DRIVE A LIVE パッションMAX).
   assert.equal(sources.songs.length, 61)
   assert.equal(sources.songs.filter(song => song.variant_kind === 'primary').length, sources.primarySongs, 'primaries match the bound release')
+  const chartManifest = JSON.parse(readFileSync(path.join(root, 'public/data/song_charts/manifest.json'), 'utf8'))
+  assert.deepEqual(Object.keys(chartManifest.songs).sort(), sources.songs.map(song => song.song_code).sort(), 'every published song shell has a chart, including variants')
   assert.deepEqual(sources.songs.filter(song => song.variant_kind !== 'primary').map(song => song.song_code), ['drv999'])
   for (const song of sources.songs) assert.ok(existsSync(path.join(root, 'public', song.jacket_url)), `${song.song_code}: jacket exists`)
   // Every event in the read model (checked against candidate b3c1f13a): 36 theater/tour legacy ids, 23 event:<code>.
