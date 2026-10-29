@@ -7,6 +7,8 @@ worktree：`E:/Web_build/GS_Archive_Domain_Work/deep-links-20261028`，LF 检出
 
 执行确认（2026-10-28）：用户已确认 D1 使用 `/live/ /studio/ /about/ /status/`，D2 使用方案 A（读模型 id 原样）。R1 #121 已以 `b1065a8f` 合入，见 [R1 执行记录](GS_ARCHIVE_DEEP_LINKS_R1_20261028.md)。R2 #123 已经 CI 成功后以 `11e7418c` 合入，见 [R2 执行记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md)。用户随后要求“之后不需要问授权，直接做下去”：本任务内继续按验证门禁提交、建 PR 和合并，不再逐次询问。R3/R4 的技术前置继续生效。
 
+**10-29 现状**：master `7c7312c1`，开放 PR 0 个；R1、R2、面包屑修复都已合入，R3 / R4 的开工条件与发布边界见 [§10](#10-现状核对2026-10-29)。
+
 本文是执行文档。外部审计稿《GS_Archive 短链接与正式路由迁移审计》（基线 `2bdd3de4`）只当背景。审计稿和本文有出入时，以本文 §3 的核对为准。
 
 前序文档：
@@ -618,3 +620,48 @@ node scripts/verify-story-owner.mjs       # 需要候选包，dev 服务自动�
 ## 主干集成补验（2026-10-29）
 
 输入 master `7c7312c1`，已补直接 Browser P67–P73（含失败复现），见 [集成记录](GS_ARCHIVE_DEEP_LINKS_INTEGRATION_20261029.md)。组合详情的具体章节入口遗漏 storyFile，已在现有导航参数处补齐；不涉及 R3/R4 新路径。该记录不是门户五类详情整页视觉或设备验收。
+
+---
+
+## 10. 现状核对（2026-10-29）
+
+核对基线：`origin/master` `7c7312c1`（#118、#119、#120、#125 均已合入），开放 PR 0 个。只核对源码与合并记录，没有新跑构建或 Browser。门户 P0–P7 的当前状态统一见 [门户进度表](PORTAL_REDESIGN_PROGRESS_20261027.md)。用户提供的外部复盘（基线同为 `7c7312c1`）与本节一致的部分不再重复；有出入处以本节为准。
+
+### 10.1 已完成
+
+| 批次 | 合入 | 结果 |
+|---|---|---|
+| R1 | #121 `b1065a8f` | `src/core/publicRoutes.js` 成为实体、目录、外壳、标题、verifier 共用的注册表；8 个目录进 `ENFORCED_ROUTE_VIEWS`，越权参数归零；`/live/ /studio/ /about/ /status/`；外壳 1,209 → 1,213。见 [R1 记录](GS_ARCHIVE_DEEP_LINKS_R1_20261028.md) |
+| R2 | #123 `11e7418c` | 剧情归属页路径（方案 A）与域落地页；来源字段进版本化 `history.state`；1,394 个 StoryOwner 往返；1,401 个外壳；P51–P66；门禁 116/116。见 [R2 记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md) |
+| 面包屑 | #120 `7c7312c1` | 普通点击站内打开，修饰键 / 中键仍走真实 `<a href>`；B1–B4 |
+| 收口文档 | #124 `a1b90163` | 本文「后续前置核对」 |
+| 主干集成补验 | #129 `893772af` | Browser P67–P73；组合详情的前传章节入口补上 storyFile。见上节和 [集成记录](GS_ARCHIVE_DEEP_LINKS_INTEGRATION_20261029.md) |
+
+### 10.2 对 10-28「后续前置核对」的补正
+
+10-28 的表把 P3、P4、P7 写成「未合入」。更准确的说法：三批各有一部分随 #106 进了 master（谱面宽屏常驻面板、舞台编排种类分段、阅读器语言开关），但**页面结构都还没收束**，所以 R3 / R4 的前置条件不变：
+
+- 谱面：窄屏三标签未做，曲目与难度的入口形状可能还会动。
+- 舞台：编队页、画面页、手机编排抽屉未做；`stage` 参数仍是 `choreographyId`（`useStageNavigation.js` 写入 `stageTargetId`），不是歌曲 code。
+- 阅读器：236 常驻目录未做；`document_id` 在剧情语料晋升后还会换键。
+
+### 10.3 R3 / R4 开工条件
+
+| 范围 | 现在的地址 | 开工条件 | 预定形状 |
+|---|---|---|---|
+| 谱面 `chart_lab` | query | 门户 P3 窄屏三标签合入 | `/songs/<code>/chart/`，难度不进地址（#116） |
+| 舞台 `chibi_stage` | query，`stage=<choreographyId>` | P4 合入；先和舞台线定编舞 id 与歌曲 code 的关系 | 有歌曲时 `/songs/<code>/stage/` 加编舞定位；无歌曲入口待定 |
+| 摄影 `picture_studio` | `/studio/` 进入页 + query | P7 摄影定下开始方式 | 待定 |
+| 图鉴实体 | `/items/` 等目录 + query 抽屉 | P6 图鉴骨架完成后，用户定 D3 | 只给值得独立的实体，不批量生成 |
+| Reader | `?view=reader&reading=…` | P7 阅读器、剧情语料晋升、D4 | 先保持方案丙 |
+| Player | `?view=player&scenario=…` | 最后；收口 `routes.json` 的 returnView 覆盖 | 保持 query |
+| Portal 视角 | `?view=portal&portal_scope=…` | `/` 启动偏好语义定下来 | 待定 |
+
+每批仍是一个 PR，从最新 master 开新分支和新 LF worktree。`deep-links-20261028` worktree 停在 `a1b90163`（游离），不要在上面续做。
+
+### 10.4 发布边界
+
+- **master 不等于预览站。** `release/20261023-preview-rc` 停在 `a33f0f7b`（10-23 预览候选）；R1、R2 和 #106 之后的全部门户改造都没有部署。CURRENT_STATE 的发布快照仍是旧记录，没有重验；实际线上版本以 Cloudflare 实查为准。
+- **外壳要在最终构建上重新生成。** R2 的 1,401 个外壳是对 `rm-release-20261022` 候选做的验收。正式发布时在最终构建上重跑 `generate-entity-head-shells` 和 `verify-entity-head-shells --dist`，同时核对标题、canonical、OG 和 `_headers`，不复用旧外壳目录。
+- **CI 绿不代表跨设备通过。** `7c7312c1` 的 Web Viewer Source Gate 成功，只证明源码契约与构建。冷启动深链接在 Cloudflare 上的实际行为、Android Edge、iOS Safari 都还没测。
+- D5（正式域名、noindex、canonical origin、sitemap）仍待用户决定。
