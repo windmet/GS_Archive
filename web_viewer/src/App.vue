@@ -616,7 +616,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
-import { archiveCardName, archiveSongChartName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from './presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveSongChartName, archiveSongStageName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from './presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_BRAND, STORY_KINDS, sectionLabel, ARCHIVE_SECTION_GROUPS } from './core/archiveSections.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { DomainRepository } from '../readmodels/runtime/DomainRepository.mjs'
@@ -1484,6 +1484,7 @@ const archiveTabEntityName = computed(() => {
   // Song titles have no translation overlay; they are shown in the source everywhere.
   if (view.value === 'song_detail') return currentSong.value?.title || ''
   if (view.value === 'chart_lab') return currentSongId.value ? archiveSongChartName(currentSong.value?.title) : '谱面预览'
+  if (view.value === 'chibi_stage') return currentSongId.value ? archiveSongStageName(currentSong.value?.title) : '2D舞台'
   // Event titles are shown in the source on the event page as well.
   if (view.value === 'event_detail') return currentEventProjection.value?.identity?.title || ''
   if (view.value === 'collection_catalog') return archiveTabSectionTitle(view.value, currentCollectionState.value?.kind)

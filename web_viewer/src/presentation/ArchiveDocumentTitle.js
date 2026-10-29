@@ -36,6 +36,10 @@ export function archiveIdolPlaceName(view, idolName) {
   return idolName && place ? `${idolName}${place.storyKind ? ' ' : ' · '}${place.storyKind ? STORY_KINDS[place.storyKind].label : sectionLabel(place.section)}` : ''
 }
 
+export function archiveSongStageName(title) {
+  return title ? `${title} · 2D舞台` : ''
+}
+
 export function archiveSongChartName(title) {
   return title ? `${title} · 谱面` : ''
 }

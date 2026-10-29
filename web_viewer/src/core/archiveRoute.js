@@ -1,4 +1,4 @@
-import { PUBLIC_ROUTES, matchPublicRoute, publicRoutePath } from './publicRoutes.js'
+import { PUBLIC_ROUTES, matchPublicRoute, publicRoutePath, publicRouteQueryDefaults } from './publicRoutes.js'
 import { normalizeCollectionRoute, collectionKindLabel } from './CollectionRouteState.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 import { pruneToRouteSchema } from './routeSchema.js'
@@ -655,6 +655,7 @@ function locatorQuery(url) {
     const matched = matchPublicRoute(entry, url.pathname)
     if (!matched) continue
     for (const [key, value] of Object.entries(matched)) params.set(key, value)
+    for (const [key, value] of Object.entries(publicRouteQueryDefaults(entry, matched))) if (!params.has(key)) params.set(key, value)
     break
   }
   return params
@@ -667,14 +668,19 @@ function publicArchiveUrl(url) {
   const candidates = PUBLIC_ROUTES.filter(entry => entry.view === view)
     .sort((a, b) => Object.keys(b.implied).length - Object.keys(a.implied).length)
   const locator = candidates.find(entry => publicRoutePath(entry, url.searchParams))
-  if (!locator) { url.pathname = '/'; return url }
+  if (!locator) {
+    url.pathname = '/'
+    if (view === 'chibi_stage') for (const key of Object.values(NAVIGATION_CONTEXT_PARAMS)) url.searchParams.delete(key)
+    return url
+  }
   url.pathname = publicRoutePath(locator, url.searchParams)
+  for (const [key, value] of Object.entries(publicRouteQueryDefaults(locator, url.searchParams))) if (url.searchParams.get(key) === value) url.searchParams.delete(key)
   url.searchParams.delete('view')
   for (const segment of locator.segments || (locator.param ? [{ param: locator.param }] : [])) {
     if (segment.param) url.searchParams.delete(segment.param)
   }
   for (const key of Object.keys(locator.implied)) url.searchParams.delete(key)
-  if (['story_collection', 'chart_lab'].includes(view)) for (const key of [...Object.values(STORY_COLLECTION_CONTEXT_PARAMS), ...Object.values(NAVIGATION_CONTEXT_PARAMS)]) url.searchParams.delete(key)
+  if (['story_collection', 'chart_lab', 'chibi_stage'].includes(view)) for (const key of [...Object.values(STORY_COLLECTION_CONTEXT_PARAMS), ...Object.values(NAVIGATION_CONTEXT_PARAMS)]) url.searchParams.delete(key)
   return url
 }
 
