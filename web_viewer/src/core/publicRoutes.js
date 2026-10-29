@@ -10,6 +10,9 @@ export const PUBLIC_ROUTES = Object.freeze([
   Object.freeze({ kind: 'entity', view: 'song_detail', prefix: 'songs', param: 'song', implied: {}, pattern: SONG_CODE_PATTERN }),
   Object.freeze({ kind: 'entity', view: 'chart_lab', prefix: 'songs', implied: {},
     segments: [{ param: 'song', pattern: SONG_CODE_PATTERN }, { value: 'chart' }] }),
+  Object.freeze({ kind: 'entity', view: 'chibi_stage', prefix: 'songs', implied: {},
+    segments: [{ param: 'song', pattern: SONG_CODE_PATTERN }, { value: 'stage' }],
+    queryDefaults: ({ song }) => ({ stage: `${song}_live_effect` }) }),
   // Events keep their read-model id: theater and tour events are 4 + event code (410001, 430001), every
   // other event is `event:<code>` (event:10019, event:20001). The path drops that prefix, so both forms map
   // to a path and back without the catalogue: six digits are the legacy id, five digits are a code.
@@ -99,4 +102,9 @@ export function publicRoutePath(route, params) {
     parts.push(value)
   }
   return `/${parts.join('/')}/`
+}
+
+// Only path locators supply these defaults. Explicit query selections always win.
+export function publicRouteQueryDefaults(route, params) {
+  return route.queryDefaults?.(typeof params.get === 'function' ? Object.fromEntries(params) : params) || {}
 }

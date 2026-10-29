@@ -15,8 +15,8 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { archiveCardName, archiveSongChartName, archiveEntityTitle, archiveIdolPlaceName, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
-import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES, ARCHIVE_SECTION_PATHS, publicRoutePath } from '../src/core/publicRoutes.js'
+import { archiveCardName, archiveSongChartName, archiveSongStageName, archiveEntityTitle, archiveIdolPlaceName, archiveTabSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { PUBLIC_PATH_ROUTES, SECTION_PATH_ROUTES, ARCHIVE_SECTION_PATHS, publicRoutePath, publicRouteQueryDefaults } from '../src/core/publicRoutes.js'
 import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
 import { eventKindLabels, historicalDate } from '../src/presentation/DomainPresentation.mjs'
@@ -101,11 +101,12 @@ function withHead(template, tags) {
 // songs: song catalog rows ({ song_code, title, jacket_url, performance_mapping });
 // events: publishedEvents() rows ({ id, code, title, kind, openAt, image }).
 // gashas: publishedGashas() rows ({ id, name, openAt, image }); sections: include the section root shells.
-export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], events = [], gashas = [], storySources = null, sections = false, origin = DEFAULT_ORIGIN }) {
+export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], stageSongCodes = [], events = [], gashas = [], storySources = null, sections = false, origin = DEFAULT_ORIGIN }) {
   const base = origin.replace(/\/$/, '')
   const display = idol => idolNames[idol.id] || idol.name
   const shells = []
   const units = new Map()
+  if (stageSongCodes.some(code => !songs.some(song => song.song_code === code))) throw new Error('Stage song is not published')
   for (const idol of idols) {
     if (!accepts('idol_detail', idol.id)) throw new Error(`Unexpected idol id ${idol.id}`)
     const name = display(idol)
@@ -210,6 +211,16 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
         url: base + chartLocation, image: base + song.jacket_url, type: 'website',
       })),
     })
+    if (stageSongCodes.includes(song.song_code)) {
+      const stageLocation = publicRoutePath(routeFor('chibi_stage'), { song: song.song_code })
+      shells.push({ path: `${stageLocation.slice(1)}index.html`, kind: 'stage', id: song.song_code, url: base + stageLocation,
+        html: withHead(template, headTags({
+          title: archiveEntityTitle(archiveSongStageName(song.title)),
+          description: `歌曲「${song.title}」的2D舞台：编舞版本、出演成员、衣装与画面设置。`,
+          url: base + stageLocation, image: base + song.jacket_url, type: 'website',
+        })),
+      })
+    }
   }
   for (const event of events) {
     if (!accepts('event_detail', event.id)) throw new Error(`Unexpected event id ${event.id}`)
@@ -364,6 +375,25 @@ export function storyHeadCandidate(root, explicit = '') {
   return candidate
 }
 
+// Default stage ids come from the registry and must exist in both consumers'
+// manifests. A chart alone does not establish a song's stage availability.
+export function publishedStageSongCodes(timeline, choreography, songs) {
+  const codes = Object.keys(timeline.songs || {}).sort()
+  const expected = new Set(songs.map(song => song.song_code))
+  const pairs = []
+  for (const code of codes) {
+    const rows = timeline.songs[code]
+    if (!expected.has(code) || !Array.isArray(rows) || !rows.length) throw new Error('Stage song is not published or has no arrangements')
+    const defaultId = publicRouteQueryDefaults(routeFor('chibi_stage'), { song: code }).stage
+    if (!rows.some(row => row.id === defaultId)) throw new Error(`Stage default is unavailable: ${code}`)
+    pairs.push(...rows.map(row => `${code}:${row.id}`))
+  }
+  const nativePairs = (choreography.index?.songs || []).map(row => `${row.songCode}:${row.id}`)
+  if (!codes.length || new Set(pairs).size !== pairs.length ||
+      JSON.stringify(pairs.sort()) !== JSON.stringify(nativePairs.sort())) throw new Error('Stage and timeline identities do not match')
+  return codes
+}
+
 export function loadEntitySources(root, { candidate = null } = {}) {
   const bootstrap = JSON.parse(readFileSync(path.join(root, 'readmodels/bootstrap.inline.json'), 'utf8'))
   const translations = JSON.parse(readFileSync(path.join(root, 'public/translations/zh-CN/entities/idols.json'), 'utf8'))
@@ -376,7 +406,7 @@ export function loadEntitySources(root, { candidate = null } = {}) {
   const json = file => JSON.parse(readFileSync(path.join(root, 'public/data', file), 'utf8'))
   const events = publishedEvents(json('masterdata/domains/event_supplement_index.json'), json('masterdata/domains/event_media.json'), json('archive_manifest.json'))
   const gashas = publishedGashas(json('masterdata/gasha_index.json'), json('editorial/gasha-ticket-evidence.json'))
-  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, events, gashas,
+  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, stageSongCodes: publishedStageSongCodes(json('song_timelines/manifest.json'), json('stage-choreography-shards.json'), songs), primarySongs: bootstrap.counts?.primary_songs, events, gashas,
     ...(candidate ? { storySources: loadStoryHeadSources(candidate, bootstrap) } : {}), sections: true, release: bootstrap.release }
 }
 
@@ -399,5 +429,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('chart')} charts + ${count('event')} events + ${count('gasha')} gashas + ${count('office')} offices + ${count('mobile')} mobile pages + ${count('section')} section roots + ${count('story_collection')} story collections + ${count('seasonal_campaign')} campaigns + ${count('idol_story_archive')} personal + ${count('work_archive')} work pages in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('chart')} charts + ${count('stage')} stages + ${count('event')} events + ${count('gasha')} gashas + ${count('office')} offices + ${count('mobile')} mobile pages + ${count('section')} section roots + ${count('story_collection')} story collections + ${count('seasonal_campaign')} campaigns + ${count('idol_story_archive')} personal + ${count('work_archive')} work pages in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }
