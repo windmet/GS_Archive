@@ -73,7 +73,7 @@
       <slot name="inspector" />
     </aside>
 
-    <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" @navigate="navigateFromDrawer" @close="closeDrawer(true)" />
+    <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" :keyboard="drawerByKeyboard" @navigate="navigateFromDrawer" @close="closeDrawer(true)" />
     <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
@@ -93,7 +93,7 @@
         :class="{ active: drawerCell.active, 'is-open': drawerOpen }"
         :aria-expanded="drawerOpen"
         aria-controls="archive-navigation-drawer"
-        @click="drawerOpen ? closeDrawer(false) : drawerOpen = true"
+        @click="drawerOpen ? closeDrawer(false) : openNavigationDrawer($event)"
       >
         <component :is="drawerCell.icon" :size="21" :stroke-width="1.8" aria-hidden="true" />
         <span class="archive-switch-label">{{ drawerCell.label }}<component :is="drawerOpen ? ChevronDown : ChevronUp" class="archive-switch-caret" :size="12" :stroke-width="2.4" aria-hidden="true" /></span>
@@ -111,7 +111,7 @@ import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
-import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from 'vue'
 
 const props = defineProps({
   compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
@@ -208,9 +208,19 @@ const drawerCell = computed(() => {
   }
   return { label: '导航', icon: Menu, active: false }
 })
+// The bar's cell and the archive home's 全部栏目 cell open the same drawer (线框减法册 L2). A keyboard click
+// (detail 0) puts focus on the current cell; Esc returns focus to whichever control opened it.
+const drawerByKeyboard = ref(false)
+let drawerOpener = null
+function openNavigationDrawer(event) {
+  drawerByKeyboard.value = event?.detail === 0
+  drawerOpener = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null
+  drawerOpen.value = true
+}
+provide('openNavigationDrawer', openNavigationDrawer)
 function closeDrawer(returnFocus) {
   drawerOpen.value = false
-  if (returnFocus) nextTick(() => drawerToggle.value?.focus())
+  if (returnFocus) nextTick(() => (drawerOpener?.isConnected ? drawerOpener : drawerToggle.value)?.focus())
 }
 function navigateFromDrawer(id) {
   drawerOpen.value = false
