@@ -645,19 +645,19 @@ node scripts/verify-story-owner.mjs       # 需要候选包，dev 服务自动�
 - 舞台：编队页、画面页、手机编排抽屉未做；`stage` 参数仍是 `choreographyId`（`useStageNavigation.js` 写入 `stageTargetId`），不是歌曲 code。
 - 阅读器：236 常驻目录未做；`document_id` 在剧情语料晋升后还会换键。
 
-### 10.3 R3 / R4 开工条件
+### 10.3 R3 收束与 R4 开工条件（2026-10-30 更新）
 
-| 范围 | 现在的地址 | 开工条件 | 预定形状 |
+| 范围 | 现在的地址 | 状态 / 开工条件 | 后续 |
 |---|---|---|---|
-| 谱面 `chart_lab` | query | 门户 P3 窄屏三标签合入 | `/songs/<code>/chart/`，难度不进地址（#116） |
-| 舞台 `chibi_stage` | query，`stage=<choreographyId>` | P4 合入；先和舞台线定编舞 id 与歌曲 code 的关系 | 有歌曲时 `/songs/<code>/stage/` 加编舞定位；无歌曲入口待定 |
-| 摄影 `picture_studio` | `/studio/` 进入页 + query | P7 摄影定下开始方式 | 待定 |
-| 图鉴实体 | `/items/` 等目录 + query 抽屉 | P6 图鉴骨架完成后，用户定 D3 | 只给值得独立的实体，不批量生成 |
+| 谱面 `chart_lab` | `/songs/<code>/chart/` | #132 已合入 | 难度不进地址（#116） |
+| 舞台 `chibi_stage` | `/songs/<code>/stage/`，非默认 `stage=<choreographyId>` | #136 已合入；无歌曲仍query | 60曲/118编舞，见舞台执行记录 |
+| 摄影 `picture_studio` | `/studio/` 进入页、`/studio/edit/` 工作台 | #137 已合入 | 只保留既有初始选择query，不序列化构图 |
+| 图鉴和摄影实体 | `/items/`、`/photos/` 等目录＋query抽屉 | D3 用户确认，R3 本轮收束 | 暂不新增独立实体路径 |
 | Reader | `?view=reader&reading=…` | P7 阅读器、剧情语料晋升、D4 | 先保持方案丙 |
-| Player | `?view=player&scenario=…` | 最后；收口 `routes.json` 的 returnView 覆盖 | 保持 query |
-| Portal 视角 | `?view=portal&portal_scope=…` | `/` 启动偏好语义定下来 | 待定 |
+| Player | `?view=player&scenario=…` | P7、语料晋升后；收口 `routes.json` 的 returnView 覆盖 | 保持query，验证任意路径页的scenario入口 |
+| Portal 视角 | `?view=portal&portal_scope=…` | `/` 启动偏好语义另定 | 不在本轮扩大实现 |
 
-每批仍是一个 PR，从最新 master 开新分支和新 LF worktree。`deep-links-20261028` worktree 停在 `a1b90163`（游离），不要在上面续做。
+每批从最新 master 开 lane 分支，优先复用干净的专用 LF worktree。`deep-links-20261028/web_viewer` 已经复用并跟进 #137；旧的“停在 a1b90163、不要续做”说明已过时。主 checkout 的无关工作和语料保持原样。
 
 ### 10.4 发布边界
 
@@ -680,3 +680,8 @@ P4 #131 已以 `5e52c768` 合入，含 `305d6773` 手机抽屉等收束。舞台
 ## R3 摄影路径与 D3 收束（2026-10-29）
 
 输入 master `55d48771`，P6 #133、摄影开始方式 #134、单一布局 #135 与舞台路径 #136 均已合入。摄影入口保留 `/studio/`，工作台采用 `/studio/edit/`，仅携带既有 `photo_idol` 与 typed `photo` 初始选择；不把本地构图序列化进地址。用户明确采用 D3 推荐方案：图鉴和摄影实体继续使用目录＋query 抽屉，本轮不新增独立实体路径。上文的 D3 待定与摄影待开始方式是历史状态，以本节为准。执行、Browser 和验证边界见 [摄影路径记录](GS_ARCHIVE_STUDIO_PATH_20261029.md)。本批完成后 R3 范围收束；R4 Reader/Player 仍等 P7 与剧情语料晋升，不提前改 Reader 稳定话序或 Player 地址。
+
+
+## R3 合入收口（2026-10-30）
+
+摄影 #137 源码 `ade7fad1d786afdab013a81dcad2b17da865f3b4`，远端 Source-only contract `40906924145` SUCCESS，普通 merge commit `71012ebffdee45bca543f7e3dc0e403895f36768`。谱面 #132、舞台 #136、摄影 #137 与 D3 目录＋query 决定共同构成本轮 R3 交付。R4 尚未完成，不标记全目标完成。10-30 实查 master 仍是 `71012ebf`，无开放 PR；Reader 控件仍为横向 EP 快速定位＋弹出目录，routes.json 仍有 Player returnView 未覆盖项，P7 与语料晋升前置未解除。未部署。
