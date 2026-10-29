@@ -616,6 +616,11 @@ node scripts/verify-story-owner.mjs       # 需要候选包，dev 服务自动�
 
 本次收口只改文档，执行事实/相对链接/差异检查，不新增应用构建或 Browser 验收；前序代码、dev Browser、候选外壳证据及 R1 本地技能海报 404 边界仍按对应执行记录保留。
 
+
+## 主干集成补验（2026-10-29）
+
+输入 master `7c7312c1`，已补直接 Browser P67–P73（含失败复现），见 [集成记录](GS_ARCHIVE_DEEP_LINKS_INTEGRATION_20261029.md)。组合详情的具体章节入口遗漏 storyFile，已在现有导航参数处补齐；不涉及 R3/R4 新路径。该记录不是门户五类详情整页视觉或设备验收。
+
 ---
 
 ## 10. 现状核对（2026-10-29）
@@ -630,6 +635,7 @@ node scripts/verify-story-owner.mjs       # 需要候选包，dev 服务自动�
 | R2 | #123 `11e7418c` | 剧情归属页路径（方案 A）与域落地页；来源字段进版本化 `history.state`；1,394 个 StoryOwner 往返；1,401 个外壳；P51–P66；门禁 116/116。见 [R2 记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md) |
 | 面包屑 | #120 `7c7312c1` | 普通点击站内打开，修饰键 / 中键仍走真实 `<a href>`；B1–B4 |
 | 收口文档 | #124 `a1b90163` | 本文「后续前置核对」 |
+| 主干集成补验 | #129 `893772af` | Browser P67–P73；组合详情的前传章节入口补上 storyFile。见上节和 [集成记录](GS_ARCHIVE_DEEP_LINKS_INTEGRATION_20261029.md) |
 
 ### 10.2 对 10-28「后续前置核对」的补正
 

@@ -93,6 +93,7 @@ export function useUnitNavigation({
       return openProjectedCollection?.({
         domain: 'unit_story',
         section: String(story.section || story.unit_id || story.unitId || currentArchiveUnit.value?.unit_id || ''),
+        storyFile: story.file || '',
         parent: 'unit_detail',
       })
     }

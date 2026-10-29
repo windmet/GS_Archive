@@ -8,7 +8,7 @@
 
 | 项 | 值 |
 |---|---|
-| master | `7c7312c1`（#120 合入）。在 #98–#104 之上，又合入门户改造 #105–#119、#125，深链接 R1 #121、R2 #123、收口 #124，歌曲统计小修 #122，面包屑 #120 |
+| master | `893772af`（#129 合入）。在 #98–#104 之上，又合入门户改造 #105–#119、#125，深链接 R1 #121、R2 #123、收口 #124、主干集成补验 #129，歌曲统计小修 #122，面包屑 #120 |
 | 谱面 | 无进行中分支。#98 原生投影、#100 自动演示 / 命中特效 / Combo·315 / 打击音已合入；最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，基线 [谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md) |
 | 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `1accd9d0aa698ec03ec6d0b80211939f914940abac105d51021b36a8fb321081`；data revision `2688ad94abf9bd93277ec844a6ada160131e6f0856e5fad891ceb69de72f83bc`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表下表站点已发布 |
 | 已有阶段 tag | `baseline/2026-10-20`（另保留 `baseline/2026-10-14`）；本 PR 尚未合入，不提前打新的 master 基线 tag |
@@ -62,3 +62,8 @@ Smoke UV补证（输入 `f5f174a7`）：down两系统的1×12源网格经过原�
 - 最近一轮舞台验收服务记录：5213，主 checkout `web_viewer`，候选 `rm-release-20261015`；5212 仍服务旧舞台 worktree。复用前检查实际 HTTP 模块和 bootstrap，不凭端口判断分支。
 - 复现 CI：`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录>`，`node_modules` 用联接；主 checkout 有语料又是 CRLF，会把 CI 红项跑绿。
 - 10-19 整理后的旧发布包、任务包、worktree 快照在 `E:/GS_Archive_cold/20261019/`。
+
+
+## 深链接主干集成补验（2026-10-29）
+
+在 master `7c7312c1` 上以 `portal/20261029-deep-links-integration` 补 P67–P73：歌曲筛选返回、活动面包屑/后退、组合前传具体章节冷刷新/返回、手机卡片筛选/下一张/返回与筛选 Escape。发现并修复 `openUnitStory()` 未传 storyFile，见 [本轮执行记录](GS_ARCHIVE_DEEP_LINKS_INTEGRATION_20261029.md)。这不是 R3/R4 或 P6 全矩阵验收；其技术前置仍保留。5240 本轮恢复为上述专用工作树 dev，候选 `rm-release-20261022`，复用前仍核对进程。
