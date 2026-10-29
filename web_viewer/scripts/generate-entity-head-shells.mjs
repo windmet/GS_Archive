@@ -52,6 +52,7 @@ const SECTION_DESCRIPTIONS = Object.freeze({
   photos: { description: 'SideM GROWING STARS 摄影资源：服装、背景、滤镜与贴纸素材。' },
   live: { description: 'SideM GROWING STARS LIVE：浏览歌曲谱面与2D舞台。' },
   studio: { description: 'SideM GROWING STARS 摄影工作台：使用服装、背景与装饰素材制作画面。' },
+  'studio/edit': { description: 'SideM GROWING STARS 摄影编辑器：选择地点与人物，在素材、画布与检查器中编辑构图。' },
   about: { description: '关于 SideM GROWING STARS 资料馆：收录范围、资料来源与使用说明。' },
   status: { description: 'SideM GROWING STARS 资料馆资源状态：查看收录与可用情况。' },
   scores: { description: 'SideM GROWING STARS 剧情配乐：剧情中的背景音乐、剧中歌曲、环境音与音效，以及使用它们的剧情。' },
