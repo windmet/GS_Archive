@@ -75,6 +75,23 @@ const detail = unitFixtureDetail
   t.jobs.get('first').resolve(detail('1', 'first')); await retry
   assert.deepEqual(t.commits, ['unit_detail'])
 }
+// The unit page offers both its whole prequel and individual chapters. Preserve
+// the selected chapter through the real App binding, not just the collection id.
+{
+  const calls = []
+  const context = {
+    openProjectedCollection: target => calls.push(target),
+    currentArchiveUnitCode: { value: '01jup' },
+    unitReadModelDetail: { value: { view: { entry: { unit: { unit_id: 1, unit_code: '01jup' } } } } },
+  }
+  bindUnitNavigation(app, context)
+  context.openUnitStory({ domain: 'unit_story', unitId: '1', file: '1_1_001jup_02_1_1_001_02.json' })
+  context.openUnitStory({ domain: 'unit_story', section: '1' })
+  assert.deepEqual(calls, [
+    { domain: 'unit_story', section: '1', storyFile: '1_1_001jup_02_1_1_001_02.json', parent: 'unit_detail' },
+    { domain: 'unit_story', section: '1', storyFile: '', parent: 'unit_detail' },
+  ])
+}
 assert.doesNotMatch(app, /function openUnitCatalog\(/, 'the unit catalog has no dedicated opener; it is reached by returning from unit detail')
 console.error = originalError
-console.log('Unit read-model navigation: latest selection, route supersession and retry passed')
+console.log('Unit read-model navigation: latest selection, route supersession, retry and selected prequel chapter passed')

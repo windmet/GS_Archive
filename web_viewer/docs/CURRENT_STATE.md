@@ -59,3 +59,8 @@ Smoke UV补证（输入 `f5f174a7`）：down两系统的1×12源网格经过原�
 - 最近一轮舞台验收服务记录：5213，主 checkout `web_viewer`，候选 `rm-release-20261015`；5212 仍服务旧舞台 worktree。复用前检查实际 HTTP 模块和 bootstrap，不凭端口判断分支。
 - 复现 CI：`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录>`，`node_modules` 用联接；主 checkout 有语料又是 CRLF，会把 CI 红项跑绿。
 - 10-19 整理后的旧发布包、任务包、worktree 快照在 `E:/GS_Archive_cold/20261019/`。
+
+
+## 深链接主干集成补验（2026-10-29）
+
+在 master `7c7312c1` 上以 `portal/20261029-deep-links-integration` 补 P67–P73：歌曲筛选返回、活动面包屑/后退、组合前传具体章节冷刷新/返回、手机卡片筛选/下一张/返回与筛选 Escape。发现并修复 `openUnitStory()` 未传 storyFile，见 [本轮执行记录](GS_ARCHIVE_DEEP_LINKS_INTEGRATION_20261029.md)。这不是 R3/R4 或 P6 全矩阵验收；其技术前置仍保留。5240 本轮恢复为上述专用工作树 dev，候选 `rm-release-20261022`，复用前仍核对进程。
