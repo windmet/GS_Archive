@@ -138,19 +138,30 @@
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <div class="stage-header-title">
-        <h1><span class="stage-title-full">{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '2D舞台 · 多人舞台' }}</span><span class="stage-title-compact">{{ isSpecialSingle ? '特别演出' : '2D舞台' }}</span></h1>
-        <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
+        <h1>{{ isSpecialSingle ? '社长特别演出' : '2D 舞台' }}</h1>
+        <!-- The title row names the page; the line under it names what is on stage: the song, then on wide screens its arrangement. -->
+        <p v-if="selectedSong"><span>{{ selectedSong.title }}</span><span v-if="headerArrangement" class="stage-header-arrangement"> · {{ headerArrangement }}</span></p>
       </div>
-      <ArchiveLanguageSwitch on-dark />
-      <button class="stage-icon-action" type="button" aria-label="快捷键与操作帮助" @click="helpOpen = true"><CircleHelp :size="19" /></button>
-      <button class="stage-icon-action" type="button" aria-label="打开高级设置" @click="inspectorOpen = true"><Settings2 :size="19" /></button>
+      <button class="stage-icon-action stage-header-help" type="button" aria-label="快捷键与操作帮助" @click="helpOpen = true"><CircleHelp :size="19" /></button>
+      <!-- 更多: settings that are set once (高级设置); on phones also help and the archive language, so the bar keeps back, title, 更多. -->
+      <div class="stage-more" @focusout="closeMoreOnLeave" @keydown.esc.stop="moreOpen = false">
+        <button class="stage-icon-action" type="button" aria-label="更多" aria-haspopup="menu" :aria-expanded="moreOpen" @click="moreOpen = !moreOpen"><Ellipsis :size="19" /></button>
+        <div v-if="moreOpen" class="stage-more-menu" role="menu" aria-label="更多">
+          <button class="stage-more-help" type="button" role="menuitem" @click="moreOpen = false; helpOpen = true"><CircleHelp :size="17" />快捷键与操作帮助</button>
+          <div class="stage-more-lang"><span>资料语言</span><ArchiveLanguageSwitch /></div>
+          <button class="stage-more-snapshot" type="button" role="menuitem" :disabled="!stageReady || snapshotBusy" @click="moreOpen = false; exportStageSnapshot()"><Camera :size="17" />导出舞台截图</button>
+          <button type="button" role="menuitem" @click="moreOpen = false; inspectorOpen = true"><Settings2 :size="17" />高级设置</button>
+        </div>
+      </div>
+      <div class="header-divider stage-header-lang-divider" aria-hidden="true"></div>
+      <ArchiveLanguageSwitch class="stage-header-lang" on-dark />
     </header>
 
     <main class="stage-workspace">
       <section class="performance-shell" :aria-label="isSpecialSingle ? '社长特别演出预览' : '多人舞台预览'">
         <div class="performance-viewport">
+        <!-- On the canvas only 截图 and 沉浸; the song is named in the header and member loading in the play bar. -->
         <div class="performance-hud">
-          <div class="performance-identity"><strong :title="selectedSong ? songOptionLabel(selectedSong) : ''">{{ selectedSong ? songOptionLabel(selectedSong) : '—' }}</strong><small>{{ isSpecialSingle ? '社长特别演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</small></div>
           <div class="performance-actions">
             <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
             <button class="stage-icon-action" type="button" aria-label="沉浸观看" :title="touchUi ? '沉浸观看 · 隐藏界面并全屏' : '沉浸观看 · 隐藏界面并全屏 · F'" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
@@ -186,49 +197,6 @@
         </div>
         </div>
 
-        <p v-if="!isSpecialSingle" class="rail-summary">当前编排 {{ activePositions.length }} 人 · {{ activePositions.join('、') }} 号位</p>
-        <div v-if="!isSpecialSingle" class="position-rail" aria-label="舞台站位状态">
-          <button
-            v-for="position in allPositions"
-            :key="position"
-            class="position-marker"
-            type="button"
-            :disabled="!activePositions.includes(position)"
-            :aria-label="activePositions.includes(position) ? `编辑 ${position} 号位 · ${stageIdolName(characterForSlot(slotByPosition(position))) || '空位'}` : `${position} 号位休息`"
-            :aria-pressed="editingSlot?.position === position"
-            :style="stageIdolStyle(characterForSlot(slotByPosition(position)))"
-            @click="selectedPosition = position; panelTab = 'lineup'; costumeNotice = ''"
-            :class="{
-              active: activePositions.includes(position),
-              loaded: loadedPositions.includes(position),
-              singing: currentSingerPositions.includes(position),
-              selected: editingSlot?.position === position,
-            }"
-            :data-position="position"
-            :data-lineup-position="position"
-            :data-runtime-ready="Boolean(runtimeForPosition(position))"
-            :data-motion="slotByPosition(position)?.currentMotion || ''"
-            :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
-            :data-motion-fragment="runtimes.get(position)?.spine?.state?.getCurrent(0)?.animation?.name || ''"
-            :data-motion-sequence="runtimes.get(position)?.currentMotionPlayback?.sequence?.join(' → ') || ''"
-            :data-motion-policy="runtimes.get(position)?.currentMotionPlayback?.policy || ''"
-            :data-position-sort-order="positionDebugState(position).sortingOrder"
-            :data-motion-speed-scale="runtimeForPosition(position)?.motionSpeedScale ?? ''"
-            :data-character-scale="runtimes.get(position)?.spine?.scale?.x?.toFixed(4) || ''"
-            :data-position-tween-progress="positionDebugState(position).progress"
-            :data-position-x="positionDebugState(position).x"
-            :data-position-y="positionDebugState(position).y"
-            :data-shadow-x="runtimes.get(position)?.groundShadow?.x?.toFixed(2) || ''"
-            :data-shadow-y="runtimes.get(position)?.groundShadow?.y?.toFixed(2) || ''"
-            :data-shadow-width="runtimes.get(position)?.groundShadow?.width?.toFixed(2) || ''"
-          >
-            <ArchiveIdolAvatar :idol-code="activePositions.includes(position) ? slotByPosition(position)?.characterId || '' : ''" :accent-color="activePositions.includes(position) ? stageIdolColor(characterForSlot(slotByPosition(position))) : ''" :size="40" decorative :fallback-text="String(position)" />
-            <span v-if="!activePositions.includes(position)" class="rest-position" aria-hidden="true">{{ position }} 号位<small>休息</small></span>
-            <span v-if="activePositions.includes(position)" class="position-caption">{{ position }} <span v-if="currentSingerPositions.includes(position)" class="singing-status" role="img" aria-label="当前段演唱"><Mic2 :size="12" aria-hidden="true" /><span class="singing-label">演唱</span></span></span>
-            <small v-if="activePositions.includes(position)">{{ stageIdolName(characterForSlot(slotByPosition(position))) || '空位' }}</small>
-          </button>
-        </div>
-
         <div class="transport" :class="{ disabled: !stageTransportReady || preloading }">
           <button type="button" aria-label="回到开头" @click="resetStage">
             <RotateCcw :size="19" />
@@ -245,7 +213,7 @@
             <Play v-else :size="22" fill="currentColor" />
           </button>
           <div class="transport-copy">
-            <strong aria-live="polite" aria-atomic="true">{{ preloading ? `正在预载动作 ${preloadProgress}%` : (isSpecialSingle ? (playing ? '社长特别演出播放中' : '社长特别演出已暂停') : (playing ? '多人编排播放中' : '多人编排已暂停')) }}</strong>
+            <strong aria-live="polite" aria-atomic="true">{{ preloading ? `正在预载动作 ${preloadProgress}%` : !isSpecialSingle && loadedPositions.length < activePositions.length ? `载入成员 ${loadedPositions.length}/${activePositions.length}` : (isSpecialSingle ? (playing ? '社长特别演出播放中' : '社长特别演出已暂停') : (playing ? '多人编排播放中' : '多人编排已暂停')) }}</strong>
             <small>{{ formatTime(stageTime) }} / {{ formatTime(stageDuration) }}</small>
           </div>
           <input
@@ -257,6 +225,7 @@
             step="100"
             @change="seekStage"
           />
+          <button class="transport-immersive" type="button" aria-label="沉浸观看" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
         </div>
       </section>
 
@@ -274,15 +243,62 @@
           </section>
 
           <section v-if="!isSpecialSingle" v-show="panelTab === 'lineup'" :id="`${inspectorTitleId}-lineup`" class="control-section panel-section lineup-section">
-            <div class="section-heading">
-              <div>
-                <h2>演出编队</h2>
+            <!-- Four groups, 24 apart: 站位 → the chosen position → 演唱 → 套服. The 站位条 itself is the rail under the canvas. -->
+            <section class="stage-group" aria-labelledby="stage-group-formation">
+              <header class="stage-group-head"><h3 id="stage-group-formation">站位 · {{ activePositions.length }} 人</h3><div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机</button></div></header>
+              <div class="position-rail" role="group" aria-label="舞台站位">
+                <button
+                  v-for="position in allPositions"
+                  :key="position"
+                  class="position-marker"
+                  type="button"
+                  :disabled="!activePositions.includes(position)"
+                  :aria-label="activePositions.includes(position) ? `编辑 ${position} 号位${position === centerStagePosition ? '（Center）' : ''} · ${stageIdolName(characterForSlot(slotByPosition(position))) || '空位'}` : `${position} 号位休息`"
+                  :aria-pressed="editingSlot?.position === position"
+                  :style="stageIdolStyle(characterForSlot(slotByPosition(position)))"
+                  @click="selectedPosition = position; panelTab = 'lineup'; costumeNotice = ''"
+                  :class="{
+                    active: activePositions.includes(position),
+                    loaded: loadedPositions.includes(position),
+                    singing: currentSingerPositions.includes(position),
+                    selected: editingSlot?.position === position,
+                  }"
+                  :data-position="position"
+                  :data-lineup-position="position"
+                  :data-runtime-ready="Boolean(runtimeForPosition(position))"
+                  :data-motion="slotByPosition(position)?.currentMotion || ''"
+                  :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
+                  :data-motion-fragment="runtimes.get(position)?.spine?.state?.getCurrent(0)?.animation?.name || ''"
+                  :data-motion-sequence="runtimes.get(position)?.currentMotionPlayback?.sequence?.join(' → ') || ''"
+                  :data-motion-policy="runtimes.get(position)?.currentMotionPlayback?.policy || ''"
+                  :data-position-sort-order="positionDebugState(position).sortingOrder"
+                  :data-motion-speed-scale="runtimeForPosition(position)?.motionSpeedScale ?? ''"
+                  :data-character-scale="runtimes.get(position)?.spine?.scale?.x?.toFixed(4) || ''"
+                  :data-position-tween-progress="positionDebugState(position).progress"
+                  :data-position-x="positionDebugState(position).x"
+                  :data-position-y="positionDebugState(position).y"
+                  :data-shadow-x="runtimes.get(position)?.groundShadow?.x?.toFixed(2) || ''"
+                  :data-shadow-y="runtimes.get(position)?.groundShadow?.y?.toFixed(2) || ''"
+                  :data-shadow-width="runtimes.get(position)?.groundShadow?.width?.toFixed(2) || ''"
+                >
+                  <ArchiveIdolAvatar v-if="activePositions.includes(position)" :idol-code="slotByPosition(position)?.characterId || ''" :size="48" decorative :fallback-text="String(position)" />
+                  <span v-else class="rest-position" aria-hidden="true"></span>
+                  <span class="position-caption">{{ activePositions.includes(position) && position === centerStagePosition ? 'C' : position }}<span v-if="currentSingerPositions.includes(position)" class="singing-status" role="img" aria-label="当前段演唱"><Mic2 :size="12" aria-hidden="true" /></span></span>
+                </button>
               </div>
-              <UsersRound :size="18" />
-            </div>
-
-            <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
-            <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSelection.basis === 'table2-selected-unit' ? '所选组合按原生槽序排列，可调整' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+              <small class="lineup-note" :data-original-lineup-basis="originalSelection.basis">{{ !originalStageLineup ? '点上方头像选择出演成员' : originalSelection.basis === 'table2-selected-unit' ? '所选组合按原生槽序排列，可调整' : originalSelection.basis === 'table2-unit-default' ? '原曲成员按组合默认槽序排列，可调整' : originalSelection.slotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+            </section>
+            <section v-if="editingSlot" class="stage-group slot-editor" aria-labelledby="stage-group-slot">
+              <header class="stage-group-head"><h3 id="stage-group-slot">{{ editingSlot.position }} 号位<span v-if="editingSlot.position === centerStagePosition"> · Center</span> · {{ editingSlot.loading ? '加载中' : currentSingerPositions.includes(editingSlot.position) ? '正在演唱' : '出演' }}</h3></header>
+              <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
+                <span class="stage-row-label">偶像</span>
+                <span class="slot-editor-copy"><ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="28" decorative /><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronRight :size="17" />
+              </button>
+              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><optgroup v-for="group in editingCostumeGroups" :key="group.id" :label="group.label"><option v-for="costume in group.costumes" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></optgroup></select></label>
+              <button class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
+            </section>
+            <section v-if="stageVocalAvailable || oneshotAvailable" class="stage-group" aria-labelledby="stage-group-vocal">
+            <header class="stage-group-head"><h3 id="stage-group-vocal">演唱</h3></header>
             <!-- Who is heard: the official mix, or each formation idol's own part following SwitchSinger. -->
             <div v-if="stageVocalAvailable" class="lineup-vocal">
               <label class="camera-toggle"><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span><GsSwitch :model-value="stageVocalEnabled" aria-label="按编成偶像演唱" :disabled="booting" @update:model-value="stageVocalEnabled = $event; handleStageVocalToggle()" /></label>
@@ -293,16 +309,9 @@
               <label><span>Center 台词</span><select v-model="oneshotSelection" aria-label="Center 台词音轨" :disabled="booting"><option :value="ONESHOT_CENTER">跟随 Center · {{ oneshotIdolLabel(oneshotCenterIdolCode) || '空位' }}</option><option v-for="code in oneshotIdolCodes" :key="code" :value="code">{{ oneshotIdolLabel(code) }}</option><option :value="ONESHOT_OFF">关闭 · 保留原曲留白</option></select></label>
               <small>{{ oneshotTriggerLabel }} 原曲在此留白，游戏播放编成 Center 卡偶像的台词；此处可任选 {{ oneshotIdolCodes.length }} 人试听。</small>
             </div>
-            <div v-if="editingSlot" class="slot-editor">
-              <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
-                <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
-                <span class="slot-editor-copy"><small>{{ editingSlot.position }} 号位 · {{ editingSlot.loading ? '加载中' : currentSingerPositions.includes(editingSlot.position) ? '正在演唱' : '出演' }}</small><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronDown :size="17" />
-              </button>
-              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><optgroup v-for="group in editingCostumeGroups" :key="group.id" :label="group.label"><option v-for="costume in group.costumes" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></optgroup></select></label>
-            </div>
-            <button v-if="editingSlot" class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
-            <section class="common-costume-actions" aria-label="套服搭配" :data-stage-costume-scope="costumeScope" :data-stage-costume-family="selectedCostumeFamily?.id" :data-stage-costume-version="selectedCostumeChoice?.version.sourceName">
-              <h3>套服搭配</h3>
+            </section>
+            <section class="stage-group common-costume-actions" aria-label="套服搭配" :data-stage-costume-scope="costumeScope" :data-stage-costume-family="selectedCostumeFamily?.id" :data-stage-costume-version="selectedCostumeChoice?.version.sourceName">
+              <header class="stage-group-head"><h3>套服</h3></header>
               <label class="costume-control"><span>适用范围</span><select v-model="costumeScope" aria-label="套服适用范围" :disabled="costumeSelectionBusy" @change="costumeNotice = ''; costumeFamilyId = ''; costumeVersionKey = ''"><option v-for="scope in sharedCostumeScopes" :key="scope.id" :value="scope.id">{{ scope.label }}</option></select></label>
               <template v-if="selectedCostumeFamily">
                 <label class="costume-control"><span>款式</span><select :value="selectedCostumeFamily.id" aria-label="套服款式" :disabled="costumeSelectionBusy" @change="costumeFamilyId = $event.target.value; costumeVersionKey = ''; costumeNotice = ''"><option v-for="family in availableCostumeFamilies" :key="family.id" :value="family.id">{{ stageFamilyLabel(family) }}</option></select></label>
@@ -316,14 +325,22 @@
           </section>
 
           <section v-show="panelTab === 'viewing'" :id="`${inspectorTitleId}-viewing`" class="control-section panel-section viewing-section" aria-label="观看设置">
-            <div class="viewing-toggles">
+            <section class="stage-group" aria-labelledby="stage-group-view">
+            <header class="stage-group-head"><h3 id="stage-group-view">观看</h3></header>
             <label class="camera-toggle"><span>演出镜头</span><GsSwitch :model-value="cameraEnabled" aria-label="演出镜头" @update:model-value="cameraEnabled = $event; applyCameraTransform()" /></label>
             <label class="camera-toggle"><span>显示歌词</span><GsSwitch :model-value="lyricsEnabled" aria-label="显示歌词" @update:model-value="lyricsEnabled = $event" /></label>
-            </div>
-            <label class="viewing-select"><span>加载</span><select v-model="stageQuality" aria-label="舞台加载方式" @change="applyStageQuality"><option value="lite">轻量 · 舞台、人物与应援棒</option><option value="full">完整 · 含灯光与动态物件</option></select></label>
-            <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
-            <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
             <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
+            </section>
+            <section class="stage-group" aria-labelledby="stage-group-play">
+            <header class="stage-group-head"><h3 id="stage-group-play">播放</h3></header>
+            <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
+            <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
+            </section>
+            <!-- 加载方式 is a row that reopens the same two-step dialog; choosing there rebuilds the stage, not a dropdown here. -->
+            <section class="stage-group" aria-labelledby="stage-group-load">
+            <header class="stage-group-head"><h3 id="stage-group-load">加载</h3></header>
+            <div class="viewing-select viewing-load"><span>加载方式</span><strong>{{ stageQuality === 'full' ? '完整' : '轻量' }}</strong><button type="button" aria-label="更改舞台加载方式" @click="pendingQuality = stageQuality; qualityPromptOpen = true">更改</button></div>
+            </section>
             <div class="viewing-actions"><button type="button" @click="toggleImmersive"><Maximize :size="16" />沉浸观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
           </section>
           <ArchiveErrorNote v-if="audioError" class="audio-error">{{ audioError }}</ArchiveErrorNote>
@@ -524,6 +541,7 @@ import ArchiveTerminalDialog from './archive/terminal/ArchiveTerminalDialog.vue'
 import { isMaintainerMode } from '../core/maintainerMode.js'
 import ChibiIdolPicker from './ChibiIdolPicker.vue'
 import ChibiSongPicker from './ChibiSongPicker.vue'
+import { buildStageSongLibrary, findStageSongGroup } from '../presentation/ChibiSongLibrary.js'
 import { normalizeIdolAccentColor } from '../presentation/idolAccentColor.js'
 import {STAGE_COSTUME_SCOPES, stageCostumeFamilies, stageCostumeOptionsForCharacter, stageFamilyChoices} from '../presentation/StageCostumeFamilies.js'
 import { buildOriginalStageLineup, planStageCostumeSync, stageCostumeLabel as sourceStageCostumeLabel } from '../presentation/ChibiPanelPresentation.js'
@@ -540,8 +558,9 @@ import * as PIXI from 'pixi.js'
 import {
   CircleAlert,
   CircleHelp,
+  Ellipsis,
   Camera,
-  ChevronDown,
+  ChevronRight,
   Maximize,
   Minimize,
   Settings2,
@@ -553,7 +572,6 @@ import {
   Play,
   RefreshCw,
   RotateCcw,
-  UsersRound,
   X,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
@@ -1129,6 +1147,17 @@ const stageVocalAvailable = computed(() => Boolean(
 ))
 // The game picks the oneshot line by deck slot 1 (the center card); the stage page has
 // no deck, so "center" follows whoever stands in performer slot 1 of the lineup.
+const moreOpen = ref(false)
+// Closing when focus leaves the menu also closes it on a click anywhere else.
+function closeMoreOnLeave(event) { if (!event.currentTarget.contains(event.relatedTarget)) moreOpen.value = false }
+// The arrangement is named as the 曲目 page names it; a song with one arrangement shows only its title.
+const stageSongLibrary = computed(() => buildStageSongLibrary(songs.value, props.songDirectory))
+const headerArrangement = computed(() => {
+  const group = findStageSongGroup(stageSongLibrary.value, selectedSongId.value)
+  return group?.versions.length > 1 ? group.versions.find(version => version.id === selectedSongId.value)?.label || '' : ''
+})
+// The rail marks this position with C; it is the same 1st performer slot the Center line follows.
+const centerStagePosition = computed(() => stagePositionForPerformerSlot(1))
 const oneshotCenterIdolCode = computed(() => {
   const stagePosition = stagePositionForPerformerSlot(1)
   return (handoffLineup.value
@@ -4331,8 +4360,14 @@ function formatTime(milliseconds) {
   background: var(--gs-chrome);
 }
 .stage-header h1 { margin: 0; color: var(--gs-surface); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.stage-title-compact { display: none; }
-.stage-header p { margin: 2px 0 0; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
+.stage-header p { margin: 2px 0 0; overflow: hidden; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
+.stage-more { position: relative; flex: none; }
+.stage-more-menu { position: absolute; z-index: 30; top: calc(100% + 4px); right: 0; display: grid; min-width: 200px; padding: 6px; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); color: var(--gs-ink); }
+.stage-more-menu > button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
+.stage-more-menu > button:hover { background: var(--gs-hover); }
+.stage-more-menu svg { color: var(--gs-ink-3); }
+.stage-more-lang { display: none; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 0 10px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.stage-more-help, .stage-more-snapshot, .transport-immersive { display: none !important; }
 .stage-back-button { --archive-back-ink: var(--gs-chrome-ink); --archive-back-hover: var(--gs-chrome-hover); border-radius: var(--gs-radius-control); }
 .header-divider { width: 1px; height: 28px; background: var(--gs-chrome-hover); }
 .lab-link { min-height: 44px; margin-left: 8px; padding: 0 13px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
@@ -4352,12 +4387,9 @@ function formatTime(milliseconds) {
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
 .performance-screen::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 47%, transparent 28%, rgba(2, 7, 14, 0.34) 100%); }
 
-.performance-hud { display: flex; flex: none; align-items: center; gap: 12px; padding: 6px 12px; width: 100%; min-height: 56px; box-sizing: border-box; color: var(--gs-chrome-ink); background: var(--ink); }
-.performance-identity { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.performance-hud strong { overflow-wrap: anywhere; }
-.performance-actions { display: flex; flex: 0 0 auto; gap: 4px; }
-.performance-hud strong { color: var(--gs-surface); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.performance-hud small { color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
+.performance-hud { position: absolute; z-index: 7; top: 8px; right: 8px; display: flex; pointer-events: none; }
+.performance-actions { display: flex; gap: 4px; pointer-events: auto; }
+.performance-actions .stage-icon-action { background: rgb(11 20 36 / 55%); }
 
 .stage-lyric {
   position: absolute;
@@ -4382,21 +4414,21 @@ function formatTime(milliseconds) {
   pointer-events: none;
 }
 
-.rail-summary { flex: none; width: 100%; margin: 0; padding: 4px 12px 0; box-sizing: border-box; color: var(--gs-chrome-ink); font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
-.position-rail { flex: none; width: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 6px 8px; box-sizing: border-box; }
-.position-marker { min-width: 0; min-height: 44px; display: grid; align-content: start; justify-items: center; gap: 3px; padding: 4px; border: 1px solid transparent; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-chrome-ink); cursor: pointer; }
-.position-marker .position-caption { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 4px; max-width: 100%; min-height: 16px; font-size: 11px; line-height: 1.4; }
-.position-marker small { max-width: 100%; color: var(--gs-surface); font-size: var(--gs-text-meta); line-height: 1.4; overflow-wrap: anywhere; }
-.position-marker.selected { border-color: var(--gs-mint); background: var(--gs-chrome-hover); }
-.position-marker.singing { background: var(--gs-chrome-hover); }
-.position-marker { transition: background-color 240ms ease-out, color 240ms ease-out; }
-@media (prefers-reduced-motion: reduce) { .position-marker { transition: none; } }
-.position-marker.singing .position-caption { color: var(--gs-surface); }
-.position-marker:disabled { align-content: center; color: var(--muted); background: transparent; cursor: default; }
-.position-marker:disabled small { color: var(--gs-chrome-ink); }
-.rest-position { display: none; }
-.singing-status { display: inline-flex; align-items: center; gap: 3px; color: var(--gs-mint); }
-.singing-label { display: none; font-size: var(--gs-text-caption); }
+.singing-status { display: inline-flex; align-items: center; gap: 3px; color: var(--gs-mint-ink); }
+/* 站位条: five 48px circles with the number under each (C for the Center). The current position is ringed in mint,
+   positions this arrangement rests are dashed and cannot be chosen. On phones the row scrolls sideways. */
+.position-rail { display: flex; justify-content: space-between; gap: 8px; padding: 12px 0 8px; overflow-x: auto; scrollbar-width: none; }
+.position-rail::-webkit-scrollbar { display: none; }
+.position-marker { display: flex; flex: none; flex-direction: column; align-items: center; gap: 4px; width: 56px; padding: 0; border: 0; background: none; color: var(--gs-ink-3); font: inherit; cursor: pointer; }
+.position-marker :deep(.idol-avatar-shell) { border-radius: var(--gs-radius-pill); transition: box-shadow 180ms ease-out; }
+.position-marker.selected :deep(.idol-avatar-shell) { box-shadow: 0 0 0 2px var(--gs-surface), 0 0 0 4px var(--gs-mint); }
+.position-marker.selected { color: var(--gs-mint-ink); }
+.position-marker:not(:disabled):hover :deep(.idol-avatar-shell) { filter: brightness(1.04); }
+.position-marker:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: 2px; border-radius: var(--gs-radius-control); }
+.position-caption { display: inline-flex; align-items: center; gap: 2px; min-height: 16px; font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1; }
+.rest-position { box-sizing: border-box; width: 48px; height: 48px; border: 1.5px dashed var(--gs-rule); border-radius: var(--gs-radius-pill); }
+.position-marker:disabled { cursor: default; }
+@media (prefers-reduced-motion: reduce) { .position-marker :deep(.idol-avatar-shell) { transition: none; } }
 
 .stage-state { position: absolute; z-index: 6; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #cbd9e7; background: rgba(5, 13, 23, 0.58); backdrop-filter: blur(5px); }
 .loading-icon { animation: spin 1s linear infinite; }
@@ -4451,7 +4483,12 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .raw-command-table th, .raw-command-table td { padding: 7px; border: 1px solid var(--gs-rule); text-align: left; vertical-align: top; overflow-wrap: anywhere; font-size: var(--gs-text-meta); }
 
 .lineup-section { display: grid; gap: 8px; }
-.lineup-section .section-heading { margin-bottom: 0; }
+/* 编队 / 画面: groups 24 apart, each a 12px label over a hairline, then 44px rows on hairlines. */
+.lineup-section, .viewing-section { gap: var(--gs-gap-group); }
+.stage-group { display: grid; min-width: 0; }
+.stage-group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; border-bottom: 1px solid var(--line); }
+.stage-group-head h3 { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
+.stage-group > .camera-toggle, .stage-group > .viewing-range, .stage-group > .viewing-select, .stage-group > .costume-control, .stage-group > .idol-change-action { min-height: 44px; border-bottom: 1px solid var(--line); }
 .singing-icon { color: var(--idol-accent, #258e81); }
 .rebuild-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; margin-top: 3px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 8px; font: 650 11px/1 inherit; cursor: pointer; }
 
@@ -4477,14 +4514,17 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .chibi-stage button:focus-visible, .chibi-stage summary:focus-visible, .chibi-stage input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .chibi-stage button { font-family: inherit; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 .chibi-stage button:not(:disabled):active { background-color: var(--gs-mint-wash); }
-.chibi-stage .stage-icon-action:not(:disabled):active, .chibi-stage .position-marker:not(:disabled):active { background-color: var(--gs-chrome-hover); }
+.chibi-stage .stage-icon-action:not(:disabled):active { background-color: var(--gs-chrome-hover); }
 .mix-details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #3f7772; font-size: 12px; }
 .mix-details .range-control { min-height: 44px; }
 .lineup-actions { display: flex; gap: 8px; }
 .lineup-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); cursor: pointer; }
 .lineup-actions button:disabled { opacity: .4; cursor: default; }
 .lineup-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
-.viewing-select { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.viewing-select { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.viewing-load { grid-template-columns: 72px minmax(0, 1fr) auto; }
+.viewing-load strong { color: var(--gs-ink); font-weight: var(--gs-weight-medium); }
+.viewing-load button { min-height: 44px; padding: 0 4px; border: 0; background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .viewing-select select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
 .immersive-hint { position: absolute; z-index: 5; top: 10px; left: 50%; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 4px 4px 4px 12px; border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); translate: -50% 0; box-shadow: var(--gs-shadow-float); }
 .immersive-hint span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4502,7 +4542,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .quality-tip { display: flex; align-items: center; gap: 6px; margin: 12px 0 4px; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
 .quality-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .touch-help dt { display: flex; align-items: center; color: var(--gs-ink-2); }
-.lineup-vocal { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.lineup-vocal { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); }
 .lineup-vocal .camera-toggle { flex: 1; min-width: 0; }
 .lineup-vocal .camera-toggle span { display: grid; gap: 2px; }
 .lineup-vocal small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
@@ -4511,24 +4551,23 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-oneshot select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
 .lineup-oneshot small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
 .lineup-vocal-mix { display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
-.slot-editor { display: grid; gap: 8px; min-width: 0; }
-.idol-change-action { display: flex; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; cursor: pointer; text-align: left; }
-.slot-editor-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
-.idol-change-action strong { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
-.idol-change-action small { font-size: 12px; color: var(--muted); }
-.costume-control { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.costume-sync-action { justify-self: start; min-height: 44px; padding: 0 8px; border: 0; border-radius: var(--gs-radius-control); color: var(--gs-mint-ink); background: transparent; cursor: pointer; font-size: var(--gs-text-ui); text-decoration: none; }
+.slot-editor { min-width: 0; }
+.idol-change-action { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; width: 100%; align-items: center; gap: 8px; padding: 4px 0; color: var(--text); background: transparent; border: 0; border-radius: 0; cursor: pointer; text-align: left; font: inherit; }
+.stage-row-label { color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.slot-editor-copy { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.idol-change-action strong { min-width: 0; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.costume-control { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.costume-sync-action { justify-self: start; min-height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); color: var(--gs-ink-2); background: transparent; cursor: pointer; font-size: var(--gs-text-ui); text-decoration: underline; text-underline-offset: 3px; }
 .costume-sync-action:disabled { opacity: .4; cursor: default; }
-.common-costume-actions { padding-top: 8px; border-top: 1px solid var(--line); }
-.common-costume-actions h3 { margin: 0 0 8px; color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.common-costume-actions { display: grid; gap: 8px; min-width: 0; }
+.common-costume-actions .costume-coverage { margin-top: 8px; }
+.common-costume-actions .costume-family-apply { margin-top: 12px; }
 .costume-coverage { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
 .costume-family-apply { min-height: 44px; width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); color: var(--gs-ink); background: var(--gs-surface); cursor: pointer; font-size: var(--gs-text-ui); }
 .costume-family-apply:disabled { opacity: .4; cursor: default; }
 .costume-notice { margin: 0; color: var(--gs-ink-2); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
-.viewing-section { display: grid; gap: 4px; }
-.viewing-toggles, .viewing-actions { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.viewing-range { min-height: 44px; font-size: 12px; }
+.viewing-section { display: grid; }
+.viewing-actions { display: flex; flex-wrap: wrap; }
+.viewing-range { grid-template-columns: 72px minmax(0, 1fr) 48px; min-height: 44px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .viewing-range input { min-height: 44px; margin: 0; }
 .viewing-actions { gap: 8px; }
 .viewing-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 12px; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-control); cursor: pointer; font-size: var(--gs-text-ui); }
@@ -4561,7 +4600,7 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
 }
 .pure-exit kbd { margin-left: 4px; }
 @media (prefers-reduced-motion: reduce) { .pure-peek { transition: none; } }
-.is-pure .stage-header, .is-pure .stage-inspector, .is-pure .performance-hud, .is-pure .rail-summary, .is-pure .position-rail, .is-pure .transport { display: none; }
+.is-pure .stage-header, .is-pure .stage-inspector, .is-pure .performance-hud, .is-pure .transport { display: none; }
 .is-pure { grid-template-rows: minmax(0, 1fr); }
 .is-pure .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); max-width: none; min-height: 0; height: 100%; padding: 0; }
 .is-pure .performance-shell { height: 100%; min-height: 0; border: 0; border-radius: 0; background: transparent; }
@@ -4569,26 +4608,20 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
 @media (hover: hover) and (pointer: fine) {
   .stage-icon-action:hover { background: var(--gs-chrome-hover); color: var(--gs-surface); }
   .lineup-actions button:not(:disabled):hover, .idol-change-action:not(:disabled):hover { background: var(--gs-paper); }
-  .position-marker:not(:disabled):hover { border-color: var(--gs-ink-3); }
 }
 
 /* Tabs keep one control task visible while the stage remains in place. */
 @media (min-width: 981px) {
   .stage-ambient { display: block; }
-  .position-marker.selected { outline: 2px solid var(--gs-mint); outline-offset: -2px; }
-  .position-marker:disabled { min-height: 76px; border-color: transparent; background: var(--gs-chrome-hover); }
-  .position-marker:disabled :deep(.idol-avatar-shell) { display: none; }
-  .rest-position { display: grid; gap: 6px; font-size: 12px; line-height: 1.4; }
-  .rest-position small { color: var(--muted); }
-  .singing-label { display: inline; }
 }
 @media (max-width: 980px) {
   .stage-header { padding-right: max(12px, var(--stage-safe-right)); padding-left: max(12px, var(--stage-safe-left)); gap: 8px; }
   .stage-header h1 { font-size: 15px; }
-  .stage-header p { display: none; }
+  .stage-header p { font-size: var(--gs-text-meta); }
+  .stage-header-arrangement { display: none; }
   .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 0; padding: 0 var(--stage-safe-right) var(--stage-safe-bottom) var(--stage-safe-left); }
   .stage-inspector { border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); box-shadow: var(--gs-shadow-float); }
-  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 240px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
+  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 150px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
   .mobile-panel-tabs button:disabled { color: var(--gs-line); cursor: default; }
   .control-section { padding: 10px 12px; }
   .transport { grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); padding: 6px 8px; }
@@ -4601,24 +4634,22 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
   .stage-header { padding-right: max(8px, var(--stage-safe-right)); padding-left: max(8px, var(--stage-safe-left)); gap: 4px; }
   .stage-header-title { flex: 1; min-width: 0; }
   .stage-header h1 { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .stage-title-full { display: none; }
-  .stage-title-compact { display: inline; }
   .stage-header .header-divider { display: none; }
-  .stage-header :deep(.archive-language-switch) { margin-left: auto; }
+  /* Phone bar: back, title, 更多. Help and the archive language move into 更多. */
+  .stage-header-help, .stage-header-lang { display: none; }
+  .stage-more-help, .stage-more-snapshot { display: flex !important; }
+  .stage-more-menu > button:disabled { opacity: .5; cursor: default; }
+  .stage-more-lang { display: flex; }
+  /* 加载方式 rises from the bottom edge so 开始加载 sits under the thumb. */
+  .stage-quality-dialog { width: 100%; max-width: 100%; max-height: calc(100% - 48px); margin: auto 0 0; border-radius: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); --gs-dialog-travel: translateY(100%); --gs-dialog-duration: var(--gs-motion-sheet); }
+  .stage-quality-dialog :deep(.terminal-dialog-body) { padding-bottom: max(12px, var(--gs-safe-bottom)); }
   .lab-link { width: 44px; padding: 0; margin: 0; font-size: 0; flex-shrink: 0; }
   .lab-link::after { content: '1人'; font-size: 12px; }
-  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 180px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
-  .performance-hud { position: absolute; z-index: 7; inset: 0 0 auto; gap: 4px; min-height: 0; padding: 6px; border: 0; background: transparent; pointer-events: none; }
-  .performance-identity { display: grid; gap: 2px; padding: 4px 8px; border-radius: var(--gs-radius-control); background: rgb(11 20 36 / 72%); }
-  .performance-actions .stage-icon-action { background: rgb(11 20 36 / 55%); }
-  .performance-hud strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-  .performance-actions { pointer-events: auto; }
-  .position-rail { gap: 2px; padding: 6px 4px; }
-  .position-marker { gap: 1px; padding: 3px 1px; }
-  .position-marker :deep(.idol-avatar-shell) { --idol-avatar-override-size: 36px; }
-  .position-marker .position-caption { gap: 0 2px; min-height: 14px; font-size: var(--gs-text-caption); }
-  .position-marker small { font-size: var(--gs-text-caption); line-height: 1.25; }
-  .transport { min-height: 58px; grid-template-columns: 44px 44px auto minmax(0, 1fr); gap: 8px; margin: 0 8px 8px; width: calc(100% - 16px); padding: 6px 10px; }
+  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 80px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
+  /* Phone canvas stays clear: 沉浸 ends the play bar, 截图 is in 更多. */
+  .performance-hud { display: none; }
+  .transport-immersive { display: grid !important; }
+  .transport { min-height: 58px; grid-template-columns: 44px 44px auto minmax(0, 1fr) 44px; gap: 8px; margin: 0 8px 8px; width: calc(100% - 16px); padding: 6px 10px; }
   .transport button, .transport .primary-transport { width: 44px; height: 44px; }
   .transport-copy { position: relative; gap: 0; }
   .transport-copy strong { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
@@ -4628,19 +4659,8 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
 
 @media (max-width: 980px) and (max-height: 500px) and (orientation: landscape) {
   .chibi-stage { --stage-header-height: calc(52px + var(--stage-safe-top)); }
-  .stage-title-full { display: none; }
-  .stage-title-compact { display: inline; }
   .stage-workspace { grid-template-columns: minmax(0, 1fr) minmax(240px, 32%); grid-template-rows: minmax(0, 1fr); gap: 6px; }
   .performance-shell { height: 100%; }
-  .performance-hud { position: absolute; z-index: 7; inset: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 8px; min-height: 0; padding: 6px; border: 0; background: transparent; pointer-events: none; }
-  .performance-identity { display: grid; gap: 2px; flex: 1; min-width: 0; padding: 4px 8px; border-radius: var(--gs-radius-control); background: rgb(11 20 36 / 72%); font-size: var(--gs-text-meta); }
-  .performance-hud strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-  .performance-actions { pointer-events: auto; }
-  .position-rail { padding: 4px; gap: 4px; }
-  .position-marker { grid-template-columns: 32px minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; justify-items: start; gap: 0 4px; min-height: 48px; padding: 3px; }
-  .position-marker :deep(.idol-avatar-shell) { --idol-avatar-override-size: 32px; grid-row: 1 / 3; }
-  .position-marker .position-caption { justify-content: flex-start; font-size: 10px; }
-  .position-marker small { font-size: 11px; }
   .transport { min-height: 58px; grid-template-columns: 44px 44px auto minmax(0, 1fr); gap: 6px; padding: 5px 8px; }
   .transport button, .transport .primary-transport { width: 44px; height: 44px; }
   .transport-copy { position: relative; gap: 0; }
