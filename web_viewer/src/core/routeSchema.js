@@ -12,7 +12,7 @@ export const ROUTE_SCHEMA = Object.freeze({
   event_catalog: ['idol', 'q', 'event_kind', 'event_sort', 'event_page'], event_detail: ['event', 'parent', 'category', 'unit', 'card', 'idol'],
   collection_catalog: ['q', 'entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
   photo_catalog: ['q', 'photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type', 'q'], gasha_detail: ['gasha', 'parent', 'story_type', 'story_section'],
-  song_catalog: ['idol', 'q', 'song_scope'], song_detail: ['song'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
+  song_catalog: ['idol', 'q', 'song_scope'], song_detail: ['song'], chart_lab: ['song'], chibi_stage: ['song', 'song_scope', 'stage'],
   experiments: [], live: [], studio: [], about: [], unused_archive: ['voices'], score_archive: ['sound'], archive_status: [], spine_lab: [],
   story_catalog: ['story_mode', 'story_type', 'story_section', 'event_scope', 'availability', 'sort', 'idol', 'q'],
   external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'song', 'idol', 'unit', 'category'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
@@ -41,7 +41,7 @@ export function ownedRouteParams(view, returnView = '') {
 export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
   'about', 'unused_archive', 'score_archive', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog',
   // Detail pages whose address is only their identity; list filters ride the history source, not the URL.
-  'idol_detail', 'unit_detail', 'card_detail', 'song_detail',
+  'idol_detail', 'unit_detail', 'card_detail', 'song_detail', 'chart_lab',
   // Their address is only the event or gasha; the owned opened-from fields move to history state on write (archiveRoute.js).
   'event_detail', 'gasha_detail',
   // Story owners retain their selection; collection opener identity moves to history.

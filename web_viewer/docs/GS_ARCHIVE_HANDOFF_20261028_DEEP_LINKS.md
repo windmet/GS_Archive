@@ -665,3 +665,8 @@ node scripts/verify-story-owner.mjs       # 需要候选包，dev 服务自动�
 - **外壳要在最终构建上重新生成。** R2 的 1,401 个外壳是对 `rm-release-20261022` 候选做的验收。正式发布时在最终构建上重跑 `generate-entity-head-shells` 和 `verify-entity-head-shells --dist`，同时核对标题、canonical、OG 和 `_headers`，不复用旧外壳目录。
 - **CI 绿不代表跨设备通过。** `7c7312c1` 的 Web Viewer Source Gate 成功，只证明源码契约与构建。冷启动深链接在 Cloudflare 上的实际行为、Android Edge、iOS Safari 都还没测。
 - D5（正式域名、noindex、canonical origin、sitemap）仍待用户决定。
+
+
+## R3 谱面开工（2026-10-29）
+
+P3 #127 已以 `2319d31e` 合入，谱面这一项的前置解除。本批基于 `78d4b58c` 实施 `/songs/<code>/chart/`，进度与验证见 [谱面路径执行记录](GS_ARCHIVE_CHART_PATH_20261029.md)。本节更新仅适用于谱面；其他R3/R4前置继续保留。
