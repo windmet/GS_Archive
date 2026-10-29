@@ -17,6 +17,35 @@ const song = { view: 'song_detail', song: 'brndnf' }
 const event = { view: 'event_detail', event: '410018' }
 const same = (a, b, message) => assert.equal(buildArchiveUrl('http://localhost/', a).search, buildArchiveUrl('http://localhost/', b).search, message)
 
+// Studio entry and workbench are separate; only initial photo selections are shared.
+{
+  const href = 'http://x/studio/edit/'
+  assert.equal(read('http://x/studio/').view, 'studio')
+  assert.equal(read(href).view, 'picture_studio')
+  assert.equal(read(href.slice(0, -1)).view, 'picture_studio')
+  assert.equal(buildPublicArchiveUrl('http://x/', { view: 'picture_studio' }).href, href)
+  assert.equal(read(href + '?view=cards').view, 'cards')
+  assert.equal(resolveArchiveStartup(href, { startupPage: 'home', startupIdol: '001tom' }, ['001tom']).route.view, 'picture_studio')
+  for (const photoEntity of ['spots:1', 'scenes:2', 'faces:3', 'poses:4', 'stickers:5', 'frames:6', 'filters:7']) {
+    const route = { view: 'picture_studio', photoIdol: '1', photoEntity }
+    const url = buildPublicArchiveUrl('http://x/', route)
+    assert.equal(url.pathname, '/studio/edit/')
+    assert.equal(url.searchParams.get('photo_idol'), '1')
+    assert.equal(url.searchParams.get('photo'), photoEntity)
+    same(read(url), route, `studio selection ${photoEntity}`)
+  }
+  const legacy = read('http://x/?view=picture_studio&photo_idol=1&photo=poses:4&idol=001tom&song=brndnf&rarity=SSR&q=old')
+  assert.equal(buildPublicArchiveUrl('http://x/', legacy).href, 'http://x/studio/edit/?photo_idol=1&photo=poses%3A4')
+  assert.equal(buildPublicArchiveUrl('http://x/', { view: 'picture_studio', sourceRoute: '?view=studio' }).href, href, 'share has no local opener')
+  for (const path of ['/studio/editor/', '/studio/edit/extra/', '/STUDIO/edit/', '/studio//edit/'])
+    assert.notEqual(read('http://x' + path).view, 'picture_studio', path)
+  // D3: catalogue drawers keep their existing query representation.
+  const item = buildPublicArchiveUrl('http://x/', { view: 'collection_catalog', entity: 'item:10501' })
+  assert.equal(item.pathname, '/items/')
+  assert.equal(item.searchParams.get('entity'), 'item:10501')
+  assert.equal(read(item).entity, 'item:10501')
+}
+
 // Stage paths identify the song; a nondefault choreography remains explicit.
 {
   const href = 'http://x/songs/drvalv/stage/'
@@ -316,6 +345,11 @@ assert.equal(isBareArchiveEntry('http://x/idols/xyz/?view=cards'), false, 'a que
   assert.equal(entries.at(-1).url, 'http://x/idols/001tom/')
   assert.equal(entries.at(-1).state.sidemArchiveNav?.source, '?view=portal', 'the source rides history state')
   assert.equal(readArchiveRoute().sourceRoute, '?view=portal', 'the live location reads the path and its history source')
+  writeArchiveRoute({ view: 'picture_studio', photoIdol: '1', photoEntity: 'poses:4', sourceRoute: '?view=photo_catalog&photo_idol=1&photo=poses%3A4' })
+  assert.equal(entries.at(-1).url, 'http://x/studio/edit/?photo_idol=1&photo=poses%3A4')
+  assert.equal(readArchiveRoute().sourceRoute, '?view=photo_catalog&photo_idol=1&photo=poses%3A4')
+  assert.equal(readArchiveRoute().photoEntity, 'poses:4')
+  assert.ok(!read(entries.at(-1).url).sourceRoute, 'cold workbench share inherits no opener')
   writeArchiveRoute({ view: 'chibi_stage', song: 'drvalv', stageId: 'drvalv_live_effect_03alt', sourceRoute: '?view=song_detail&song=brndnf' })
   assert.equal(entries.at(-1).url, 'http://x/songs/drvalv/stage/?stage=drvalv_live_effect_03alt')
   assert.equal(readArchiveRoute().stageId, 'drvalv_live_effect_03alt')

@@ -49,7 +49,7 @@ export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
   // Published at /office/<idol>/ and /mobile/<idol>/; App.vue applyRoute reads only their entries' fields.
   'home', 'mobile_archive',
   // Audited directory props; section identity is supplied by the public registry.
-  'idols', 'cards', 'song_catalog', 'event_catalog', 'gashas', 'story_catalog', 'collection_catalog', 'photo_catalog',
+  'idols', 'cards', 'song_catalog', 'event_catalog', 'gashas', 'story_catalog', 'collection_catalog', 'photo_catalog', 'picture_studio',
 ]))
 
 // Context parameters are moved into history state by writeArchiveRoute; the builder may still carry them.

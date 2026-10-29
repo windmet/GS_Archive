@@ -680,7 +680,7 @@ function publicArchiveUrl(url) {
     if (segment.param) url.searchParams.delete(segment.param)
   }
   for (const key of Object.keys(locator.implied)) url.searchParams.delete(key)
-  if (['story_collection', 'chart_lab', 'chibi_stage'].includes(view)) for (const key of [...Object.values(STORY_COLLECTION_CONTEXT_PARAMS), ...Object.values(NAVIGATION_CONTEXT_PARAMS)]) url.searchParams.delete(key)
+  if (['story_collection', 'chart_lab', 'chibi_stage', 'picture_studio'].includes(view)) for (const key of [...Object.values(STORY_COLLECTION_CONTEXT_PARAMS), ...Object.values(NAVIGATION_CONTEXT_PARAMS)]) url.searchParams.delete(key)
   return url
 }
 
