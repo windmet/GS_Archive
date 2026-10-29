@@ -9,17 +9,22 @@
           <div v-if="$slots['current-actions']" class="current-song-actions"><slot name="current-actions" /></div>
         </div>
         <div class="stage-arrangement">
-          <div v-if="selectedGroup.versions.length > 1" class="arrangement-picker">
-            <span class="arrangement-title">编排</span>
+          <!-- Phones: one row names the current arrangement and opens the same picker as a bottom sheet. -->
+          <button v-if="compact && selectedGroup.versions.length > 1" class="arrangement-summary" type="button" aria-haspopup="dialog" :aria-expanded="drawerOpen" :disabled="disabled" @click="drawerOpen = true"><span>编排</span><strong>{{ [kindLabels[selectedKind], selectedScript?.label].filter(Boolean).join(' · ') }}</strong><ChevronRight :size="17" aria-hidden="true" /></button>
+          <component :is="compact ? ArchiveTerminalDialog : 'div'" v-if="selectedGroup.versions.length > 1" v-bind="compact ? { class: 'filter-sheet arrangement-sheet', open: drawerOpen, title: '编排', titleId: 'stage-arrangement-sheet-title' } : { class: 'arrangement-inline' }" @close="drawerOpen = false">
+          <div class="arrangement-picker">
+            <span v-if="!compact" class="arrangement-title">编排</span>
             <!-- Kinds are sections of one list, not filters: only the kinds this song really has. -->
             <div v-if="versionSections.length > 1" class="stage-segment" role="radiogroup" aria-label="编排种类">
               <button v-for="section in versionSections" :key="section.kind" type="button" role="radio" :aria-checked="section.kind === selectedKind" :disabled="disabled" @click="chooseKind(section)">{{ section.label }}<span v-if="section.versions.length > 1"> {{ section.versions.length }}</span></button>
             </div>
             <div v-if="visibleVersions.length > 1" class="arrangement-options" :class="`is-${selectedKind}`" role="radiogroup" aria-label="演出编排版本">
-              <button v-for="version in visibleVersions" :key="version.id" type="button" role="radio" :data-version-id="version.id" :aria-checked="version.id === selectedScript?.id" :disabled="disabled" :aria-label="unitLogo(version) ? `${version.label}${version.participantCount ? ` ${version.participantCount}人` : ''}` : undefined" @click="chooseVersion(version.id)"><img v-if="unitLogo(version)" :src="unitLogo(version)" alt="" loading="lazy" decoding="async" @error="failedLogos = new Set(failedLogos).add(version.unitCode)" /><template v-else>{{ version.label }}<small v-if="version.participantCount"> {{ version.participantCount }}人</small></template></button>
+              <button v-for="version in visibleVersions" :key="version.id" type="button" role="radio" :data-version-id="version.id" :aria-checked="version.id === selectedScript?.id" :disabled="disabled" :aria-label="unitLogo(version) ? `${version.label}${version.participantCount ? ` ${version.participantCount}人` : ''}` : undefined" @click="chooseVersion(version.id); drawerOpen = false"><img v-if="unitLogo(version)" :src="unitLogo(version)" alt="" loading="lazy" decoding="async" @error="failedLogos = new Set(failedLogos).add(version.unitCode)" /><template v-else>{{ version.label }}<small v-if="version.participantCount"> {{ version.participantCount }}人</small></template></button>
             </div>
+            <small v-if="compact && selectedKind === 'unit'" class="arrangement-sheet-note">点一个组合即切换并收起</small>
           </div>
-          <p v-else class="single-arrangement"><span>编排</span><strong>{{ selectedScript?.label || selectedGroup.versions[0]?.label }}</strong></p>
+          </component>
+          <p v-if="selectedGroup.versions.length <= 1" class="single-arrangement"><span>编排</span><strong>{{ selectedScript?.label || selectedGroup.versions[0]?.label }}</strong></p>
           <p v-if="selectedScript" class="arrangement-description"><span>{{ selectedScript.positionLabel || '出场站位待确认' }}</span></p>
         </div>
       </template>
@@ -57,8 +62,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import { Music2, Search } from '@lucide/vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { ChevronRight, Music2, Search } from '@lucide/vue'
+import ArchiveTerminalDialog from './archive/terminal/ArchiveTerminalDialog.vue'
 import { buildStageSongLibrary, filterStageSongLibrary, findStageSongGroup, stageSongCategoryOptions } from '../presentation/ChibiSongLibrary.js'
 import { getUnitLogoUrl } from '../utils/AssetResolver.js'
 
@@ -69,6 +75,13 @@ const props = defineProps({
   disabled: Boolean,
 })
 const emit = defineEmits(['select-song'])
+// Same split as ArchiveFilterSheet: inline on wide panels, a bottom sheet behind one row on phones.
+const compactQuery = typeof window === 'undefined' ? null : window.matchMedia?.('(max-width: 620px)')
+const compact = ref(Boolean(compactQuery?.matches))
+const drawerOpen = ref(false)
+const syncCompact = event => { compact.value = event.matches; if (!event.matches) drawerOpen.value = false }
+compactQuery?.addEventListener?.('change', syncCompact)
+onBeforeUnmount(() => compactQuery?.removeEventListener?.('change', syncCompact))
 const compactCategoryLabels = { all: '全部', collective: '代表曲', unit: '组合曲', special: '特别' }
 const query = ref('')
 const category = ref('all')
@@ -150,6 +163,13 @@ function chooseVersion(id) {
 .stage-segment > button:disabled { opacity: .6; cursor: default; }
 .song-category-filters { flex: 0 0 auto; margin-top: var(--gs-space-3); }
 /* Arrangement: kind switch, then the kind's own options (a unit grid, the solo rows). */
+.arrangement-inline { display: contents; }
+.arrangement-summary { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: var(--gs-control-touch); padding: 0; border: 0; background: none; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
+.arrangement-summary > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.arrangement-summary > strong { overflow: hidden; font-weight: var(--gs-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.arrangement-summary > svg { color: var(--gs-ink-3); }
+.arrangement-summary:disabled { opacity: .6; cursor: default; }
+.arrangement-sheet-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .arrangement-picker { display: flex; flex-direction: column; gap: var(--gs-space-3); }
 .arrangement-title { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
 .arrangement-options { display: grid; gap: var(--gs-space-1); }
