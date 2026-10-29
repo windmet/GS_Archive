@@ -2,13 +2,13 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-28（深链接状态已核对至 #123 / `11e7418c`；其他条线保留各自交接记录，站点/R2 发布快照未重新验收）
+更新：2026-10-29（门户与深链接已核对至 master `7c7312c1`，开放 PR 0 个；其他条线保留各自交接记录，站点/R2 发布快照未重新验收）
 
 ## 开发基线
 
 | 项 | 值 |
 |---|---|
-| master | 已含 #98 谱面原生投影、#99 组合/歌曲 v2、#100 谱面自动演示时间线、#101 UI 审计收敛、#102 首页/摄影衣装筛选、#103 舞台衣装归族、#104 门户改造交接（#104 合入时为 `4ea7d284`） |
+| master | `7c7312c1`（#120 合入）。在 #98–#104 之上，又合入门户改造 #105–#119、#125，深链接 R1 #121、R2 #123、收口 #124，歌曲统计小修 #122，面包屑 #120 |
 | 谱面 | 无进行中分支。#98 原生投影、#100 自动演示 / 命中特效 / Combo·315 / 打击音已合入；最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，基线 [谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md) |
 | 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `1accd9d0aa698ec03ec6d0b80211939f914940abac105d51021b36a8fb321081`；data revision `2688ad94abf9bd93277ec844a6ada160131e6f0856e5fad891ceb69de72f83bc`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表下表站点已发布 |
 | 已有阶段 tag | `baseline/2026-10-20`（另保留 `baseline/2026-10-14`）；本 PR 尚未合入，不提前打新的 master 基线 tag |
@@ -16,6 +16,8 @@
 ## 发布快照（历史记录，未重新验收）
 
 以下保留既有发布记录；不根据开发源码推定线上版本。新发布必须另行取得授权并记录实际目标验收。
+
+仓库里最新的预览候选分支是 `release/20261023-preview-rc`（`a33f0f7b`）。#106 之后的门户改造和深链接 R1 / R2 都没有部署；下表测试站一行早于该候选，也没有重验（10-29 核对）。
 
 | 项 | 值 |
 |---|---|
@@ -32,11 +34,11 @@
 | 线 | 当前分支 | 下一步 |
 |---|---|---|
 | 剧情 / ADV | 无进行中分支（#59 候选工具、#66–#69/#71/#73 原生效果已合入） | 入口：[GS_ARCHIVE_HANDOFF_20261020_STORY.md](GS_ARCHIVE_HANDOFF_20261020_STORY.md)。语料晋升另开分支，门槛是 13 个 RAW 核对文件和 Valentine b 段语音补抽；#58 的 SE `sheet` 总线路由与 #73 的 part 开头黑场都要晋升后才在已发布 compiled 上生效。晋升后才恢复翻译批次。粒子剩樱花（需给共用采样器加 ForceModule，红叶/雪语料未使用）；part 之间原生是 0.5 秒渐黑再停 1 秒，我们是直接切黑 |
-| 门户 portal | 无进行中分支（#101 UI 审计收敛、#102 衣装筛选已合入） | **下一步：整体门户改造，按 [节目册 2.0 交接](GS_ARCHIVE_HANDOFF_20261027_PORTAL_REDESIGN.md) 的 P0–P7 分批做**；#101 的 Escape 收起修复待 Browser 复验。衣装筛选见 [COSTUME_CATEGORY_FILTERS_20261025.md](COSTUME_CATEGORY_FILTERS_20261025.md)；图鉴动态预览仍待办。故事入口一律经 `src/core/StoryOwner.js` 落到归属页，不再新增通用故事页。盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定；关于页联系方式待定。启动 JS 预算已由导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
+| 门户 portal | 无进行中分支（节目册 2.0 #106–#119、#125 已合入） | **当前状态只看 [门户进度表](PORTAL_REDESIGN_PROGRESS_20261027.md)**：P0–P2、P5、P6 卡面 / 偶像 / 活动 / 组合已合入；P3 谱面、P4 舞台、P6 歌曲余项 / 卡池 / 图鉴、P7 阅读器 / 摄影 / 播放器只做了一部分。下一轮先在同一集成版本上做 P6 详情页整页与返回验收；#101 的 Escape 收起修复待 Browser 复验。规格仍按 [节目册 2.0 交接](GS_ARCHIVE_HANDOFF_20261027_PORTAL_REDESIGN.md)。衣装筛选见 [COSTUME_CATEGORY_FILTERS_20261025.md](COSTUME_CATEGORY_FILTERS_20261025.md)；图鉴动态预览仍待办。故事入口一律经 `src/core/StoryOwner.js` 落到归属页，不再新增通用故事页。盲测条目先分到剧情播放器 / 门户视觉 / 舞台三条线再改；商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查（含竖屏 ADV 横向压缩）；正式站发布与 noindex 决定；关于页联系方式待定。启动 JS 预算已由导航改版调整至 210 KiB（215,040 gzip bytes，`379ec5cf`）；后续以当前 build 审计为准 |
 | 翻译 i18n | 暂停到剧情语料晋升之后（晋升会新增 1697 个文件的 text_ref）；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
 | 谱面 chart | 无进行中分支（#98 原生投影、#100 自动演示时间线已合入） | 最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，下一批按其「下一批建议顺序」；另见 [开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)、[原生证据审计](CHART_ASSUMPTION_AUDIT_20261023.md)。仍开放：输入判定、完整原机粒子 / GPU 等价、共享 hold 循环与 Special 等音效 cue、物理手机验收。谱面界面改版并入门户交接 P3 |
 | 舞台 stage | 无进行中分支（#103 舞台衣装归族、#95 粒子/Smoke 已合入） | 舞台面板改版（曲目页、编队页、画面页）并入门户交接 P4。#103 内容：549 个 Live 模型按适用范围→款式→普通/另一款→逐人 ID→当前出演位覆盖分层，个人衣装下拉分组；全员/组合/属性/跨组合套服可按可用成员应用，缺版本者保留原装。设计、来源和验收见 [STAGE_COSTUME_FAMILIES_20261025.md](STAGE_COSTUME_FAMILIES_20261025.md)。已再核对 141 个常服/剧情专用模型只有 comu、无 cos，不加入舞台舞蹈资源；摄影/图鉴 comu 预览留待办。前轮[收口记录](STAGE_PR_CLOSEOUT_20261023.md)的边界（Smoke partial、原机/GPU、RNG、Noise、参考时钟等）继续保留；本轮未部署 |
-| 深链接（portal 线的地址层） | 无进行中实现分支；收口记录 `portal/20261028-deep-links-closeout` | R1 #121 已以 merge commit `b1065a8f` 合入；独立歌曲小修 #122 为 `dd7b28de`。R2 #123（源码 `9fb612bd`）经远端 CI 成功后以 `11e7418c` 合入：1,394 个 StoryOwner 往返、Browser P51–P66、完整门禁 116/116 和 1,401 个真实 head 外壳通过。见 [R2 执行记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md)。R3/R4 等 P3/P4/P6 图鉴/P7 与剧情语料前置条件，见 [后续核对](GS_ARCHIVE_HANDOFF_20261028_DEEP_LINKS.md#后续前置核对2026-10-28)。用户已要求本任务后续按门禁直接提交、建 PR、合并，不再逐次询问；发布仍是独立范围。 |
+| 深链接（portal 线的地址层） | 无进行中实现分支；收口记录 `portal/20261028-deep-links-closeout` | R1 #121 已以 merge commit `b1065a8f` 合入；独立歌曲小修 #122 为 `dd7b28de`。R2 #123（源码 `9fb612bd`）经远端 CI 成功后以 `11e7418c` 合入：1,394 个 StoryOwner 往返、Browser P51–P66、完整门禁 116/116 和 1,401 个真实 head 外壳通过。见 [R2 执行记录](GS_ARCHIVE_DEEP_LINKS_R2_20261028.md)。面包屑站内打开 #120 已合入。R3/R4 等 P3/P4/P6 图鉴/P7 与剧情语料前置条件，开工条件表见 [10-29 核对](GS_ARCHIVE_HANDOFF_20261028_DEEP_LINKS.md#10-现状核对2026-10-29)。用户已要求本任务后续按门禁直接提交、建 PR、合并，不再逐次询问；发布仍是独立范围。 |
 
 舞台 Smoke 补证（同分支，输入 `91f61d32` / `8290ec28` / `84350bde`）：6系统/120个受控出生位置与单位方向、+1.5/+7/−7原生startSpeed及down两系统的6条无外力轨迹已核对。side四系统确认快速缓存拒绝非0/1端点，改走原生通用曲线，双常量重力→限速→积分16轨迹/320粒子检查点同新增JS运动核对照，最大误差1.06e−5。对照已纳入object-emitter门禁，见[Smoke来源记录](NATIVE_SMOKE_SOURCE_20261023.md)。此段为当时补证边界；随后已接入确定性 Web 场景预览，原机时钟/退休调度及完整场景等价仍开放。
 
@@ -47,6 +49,7 @@ Smoke UV补证（输入 `f5f174a7`）：down两系统的1×12源网格经过原�
 ## 未合入但保留的分支
 
 - `claude/player-voice-preload-20261013`（`c3491a7c`）：剧情语音预取、语音等待上限、晚到唇形补挂。功能完整但没有进 master，已落后 master 70+ 个提交，`StoryViewer.vue`、`useVoicePlayer.js`、`VoiceLipStore.js`、`AdvUI.vue` 预计冲突。建议在新的 `portal/` 分支上基于 master 重做，不直接合并；未做真机/iOS 验证。
+- `portal/20261027-p6-idol-detail`（`a24c9bfd`）、`portal/20261023-sidebar-split-rows`（`fe36b14f`）：补丁都已在 master（`git cherry` 为 `-`，前者等于 #119 的 `cbac9ec1`），可打 `archive/` tag 后删，由用户执行。
 
 被取代的旧分支和实验都已打 tag 后删除：`experiment/*` 是不合入的实验，`archive/*` 是旧分支的最后状态。用 `git tag -l 'archive/*' 'experiment/*'` 查看。
 
