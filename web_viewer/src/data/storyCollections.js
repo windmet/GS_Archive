@@ -25,8 +25,20 @@ export function buildStoryChapterEpisodes(story, rows) {
   })
 }
 
+// The prequel list entry's button art (EpisodeZeroUnitElement), 446×150.
 export function unitStoryBannerUrl(assetCode) {
   return assetCode ? `/assets/stories/units/image_unit_story_button_${assetCode}.png` : ''
+}
+
+// The unit's own group pictures, as the game shows them: the stage-costume shot on the idol page's unit
+// introduction (UnitImage.Init → IdolUnitData.introSpriteName) and the casual shot when the prequel opens
+// (StorySelectView.LoadEpisodeZeroStoryImage). Both are full-body on a transparent ground.
+export function unitIntroImageUrl(assetCode) {
+  return assetCode ? `/assets/units/intros/image_unit_intro_${assetCode}.png` : ''
+}
+
+export function unitStoryVisualUrl(assetCode) {
+  return assetCode ? `/assets/units/story_visuals/image_unit_story_visual_${assetCode}.png` : ''
 }
 
 function buildCollection(structure, catalog) {

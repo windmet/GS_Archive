@@ -1,8 +1,8 @@
 <template>
   <article v-if="collection" class="story-collection story-page" data-archive-scroll-container>
     <header class="collection-hero story-head">
-      <div v-if="collection.visualUrl" class="collection-visual" :class="`domain-${collection.domain}`">
-        <img :src="collection.visualUrl" :alt="collection.title" />
+      <div v-if="collection.visualUrl" class="collection-visual" :class="[`domain-${collection.domain}`, { 'is-group-visual': heroVisual !== collection.visualUrl }]">
+        <img :src="heroVisual" :alt="collection.title" @error="heroVisualFailed = true" />
       </div>
       <ArchiveIdolAvatar v-else-if="collection.subject?.kind === 'idol'" class="collection-avatar" :idol-code="collection.subject.code" :size="72" decorative />
       <div class="collection-copy">
@@ -171,6 +171,7 @@ import { storyCollectionTitle } from '../../presentation/StoryPageTitle.js'
 import { useReaderTitles } from './useReaderTitles.js'
 import {gashaText} from './useArchiveGashaText.js'
 import { extraStorySeriesDefinition } from '../../data/extraStoryTaxonomy.js'
+import { unitStoryVisualUrl } from '../../data/storyCollections.js'
 import '../../styles/archive-story.css'
 
 const props = defineProps({
@@ -189,6 +190,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-song', 'open-idol-story', 'open-idol', 'open-unit'])
 const expandedChapterId = ref('')
+// A unit prequel opens on the game's casual group shot; the button art stays as the fallback.
+const heroVisualFailed = ref(false)
+const heroVisual = computed(() => (!heroVisualFailed.value && props.collection?.domain === 'unit_story' && unitStoryVisualUrl(props.unitCode)) || props.collection?.visualUrl || '')
+watch(() => [props.collection?.id, props.unitCode], () => { heroVisualFailed.value = false })
 const memberReferences = computed(() => props.members.map(code =>
   buildIdolReference(code, props.identity, props.manifest, `collection:${props.collection?.id || ''}`))
   .map(reference => reference.actionable ? { ...reference, displayName: props.idolName(reference.idolCode) || reference.displayName, unitName: props.collection?.domain === 'unit_story' ? '' : reference.unitName } : reference))
@@ -268,6 +273,10 @@ function externalResourcesForChapter(chapterId) {
 .collection-visual { overflow: hidden; border-radius: var(--gs-radius-media); }
 .collection-visual.domain-unit_story { padding: 0; border: 0; background: none; box-shadow: none; }
 .collection-visual img { display: block; width: 100%; height: auto; }
+/* The group shot is full-body on a transparent ground: contained, standing on the hero's base line, with
+   the same flat lower-right shadow as the idol and unit heroes. */
+.collection-visual.is-group-visual { overflow: visible; }
+.collection-visual.is-group-visual img { width: auto; max-width: 100%; height: 300px; margin-inline: auto; object-fit: contain; object-position: center bottom; filter: drop-shadow(6px 4px 0 color-mix(in oklab, var(--gs-ink) 12%, transparent)); }
 .collection-copy { min-width: 0; }
 .collection-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gs-space-4); flex-wrap: wrap; }
 .collection-copy h2 { overflow-wrap: anywhere; }
@@ -289,6 +298,7 @@ function externalResourcesForChapter(chapterId) {
 @container story-page (max-width: 760px) {
   .collection-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-5); }
   .collection-hero:has(.collection-avatar) { grid-template-columns: auto minmax(0, 1fr); }
+  .collection-visual.is-group-visual img { height: 240px; }
 }
 .collection-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: var(--gs-space-6); margin: 0; padding: 0; list-style: none; }
 </style>

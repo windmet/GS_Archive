@@ -1,50 +1,41 @@
 <template>
   <article v-if="unit" class="unit-detail" :style="themeStyle" data-archive-scroll-container>
-    <!-- 人物幕 on the unit colour's wash: the logo, the name after a 3px colour bar, the reading and the
-         profile; the members' group picture (the prequel banner) opens the unit's prequel. The paper stays
-         light: the dark stage art is not a reading surface. -->
-    <header class="unit-hero">
+    <!-- 人物幕, in the idol page's language: the unit colour's wash with a light to the lower right, the
+         unit's own group picture (the game's image_unit_intro, never members pasted together) casting a
+         flat shadow in the unit ink (色影), cut at the hips and fading out through the hero's lower edge.
+         Without the picture the hero is the copy alone. -->
+    <header class="unit-hero" :class="{ 'has-art': introUrl && !introFailed }">
+      <div v-if="introUrl && !introFailed" class="unit-hero-art" :style="artStyle" aria-hidden="true">
+        <img :src="introUrl" alt="" decoding="async" @load="readArtSize" @error="introFailed = true" />
+      </div>
       <div class="unit-hero-copy">
         <img v-if="!logoFailed" class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" decoding="async" @error="logoFailed = true" />
-        <h2 class="unit-hero-name">{{ unit.unit_name }}</h2>
-        <p lang="ja" class="unit-hero-kana">{{ unit.unit_kana }}</p>
+        <h2 class="unit-hero-name">{{ unit.unit_name }}<span lang="ja" class="unit-hero-kana">{{ unit.unit_kana }}</span></h2>
         <p v-if="unitDescription" class="unit-hero-desc gs-flow">{{ unitDescription }}</p>
       </div>
-      <button
-        v-if="unitStoryBanner && !bannerError"
-        type="button"
-        class="unit-hero-photo"
-        :aria-label="`阅读 ${unit.unit_name} 的组合前传`"
-        :data-archive-focus-id="`unit-story-banner:${unit.unit_code}`"
-        @click="emit('open-story', { domain: 'unit_story', section: String(unit.unit_id) })"
-      >
-        <img :src="unitStoryBanner" alt="" @error="bannerError = true" />
-      </button>
     </header>
 
-    <!-- Facts: four short numbers in a row; the card count opens the unit's cards. -->
-    <dl class="unit-facts">
-      <div><dt>成员</dt><dd><b>{{ members.length }}</b>位</dd></div>
-      <div><dt>组合歌曲</dt><dd><b>{{ songs.length }}</b>首</dd></div>
-      <div><dt>组合剧情</dt><dd><b>{{ stories.length }}</b>篇</dd></div>
-      <div v-if="cardStats?.total">
-        <dt>卡片</dt>
-        <dd><button type="button" class="unit-facts-cards" :data-archive-focus-id="`unit-cards:${unit.unit_code}`" @click="emit('open-cards')"><b>{{ cardStats.total }}</b>张<small v-if="cardStats.rarity_counts?.SSR">SSR {{ cardStats.rarity_counts.SSR }}</small><ChevronRight :size="15" aria-hidden="true" /></button></dd>
+    <!-- One row under the hero: the members (face and name) and what the page holds, each count a link. -->
+    <section class="unit-overview" aria-label="成员与收录">
+      <div class="unit-overview-cast">
+        <h3 class="unit-overview-label">成员 <b>{{ members.length }}</b></h3>
+        <div class="unit-members">
+          <ArchiveIdolReference
+            v-for="entry in memberReferences"
+            :key="entry.member.idol_code"
+            :reference="entry.reference"
+            density="identity"
+            @open="emit('open-idol', entry.member)"
+          />
+        </div>
       </div>
-    </dl>
-
-    <section class="unit-section" aria-labelledby="unit-members-title">
-      <div class="section-heading">
-        <h3 id="unit-members-title">成员</h3>
-        <span>{{ members.length }}</span>
-      </div>
-      <div class="unit-members">
-        <ArchiveIdolReference
-          v-for="entry in memberReferences"
-          :key="entry.member.idol_code"
-          :reference="entry.reference"
-          @open="emit('open-idol', entry.member)"
-        />
+      <div class="unit-overview-holdings">
+        <h3 class="unit-overview-label">收录</h3>
+        <ul class="unit-holdings">
+          <li v-if="songs.length"><button type="button" @click="jumpTo('unit-songs-title')">组合歌曲<b>{{ songs.length }}</b>首<ChevronRight :size="15" aria-hidden="true" /></button></li>
+          <li v-if="stories.length"><button type="button" @click="jumpTo('unit-stories-title')">组合前传<b>{{ stories.length }}</b>话<ChevronRight :size="15" aria-hidden="true" /></button></li>
+          <li v-if="cardStats?.total"><button type="button" :data-archive-focus-id="`unit-cards:${unit.unit_code}`" @click="emit('open-cards')">卡片<b>{{ cardStats.total }}</b>张<small v-if="cardStats.rarity_counts?.SSR">SSR {{ cardStats.rarity_counts.SSR }}</small><ChevronRight :size="15" aria-hidden="true" /></button></li>
+        </ul>
       </div>
     </section>
 
@@ -71,25 +62,37 @@
         </div>
       </section>
 
+      <!-- 组合前传 as the game lists it: the prequel's button art at its own size opens the collection,
+           then the episodes by number. -->
       <section v-if="stories.length" class="unit-section unit-stories-section" aria-labelledby="unit-stories-title">
         <div class="section-heading">
-          <h3 id="unit-stories-title">组合剧情</h3>
-          <span>{{ stories.length }}</span>
+          <h3 id="unit-stories-title">组合前传</h3>
+          <span>{{ stories.length }} 话</span>
         </div>
-        <div class="unit-stories">
-          <button
-            v-for="story in stories"
-            :key="story.id"
-            :data-archive-focus-id="`unit-story:${unit.unit_code}:${story.id}`"
-            @click="emit('open-story', story)"
-          >
-            <Play :size="15" fill="currentColor" />
-            <span>
-              <strong>{{ story.title }}</strong>
-            </span>
-            <small>查看剧情</small>
-          </button>
-        </div>
+        <button
+          v-if="unitStoryBanner && !bannerError"
+          type="button"
+          class="unit-stories-cover"
+          :aria-label="`${unit.unit_name} 组合前传合集`"
+          :data-archive-focus-id="`unit-story-banner:${unit.unit_code}`"
+          @click="emit('open-story', { domain: 'unit_story', section: String(unit.unit_id) })"
+        >
+          <img :src="unitStoryBanner" alt="" @error="bannerError = true" />
+          <span>合集 <ChevronRight :size="15" aria-hidden="true" /></span>
+        </button>
+        <ol class="unit-stories">
+          <li v-for="(story, index) in stories" :key="story.id">
+            <button
+              type="button"
+              :data-archive-focus-id="`unit-story:${unit.unit_code}:${story.id}`"
+              @click="emit('open-story', story)"
+            >
+              <span class="unit-story-number">{{ index + 1 }}</span>
+              <strong :class="{ 'is-title-pending': storyTitle.pending() }">{{ storyTitle(story.file, story.title) }}</strong>
+              <ChevronRight :size="16" aria-hidden="true" />
+            </button>
+          </li>
+        </ol>
       </section>
     </div>
 
@@ -129,7 +132,7 @@
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 void loadArchiveNames('profiles').catch(() => {})
 import { computed, ref, watch } from 'vue'
-import { ChevronRight, Music, Play } from '@lucide/vue'
+import { ChevronRight, Music } from '@lucide/vue'
 import { idolThemeProperties } from '../../presentation/idolStageLight.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
@@ -138,7 +141,8 @@ import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { reflowText } from '../../../shared/reading/ReadingTypography.js'
-import { unitStoryBannerUrl } from '../../data/storyCollections.js'
+import { unitIntroImageUrl, unitStoryBannerUrl } from '../../data/storyCollections.js'
+import { useStoryTitles } from './useReaderTitles.js'
 
 const props = defineProps({
   unit: { type: Object, default: null },
@@ -164,11 +168,29 @@ const unitDescription = computed(() => {
 // The unit colour gives the hero its wash, ink and bar the same way an idol's colour does on the idol page.
 const themeStyle = computed(() => idolThemeProperties(props.unit?.unit_color))
 const logoFailed = ref(false)
+const storyTitle = useStoryTitles()
 
+// The group picture is cut at the hips: the frame shows its top ART_SHOWN, so the frame's ratio follows
+// the picture's (read on load; the pictures run 496–828 wide by 537–704 tall).
+const ART_SHOWN = 0.58
+const introUrl = computed(() => unitIntroImageUrl(props.unit?.unit_code))
+const introFailed = ref(false)
+const artRatio = ref(600 / 680)
+const artStyle = computed(() => ({ '--unit-art-ratio': artRatio.value, '--unit-art-frame': artRatio.value / ART_SHOWN, '--unit-art-shown': ART_SHOWN }))
+function readArtSize(event) {
+  const { naturalWidth, naturalHeight } = event.target
+  if (naturalWidth && naturalHeight) artRatio.value = naturalWidth / naturalHeight
+}
+
+// Faces and names only: the reading and CV belong to each idol's own page.
 const memberReferences = computed(() => props.members.map(member => {
-  const reference = buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`, { subtitle: 'cv' })
+  const reference = { ...buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`), subtitle: '', unitName: '' }
   return { member, reference: reference.actionable ? { ...reference, displayName: props.idolName(reference.idolCode, reference.displayName) || reference.displayName } : reference }
 }))
+
+function jumpTo(headingId) {
+  document.getElementById(headingId)?.closest('section')?.scrollIntoView({ block: 'start' })
+}
 
 function matchingMemberNames(event) {
   const names = new Map(props.members.map(member => [member.idol_code, props.idolName(member.idol_code) || member.display_name]))
@@ -227,6 +249,7 @@ watch(() => props.unit?.unit_code, () => {
   activeEventCategory.value = 'all'
   bannerError.value = false
   logoFailed.value = false
+  introFailed.value = false
 })
 
 const eventCategories = computed(() => {
@@ -252,28 +275,28 @@ const displayedEventItems = computed(() => {
    wide row inside cannot widen the page past a phone screen. */
 .unit-detail { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--gs-space-section); container: unit-detail / inline-size; height: 100%; padding: var(--gs-space-8); overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
 .unit-detail > * { width: 100%; max-width: var(--gs-content-width); margin-inline: auto; }
-/* 人物幕: the unit colour's wash (light, like the idol page), copy on the left, the members' group
-   picture on the right. The picture is the prequel banner, cropped to its people (its own logo sits at
-   the right end, and the hero already shows the logo). */
-.unit-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 40%); align-items: center; gap: var(--gs-space-7); min-height: 260px; padding: var(--gs-space-7) 0 var(--gs-space-7) var(--gs-space-8); overflow: clip; border-radius: var(--gs-radius-media); background: var(--gs-idol-wash); }
-.unit-hero-copy { display: grid; justify-items: start; gap: var(--gs-space-2); min-width: 0; }
+/* 人物幕: the idol page's hero (ArchiveIdolDetail .idol-hero) with the unit colour: the wash lit to the
+   lower right, the group picture top-aligned on the right, its flat shadow in the unit ink at 24% to the
+   lower right, the cut at the hips sitting on the hero's lower edge and fading through its last 18%. */
+.unit-hero { position: relative; display: flex; align-items: center; min-height: 300px; overflow: clip; padding: var(--gs-space-7) var(--gs-space-8); border-radius: var(--gs-radius-media); background: radial-gradient(circle at 78% 62%, var(--gs-surface) 0, var(--gs-idol-wash) 58%); }
+.unit-hero-art { position: absolute; z-index: 1; top: var(--gs-space-6); right: var(--gs-space-6); bottom: 0; width: min(52%, calc((300px - var(--gs-space-6)) * var(--unit-art-frame))); -webkit-mask-image: linear-gradient(black 82%, transparent); mask-image: linear-gradient(black 82%, transparent); }
+.unit-hero-art img { display: block; width: 100%; height: calc(100% / var(--unit-art-shown)); object-fit: contain; object-position: center top; filter: drop-shadow(6px 4px 0 color-mix(in oklab, var(--gs-idol-ink) 24%, transparent)); }
+.unit-hero-copy { position: relative; z-index: 2; display: grid; justify-items: start; gap: var(--gs-space-2); min-width: 0; max-width: 34em; }
+.unit-hero.has-art .unit-hero-copy { max-width: 44%; }
 .unit-hero-logo { display: block; max-width: 180px; max-height: 72px; margin-bottom: var(--gs-space-3); object-fit: contain; object-position: left center; }
 .unit-hero-name { margin: 0; padding-left: var(--gs-space-4); border-left: 3px solid var(--gs-idol); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
-.unit-hero-kana { margin: 0; padding-left: calc(var(--gs-space-4) + 3px); color: var(--gs-ink-2); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
-.unit-hero-desc { margin: var(--gs-space-3) 0 0; max-width: 34em; color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
-/* The banner carries a white rounded frame and its own logo at the right end: the image is scaled past
-   the frame and the window sits on the people. */
-.unit-hero-photo { align-self: stretch; min-width: 0; overflow: hidden; margin-block: calc(-1 * var(--gs-space-7)); padding: 0; border: 0; background: none; cursor: pointer; -webkit-mask-image: linear-gradient(90deg, transparent, black 18%); mask-image: linear-gradient(90deg, transparent, black 18%); }
-.unit-hero-photo img { display: block; width: 100%; height: 100%; min-height: 200px; object-fit: cover; object-position: 30% center; scale: 1.08; }
-/* Facts: four short numbers on one hairline row. */
-.unit-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0; border-top: 1px solid var(--gs-rule); }
-.unit-facts > div { min-width: 0; padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
-.unit-facts dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.unit-facts dd { display: flex; align-items: baseline; gap: 3px; margin: var(--gs-space-1) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.unit-facts b { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; }
-.unit-facts-cards { display: inline-flex; align-items: baseline; gap: 3px; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; }
-.unit-facts-cards small { margin-left: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.unit-facts-cards svg { align-self: center; color: var(--gs-ink-3); }
+.unit-hero-kana { margin-left: var(--gs-space-3); color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
+.unit-hero-desc { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* 成员 | 收录: one row on the paper, no rules, in the same 55 : 45 columns as the songs and prequel below. */
+.unit-overview { display: grid; grid-template-columns: 55fr 45fr; gap: var(--gs-space-8); align-items: start; }
+.unit-overview > div { min-width: 0; }
+.unit-overview-label { margin: 0 0 var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.unit-overview-label b { margin-left: 2px; color: var(--gs-ink-2); font-family: var(--gs-font-stage); font-variant-numeric: tabular-nums; }
+.unit-holdings { display: flex; flex-wrap: wrap; gap: 0 var(--gs-space-6); margin: 0; padding: 0; list-style: none; }
+.unit-holdings button { display: inline-flex; align-items: center; gap: 3px; min-height: var(--gs-control-touch); padding: 0; border: 0; background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-meta); cursor: pointer; }
+.unit-holdings b { margin-left: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
+.unit-holdings small { margin-left: var(--gs-space-2); font-size: var(--gs-text-meta); }
+.unit-holdings svg { align-self: center; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .section-heading h3 { margin: 0; min-width: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
 .section-heading > span { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
@@ -283,8 +306,8 @@ const displayedEventItems = computed(() => {
 .event-filter-chip[aria-pressed="true"] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
 .event-filter-chip[aria-pressed="true"] small { color: inherit; }
 .event-filter-chip:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-.unit-members { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0 var(--gs-space-5); }
-.unit-members :deep(.idol-reference-copy strong), .unit-members :deep(.idol-reference-copy small) { white-space: normal; overflow-wrap: anywhere; }
+.unit-members { display: flex; flex-wrap: wrap; gap: 0 var(--gs-space-2); margin-left: -5px; }
+.unit-members :deep(.idol-reference-arrow) { display: none; }
 .unit-content-split { display: grid; grid-template-columns: 55fr 45fr; gap: var(--gs-space-8); align-items: start; }
 .unit-content-split.single-column { grid-template-columns: 1fr; }
 .unit-songs { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 var(--gs-space-5); }
@@ -294,36 +317,41 @@ const displayedEventItems = computed(() => {
 .unit-songs button > svg, .unit-stories button > svg { margin: auto; color: var(--gs-ink-3); }
 .unit-songs span, .unit-stories button > span { display: grid; min-width: 0; }
 .unit-songs strong, .unit-stories strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.unit-stories { display: grid; }
-.unit-stories button { grid-template-columns: 22px minmax(0, 1fr) auto; }
-.unit-stories small { color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+/* The game's prequel list entry is the 446×150 button art: here at half size, never stretched. */
+.unit-stories-cover { display: flex; align-items: center; gap: var(--gs-space-4); margin: 0 0 var(--gs-space-2); padding: 0; border: 0; background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
+.unit-stories-cover img { display: block; width: 223px; height: auto; aspect-ratio: 446 / 150; border-radius: var(--gs-radius-media); }
+.unit-stories-cover span { display: inline-flex; align-items: center; gap: 2px; }
+.unit-stories { display: grid; margin: 0; padding: 0; list-style: none; }
+.unit-stories button { grid-template-columns: 28px minmax(0, 1fr) auto; width: 100%; }
+.unit-story-number { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-variant-numeric: tabular-nums; }
+.is-title-pending { visibility: hidden; }
 .unit-detail :deep(.relation-row) { border-radius: var(--gs-radius-control); }
 .unit-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); white-space: normal; overflow-wrap: anywhere; }
 .unit-detail :deep(.relation-labels strong), .unit-detail :deep(.relation-labels small), .unit-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
 .unit-detail button:focus-visible, .unit-detail :deep(button.archive-idol-reference:focus-visible), .unit-detail :deep(.relation-row:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (hover: hover) {
-  .unit-hero-photo:hover { opacity: .9; }
-  .unit-facts-cards:hover b { color: var(--gs-ink-2); }
+  .unit-stories-cover:hover img { opacity: .9; }
+  .unit-holdings button:hover { color: var(--gs-ink-2); }
   .event-filter-chip:hover { background: var(--gs-mint-wash); border-color: var(--gs-mint-line); }
   .unit-songs button:hover strong, .unit-stories button:hover strong { color: var(--gs-ink-2); }
 }
 @container unit-detail (max-width: 980px) {
-  .unit-content-split { grid-template-columns: 1fr; gap: var(--gs-space-section); }
+  .unit-content-split, .unit-overview { grid-template-columns: 1fr; gap: var(--gs-space-section); }
+  .unit-overview { gap: var(--gs-space-4); }
 }
 @media (max-width: 760px) {
   .unit-detail { gap: var(--gs-space-8); padding: var(--gs-space-5); }
-  /* Phones: the group picture runs edge to edge on top, the copy under it on the wash. */
-  /* min-height stays auto: in the fixed-height page grid an explicit 0 lets the row collapse. */
-  .unit-hero { grid-template-columns: 1fr; gap: var(--gs-space-4); min-height: auto; margin: calc(-1 * var(--gs-space-5)) calc(-1 * var(--gs-space-5)) 0; width: auto; max-width: none; padding: 0 var(--gs-space-5) var(--gs-space-6); border-radius: 0; }
-  .unit-hero-photo { order: -1; margin: 0 calc(-1 * var(--gs-space-5)); -webkit-mask-image: none; mask-image: none; }
-  .unit-hero-photo img { min-height: 0; height: auto; aspect-ratio: 446 / 150; object-position: center; scale: 1.08; }
-  /* The whole banner shows here, with its own logo, so the separate logo steps aside (only while the banner is there). */
-  .unit-hero:has(.unit-hero-photo) .unit-hero-logo { display: none; }
-  .unit-hero-logo { max-width: 140px; max-height: 54px; }
+  /* Phones: the hero runs to the screen edges; the picture on top, as wide as the screen allows and at most
+     240 tall, still cut at the hips. The logo and name step up into its faded lower edge, so no cut line
+     shows and the copy follows the faces. min-height stays auto: in the fixed-height page grid an explicit
+     0 lets the row collapse. */
+  .unit-hero { display: block; min-height: auto; margin: calc(-1 * var(--gs-space-5)) calc(-1 * var(--gs-space-5)) 0; width: auto; max-width: none; padding: var(--gs-space-5) 0 var(--gs-space-6); border-radius: 0; }
+  .unit-hero-art { position: relative; inset: auto; width: min(calc(100% - 2 * var(--gs-space-4)), calc(240px * var(--unit-art-frame))); aspect-ratio: var(--unit-art-frame); min-height: 0; overflow: clip; margin-inline: auto; -webkit-mask-image: linear-gradient(black 70%, transparent); mask-image: linear-gradient(black 70%, transparent); }
+  .unit-hero-copy, .unit-hero.has-art .unit-hero-copy { max-width: none; padding-inline: var(--gs-space-5); }
+  .unit-hero.has-art .unit-hero-copy { margin-top: -36px; }
+  .unit-hero-logo { max-width: 140px; max-height: 52px; margin-bottom: var(--gs-space-2); }
   .unit-hero-name { font-size: var(--gs-text-section); }
-  .unit-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .unit-members, .unit-songs { grid-template-columns: 1fr; }
-  .unit-stories button { grid-template-columns: 20px minmax(0, 1fr); }
-  .unit-stories button > small { grid-column: 2; }
+  .unit-songs { grid-template-columns: 1fr; }
+  .unit-stories-cover img { width: 168px; }
 }
 </style>
