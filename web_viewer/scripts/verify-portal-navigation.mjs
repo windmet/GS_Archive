@@ -323,3 +323,9 @@ console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs
 import { ARCHIVE_SECTIONS } from '../src/core/archiveSections.js'
 import { buildArchiveBreadcrumbs } from '../src/core/archiveRoute.js'
 import { archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+// 315 岁时记 replaced the 运营轨迹 timeline (10-30): the Portal keeps no fallback column and no producer for it;
+// prepare-readmodel-preview refuses a release whose all-idol scope lacks the almanac.
+const portalOverviewSource = readFileSync(new URL('../src/components/archive/ArchivePortalOverview.vue', import.meta.url), 'utf8')
+assert.doesNotMatch(portalOverviewSource, /运营轨迹|overview-timeline|portalTimeline/, 'the Portal has no timeline fallback beside the almanac')
+assert.doesNotMatch(readFileSync(new URL('../src/presentation/PortalBento.js', import.meta.url), 'utf8'), /portalTimeline/, 'the timeline producer is retired')
+assert.match(readFileSync(new URL('./prepare-readmodel-preview.mjs', import.meta.url), 'utf8'), /verify-portal-almanac\.mjs/, 'a preview package checks the almanac first')

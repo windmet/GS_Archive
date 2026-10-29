@@ -1,7 +1,8 @@
 // 315 岁时记 (batch D): the all-idol Portal scope carries a 12-month almanac whose birthdays and events are
 // checked here against the read model's own idol details and event directory, with the month taken by
 // Intl in Asia/Tokyo (an independent route from the generator's offset arithmetic). Idol scopes carry no
-// almanac, a scope without one falls back to the timeline, and the all-idol scope stays under its budget.
+// almanac and the all-idol scope stays under its budget. The 运营轨迹 timeline it replaced is retired: the Portal
+// has no fallback, so prepare-readmodel-preview runs this before any release is packaged.
 //   node scripts/verify-portal-almanac.mjs <read-model candidate root>
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
