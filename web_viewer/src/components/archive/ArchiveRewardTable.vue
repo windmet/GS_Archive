@@ -1,7 +1,7 @@
 <template>
   <div class="domain-rewards">
-    <div class="domain-table-controls">
-      <label>获取方式 <select v-model="scope"><option value="">全部</option><option v-for="kind in scopes" :key="kind" :value="kind">{{ rewardScopeLabels[kind] || '其他来源' }}</option></select></label>
+    <div v-if="rows.length" class="domain-table-controls">
+      <GsFilterMenu v-if="scopes.length>1" v-model="scope" label="获取方式" :options="scopeOptions" neutral="" />
       <span>{{ filtered.length }} 条</span>
     </div>
     <ol v-if="filtered.length" class="domain-reward-list" :aria-label="sources ? '已知来源与用途' : '奖励明细'">
@@ -42,11 +42,13 @@ import {ChevronRight,ImageOff} from '@lucide/vue'
 import {historicalDate,number,rewardConditions,rewardScopeLabels,rewardRelationLabel,rewardProductLabel,rewardCollectionKey} from './DomainPresentation.mjs'
 import {presentRewardProductName as rewardProductName} from './useArchiveRewardText.js'
 import DomainMediaPreview from './DomainMediaPreview.vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
 import '../../styles/archive-rewards.css'
 const props=defineProps({rows:{type:Array,default:()=>[]},sources:Boolean})
 const emit=defineEmits(['open-entity','open-event','open-target'])
 const scope=ref(''),page=ref(0),size=25
 const scopes=computed(()=>[...new Set(props.rows.map(row=>row.scope).filter(Boolean))])
+const scopeOptions=computed(()=>[{value:'',label:'全部',count:props.rows.length},...scopes.value.map(kind=>({value:kind,label:rewardScopeLabels[kind]||'其他来源',count:props.rows.filter(row=>row.scope===kind).length}))])
 const filtered=computed(()=>props.rows.filter(row=>!scope.value || row.scope===scope.value))
 const pages=computed(()=>Math.ceil(filtered.value.length/size)),visible=computed(()=>filtered.value.slice(page.value*size,(page.value+1)*size))
 watch(()=>props.rows,()=>{scope.value='';page.value=0});watch(scope,()=>{page.value=0})
