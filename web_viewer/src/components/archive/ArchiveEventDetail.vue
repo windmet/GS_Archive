@@ -31,11 +31,7 @@
             <img v-if="!unitLogoFailed" :src="getUnitLogoUrl(units[0].unit_code)" alt="" decoding="async" @error="unitLogoFailed=true" /><span v-else>{{ units[0].unit_name }}</span><ChevronRight :size="16" aria-hidden="true" />
           </button>
           <div v-if="castReferences.length" class="event-cast-people" :class="{ 'is-multi': units.length > 1 }">
-            <button v-for="entry in castReferences" :key="entry.reference.idolCode || entry.reference.displayName" type="button" class="event-person"
-              :disabled="!entry.reference.actionable" :aria-label="`查看${entry.reference.displayName}的偶像资料`" :data-archive-focus-id="`event-idol:${view.identity.id}:${entry.reference.idolCode}`" @click="emit('open-idol', entry.idol)">
-              <ArchiveIdolAvatar :idol-code="entry.reference.idolCode" :src="entry.reference.imageCandidates?.[0]?.url || ''" :accent-color="entry.reference.accentColor || ''" :size="units.length > 1 ? 36 : 32" :ring-width="2" decorative />
-              <span class="event-person-copy"><strong>{{ entry.reference.displayName }}</strong><small v-if="units.length > 1 && entry.reference.unitName">{{ entry.reference.unitName }}</small></span>
-            </button>
+            <ArchiveIdolReference v-for="entry in castReferences" :key="entry.idol.idol_code" class="event-person" :reference="entry.reference" density="identity" @open="emit('open-idol', entry.idol)" />
           </div>
           <span v-if="units.length > 1" class="event-cast-units"><button v-for="unit in units" :key="unit.unit_id" type="button" class="event-cast-unit-name" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">{{ unit.unit_name }}<ChevronRight :size="14" aria-hidden="true" /></button></span>
         </div>
@@ -192,7 +188,7 @@ import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 const cardTitle=source=>cardText('card',source,'title')
 import ArchiveRelationList from './ArchiveRelationList.vue'
-import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import '../../styles/archive-domains.css'
@@ -422,12 +418,14 @@ function formatNumber(value) {
 .event-cast-unit img { display: block; height: 30px; max-width: 160px; object-fit: contain; object-position: left center; }
 .event-cast-people { display: flex; flex-wrap: wrap; gap: 0 var(--gs-space-4); }
 .event-cast-people.is-multi { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 0 var(--gs-space-3); }
-.event-person { display: flex; align-items: center; gap: var(--gs-space-2); min-width: 0; min-height: var(--gs-control-touch); padding: 0; border: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; }
+/* One person per cell through the shared reference (it skips half-body story art for avatars and falls back on a
+   failed image): name only with one unit, name over unit with several. */
+.event-person { padding: 0; }
+.event-cast-people:not(.is-multi) .event-person :deep(.idol-reference-copy small) { display: none; }
 .is-multi .event-person { min-height: 52px; }
-.event-person:disabled { cursor: default; }
-.event-person-copy { display: grid; min-width: 0; }
-.event-person-copy strong { overflow: hidden; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.event-person-copy small { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-caption); text-overflow: ellipsis; white-space: nowrap; }
+.is-multi .event-person :deep(.idol-reference-copy) { flex-direction: column; align-items: flex-start; gap: 0; min-width: 0; }
+.is-multi .event-person :deep(.idol-reference-copy small::before) { content: none; }
+.event-person :deep(.idol-reference-arrow) { display: none; }
 .event-cast-units { display: flex; flex-wrap: wrap; column-gap: var(--gs-space-4); margin-top: var(--gs-space-1); }
 .event-cast-unit-name { display: inline-flex; align-items: center; gap: 2px; min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-ink-2); cursor: pointer; font: inherit; font-size: var(--gs-text-meta); }
 .episode-more { display: none; }
@@ -534,7 +532,7 @@ button.episode-main { cursor: pointer; }
 .detail-section :deep(.archive-technical-body), .event-detail > :deep(.archive-technical-body) { padding: 0 var(--gs-space-5) var(--gs-space-5); font-size: var(--gs-text-meta); }
 .detail-section :deep(.archive-technical pre), .event-detail > :deep(.archive-technical pre) { font-size: var(--gs-text-meta); }
 
-.wiki-exchange-table > summary:focus-visible, .event-time-original:focus-visible, .event-person:focus-visible, .event-cast-unit-name:focus-visible, .event-banner-open:focus-visible, .event-media-strip button:focus-visible, .event-cast-unit:focus-visible, .episode-more:focus-visible,
+.wiki-exchange-table > summary:focus-visible, .event-time-original:focus-visible, .event-cast-unit-name:focus-visible, .event-banner-open:focus-visible, .event-media-strip button:focus-visible, .event-cast-unit:focus-visible, .episode-more:focus-visible,
 .story-actions > :focus-visible, .episode-entry button:focus-visible, .event-reward-open:focus-visible,
 .event-material > button:focus-visible,
 .event-summary :deep(a:focus-visible), .wiki-exchange-table :deep(a:focus-visible),
@@ -548,7 +546,7 @@ button.episode-main { cursor: pointer; }
   button.episode-main:hover strong, .episode-play:hover:not(:disabled),
   .event-reward-open:hover, .event-material > button:hover, .event-cast-unit:hover,
   .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-ink-2); }
-  .event-person:not(:disabled):hover strong, .event-time-original:hover, .event-cast-unit-name:hover, .event-cast-unit:hover { color: var(--gs-ink); }
+  .event-time-original:hover, .event-cast-unit-name:hover, .event-cast-unit:hover { color: var(--gs-ink); }
 }
 @media (hover: none), (pointer: coarse) {
   .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
