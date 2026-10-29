@@ -2,13 +2,13 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-30（R4输入 master `1907fc43`，已含摄影路径 #137和收口 #138；其他条线保留各自交接记录，站点/R2 发布快照未重新验收）
+更新：2026-10-30（地址层代码基线 master `97b1a1ae`，R4 #139 已合入；其他条线保留各自交接记录，站点/R2 发布快照未重新验收）
 
 ## 开发基线
 
 | 项 | 值 |
 |---|---|
-| master | `1907fc43`（含 #131–#138；R4本批仍在分支）。在 #98–#104 之上，又合入门户改造 #105–#119、#125，深链接 R1 #121、R2 #123、收口 #124、主干集成补验 #129，歌曲统计小修 #122，面包屑 #120 |
+| master | 代码基线 `97b1a1ae`（含 #131–#139；R4已合入，后续纯文档提交另计）。在 #98–#104 之上，又合入门户改造 #105–#119、#125，深链接 R1 #121、R2 #123、收口 #124、主干集成补验 #129，歌曲统计小修 #122，面包屑 #120 |
 | 谱面 | 无进行中分支。#98 原生投影、#100 自动演示 / 命中特效 / Combo·315 / 打击音已合入；最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，基线 [谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md) |
 | 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `1accd9d0aa698ec03ec6d0b80211939f914940abac105d51021b36a8fb321081`；data revision `2688ad94abf9bd93277ec844a6ada160131e6f0856e5fad891ceb69de72f83bc`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表下表站点已发布 |
 | 已有阶段 tag | `baseline/2026-10-20`（另保留 `baseline/2026-10-14`）；本轮未新增 master 基线 tag |
@@ -38,7 +38,7 @@
 | 翻译 i18n | 语料 #78 已晋升，后续翻译可按合集目录恢复；无进行中分支（B036 已随 #54 合入；`i18n/20261015-translation` 已打 `archive/` tag 删除） | 下一批从新的 `i18n/<日期>-<主题>` 开。草稿 receipt 必须在 LF worktree 生成或复核：CRLF 检出算出的 `edits_sha256` 在 CI 上必红。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
 | 谱面 chart | 无进行中分支（#98 原生投影、#100 自动演示时间线已合入） | 最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，下一批按其「下一批建议顺序」；另见 [开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)、[原生证据审计](CHART_ASSUMPTION_AUDIT_20261023.md)。仍开放：输入判定、完整原机粒子 / GPU 等价、共享 hold 循环与 Special 等音效 cue、物理手机验收。谱面界面改版并入门户交接 P3 |
 | 舞台 stage | 无进行中分支（#103 舞台衣装归族、#95 粒子/Smoke 已合入） | 舞台面板改版（曲目页、编队页、画面页）并入门户交接 P4。#103 内容：549 个 Live 模型按适用范围→款式→普通/另一款→逐人 ID→当前出演位覆盖分层，个人衣装下拉分组；全员/组合/属性/跨组合套服可按可用成员应用，缺版本者保留原装。设计、来源和验收见 [STAGE_COSTUME_FAMILIES_20261025.md](STAGE_COSTUME_FAMILIES_20261025.md)。已再核对 141 个常服/剧情专用模型只有 comu、无 cos，不加入舞台舞蹈资源；摄影/图鉴 comu 预览留待办。前轮[收口记录](STAGE_PR_CLOSEOUT_20261023.md)的边界（Smoke partial、原机/GPU、RNG、Noise、参考时钟等）继续保留；本轮未部署 |
-| 深链接（portal 线的地址层） | `portal/20261030-reader-player-routes` | R1 #121、R2 #123、集成 #129、谱面 #132、舞台 #136 已合入。P6 #133、摄影开始方式 #134 与布局 #135 已合入；摄影路径 #137 已以 `71012ebf` 合入（源码 `ade7fad1`、CI `40906924145` 成功），工作台 `/studio/edit/`，入口仍 `/studio/`，R3 按 D3 决定收束。用户已确认 D3：图鉴和摄影实体保留目录＋query 抽屉，暂不新增实体路径。见 [摄影路径记录](GS_ARCHIVE_STUDIO_PATH_20261029.md)。R4 按用户纠正解除前置，保留query、移动Reader来源至history、收口Player返回schema，见 [R4记录](GS_ARCHIVE_DEEP_LINKS_R4_20261030.md)；P7界面与部署独立；本任务按门禁提交、建 PR、合并，发布独立。 |
+| 深链接（portal 线的地址层） | 无进行中代码分支；R1–R4按已定方案收束 | R1 #121、R2 #123、集成 #129、谱面 #132、舞台 #136 已合入。P6 #133、摄影开始方式 #134 与布局 #135 已合入；摄影路径 #137 已以 `71012ebf` 合入（源码 `ade7fad1`、CI `40906924145` 成功），工作台 `/studio/edit/`，入口仍 `/studio/`，R3 按 D3 决定收束。用户已确认 D3：图鉴和摄影实体保留目录＋query 抽屉，暂不新增实体路径。见 [摄影路径记录](GS_ARCHIVE_STUDIO_PATH_20261029.md)。R4 #139 已以 `97b1a1ae` 合入（源码 `05706ddd`，CI `40924998207` SUCCESS）：Reader/Player保留query、Reader来源进history、13类Player返回合同强制裁剪，见 [R4记录](GS_ARCHIVE_DEEP_LINKS_R4_20261030.md)；D3目录＋query、D4丙；P7界面、真机、媒体发布和D5域名/索引决定独立；本任务按门禁提交、建 PR、合并，发布独立。 |
 
 舞台 Smoke 补证（同分支，输入 `91f61d32` / `8290ec28` / `84350bde`）：6系统/120个受控出生位置与单位方向、+1.5/+7/−7原生startSpeed及down两系统的6条无外力轨迹已核对。side四系统确认快速缓存拒绝非0/1端点，改走原生通用曲线，双常量重力→限速→积分16轨迹/320粒子检查点同新增JS运动核对照，最大误差1.06e−5。对照已纳入object-emitter门禁，见[Smoke来源记录](NATIVE_SMOKE_SOURCE_20261023.md)。此段为当时补证边界；随后已接入确定性 Web 场景预览，原机时钟/退休调度及完整场景等价仍开放。
 

@@ -37,3 +37,10 @@ Browser使用Codex In-app Browser、localhost:5240/PID8684、同一worktree dev�
 开发中曾把Reader全部目录身份也移入history；独立分享因此缺目录标题/跨话控件，已在最终实现前纠正。保留此失败发现，最终版本只移动来源放置字段。
 
 所测Browser旅程error/warn均未见记录；未播放SE条目，不将SE返回成功写成音效音源验收。完整门禁首次114/116通过（汇总226.7秒）；末两项被台账审计拒绝：本批先移除唯一returnView遗留项，但四个实现维度还保留旧partial，审计要求给出具体未完原因。依据13类返回合同、真实控制器回归与既有/新增Browser证据，entry/data/actions/player迁移维度现更新为migrated，parity仍partial、device仍pending；不把实现迁移等同完整媒体/原生等价验收。首次重跑编译通过，但启动JS为215,069字节，超210KiB门槛29字节，审计拒绝。将Player合同改为复用对应页面字段表（不改语义、不提高预算）后，最终末两项2/2通过：编译31.6秒、审计1.9秒，初始JS为214,964字节；汇总114项和最终2项合计均有通过结果，不声称首次全绿。23个生产代码变异均被拒绝并恢复：13类返回注册逐一删除、Reader/Player强制schema、mobile_mode、at_step、voice、Reader revision、非事件Reader历史、两类公开分享清理和组件href。日志/汇总在 `.analysis/r4-routes/`。最终路径/schema/1176导航投影/ReadingPlayback回归再次通过，1,523个外壳生成和dist检查通过。一次附加审计命令误加重复--progress被拒绝，按package原命令重跑通过。未改语料、read-model绑定、R2或站点；本记录不证明51条新语音已上传，不是真机/生产bundle/全部Player媒体兼容性验收。
+
+
+## 合入与范围收口
+
+PR #139，源码 `05706ddd085787832d058f41c52f05db41505357`，远端完整 Source-only contract `40924998207` SUCCESS；普通merge commit `97b1a1ae349732a2a98f01cd1f2983a6e196d520`。专用worktree跟进合入后的主干，工作区干净；合并前后运行时代码差异为空，5240/PID8684的实际HTTP模块包含新Player返回合同。此处是合入核对，没有重跑或升级前述Browser/本地构建的证据等级。
+
+在已确认的D1工具入口、D2原样ID、D3目录＋query及D4丙范围下，R1–R4地址层交付完成。真机/原生等价、P7界面余项、51条新语音等R2上传和站点发布、D5正式域名/noindex/sitemap均不属于本次地址层完成声明。已有R1数值history、加载全程标题采样和扩展SSR本地海报404的已接受边界仍保留，不改写成已完成这些验收。
