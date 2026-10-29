@@ -30,7 +30,7 @@
         <ChevronLeft :size="30" />
       </button>
 
-      <div class="lightbox-canvas" :class="{ actual: actualSize }">
+      <div class="lightbox-canvas" :class="{ actual: actualSize }" @pointerdown="swipeStart" @pointerup="swipeEnd" @pointercancel="swipe = null">
         <img :src="currentItem.src" :alt="currentItem.label" />
       </div>
 
@@ -84,6 +84,21 @@ function move(offset) {
   actualSize.value = false
 }
 
+// Phones: a horizontal swipe on the picture moves to the next or previous one; two fingers zoom it
+// (touch-action pinch-zoom), and a swipe is ignored while zoomed or at original size.
+const swipe = ref(null)
+function swipeStart(event) {
+  if (event.pointerType !== 'touch' || !event.isPrimary) return
+  swipe.value = { x: event.clientX, y: event.clientY }
+}
+function swipeEnd(event) {
+  const start = swipe.value
+  swipe.value = null
+  if (!start || actualSize.value || (globalThis.visualViewport?.scale || 1) > 1.01) return
+  const dx = event.clientX - start.x, dy = event.clientY - start.y
+  if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) move(dx < 0 ? 1 : -1)
+}
+
 function onKeydown(event) {
   if (!props.open) return
   if (event.key === 'Escape') emit('close')
@@ -111,7 +126,7 @@ onBeforeUnmount(() => {
 .lightbox-nav.previous { grid-column: 1; }
 .lightbox-nav.next { grid-column: 3; }
 .lightbox-canvas { grid-column: 2; grid-row: 2; display: grid; place-items: center; min-width: 0; min-height: 0; overflow: auto; padding: 18px; }
-.lightbox-canvas img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+.lightbox-canvas img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; touch-action: pinch-zoom; }
 .lightbox-canvas.actual { display: block; }
 .lightbox-canvas.actual img { max-width: none; max-height: none; margin: auto; }
 
