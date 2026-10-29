@@ -54,7 +54,7 @@ function row(name, returnView = '') {
   const output = emitted(name, returnView), normalized = survives(name, returnView)
   return { view: name === 'player' ? `player(return=${returnView})` : name, emitted: params(output), survives: params(normalized), emittedSchema: schemaName(output), survivesSchema: schemaName(normalized) }
 }
-const rows = views.flatMap(name => name === 'player' ? ['reader', 'event_detail', ''].map(returnView => row(name, returnView)) : [row(name)])
+const rows = views.flatMap(name => name === 'player' ? [...Object.keys(ROUTE_SCHEMA).filter(key => key.startsWith('player:')).map(key => key.slice(7)), ''].map(returnView => row(name, returnView)) : [row(name)])
 if (process.argv.includes('--json')) console.log(JSON.stringify(rows, null, 1))
 else {
   console.log('view | draft-owned | emitted extras (dirty state) | survives extras (saturated URL)')

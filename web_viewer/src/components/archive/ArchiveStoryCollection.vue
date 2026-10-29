@@ -164,7 +164,7 @@ import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import CollectionStorySynopsis from './CollectionStorySynopsis.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
-import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
+import { buildPublicArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { storyCollectionTitle } from '../../presentation/StoryPageTitle.js'
@@ -211,7 +211,8 @@ function chapterStats(chapter) {
 
 function readingHref(chapter, entry) {
   const source = { ...props.readerSource, story: chapter.story?.file || chapter.file || '' }
-  return buildArchiveUrl('http://localhost/', { ...source, view:'reader', reading:entry.document_id, readingScope:'chapter', sourceRoute:buildArchiveSourceQuery(source) }).search
+  const url = buildPublicArchiveUrl('http://localhost/', { ...source, view:'reader', reading:entry.document_id, readingScope:'chapter', sourceRoute:buildArchiveSourceQuery(source) })
+  return url.pathname + url.search
 }
 function readEpisode(event, chapter, episode) {
   if (event.button || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return

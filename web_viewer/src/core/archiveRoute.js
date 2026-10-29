@@ -1,7 +1,7 @@
 import { PUBLIC_ROUTES, matchPublicRoute, publicRoutePath, publicRouteQueryDefaults } from './publicRoutes.js'
 import { normalizeCollectionRoute, collectionKindLabel } from './CollectionRouteState.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
-import { pruneToRouteSchema } from './routeSchema.js'
+import { pruneToRouteSchema, READER_OWNER_PARAMS } from './routeSchema.js'
 import { STORY_KINDS, sectionLabel } from './archiveSections.js'
 import { UNIT_CODE_TO_NAME, normalizeUnitCode } from '../utils/UnitNameMap.js'
 const ROUTE_QUERY_KEYS = [
@@ -665,6 +665,8 @@ function locatorQuery(url) {
 // SECTION_PATH_ROUTES, `/` otherwise.
 function publicArchiveUrl(url) {
   const view = url.searchParams.get('view')
+  if (view === 'reader') for (const param of [...READER_OWNER_PARAMS, ...Object.values(NAVIGATION_CONTEXT_PARAMS)]) url.searchParams.delete(param)
+  if (view === 'player') for (const param of Object.values(NAVIGATION_CONTEXT_PARAMS)) url.searchParams.delete(param)
   const candidates = PUBLIC_ROUTES.filter(entry => entry.view === view)
     .sort((a, b) => Object.keys(b.implied).length - Object.keys(a.implied).length)
   const locator = candidates.find(entry => publicRoutePath(entry, url.searchParams))
@@ -805,7 +807,7 @@ export function buildArchiveUrl(input, route) {
       if (normalized.storyType === 'idol_story' && normalized.episode) url.searchParams.set('episode', normalized.episode)
       if (normalized.story) url.searchParams.set('story', normalized.story)
       if (normalized.workMode !== 'stories') url.searchParams.set('work_mode', normalized.workMode)
-      return url
+      return pruneToRouteSchema(url, normalized.view, normalized.returnView, ROUTE_QUERY_KEYS)
     }
   }
   if (normalized.view === 'player' && normalized.playMode) url.searchParams.set('play_mode', normalized.playMode)
@@ -873,7 +875,7 @@ function localQuery(value) {
 }
 
 // Fields an event Reader carries so that leaving it lands where the event was opened from.
-const READER_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit' }
+const READER_CONTEXT_PARAMS = Object.fromEntries(READER_OWNER_PARAMS.map(param => [param, param]))
 // Where an event detail was opened from (/events/<id>/ keeps only the event). goBackFromEvent uses the parent
 // and its identity when no source is restored, so they ride the history entry instead of the address.
 const EVENT_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit', card: 'card', idol: 'idol' }
@@ -911,7 +913,7 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
     if (value) context[key] = value
     url.searchParams.delete(param)
   }
-  if (url.searchParams.get('view') === 'reader' && url.searchParams.get('event')) {
+  if (url.searchParams.get('view') === 'reader') {
     const reader = {}
     for (const [key, param] of Object.entries(READER_CONTEXT_PARAMS)) {
       const value = url.searchParams.get(param)
