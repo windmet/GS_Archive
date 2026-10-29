@@ -188,11 +188,10 @@
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
-import { computed, inject, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronLeft, ChevronRight, ChevronsUpDown, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
-import ArchiveDirectoryGrid from './ArchiveDirectoryGrid.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
@@ -210,6 +209,8 @@ import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { classifySongLineup } from '../../presentation/SongPresentation.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
+// The directory grid is shared with the navigation drawer and loads with it, outside the startup bundle.
+const ArchiveDirectoryGrid = defineAsyncComponent(() => import('./ArchiveDirectoryGrid.vue'))
 
 const props = defineProps({
   canGoBack: Boolean,
