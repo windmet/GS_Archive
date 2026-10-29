@@ -97,10 +97,8 @@ async function mount(code){
   const expert=[...document.querySelectorAll('.chart-difficulties button')].find(b=>b.textContent.includes('EXPERT'))
   expert.click();await settle()
   for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
-  button('视图设置')?.click()
-  // Settings button has visible text rather than aria-label.
-  if(!document.querySelector('[type="checkbox"]'))[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click()
-  await settle();const sound=document.querySelector('[aria-label="谱面打击音套装"]');sound.value='off';sound.dispatchEvent(new Event('change',{bubbles:true}));await settle();await enable();button('关闭视图设置').click();await settle()
+  // The settings rows stay in the DOM (resident column, or tabs under the canvas), so no button opens them.
+  await settle();const sound=document.querySelector('[aria-label="谱面打击音套装"]');sound.value='off';sound.dispatchEvent(new Event('change',{bubbles:true}));await settle();await enable()
 }
 function checkPosition(seconds){
   check(Number(state().dataset.count)===events.filter(e=>e.seconds<=seconds).length,`count at ${seconds}`)
@@ -176,7 +174,6 @@ run.onclick=async()=>{
         check(!document.querySelector('[data-combo-315]'),'315 effect retires after its native one-second window')
       }
       await seek(12)
-      ;[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click();await settle()
       const timingInput=document.querySelector('[aria-label="音符时机调整"]')
       timingInput.value='6';timingInput.dispatchEvent(new Event('input',{bubbles:true}));await settle()
       check(Math.abs(media.time-12)<1e-6,'timing setting must not seek or alter the audio')
@@ -189,7 +186,7 @@ run.onclick=async()=>{
       check(Math.abs(Number(button('编辑谱面 tick 位置').dataset.tick)-Math.round(timing.secondsToTick(12.1)))<=1,'negative setting advances chart')
       timingInput.value='0';timingInput.dispatchEvent(new Event('input',{bubbles:true}))
       comboToggle.checked=true;comboToggle.dispatchEvent(new Event('change',{bubbles:true}));await settle()
-      button('关闭视图设置').click();await settle();checkPosition(12)
+      checkPosition(12)
       await seek(12);checkPosition(12)
       document.querySelector('.chart-modes button:last-child').click();await settle()
       document.querySelector('.chart-modes button:first-child').click();await settle();checkPosition(12)

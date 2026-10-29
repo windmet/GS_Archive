@@ -36,11 +36,9 @@ async function openLong(type=1,scale=90){
  await page.locator('.chart-count').filter({hasText:label}).waitFor()
  await page.getByRole('button',{name:'长轨图',exact:true}).click()
  await page.locator('svg.chart-svg').waitFor()
- await page.getByRole('button',{name:'视图设置',exact:true}).click()
- const popup=page.getByRole('dialog',{name:'谱面视图设置',exact:true})
- await popup.getByLabel('长轨排布',{exact:true}).selectOption('continuous')
- await popup.getByLabel('谱面纵向缩放',{exact:true}).selectOption(String(scale))
- await popup.getByRole('button',{name:'关闭视图设置',exact:true}).click()
+ const settings=page.getByRole('group',{name:'谱面视图设置',exact:true})
+ await settings.getByLabel('长轨排布',{exact:true}).selectOption('continuous')
+ await settings.getByLabel('谱面纵向缩放',{exact:true}).selectOption(String(scale))
 }
 async function exportChart(code,type,scale=90){
  await page.evaluate(c=>window.mountChart(c),code)
