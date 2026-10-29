@@ -8,7 +8,7 @@
           <p v-else-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="emit('retry')">重试</button></p>
           <template v-else-if="detail?.entry">
             <CollectionEntryDetails :detail="detail" :kind="kind" :display-idol-name="displayIdolName" link-idol @open-card="emit('open-card',$event)" @open-idol="emit('open-idol',$event)" />
-            <section v-if="gashaLinks.length" class="domain-panel"><h3>对应卡池</h3><p v-if="gashaLinks.some(link=>link.ambiguous)" class="domain-muted">券名对应同名卡池，尚不能区分具体公告。</p><ul><li v-for="link in gashaLinks" :key="link.id"><button type="button" @click="emit('open-gasha',link)">{{ gashaText(link.display_name) }}<template v-if="link.ambiguous && link.start_at"> · {{ gashaTicketPeriodLabel(link.start_at) }}</template></button></li></ul><p class="domain-muted">依据此道具的原文名称关联；不代表已确认卡片范围。</p></section>
+            <section v-if="gashaLinks.length" class="domain-panel"><h3 class="collection-inferred-head">对应卡池<span class="collection-inferred">推定关联</span><GsInfo label="推定关联：说明">依据此道具的原文名称关联；不代表已确认卡片范围。</GsInfo></h3><p v-if="gashaLinks.some(link=>link.ambiguous)" class="domain-muted">券名对应同名卡池，尚不能区分具体公告。</p><ul class="collection-gasha-links"><li v-for="link in gashaLinks" :key="link.id"><button type="button" @click="emit('open-gasha',link)"><span>{{ gashaText(link.display_name) }}<small v-if="link.ambiguous && link.start_at">{{ gashaTicketPeriodLabel(link.start_at) }}</small></span><ChevronRight :size="16" aria-hidden="true"/></button></li></ul></section>
             <CurrencyDetailSections v-if="kind==='currencies'" :detail="detail" @open-event="emit('open-event',$event)" @open-gasha="emit('open-gasha',$event)" />
             <section v-else-if="kind!=='costumes'" class="domain-panel"><h3>已知来源与用途</h3><p v-if="bond" class="domain-description">偶像羁绊 Lv.{{ bond.level }} 称号。<small class="domain-muted">用户补充来源。</small></p><ArchiveRewardTable v-if="detail.sources?.length || !bond" :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
           </template>
@@ -20,10 +20,11 @@
 </template>
 <script setup>
 import {computed,nextTick,onBeforeUnmount,ref,watch} from 'vue'
-import {X} from '@lucide/vue'
+import {ChevronRight,X} from '@lucide/vue'
 import CollectionEntryDetails from './CollectionEntryDetails.vue'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
 import CurrencyDetailSections from './CurrencyDetailSections.vue'
+import GsInfo from '../gs/GsInfo.vue'
 import {collectionKindLabel} from '../../core/CollectionRouteState.js'
 import {honorBondSource} from '../../presentation/HonorBondSource.mjs'
 import {gashaTicketLinks,gashaTicketPeriodLabel} from '../../data/gashaTicketCatalog.js'
@@ -69,6 +70,17 @@ function cycleFocus(event){
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.collection-inspector-body :deep(.domain-panel > h3.collection-inferred-head) { display: flex; align-items: center; gap: var(--gs-space-3); }
+/* C 级 status mark: not a control, a thin outline beside the heading; the ⓘ says what it rests on. */
+.collection-inferred { flex: none; padding: 1px var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); white-space: nowrap; }
+/* Gasha links read like the drawer's other rows: hairline, name, chevron. */
+.collection-gasha-links { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--gs-rule); }
+.collection-gasha-links li { border-bottom: 1px solid var(--gs-line); }
+.collection-gasha-links button { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-3); width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; background: none; color: var(--gs-ink); text-align: left; font-weight: var(--gs-weight-semibold); }
+.collection-gasha-links button:hover { color: var(--gs-mint-ink); }
+.collection-gasha-links span { display: grid; gap: var(--gs-space-1); min-width: 0; overflow-wrap: anywhere; }
+.collection-gasha-links small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.collection-gasha-links svg { flex: none; color: var(--gs-ink-3); }
 .collection-inspector-body :deep(.domain-description) { font-size: var(--gs-text-body, 14px); }
 .collection-inspector-body :deep(.domain-meta),
 .collection-inspector-body :deep(.collection-source-meta),

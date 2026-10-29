@@ -10,16 +10,22 @@
         <figcaption v-if="!gasha.banner_url && artRecord?.primary">游戏内卡池素材 · {{ artRecord.primary.basis_text }}</figcaption>
       </figure>
       <div class="gasha-summary">
+        <p class="gasha-category">{{ categoryLabel(gasha.category) }}<template v-if="gasha.is_reprint"> · 复刻</template></p>
         <h2>{{ gashaText(gasha.display_name) }}</h2>
         <p v-if="gashaText(gasha.display_name)!==gasha.display_name" lang="ja" class="gasha-original">{{ gasha.display_name }}</p>
-        <p class="gasha-category">{{ categoryLabel(gasha.category) }}<template v-if="gasha.is_reprint"> · 复刻</template></p>
         <dl>
           <div><dt>开放</dt><dd>{{ formatDateTime(gasha.start_at) }}</dd></div>
           <div><dt>结束</dt><dd>{{ formatDateTime(gasha.end_at) }}</dd></div>
         </dl>
+        <small v-if="Number.isFinite(gasha.start_at)" class="gasha-zone">日本时间</small>
         <ArchiveSourceLink :url="gasha.name_source?.source_url" :label="gasha.name_source?.source_label || '名称核对来源'" />
       </div>
     </div>
+
+    <!-- Facts: what the page holds, counted; each one is a section below. -->
+    <dl v-if="facts.length" class="gasha-facts">
+      <div v-for="fact in facts" :key="fact.label"><dt>{{ fact.label }}</dt><dd><b>{{ fact.value }}</b>{{ fact.unit }}<small v-if="fact.note">{{ fact.note }}</small></dd></div>
+    </dl>
 
     <section v-if="gasha.tickets?.length" class="detail-section">
       <div class="section-heading"><h3>对应抽取道具</h3><span>{{ gasha.tickets.length }} 种</span></div>
@@ -89,18 +95,6 @@
       </ul>
     </section>
 
-    <!-- A derived relation only: the gasha's own MovieAnnounceId was a server value and is not archived. -->
-    <section v-if="gasha.announce_movie" class="detail-section">
-      <div class="section-heading">
-        <div>
-          <h3>告知视频</h3>
-          <p>视频记录的资源编号与本卡池编号一致，开放时间与公告开始时间一致；原版卡池指向视频的字段未保存在客户端数据中。</p>
-        </div>
-        <span class="relation-count">推定关联</span>
-      </div>
-      <p class="gasha-note">已收录原始视频 {{ gasha.announce_movie.raw_file }}，尚未转为浏览器可播放的格式。</p>
-    </section>
-
     <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
       <dl class="evidence-grid">
         <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
@@ -111,6 +105,8 @@
         <div v-if="artRecord?.primary"><dt>横幅对应</dt><dd>按横幅文字「{{ artRecord.primary.banner_text }}」对应游戏内卡池编号 {{ artRecord.primary.gasha_id }}</dd></div>
         <div v-if="detail?.pages.length"><dt>卡池规则</dt><dd>Wikiwiki 卡池页（{{ detail.pages[0].checked_at }} 核对）</dd></div>
         <div><dt>服务端卡池信息</dt><dd>关服后未能保存（提供割合、卡池说明、阶梯与保底设定均由服务器下发）</dd></div>
+        <!-- A derived relation only: the gasha's own MovieAnnounceId was a server value and is not archived. -->
+        <div v-if="gasha.announce_movie"><dt>告知视频</dt><dd>推定关联：视频资源编号与本卡池编号一致，开放时间与公告开始时间一致；原版卡池指向视频的字段未保存在客户端数据中。已收录原始视频 {{ gasha.announce_movie.raw_file }}，尚未转为浏览器可播放的格式。</dd></div>
       </dl>
     </ArchiveTechnicalDetails>
   </section>
@@ -210,6 +206,19 @@ const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   payload: card,
 })))
 
+// Facts strip: only the counts this pool has; an item-only record with nothing counted shows none.
+const facts = computed(() => {
+  const rows = []
+  if (pickupCards.value.length) {
+    const ssr = pickupCards.value.filter(card => card.rarity === 'SSR').length
+    rows.push({ label: '关联卡片', value: pickupCards.value.length, unit: '张', note: ssr ? `SSR ${ssr}` : '' })
+  }
+  if (props.gasha?.tickets?.length) rows.push({ label: '抽取道具', value: props.gasha.tickets.length, unit: '种' })
+  if (wikiRuns.value.length) rows.push({ label: '开放记录', value: wikiRuns.value.length, unit: '次' })
+  if (artRecord.value?.variants?.length) rows.push({ label: '其他横幅', value: artRecord.value.variants.length, unit: '张' })
+  return rows
+})
+
 function categoryLabel(category) {
   return CATEGORY_LABELS[category] || '未分类'
 }
@@ -230,11 +239,12 @@ function formatDateTime(timestamp) {
 
 <style scoped>
 .gasha-detail { height: 100%; overflow-y: auto; background: var(--gs-paper); container-type: inline-size; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
-.gasha-identity { display: grid; grid-template-columns: minmax(420px, 1.45fr) minmax(280px, 0.55fr); gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
-.gasha-banner { align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-media); background: var(--gs-line); }
+.gasha-identity { display: grid; grid-template-columns: minmax(420px, 1.45fr) minmax(280px, 0.55fr); gap: var(--gs-space-7); padding: var(--gs-space-8) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)) var(--gs-space-7); background: transparent; }
+/* 幕: one picture on the paper, no frame. */
+.gasha-banner { align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border-radius: var(--gs-radius-media); }
 .gasha-banner img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .gasha-summary { min-width: 0; padding-top: var(--gs-space-2); }
-.gasha-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; text-wrap: balance; overflow-wrap: anywhere; }
+.gasha-summary h2 { margin: 0 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; text-wrap: balance; overflow-wrap: anywhere; }
 .gasha-original { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
 .gasha-note { color:var(--gs-color-muted);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
 .gasha-source { margin:var(--gs-space-4) 0 0; }
@@ -274,12 +284,19 @@ function formatDateTime(timestamp) {
 .gasha-summary :deep(.archive-source-link) { display: block; max-width: 100%; min-height: var(--gs-control-normal); margin-top: var(--gs-space-5); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.6; text-decoration: none; overflow-wrap: anywhere; }
 .gasha-summary :deep(.archive-source-link svg) { display: inline; margin-right: var(--gs-space-2); vertical-align: middle; }
 .gasha-summary :deep(.archive-source-link small) { display: block; margin-top: var(--gs-space-2); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
-.detail-section { padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
+.detail-section { padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
 .detail-section + .detail-section { margin-top: var(--gs-space-4); }
 .section-heading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-5); }
 .section-heading > div { flex: 1 1 240px; min-width: 0; }
 .section-heading > span { font-size: var(--gs-text-meta); }
 .gasha-category { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.gasha-zone { display: block; margin-top: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.gasha-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0 max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)); border-top: 1px solid var(--gs-rule); border-bottom: 1px solid var(--gs-line); }
+.gasha-facts > div { min-width: 0; padding: var(--gs-space-4) 0; }
+.gasha-facts dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.gasha-facts dd { display: flex; align-items: baseline; gap: 3px; margin: var(--gs-space-1) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.gasha-facts b { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; }
+.gasha-facts small { margin-left: var(--gs-space-2); font-size: var(--gs-text-meta); }
 .relation-count { flex: 0 0 auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .section-heading h3 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .section-heading p { margin: var(--gs-space-2) 0 0; color: var(--gs-color-muted); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.6; }
@@ -292,13 +309,14 @@ function formatDateTime(timestamp) {
 .gasha-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-bold); }
 .gasha-detail :deep(.relation-meta), .gasha-detail :deep(.relation-proof) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .gasha-detail :deep(.relation-copy code) { font-size: var(--gs-text-caption); }
-.gasha-detail > :deep(.archive-technical) { margin: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)) var(--gs-space-9); }
+.gasha-detail > :deep(.archive-technical) { margin: var(--gs-space-7) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)) var(--gs-space-9); }
 .gasha-detail :deep(.archive-technical summary) { min-height: var(--gs-control-touch); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .gasha-detail :deep(.archive-technical-body) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .gasha-detail :deep(.archive-technical pre) { font-size: var(--gs-text-caption); }
 .gasha-detail :deep(button:focus-visible), .gasha-detail :deep(a:focus-visible), .gasha-detail :deep(summary:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-color-accent); outline-offset: var(--gs-focus-offset); }
 @container (max-width: 800px) {
   .gasha-identity { grid-template-columns: 1fr; gap: var(--gs-space-5); padding: var(--gs-space-5); }
+  .gasha-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 var(--gs-space-5); }
 }
 @media (max-width: 800px) {
   .detail-section { padding: var(--gs-space-6) var(--gs-space-5); }
