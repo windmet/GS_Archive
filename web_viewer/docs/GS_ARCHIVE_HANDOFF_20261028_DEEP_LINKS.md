@@ -653,8 +653,8 @@ node scripts/verify-story-owner.mjs       # 需要候选包，dev 服务自动�
 | 舞台 `chibi_stage` | `/songs/<code>/stage/`，非默认 `stage=<choreographyId>` | #136 已合入；无歌曲仍query | 60曲/118编舞，见舞台执行记录 |
 | 摄影 `picture_studio` | `/studio/` 进入页、`/studio/edit/` 工作台 | #137 已合入 | 只保留既有初始选择query，不序列化构图 |
 | 图鉴和摄影实体 | `/items/`、`/photos/` 等目录＋query抽屉 | D3 用户确认，R3 本轮收束 | 暂不新增独立实体路径 |
-| Reader | `?view=reader&reading=…` | P7 阅读器、剧情语料晋升、D4 | 先保持方案丙 |
-| Player | `?view=player&scenario=…` | P7、语料晋升后；收口 `routes.json` 的 returnView 覆盖 | 保持query，验证任意路径页的scenario入口 |
+| Reader | `?view=reader&reading=…` | #78已晋升，P7界面不阻挡地址层；本批可开工 | D4继续丙，移动来源至history |
+| Player | `?view=player&scenario=…` | 本批收口13类实际调用方的返回schema | 保持query，验证任意路径页的scenario入口 |
 | Portal 视角 | `?view=portal&portal_scope=…` | `/` 启动偏好语义另定 | 不在本轮扩大实现 |
 
 每批从最新 master 开 lane 分支，优先复用干净的专用 LF worktree。`deep-links-20261028/web_viewer` 已经复用并跟进 #137；旧的“停在 a1b90163、不要续做”说明已过时。主 checkout 的无关工作和语料保持原样。
@@ -685,3 +685,8 @@ P4 #131 已以 `5e52c768` 合入，含 `305d6773` 手机抽屉等收束。舞台
 ## R3 合入收口（2026-10-30）
 
 摄影 #137 源码 `ade7fad1d786afdab013a81dcad2b17da865f3b4`，远端 Source-only contract `40906924145` SUCCESS，普通 merge commit `71012ebffdee45bca543f7e3dc0e403895f36768`。谱面 #132、舞台 #136、摄影 #137 与 D3 目录＋query 决定共同构成本轮 R3 交付。R4 尚未完成，不标记全目标完成。10-30 实查 master 仍是 `71012ebf`，无开放 PR；Reader 控件仍为横向 EP 快速定位＋弹出目录，routes.json 仍有 Player returnView 未覆盖项，P7 与语料晋升前置未解除。未部署。
+
+
+## R4 开工与旧前置纠正（2026-10-30）
+
+用户核对并确认R4可开工。本地再次证明 #78 / `64e91828` 已在主干，13个RAW、Valentine b段补抽及错接修复已完成，见 [晋升记录](STORY_RECOMPILE_PROMOTION_20261021.md)。此前§10.3、CURRENT_STATE和#138沿用了晋升前状态；“尚未R2/站点发布”不等于“未晋升”。P7的236常驻目录不是Reader方案丙的逻辑前置，本批不改界面。以本节覆盖所有“R4等待P7和语料”的旧说明。D4继续丙，Reader/Player保留query；甲/乙可另评估，不因id已稳定就自动改用新路径。实现与验证见 [R4执行记录](GS_ARCHIVE_DEEP_LINKS_R4_20261030.md)。

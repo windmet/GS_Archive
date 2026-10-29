@@ -5,7 +5,13 @@ import { SECTION_PATH_ROUTES } from './publicRoutes.js'
 // derived from the page contracts and the generic builder and still needs its owning page confirmed before
 // buildArchiveUrl may prune against it. Context parameters (from, portal_from, home_from) are not listed: they
 // live in the history NavigationContext. Player entries are keyed by `player:<returnView>`.
-export const ROUTE_SCHEMA = Object.freeze({
+// Reader identity stays query-based (D4 C); these fields only restore its owner.
+export const READER_OWNER_PARAMS = Object.freeze(['parent', 'category', 'unit'])
+const READER_PARAMS = ['reading', 'reading_row', 'reading_mode', 'reading_scope', 'reading_rev', 'idol', 'event', 'story_type', 'story_section', 'story', 'episode', 'work_mode', ...READER_OWNER_PARAMS]
+const PLAYER_PARAMS = ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return']
+const playerParams = params => [...new Set([...PLAYER_PARAMS, ...params])]
+
+const PAGE_ROUTE_SCHEMA = {
   welcome: [], idol_picker: ['pick'], portal: ['portal_scope', 'q'], home: ['home_idol', 'home_cue', 'home_costume'],
   idols: ['unit_filter', 'q'], idol_detail: ['category', 'idol'],
   cards: ['idol', 'q', 'rarity', 'card_attribute', 'asset_state', 'relation_state'], card_detail: ['card'],
@@ -19,26 +25,37 @@ export const ROUTE_SCHEMA = Object.freeze({
   seasonal_campaign: ['story_type', 'story_section', 'idol'], work_archive: ['idol', 'story', 'work_mode', 'story_type'],
   idol_story_archive: ['idol', 'story_type', 'story_section', 'episode'], mobile_archive: ['idol', 'unit', 'mobile_mode', 'mobile_scenario'],
   unit_catalog: [], unit_detail: ['unit'],
-  reader: ['reading', 'reading_row', 'reading_mode', 'reading_scope', 'reading_rev'],
-  'player:reader': ['reading', 'reading_row', 'reading_mode', 'reading_scope', 'reading_rev', 'scenario', 'start_step', 'end_step', 'at_step', 'play_mode', 'return'],
-  'player:event_detail': ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return', 'event', 'parent', 'category', 'unit'],
+  reader: READER_PARAMS,
+}
+
+// Each real playback caller retains exactly its page's audited fields plus playback identity.
+export const PLAYER_RETURN_VIEWS = Object.freeze([
+  'reader', 'event_detail', 'mobile_archive', 'story_catalog', 'story_collection',
+  'seasonal_campaign', 'work_archive', 'idol_story_archive', 'unit_detail', 'card_detail',
+  'idol_detail', 'unused_archive', 'score_archive',
+])
+export const ROUTE_SCHEMA = Object.freeze({
+  ...PAGE_ROUTE_SCHEMA, player: PLAYER_PARAMS,
+  ...Object.fromEntries(PLAYER_RETURN_VIEWS.map(view => [`player:${view}`, playerParams(PAGE_ROUTE_SCHEMA[view])])),
 })
 
-// Player entries other than the audited return views (and a player with none) fall back to the plain player scenario fields.
-const PLAYER_FALLBACK = ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return']
+// Explicit entries above cover all current playback callers. Other legacy return values keep
+// their destination's existing ownership contract rather than silently losing its identity.
+const PLAYER_FALLBACK = PLAYER_PARAMS
 
 export function routeSchemaKey(view, returnView = '') {
   return view === 'player' ? (returnView ? `player:${returnView}` : 'player') : view
 }
 
 export function ownedRouteParams(view, returnView = '') {
-  return ROUTE_SCHEMA[routeSchemaKey(view, returnView)] || (view === 'player' ? PLAYER_FALLBACK : null)
+  return ROUTE_SCHEMA[routeSchemaKey(view, returnView)] || (view === 'player' ? playerParams(ROUTE_SCHEMA[returnView] || PLAYER_FALLBACK) : null)
 }
 
 // Views whose entry has been confirmed against their page and whose writes are pruned to it. Reading is
 // unchanged: older URLs with extra parameters still parse, and the next write drops them. Grow this set one
 // confirmed group at a time.
 export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
+  'reader', 'player',
   'about', 'unused_archive', 'score_archive', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog',
   // Detail pages whose address is only their identity; list filters ride the history source, not the URL.
   'idol_detail', 'unit_detail', 'card_detail', 'song_detail', 'chart_lab', 'chibi_stage',

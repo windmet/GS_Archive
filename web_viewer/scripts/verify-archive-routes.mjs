@@ -464,7 +464,8 @@ assert.equal(songCatalogBreadcrumbs.length, 2)
     writeArchiveRoute({ view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup' })
     const readerQuery = new URL(window.location).searchParams
     assert.ok(!readerQuery.has('parent') && !readerQuery.has('category') && !readerQuery.has('unit'), 'event Reader URL carries no placement')
-    assert.equal(readerQuery.get('event'), '10001')
+    assert.equal(readerQuery.get('event'), '10001', 'event is Reader identity, not opener placement')
+    assert.equal(readArchiveRoute().event, '10001')
     assert.deepEqual([readArchiveRoute().parentView, readArchiveRoute().category, readArchiveRoute().unit], ['unit_detail', 'idol', '01jup'], 'refresh restores the placement')
     assert.deepEqual([readArchiveRoute(window.location.href).parentView, readArchiveRoute(window.location.href).unit], ['', ''], 'a copied link carries no placement')
     entries[index] = { state: null, href: 'http://localhost/?view=reader&reading=doc1&event=10001&parent=unit_detail&category=idol&unit=01jup' }
@@ -472,7 +473,30 @@ assert.equal(songCatalogBreadcrumbs.length, 2)
     writeArchiveRoute(readArchiveRoute(), { replace: true })
     assert.ok(!new URL(window.location).searchParams.has('unit') && readArchiveRoute().unit === '01jup', 'and move into state on the next write')
     writeArchiveRoute({ view: 'reader', reading: 'doc2', story_type: 'main', storyType: 'main', storySection: '101', category: 'cards' })
-    assert.equal(new URL(window.location).searchParams.get('category'), 'cards', 'non-event Readers keep their own parameters')
+    assert.equal(new URL(window.location).searchParams.get('category'), null, 'non-event Reader placement also moves to history')
+    assert.equal(readArchiveRoute().category, 'cards')
+    assert.equal(readArchiveRoute().storyType, 'main')
+    assert.equal(readArchiveRoute().storySection, '101')
+    assert.equal(readArchiveRoute(window.location.href).storyType, 'main', 'independent shares retain their story directory')
+    // Every Reader owner field survives refresh and replace, without entering a copied URL.
+    for (const owner of [
+      { storyType:'work', idol:'001tom', story:'work.json', workMode:'lines' },
+      { storyType:'idol_story', idol:'001tom', storySection:'idol_story', episode:'1' },
+      { storyType:'seasonal_campaign', storySection:'valentine_2022', idol:'001tom' },
+      { storyType:'unit_story', storySection:'1', story:'part.json', unit:'01jup', parentView:'unit_detail' },
+    ]) {
+      const fixture = { ...owner, view:'reader', reading:'doc2', readingScope:'chapter', readingRow:'row1', readingMode:'bilingual', readingRev:'sha256:'+'a'.repeat(64) }
+      writeArchiveRoute(fixture)
+      for (const field of ['parent','category','unit']) assert.ok(!new URL(window.location).searchParams.has(field), field+' moves to history')
+      const restored = readArchiveRoute()
+      for (const [key,value] of Object.entries(fixture)) assert.equal(restored[key],value, 'refresh '+key)
+      const entryId = window.history.state.sidemArchiveEntryId
+      writeArchiveRoute(restored, { replace:true })
+      assert.equal(window.history.state.sidemArchiveEntryId,entryId)
+      for (const [key,value] of Object.entries(fixture)) assert.equal(readArchiveRoute()[key],value, 'replace '+key)
+      assert.equal(readArchiveRoute(window.location.href).reading,'doc2')
+      assert.equal(readArchiveRoute(window.location.href).storyType,owner.storyType)
+    }
     // Portal / Home launcher returns ride the same versioned context.
     const portalReturn = '?view=idols&category=idol', homeReturn = '?view=portal'
     writeArchiveRoute({ view: 'portal', portalFrom: portalReturn })
