@@ -116,7 +116,7 @@
       <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" :shelf="currentVoiceShelf" @shelf="currentVoiceShelf = $event; syncArchiveRoute({ replace: true })" @preview-office-voice="previewOfficeVoice" />
       <ArchiveScoreArchive v-if="view === 'score_archive'" :shelf="currentSoundShelf" :load-stories="loadStoryReadModelCatalog" @shelf="currentSoundShelf = $event; syncArchiveRoute({ replace: true })" @open-story="openStoryDetail($event, 'score_archive')" @open-song="openSong" />
       <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" :songs="stageSongDirectory" :chart-songs="chartSongs" :preferred-idol="preferredArchiveIdol" :preferred-name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
-        @charts="openChartTool" @chart-song="openChartSong" @stage="openChibiStage()" @stage-song="openChibiStage({ songCode: $event })" @photo="startPictureStudio" @photo-catalog="openDomainCatalog('photos')" />
+        @charts="openChartTool" @chart-song="openChartSong" @stage="openChibiStage()" @stage-song="openChibiStage({ songCode: $event })" @photo="startPictureStudio" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
@@ -535,7 +535,7 @@
         :songs="chartSongs" :difficulty="chartDifficulty" :status="songReadModelStatus" @select-song="selectChartSong" />
       <p v-else role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
     </ArchiveExperimentFrame>
-    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :restore-on-open="studioRestorePending" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
+    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :restore-on-open="studioRestorePending" :open-materials="studioOpenMaterials" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
     <SpineViewer v-if="view === 'spine_lab'" :idol-name="idolDisplayName" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
@@ -2061,11 +2061,13 @@ const { selectPhotoIdol, updatePhotoCatalogQuery, selectPhotoEntity, openPicture
   view, currentPhotoIdol, currentPhotoEntity, filterQuery, syncArchiveRoute, captureDetailSource, commitView,
 })
 
-// The studio's entry page offers three starts: with the 担当 (its photo actor is found in the photos catalogue), blank,
-// or the composition this browser saved (the studio loads it itself once it is ready).
+// The studio's entry page offers three starts: with the 担当 (its photo actor is found in the photos catalogue), from
+// a background (the 地点 drawer opens, on phones too), or the composition this browser saved (the studio loads it itself).
 const studioRestorePending = ref(false)
-async function startPictureStudio({ idolCode = '', restore = false } = {}) {
+const studioOpenMaterials = ref(false)
+async function startPictureStudio({ idolCode = '', restore = false, background = false } = {}) {
   studioRestorePending.value = restore
+  studioOpenMaterials.value = background
   currentPhotoIdol.value = ''
   if (idolCode) {
     try {

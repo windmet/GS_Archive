@@ -400,6 +400,8 @@ const props = defineProps({
   photoIdol: { type: String, default: "" },
   photoEntity: { type: String, default: "" },
   restoreOnOpen: Boolean,
+  // Opened from 「从背景开始」: the 地点 drawer shows even where the menu would start closed (phones).
+  openMaterials: Boolean,
   idolName: { type: Function, default: () => "" },
   idolSearch: { type: Function, default: () => "" },
 });
@@ -408,7 +410,7 @@ const studioShell = ref(null), drawerHost = ref(null), menuButton = ref(null);
 const materialsHost = ref(null), controlsHost = ref(null), toolsHost = ref(null);
 const focused = ref(props.standalone);
 // The menu opens on 地点: a picture starts from its place, then people are added from 人物.
-const menuOpen = ref(props.standalone && window.innerWidth > 900), drawerTab = ref(props.photoIdol ? 'edit' : 'spots');
+const menuOpen = ref(props.standalone && (window.innerWidth > 900 || props.openMaterials)), drawerTab = ref(props.photoIdol ? 'edit' : 'spots');
 const variantTab = ref('faces');
 const variantTabs = [{ id: 'poses', label: '动作' }, { id: 'faces', label: '表情' }];
 const framingPresets = [

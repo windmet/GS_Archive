@@ -29,8 +29,19 @@
 | P6 卡池 | 部分 | #106 | 宽屏节名放进 168 左栏 | 没有对照 P6 骨架（幕 → 身份 → 事实条 → 分节 → 维护者尾）做专项 |
 | P6 图鉴 | 部分 | #106、#109 | 六类一页、下划线标签、`CollectionDetailPanel` 抽屉（宽屏右侧、窄屏底部） | 抽屉宽度与内容未按 380 规格和 P6 骨架核对；推定关联的 C 级标记未核；实体详情边界未定（深链接 D3 的前置） |
 | P7 阅读器 | 部分 | #106 | 正文语言凹槽 + 浮起滑块；本话快速定位当前项白片 | `ReaderWorkspaceControls.vue` 仍是横向 EP 快速定位 + 弹出目录，**236 常驻目录未做**；手机浮动条「原 / 译」未做；未在真阅读器里实测 |
-| P7 摄影 | 未做 | — | `PictureStudio.vue` 有素材、画布、编辑抽屉 | 「素材 \| 画布 \| 检查器」合并布局未做；开始方式（新建 / 从人物开始 / 继续构图）未定，是深链接摄影路径的前置 |
+| P7 摄影 | 部分 | 本 PR | `PictureStudio.vue` 有素材、画布、编辑抽屉；进入页开始方式定为三行：从担当开始、从背景开始（手机也直接打开「地点」抽屉）、继续上次的构图（有存档才出现）；「先看背景与人像资源 ↗」删除 | 「素材 \| 画布 \| 检查器」合并布局未做。原游戏流程见下方「摄影工坊原生流程」 |
 | P7 播放器 | 部分 | #106 | 语言状态在 `StoryViewer.vue` 接 `PlayerLanguageStatus.js` | 右上「原 \| 译 \| 双」的实际位置、缺译文时「仅原文」、返回行为都未实测 |
+
+### 摄影工坊原生流程（10-29 反编译核对）
+
+来源：`PhotoStudioTopView`、`PhotoStudioView`、`PhotoEditData{Resume,Suspend}PopupContent`、`PhotoStudioNewSceneDialog*`（dump.cs + Ghidra `decompiled14`，`E:/Tools/ghidra_work/sidem`）。
+
+- 首页只有两个按钮「撮影」「アルバム」，背景每 8.5 秒换一张随机照片。进首页时，如果有新获得、未读（`UserPhotoSceneData.isRead_ == false`）的场景，弹「新场景」通知：按地点分组，每行是地点图 + 地点名 + 场景名。这只是通知，不是选择器。
+- 点「撮影」：有暂存（`PhotoStudioView.IsExistTempData`）就弹「继续编辑」确认，按钮 1 = 删掉暂存重新开始，按钮 2 = 继续；没有暂存就直接进工作台。原游戏在进入前不让你先选人或先选背景。
+- 工作台状态机：Top / IdolSlotList / IdolSelect / IdolDetail / SpotSelect / Move / Photo。人物（服装 / 表情 / 动作）和地点（`OnClickBgIcon` → `StudioRoot.SetBackground`，同时播环境音）是平级的两个按钮。
+- 离开时：在子状态先退回 Top；在 Top 弹「暂存后离开？」，带「不再询问」开关（`IS_PHOTOSTUDIO_EXIT_DO_NOT_ASK_AGAIN`）。
+
+本站的对应：「从背景开始」≈「撮影」进工作台后先开 SpotSelect；「继续上次的构图」≈ 确认框的按钮 2；「从担当开始」是本站自己加的。离开时的暂存确认还没有对应。
 
 ## 2. 验收缺口（代码已在 master）
 
