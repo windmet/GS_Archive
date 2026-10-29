@@ -92,11 +92,9 @@
       for (let i=0; i<500 && !document.querySelector('.track-svg'); i++) await new Promise(resolve=>setTimeout(resolve,10))
       if (!document.querySelector('.track-svg')) throw new Error('谱面加载失败')
       if (document.querySelector('#auto-effects').checked) {
-        [...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='视图设置').click()
-        await nextTick()
         const toggle=document.querySelector('[aria-label="自动演示事件统计"][type="checkbox"]')
         toggle.checked=true; toggle.dispatchEvent(new Event('change',{bubbles:true}))
-        await nextTick(); document.querySelector('[aria-label="关闭视图设置"]').click(); await nextTick()
+        await nextTick()
       }
       const chart = await (await fetch(difficulty.chart.url)).json()
       const timing = buildSongChartTiming(chart)
