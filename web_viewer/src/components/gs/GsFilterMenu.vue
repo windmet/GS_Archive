@@ -1,7 +1,7 @@
 <template>
   <div ref="root" class="gs-filter-menu" :class="`is-${variant}`" @keydown.esc.stop="close(true)">
     <button ref="trigger" type="button" class="gs-filter-trigger" :class="{ 'is-filtered': variant === 'chip' && filtered, 'is-open': open }" :disabled="disabled" aria-haspopup="listbox" :aria-expanded="open" :aria-label="`${label}：${selectedLabel}`" @click="toggle">
-      <span class="gs-filter-label">{{ label }}</span><span class="gs-filter-value">{{ selectedLabel }}</span><ChevronRight v-if="variant === 'row'" class="gs-filter-caret" :size="17" aria-hidden="true" /><ChevronDown v-else class="gs-filter-caret" :size="14" aria-hidden="true" />
+      <span class="gs-filter-label">{{ label }}</span><span class="gs-filter-value">{{ selectedLabel }}</span><ChevronRight v-if="variant !== 'chip'" class="gs-filter-caret" :size="17" aria-hidden="true" /><ChevronDown v-else class="gs-filter-caret" :size="14" aria-hidden="true" />
     </button>
     <Teleport to="body">
       <div v-if="open" class="gs-filter-layer" @pointerdown.self="close(false)">
@@ -25,6 +25,7 @@ import { Check, ChevronDown, ChevronRight } from '@lucide/vue'
 // Filter with many values: a chip-shaped trigger 「资源：全部 ▾」 and a list of 44px choosable rows. Fewer than seven values
 // belong in filter chips instead. options: [{ value, label, count?, group? }]; on a phone the list is a bottom sheet.
 // variant row: a settings row 「标签 · 当前值 ›」 that opens the same list (线框减法册 rule 1, the stage panel);
+// variant value: only 「当前值 ›」, for the control slot of a GsRow that already carries the label (the chart panel);
 // options carrying a group label get a 12px grey heading where the group changes (in place of <optgroup>).
 const props = defineProps({
   modelValue: { type: [String, Number], default: '' },
@@ -32,7 +33,7 @@ const props = defineProps({
   label: { type: String, required: true },
   // The value that means "no filter"; the trigger is plain while it is chosen.
   neutral: { type: [String, Number], default: undefined },
-  variant: { type: String, default: 'chip', validator: value => ['chip', 'row'].includes(value) },
+  variant: { type: String, default: 'chip', validator: value => ['chip', 'row', 'value'].includes(value) },
   disabled: Boolean,
 })
 const emit = defineEmits(['update:modelValue'])
@@ -87,6 +88,10 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onDocumentKey, tru
 .is-row .gs-filter-caret { color: var(--gs-ink-3); opacity: 1; }
 .is-row .gs-filter-trigger:disabled { opacity: .45; cursor: default; }
 @media (hover: hover) { .is-row .gs-filter-trigger:not(:disabled):hover { background: var(--gs-paper); } }
+.is-value .gs-filter-trigger { display: inline-flex; align-items: center; gap: var(--gs-space-1); min-height: 44px; padding: 0 0 0 var(--gs-space-3); border: 0; background: transparent; color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.is-value .gs-filter-label { display: none; }
+.is-value .gs-filter-caret { color: var(--gs-ink-3); opacity: 1; }
+.is-value .gs-filter-trigger:disabled { opacity: .45; cursor: default; }
 .gs-filter-group { margin: var(--gs-space-2) var(--gs-space-4) var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
 .gs-filter-layer { position: fixed; inset: 0; z-index: 1200; }
 .gs-filter-list { position: fixed; margin: 0; padding: var(--gs-space-2); max-height: min(60vh, 420px); overflow: auto; list-style: none; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-console); }

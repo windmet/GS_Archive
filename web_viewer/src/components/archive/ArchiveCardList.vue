@@ -42,7 +42,9 @@
       <GsFilterMenu label="关联" :model-value="currentRelationState" :options="relationMenuOptions" :neutral="relationMenuOptions[0]?.value" @update:model-value="emit('select-relation-state', $event)" />
       </ArchiveFilterSheet>
 
-      <GsSegmented class="card-layout-toggle" :model-value="layout" :options="layoutOptions" aria-label="视图模式" @update:model-value="emit('update:layout', $event)" />
+      <div class="card-layout-toggle" role="group" aria-label="视图模式">
+        <button v-for="option in layoutOptions" :key="option.value" type="button" :aria-pressed="layout === option.value" :aria-label="option.ariaLabel" :title="option.label" @click="layout === option.value || emit('update:layout', option.value)"><component :is="option.icon" :size="18" aria-hidden="true" /></button>
+      </div>
     </div>
 
     <div v-if="!cards.length" class="card-empty-state" role="status">
@@ -94,7 +96,6 @@ import ArchiveFilterSheet from './ArchiveFilterSheet.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import GsFilterMenu from '../gs/GsFilterMenu.vue'
-import GsSegmented from '../gs/GsSegmented.vue'
 import {archiveText} from './useArchiveCardTitle.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import { attributeLabel } from '../../presentation/AttributeLabel.js'
@@ -208,12 +209,17 @@ function fallbackCardIcon(event, resourceId) {
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); }
 .card-idol-heading { display: flex; align-items: center; justify-content: flex-end; gap: var(--gs-space-6); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-7) var(--gs-space-8) var(--gs-space-4); }
 .card-idol-heading :deep(.idol-switcher) { width: min(360px, 48vw); }
-.embedded-filters { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-5); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8); border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); }
+.embedded-filters { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-5); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8) var(--gs-space-4); background: var(--gs-paper); }
 .card-rarity-tabs { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); margin-right: auto; }
-.card-rarity-tab { display: inline-flex; align-items: baseline; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); line-height: calc(var(--gs-control-compact) - 2px); cursor: pointer; }
+/* Toolbar without a rule of its own (线框减法册 C): rarity as text tabs with the mint underline, the view
+   switch as two icon buttons; the list starts 16px below. */
+.card-rarity-tab { display: inline-flex; align-items: baseline; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-1); border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--gs-ink-3); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); }
+.card-layout-toggle { display: flex; gap: var(--gs-space-1); }
+.card-layout-toggle button { display: grid; place-items: center; width: var(--gs-control-compact); height: var(--gs-control-compact); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); cursor: pointer; }
+.card-layout-toggle button[aria-pressed='true'] { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
+.card-layout-toggle button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 .card-rarity-tab small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); }
-.card-rarity-tab.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
-.card-rarity-tab.active small { color: inherit; }
+.card-rarity-tab.active { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 
 .card-archive-list { display: grid; gap: 0 var(--gs-space-7); grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8) var(--gs-space-9); }
 .card-archive-row { display: grid; grid-template-columns: 56px 40px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: 72px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
@@ -258,7 +264,8 @@ function fallbackCardIcon(event, resourceId) {
   .card-rarity-tabs { flex: 1 0 100%; flex-wrap: nowrap; margin: 0; overflow-x: auto; scrollbar-width: none; }
   .embedded-filters :deep(.filter-sheet-trigger) { margin-right: auto; }
   .card-rarity-tabs::-webkit-scrollbar { display: none; }
-  .card-rarity-tab { flex: 0 0 auto; min-height: var(--gs-control-touch); line-height: calc(var(--gs-control-touch) - 2px); white-space: nowrap; }
+  .card-rarity-tab { flex: 0 0 auto; min-height: var(--gs-control-touch); align-items: center; white-space: nowrap; }
+  .card-layout-toggle button { width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .card-archive-list { grid-template-columns: minmax(0, 1fr); padding: var(--gs-space-2) var(--gs-space-5) calc(var(--gs-space-8) + env(safe-area-inset-bottom)); }
   .card-archive-row { grid-template-columns: 56px minmax(0, 1fr) 18px; grid-template-rows: auto auto; gap: var(--gs-space-1) var(--gs-space-4); }
   .card-thumb { grid-column: 1; grid-row: 1 / 3; align-self: center; }

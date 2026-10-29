@@ -3,7 +3,7 @@
 .collection-page .collection-directory { min-width:0; }
 
 /* Toolbar: search with the count beside it, then one row of category filters. */
-.collection-page .collection-filters { display:flex;align-items:end;gap:var(--gs-space-4);flex-wrap:wrap;margin:0 0 var(--gs-space-4); }
+.collection-page .collection-filters { display:flex;align-items:end;gap:var(--gs-space-4);flex-wrap:wrap;margin:var(--gs-space-4) 0 var(--gs-space-4); } /* 16px below the category tabs' rule (线框减法册 C) */
 .collection-page .collection-filters label { display:grid;gap:var(--gs-space-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);color:var(--gs-ink-3); }
 .collection-page .collection-search { flex:1;min-width:200px; }
 .collection-page .collection-filters label>span { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%); }

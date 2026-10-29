@@ -499,11 +499,12 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-heading-chips.has-overflow { -webkit-mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%);mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%); }
 .overview-heading-chips::-webkit-scrollbar { display:none; }
 .overview-section-heading .overview-heading-chips.overview-story-tabs { margin:calc(-1 * var(--gs-space-1)) 0; }
-/* One pill for every chip: the heading chips share the story tabs' look (below). */
-.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
+/* Chips are text, not pills (线框减法册 rule 2): no frame or fill on the heading rule; a chosen tab is ink
+   with the mint underline, the card filters are plain links into the card directory. */
+.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-2);border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
 .overview-heading-chips button small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
-.overview-section-heading .overview-heading-chips button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
-.overview-section-heading .overview-heading-chips button[aria-pressed=true] small { color:inherit;opacity:.75; }
+.overview-section-heading .overview-heading-chips button[aria-pressed=true] { border-bottom-color:var(--gs-selected-line);color:var(--gs-ink);font-weight:var(--gs-weight-semibold); }
+.overview-section-heading .overview-heading-chips button[aria-pressed=true] small { color:var(--gs-ink-3); }
 .overview-section-heading .overview-heading-chips .is-attribute { color:var(--attribute);font-weight:var(--gs-weight-semibold); }
 .overview-heading-chips .is-attribute::before { content:"";flex:none;width:15px;height:15px;margin-right:4px;background:var(--attribute-icon) center / contain no-repeat; }
 .overview-heading-chips button:disabled { opacity:.55;cursor:default; }
@@ -608,10 +609,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-hub-card-count { margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
-.overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
-.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui);white-space:nowrap; }
-.overview-story-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
-.overview-story-tabs small { margin-left:var(--gs-space-2);color:inherit;opacity:.75;font-variant-numeric:tabular-nums; }
+.overview-story-tabs { display:flex;gap:var(--gs-space-5);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:0;scrollbar-width:none; }
+.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-1);border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--gs-ink-3);font-size:var(--gs-text-ui);white-space:nowrap; }
+.overview-story-tabs button[aria-pressed=true] { border-bottom-color:var(--gs-selected-line);color:var(--gs-ink);font-weight:var(--gs-weight-semibold); }
+.overview-story-tabs small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
 
 /* Rows: picture, title and one line of meta, split by hairlines; the whole row opens. */
 .overview-song-list, .overview-story-list { display:grid; }
@@ -712,7 +713,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footer-link { min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-mint-ink);font:inherit;text-decoration:underline;text-underline-offset:3px; }
 
 @media (hover:hover) and (pointer:fine) {
-  .overview-heading-chips button:not(:disabled):hover { border-color:var(--gs-selected-line); }
+  .overview-heading-chips button:not(:disabled):hover, .overview-story-tabs button:hover { color:var(--gs-ink); }
   .overview-birthdays button:hover strong { color:var(--gs-ink); }
   .overview-icon-button:hover { background:var(--gs-mint-wash); }
   .overview-preferred-actions button:hover { background:var(--gs-hover);color:var(--gs-ink); }

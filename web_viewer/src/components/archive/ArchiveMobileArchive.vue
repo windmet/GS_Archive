@@ -24,12 +24,7 @@
         </p>
         <div class="mobile-selector">
           <button title="上一项" @click="moveSelection(-1)"><ChevronLeft :size="18" /></button>
-          <label>
-            <span>{{ mode === 'unit' ? '组合' : '偶像' }}</span>
-            <select :value="mode === 'unit' ? selectedUnit : selectedIdol" @change="changeSelection($event.target.value)">
-              <option v-for="entry in selectionOptions" :key="entry.value" :value="entry.value">{{ entry.label }}</option>
-            </select>
-          </label>
+          <GsFilterMenu class="mobile-selector-menu" variant="row" :label="mode === 'unit' ? '组合' : '偶像'" :model-value="mode === 'unit' ? selectedUnit : selectedIdol" :options="selectionOptions" @update:model-value="changeSelection" />
           <button title="下一项" @click="moveSelection(1)"><ChevronRight :size="18" /></button>
         </div>
       </div>
@@ -161,6 +156,7 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveCardFullTitle} from './useArchiveCardTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import GsSwitch from '../gs/GsSwitch.vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
 import { communicationUnlockAction } from '../../presentation/communicationUnlock.js'
 import { formatArchiveDate, consolidateProgressiveUnlocks } from '../../data/idolCommunicationSelectors.js'
@@ -388,9 +384,9 @@ function timeWindow(topic) {
 .is-unit .call-card-note { color: var(--gs-chrome-ink); }
 .mobile-selector { display: grid; grid-template-columns: var(--gs-control-touch) minmax(0, 1fr) var(--gs-control-touch); align-items: center; gap: var(--gs-space-2); min-width: 0; }
 .mobile-selector > button { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: color-mix(in srgb, var(--gs-surface) 72%, transparent); color: var(--gs-ink-2); cursor: pointer; }
-.mobile-selector label { min-width: 0; }
-.mobile-selector label span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.mobile-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-field); background: color-mix(in srgb, var(--gs-surface) 90%, transparent); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+/* The person is picked from the shared list layer (a bottom sheet on a phone), not an inline native select. */
+.mobile-selector-menu { min-width: 0; }
+.mobile-selector-menu :deep(.gs-filter-trigger) { grid-template-columns: auto minmax(0, 1fr) auto; padding: 0 var(--gs-space-3) 0 var(--gs-space-4); border-radius: var(--gs-radius-field); background: color-mix(in srgb, var(--gs-surface) 90%, transparent); }
 /* Wide: the card sits beside the content and stays in view while the rows scroll. */
 @container mobile-archive (min-width: 900px) {
   .mobile-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); align-items: start; gap: var(--gs-space-8); padding: var(--gs-space-6) var(--gs-space-7) 0; }
@@ -472,7 +468,6 @@ function timeWindow(topic) {
 @container mobile-archive (max-width: 560px) {
   .mobile-hero { height: 280px; }
   .mobile-identity { top: var(--gs-space-5); }
-  .mobile-selector select { min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .mobile-tabs { padding: 0 var(--gs-space-3); }
   .mobile-content { padding: var(--gs-space-5) var(--gs-space-5) calc(var(--gs-space-7) + var(--gs-safe-bottom)); }
   .unlock-list button { min-height: var(--gs-control-touch); }

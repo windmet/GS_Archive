@@ -99,8 +99,40 @@ assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--
 assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2, breakpoint: 0, nestedWhite: 0 })
 assert.deepEqual(measure('@media (max-width: 760px), (pointer:coarse){}@media(min-width:761px) and (max-width:1100px){}@media (max-height: 600px){}@container (max-width: 520px){}@media (max-width: 700px){}@media (min-width:1101px) and (max-width:40em){}').breakpoint, 2)
 
+// 线框减法册 rule 2: a segmented switch holds at most three values (more go to GsTabs or GsFilterMenu). The options are
+// an inline array or a same-file `const NAME = [...]` / `computed(() => [...])`; anything else cannot be counted and fails.
+const SEGMENTED_MAX = 3
+function topLevelObjects(text, open) {
+  let depth = 0, count = 0
+  for (let index = open; index < text.length; index++) {
+    const char = text[index]
+    if (char === '[' || char === '{' || char === '(') { if (char === '{' && depth === 1) count++; depth++ }
+    else if (char === ']' || char === '}' || char === ')') { depth--; if (depth === 0) return count }
+  }
+  return null
+}
+export function segmentedOverflow(source) {
+  const found = []
+  for (const [tag] of source.matchAll(/<GsSegmented\b[^>]*>/g)) {
+    const binding = tag.match(/:options="([^"]+)"/)?.[1]?.trim()
+    let count = null
+    if (binding?.startsWith('[')) count = topLevelObjects(binding, 0)
+    else if (/^[A-Za-z_$][\w$]*$/.test(binding || '')) {
+      const declaration = source.match(new RegExp(`const ${binding}\\s*=\\s*(?:computed\\(\\(\\)\\s*=>\\s*)?\\[`))
+      if (declaration) count = topLevelObjects(source, declaration.index + declaration[0].length - 1)
+    }
+    if (count === null || count > SEGMENTED_MAX) found.push(`${binding || '(no options)'}: ${count ?? 'not countable'}`)
+  }
+  return found
+}
+assert.deepEqual(segmentedOverflow('<GsSegmented :options="OPTS" /><script>const OPTS = [{ value: 1 }, { value: 2 }, { value: 3 }]</script>'), [])
+assert.deepEqual(segmentedOverflow('<GsSegmented :options="OPTS" /><script>const OPTS = computed(() => [{ a: 1 }, { a: { b: 2 } }, { a: 3 }, { a: 4 }])</script>'), ['OPTS: 4'])
+assert.deepEqual(segmentedOverflow('<GsSegmented :options="[{ value: 1 }, { value: 2 }]" />'), [])
+assert.deepEqual(segmentedOverflow('<GsSegmented :options="props.list" />'), ['props.list: not countable'])
+
 const current = {}
 const inkMisuse = []
+const segmentedMisuse = []
 for (const file of walk(path.join(root, 'src'))) {
   const relative = path.relative(root, file).replaceAll('\\', '/')
   if (relative === 'src/styles/GS_UI_TOKENS.css') continue // the palette itself
@@ -108,7 +140,9 @@ for (const file of walk(path.join(root, 'src'))) {
   const counts = { ...measure(source), ...nativeControls(source, relative) }
   if (METRICS.some(key => counts[key])) current[relative] = counts
   for (const property of inkFills(source)) inkMisuse.push(`${relative}: ${property}`)
+  for (const overflow of segmentedOverflow(source)) segmentedMisuse.push(`${relative}: ${overflow}`)
 }
+assert.deepEqual(segmentedMisuse, [], `GsSegmented holds at most ${SEGMENTED_MAX} values; use GsTabs or GsFilterMenu:\n${segmentedMisuse.join('\n')}`)
 assert.deepEqual(inkMisuse, [], `--gs-ink is for text; use --gs-selected-*, --gs-action-*, --gs-play-* or --gs-rule:\n${inkMisuse.join('\n')}`)
 
 if (update) {

@@ -157,7 +157,7 @@ function startWithIdol() {
 /* The category tabs' own rule is the section's only line (线框减法册 rule 2); the search sits 16px under it. */
 .song-start { max-width: var(--gs-content-width); margin: var(--gs-space-7) auto 0; }
 .song-start > h2 { margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
-.song-start-search { display: flex; align-items: center; gap: var(--gs-space-3); height: var(--gs-control-normal); margin: var(--gs-space-4) 0; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-3); }
+.song-start-search { display: flex; align-items: center; gap: var(--gs-space-3); height: var(--gs-control-normal); margin: var(--gs-space-5) 0 var(--gs-space-4); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-3); }
 .song-start-search:focus-within { border-color: var(--gs-ink-3); box-shadow: 0 0 0 var(--gs-focus-ring) var(--gs-mint); }
 .song-start-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .song-start-status { margin: var(--gs-space-5) 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); }

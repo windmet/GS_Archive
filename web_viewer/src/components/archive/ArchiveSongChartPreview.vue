@@ -33,15 +33,15 @@
           <div v-if="!wide" class="chart-settings-tabs" role="tablist" aria-label="谱面设置分组" @keydown="onSettingsTabKey"><button v-for="group in SETTINGS_GROUPS" :id="`${uid}-tab-${group.id}`" :key="group.id" type="button" role="tab" :aria-selected="settingsTab === group.id" :aria-controls="`${uid}-panel-${group.id}`" :tabindex="settingsTab === group.id ? 0 : -1" @click="settingsTab = group.id">{{ group.label }}</button></div>
           <section v-show="wide || settingsTab === 'view'" :id="`${uid}-panel-view`" class="chart-group" :role="wide ? undefined : 'tabpanel'" :aria-labelledby="wide ? `${uid}-g-view` : `${uid}-tab-view`">
             <h3 v-if="wide" :id="`${uid}-g-view`">观看</h3>
-            <GsRow label="贴图样式"><select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></GsRow>
+            <GsRow label="贴图样式"><GsChoice v-model="skin" aria-label="轨道音符贴图" :options="[{ value: 'Note1SpriteAtlas', label: '圆形' }, { value: 'Note2SpriteAtlas', label: '菱形' }, { value: 'Note3SpriteAtlas', label: '横条' }]" /></GsRow>
             <template v-if="mode === 'perspective'"><GsRow label="音符速度"><template #info>1.0–11.0，沿用原作设置刻度；越大落下越快。</template><input v-model.number="speed" class="chart-number" type="number" min="1" max="11" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" class="chart-range" type="range" min="1" max="11" step="0.1" aria-label="轨道配速滑杆" /></GsRow></template>
-            <template v-else><GsRow label="纵向缩放"><select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></GsRow><GsRow label="长轨排布"><select v-model="longLayout" aria-label="长轨排布"><option value="auto">自动</option><option value="columns">分栏横向阅读</option><option value="continuous">单栏纵向阅读</option></select></GsRow></template>
+            <template v-else><GsRow label="纵向缩放"><GsChoice v-model="scale" aria-label="谱面纵向缩放" :options="[{ value: 55, label: '紧凑' }, { value: 90, label: '标准' }, { value: 150, label: '放大' }]" /></GsRow><GsRow label="长轨排布"><GsChoice v-model="longLayout" aria-label="长轨排布" :options="[{ value: 'auto', label: '自动' }, { value: 'columns', label: '分栏横读' }, { value: 'continuous', label: '单栏纵读' }]" /></GsRow></template>
           </section>
           <section v-show="wide || settingsTab === 'sound'" :id="`${uid}-panel-sound`" class="chart-group" :role="wide ? undefined : 'tabpanel'" :aria-labelledby="wide ? `${uid}-g-sound` : `${uid}-tab-sound`">
             <h3 v-if="wide" :id="`${uid}-g-sound`">声音</h3>
-            <GsRow label="播放速度"><select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></GsRow>
+            <GsRow label="播放速度"><GsFilterMenu v-model="playbackRate" variant="value" label="谱面播放速度" :options="[0.5, 0.75, 1, 1.25, 1.5].map(rate => ({ value: rate, label: `${rate}×` }))" /></GsRow>
             <GsRow label="音量"><input v-model.number="volume" class="chart-range" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></GsRow>
-            <GsRow label="打击音"><template #info>所有套装均可用于任意歌曲，播放时独立于自动演示开关。</template><select v-model="soundSet" aria-label="谱面打击音套装"><option value="off">关闭</option><option value="se1">SE1</option><option value="se2">SE2</option><option value="se3">SE3</option><option value="president">社长愚人节</option></select></GsRow>
+            <GsRow label="打击音"><template #info>所有套装均可用于任意歌曲，播放时独立于自动演示开关。</template><GsFilterMenu v-model="soundSet" variant="value" label="谱面打击音套装" :options="[{ value: 'off', label: '关闭' }, { value: 'se1', label: 'SE1' }, { value: 'se2', label: 'SE2' }, { value: 'se3', label: 'SE3' }, { value: 'president', label: '社长愚人节' }]" /></GsRow>
             <GsRow label="音效音量"><input v-model.number="soundVolume" class="chart-range" type="range" min="0" max="1" step="0.01" aria-label="谱面音效音量" /></GsRow>
             <GsRow label="音符时机"><template #info>{{ noteTimingMilliseconds }} ms · 原作刻度 -30～30，每格约 16.67ms。正值延后、负值提前谱面与打击音，0 为关闭；歌曲音频不变。</template><input v-model.number="noteTiming" class="chart-number" type="number" min="-30" max="30" step="1" aria-label="音符时机调整" @change="noteTiming = Math.max(-30,Math.min(30,Math.round(Number(noteTiming)||0)))" /></GsRow>
           </section>
@@ -73,6 +73,8 @@ import { createSongComboPresentation, delayedChartSeconds, noteTimingSeconds } f
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
+import GsChoice from '../gs/GsChoice.vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
 import GsRow from '../gs/GsRow.vue'
 import GsSegmented from '../gs/GsSegmented.vue'
 import GsSwitch from '../gs/GsSwitch.vue'

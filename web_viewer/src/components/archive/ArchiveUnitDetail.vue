@@ -97,23 +97,12 @@
     </div>
 
     <section v-if="allEventItems.length" class="unit-section" aria-labelledby="unit-events-title">
-      <div class="section-heading">
+      <!-- With categories, the tabs' own rule is the section's one line (线框减法册 rule 2). -->
+      <div class="section-heading" :class="{ 'has-tabs': eventCategories.length > 1 }">
         <h3 id="unit-events-title">活动与企划出演</h3>
-        <div v-if="eventCategories.length > 1" class="unit-event-chips" role="group" aria-label="活动分类筛选">
-          <button
-            v-for="cat in eventCategories"
-            :key="cat.key"
-            type="button"
-            class="event-filter-chip"
-            :aria-pressed="activeEventCategory === cat.key"
-            @click="activeEventCategory = cat.key"
-          >
-            <span>{{ cat.label }}</span>
-            <small>{{ cat.count }}</small>
-          </button>
-        </div>
-        <span v-else>{{ allEventItems.length }}</span>
+        <span>{{ allEventItems.length }}</span>
       </div>
+      <GsTabs v-if="eventCategories.length > 1" v-model="activeEventCategory" class="unit-event-tabs" aria-label="活动分类筛选" :options="eventCategories.map(cat => ({ value: cat.key, label: cat.label, count: cat.count }))" />
       <ArchiveRelationList :items="displayedEventItems" layout="grid" @select="emit('open-event', $event.payload)" />
     </section>
 
@@ -136,6 +125,7 @@ import { ChevronRight, Music } from '@lucide/vue'
 import { idolThemeProperties } from '../../presentation/idolStageLight.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import GsTabs from '../gs/GsTabs.vue'
 import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
@@ -300,12 +290,8 @@ const displayedEventItems = computed(() => {
 .section-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .section-heading h3 { margin: 0; min-width: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
 .section-heading > span { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.unit-event-chips { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); }
-.event-filter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); cursor: pointer; transition: background var(--gs-motion-feedback) var(--gs-ease-out), border-color var(--gs-motion-feedback) var(--gs-ease-out), color var(--gs-motion-feedback) var(--gs-ease-out); }
-.event-filter-chip small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); }
-.event-filter-chip[aria-pressed="true"] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
-.event-filter-chip[aria-pressed="true"] small { color: inherit; }
-.event-filter-chip:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.section-heading.has-tabs { margin-bottom: 0; border-bottom: 0; }
+.unit-event-tabs { margin-bottom: var(--gs-space-4); }
 .unit-members { display: flex; flex-wrap: wrap; gap: 0 var(--gs-space-2); margin-left: -5px; }
 .unit-members :deep(.idol-reference-arrow) { display: none; }
 .unit-content-split { display: grid; grid-template-columns: 55fr 45fr; gap: var(--gs-space-8); align-items: start; }
@@ -332,7 +318,6 @@ const displayedEventItems = computed(() => {
 @media (hover: hover) {
   .unit-stories-cover:hover img { opacity: .9; }
   .unit-holdings button:hover { color: var(--gs-ink-2); }
-  .event-filter-chip:hover { background: var(--gs-mint-wash); border-color: var(--gs-mint-line); }
   .unit-songs button:hover strong, .unit-stories button:hover strong { color: var(--gs-ink-2); }
 }
 @container unit-detail (max-width: 980px) {

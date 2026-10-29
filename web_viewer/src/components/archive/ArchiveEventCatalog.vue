@@ -87,7 +87,7 @@ watch(()=>props.scopeIdol?.id,load,{immediate:true})
 .catalog-footprint, .catalog-filter, .event-grid, .pagination, .event-catalog > p[role], .empty { max-width: var(--gs-content-width); margin-inline: auto; padding-inline: var(--gs-space-7); box-sizing: border-box; }
 .catalog-footprint { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-5); margin-block: 0; padding-block: var(--gs-space-6) var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-ui); list-style: none; }
 .catalog-footprint b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
-.catalog-filter { display: flex; flex-wrap: wrap; align-items: end; gap: var(--gs-space-3) var(--gs-space-5); padding-block: var(--gs-space-2) var(--gs-space-4); border-bottom: 1px solid var(--gs-line); }
+.catalog-filter { display: flex; flex-wrap: wrap; align-items: end; gap: var(--gs-space-3) var(--gs-space-5); padding-block: var(--gs-space-2) var(--gs-space-4); } /* no rule under the search: its box would sit on it (线框减法册 C) */
 .catalog-filter label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .catalog-filter .catalog-search { flex: 1 1 260px; }
 .catalog-search > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
