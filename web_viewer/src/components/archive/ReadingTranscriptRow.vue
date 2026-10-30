@@ -42,6 +42,6 @@ defineProps({ item: Object, mode: String, anchor: String, idolDirectory:{type:Ar
 .kind-synopsis { display:block; padding:0; margin:12px 0 20px; border:0; }
 .kind-choice, .kind-choice_detail { display:block; margin:8px 0; padding:12px 18px; border:0; border-left:3px solid var(--reader-accent); background:var(--reader-bg-card); }
 .reader-kind { display: inline-block; margin-inline-end: 8px; font-size: 12px; color: var(--reader-text-sub); }
-@media (max-width:760px) { .reader-row { column-gap:10px; } .reader-primary { font-size:16px; } .reader-secondary { font-size:15px; } .kind-title .reader-primary { font-size:19px; } }
+@media (max-width:760px) { .reader-row { column-gap:10px; } .reader-primary { font-size:15px; } .reader-secondary { font-size:14px; } .kind-title .reader-primary { font-size:19px; } }
 
 </style>

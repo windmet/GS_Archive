@@ -14,36 +14,36 @@
           </div>
         </form>
       </template>
-    </ReaderWorkspaceControls>
-    <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-label="剧情阅读" @keydown="controls?.onReaderKey($event)">
-      <div class="reader-body">
-      <p class="reader-subtitle">{{ episodeLabel }}</p>
-      <p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p>
-      <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
-        已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
-        <span v-if="localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')">部分姓名译文暂时无法载入，保留原名。</span>
-        <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
-      </p>
-      <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情' }}</button>
-      <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
-      <div v-if="state.status === 'loading'" class="reader-loading" role="status">正在载入正文…<div class="reader-loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
-      <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
-      <p v-else-if="state.status === 'not-generated'" role="status">这个分段尚未生成阅读正文，请选择已有分段。</p>
-      <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
-      <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或来源字段无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ presentProducerAddressingText(option.source_text) }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
-      <template v-else-if="state.status === 'ready'">
-        <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
+      <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-label="剧情阅读" @keydown="controls?.onReaderKey($event)">
+        <div class="reader-body">
+        <p class="reader-subtitle">{{ episodeLabel }}</p>
+        <p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p>
+        <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
+          已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
+          <span v-if="localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')">部分姓名译文暂时无法载入，保留原名。</span>
+          <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
+        </p>
+        <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情' }}</button>
+        <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
+        <div v-if="state.status === 'loading'" class="reader-loading" role="status">正在载入正文…<div class="reader-loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
+        <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
+        <p v-else-if="state.status === 'not-generated'" role="status">这个分段尚未生成阅读正文，请选择已有分段。</p>
+        <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
+        <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或来源字段无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ presentProducerAddressingText(option.source_text) }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
+        <template v-else-if="state.status === 'ready'">
+          <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
 
-        <div v-if="translationPending" class="reader-loading" role="status">正在载入译文…<div class="reader-loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
-        <ReadingTranscriptSection v-else :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
-        <!-- One EP at a time (phones): the end of each EP leads straight into the next, so reading
-             continues down the page instead of back up to the EP switcher. -->
-        <ReaderChapterEnd v-if="nextSegmentEntry || chapterNavigation" :chapter-navigation="nextSegmentEntry ? null : chapterNavigation"
-          :next-segment="nextSegmentEntry && { documentId: nextSegmentEntry.document_id, label: presentIdolEpisodeLabel({ sourceName: nextSegmentEntry.episode_label, format: 'reader' }) }"
-          @chapter="emit('chapter', $event)" @segment="emit('select', $event)" />
-      </template>
-      </div>
-    </section>
+          <div v-if="translationPending" class="reader-loading" role="status">正在载入译文…<div class="reader-loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
+          <ReadingTranscriptSection v-else :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
+          <!-- One EP at a time (phones): the end of each EP leads straight into the next, so reading
+               continues down the page instead of back up to the EP switcher. -->
+          <ReaderChapterEnd v-if="nextSegmentEntry || chapterNavigation" :chapter-navigation="nextSegmentEntry ? null : chapterNavigation"
+            :next-segment="nextSegmentEntry && { documentId: nextSegmentEntry.document_id, label: presentIdolEpisodeLabel({ sourceName: nextSegmentEntry.episode_label, format: 'reader' }) }"
+            @chapter="emit('chapter', $event)" @segment="emit('select', $event)" />
+        </template>
+        </div>
+      </section>
+    </ReaderWorkspaceControls>
   </div>
 </template>
 
@@ -156,7 +156,7 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice, l
 button { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
 button { min-height: 44px; border: 0; background: none; color: var(--reader-accent-text); }
 button:focus-visible { outline: 3px solid var(--reader-accent-text); outline-offset: 3px; }
-.reader-body { max-width: 1000px; margin: 0 auto; padding: 28px max(24px, var(--archive-safe-right)) 60px max(24px, var(--archive-safe-left)); }
+.reader-body { max-width: var(--gs-reading-width); margin: 0 auto; padding: 28px max(24px, var(--archive-safe-right)) 60px max(24px, var(--archive-safe-left)); }
 .reader-subtitle { font-size: 14px; color: var(--reader-text-sub); margin: 4px 0 22px; }
 .reader-source-title { font-size:13px; color:var(--reader-text-sub); margin:-12px 0 22px; }
 .reader-full-play { padding: 10px 20px; border-radius: 8px; background: var(--reader-active); color: var(--reader-on-accent); }

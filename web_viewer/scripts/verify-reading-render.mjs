@@ -190,7 +190,18 @@ try {
     state: { status: 'ready', entries: [], document: chapter }, documentId: chapter.document_id, mode: 'original', anchor: '',
   }))
   assert.ok(chapterHtml.includes(`id="reading-${firstTitle.anchor.row_id}"`), 'merged title anchor stays addressable')
-  assert.equal(chapterHtml.split(chapter.presentation.title).length - 1, 2, 'one desktop heading and one mobile dock title; leading source heading stays merged')
+  assert.equal(chapterHtml.split(chapter.presentation.title).length - 1, 1, 'one heading for every width (the phone dock carries the EP, not the title); leading source heading stays merged')
+  // Wide readers keep the chapter directory on the left; phones get 原 / 译 on the floating dock.
+  const railHtml = await renderToString(createSSRApp(Reader, {
+    state: { status: 'ready', entries: [{ document_id: chapter.document_id, logical_id: 'rail', episode_label: 'EPISODE 01' }, { document_id: 'rail-2', logical_id: 'rail', episode_label: 'EPISODE 02' }], document: chapter },
+    documentId: chapter.document_id, mode: 'translation', anchor: '',
+  }))
+  const rail = railHtml.match(/<aside class="reader-toc-rail[^"]*" aria-label="本话目录"[^>]*>([\s\S]*?)<\/aside>/)?.[1] || ''
+  assert.ok(rail.includes('EP 01') && rail.includes('EP 02'), 'the resident directory lists every EP of the chapter')
+  assert.equal(rail.split('aria-current="location"').length - 1, 1, 'exactly one current EP in the directory')
+  const dockLanguages = railHtml.match(/aria-label="正文语言（原 \/ 译）"[^>]*>([\s\S]*?)<\/div>/)?.[1] || ''
+  assert.ok(/aria-pressed="true"[^>]*aria-label="译文"/.test(dockLanguages) && !dockLanguages.includes('双语'), 'the dock offers 原 / 译 only, with the current one pressed')
+  assert.ok(railHtml.includes('1 / 2 · 目录'), 'the dock shows the EP position and opens the directory')
   assert.ok(chapterHtml.includes('第1話'), 'distinct structural episode title stays visible')
   assert.ok(chapterHtml.includes('kind-synopsis front-matter'), 'synopsis is projected as front matter')
   const prologue = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_00_a.json', import.meta.url)))
