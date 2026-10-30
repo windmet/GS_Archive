@@ -107,13 +107,16 @@ try {
       assert.ok(audio[0].includes(`src="${manifest.songs[code].url}"`))
       assert.ok(audio[0].includes('preload="metadata"'))
       assert.match(html, /歌曲播放/)
-      assert.match(html, /完整混音试听/)
+      // The console names what is playing, the same line the stem console uses.
+      assert.match(html, /<span[^>]*>正在播放<\/span><strong[^>]*>完整混音<\/strong>/)
       assert.match(html, /aria-label="音频播放"/)
       assert.match(html, /aria-label="播放进度"/)
     } else {
       assert.ok(view.playback.experiment)
       assert.ok(!html.includes('single-song-player'), `${code}: experiment takes precedence`)
-      assert.match(html, /class="[^"]*experimental-player/)
+      // Stem songs: the version panel chooses, the console plays.
+      assert.match(html, /class="[^"]*song-version-panel/)
+      assert.match(html, /class="[^"]*audition-console/)
     }
     state.currentSongId.value = 'different-song'
     assert.equal(selected.value, null, 'a stale leaf must never supply another song audio')

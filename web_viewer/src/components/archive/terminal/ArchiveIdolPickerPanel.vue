@@ -11,7 +11,7 @@
         <h3>{{ group.name }}</h3>
         <div class="idol-picker-grid">
           <button v-for="idol in group.idols" :key="idol.id" type="button" :aria-label="`${displayName(idol)} · ${group.name}${counts[idol.id] ? ` · 画面中 ${counts[idol.id]}` : ''}`" :aria-pressed="modelValue===idol.id" :disabled="disabled" :data-idol-code="idol.id" @click="emit('update:modelValue',idol.id)">
-            <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color" :size="48" decorative :fallback-text="displayName(idol).slice(0, 1) || '?'" />
+            <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color" :ring-width="groupRing ? 0 : 2" :size="48" decorative :fallback-text="displayName(idol).slice(0, 1) || '?'" />
             <strong>{{ displayName(idol) }}</strong>
             <small v-if="counts[idol.id]" class="idol-picker-count" aria-hidden="true">×{{ counts[idol.id] }}</small>
           </button>
@@ -30,6 +30,8 @@ const props = defineProps({
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' },
   // Pickers that add rather than choose (the studio) show how many of each idol are already placed.
   counts: { type: Object, default: () => ({}) }, disabled: Boolean,
+  // Choosing someone for a place: every candidate wears the group ring; the identity ring is for who is chosen.
+  groupRing: Boolean,
 })
 const emit = defineEmits(['update:modelValue'])
 const query = ref(''), unitFilter = ref('')

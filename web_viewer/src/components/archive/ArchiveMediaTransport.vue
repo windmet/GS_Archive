@@ -1,14 +1,13 @@
 <template>
+  <!-- Music: one row — play, the progress with its times, restart, then the console's own extra (volume). -->
   <div v-if="music" class="media-transport media-transport-music" role="group" :aria-label="label">
+    <button class="media-music-toggle" type="button" :disabled="!ready" :aria-label="playing ? '暂停' : '播放'" :title="playing ? '暂停' : '播放'" @click="$emit('toggle')"><Pause v-if="playing" :size="22" fill="currentColor" aria-hidden="true" /><Play v-else class="media-toggle-play" :size="22" fill="currentColor" aria-hidden="true" /></button>
     <div class="media-music-progress">
       <input type="range" min="0" :max="knownDuration ? duration : 1" step="0.01" :value="currentTime" :disabled="!ready || !knownDuration" aria-label="播放进度" @input="$emit('seek', Number($event.target.value))" />
       <div class="media-music-time"><span>{{ time(currentTime) }}</span><span>{{ knownDuration ? time(duration) : '待播放' }}</span></div>
     </div>
-    <div class="media-music-controls">
-      <button class="media-music-toggle" type="button" :disabled="!ready" :aria-label="playing ? '暂停' : '播放'" :title="playing ? '暂停' : '播放'" @click="$emit('toggle')"><Pause v-if="playing" :size="24" fill="currentColor" aria-hidden="true" /><Play v-else :size="24" fill="currentColor" aria-hidden="true" /></button>
-      <button class="media-music-restart" type="button" :disabled="!ready || !knownDuration" aria-label="回到开头" title="回到开头" @click="$emit('restart')"><RotateCcw :size="20" aria-hidden="true" /></button>
-      <div v-if="$slots.default" class="media-music-extra"><slot /></div>
-    </div>
+    <button class="media-music-restart" type="button" :disabled="!ready || !knownDuration" aria-label="回到开头" title="回到开头" @click="$emit('restart')"><RotateCcw :size="18" aria-hidden="true" /></button>
+    <div v-if="$slots.default" class="media-music-extra"><slot /></div>
     <span v-if="loading" class="media-music-status" role="status">正在准备音频…</span>
   </div>
   <div v-else class="media-transport" :class="{ 'is-compact': compact }" role="group" :aria-label="label">
@@ -46,13 +45,13 @@ button:focus-visible, input:focus-visible { outline: var(--gs-focus-ring) solid 
 @media (pointer: coarse) { .media-toggle, .media-restart { width: var(--gs-control-touch); height: var(--gs-control-touch); min-height: var(--gs-control-touch); } }
 .media-transport.is-compact { flex-wrap: nowrap; padding: 0; }
 .media-time { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.media-transport-music { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-4); font-family: var(--gs-font-body); }
-.media-music-progress { display: grid; min-width: 0; }
-.media-music-progress input { display: block; box-sizing: border-box; width: 100%; min-width: 0; margin: 0; padding: 0; }
+.media-transport-music { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--gs-space-3); font-family: var(--gs-font-body); }
+.media-music-toggle { display: grid; flex: none; place-items: center; box-sizing: border-box; width: 48px; height: 48px; min-height: 48px; padding: 0; border-radius: var(--gs-radius-pill); }
+.media-music-progress { display: grid; flex: 1 1 auto; gap: 2px; min-width: 0; }
+.media-music-progress input { display: block; box-sizing: border-box; width: 100%; min-width: 0; min-height: 28px; margin: 0; padding: 0; }
 .media-music-time { display: flex; justify-content: space-between; gap: var(--gs-space-3); color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.media-music-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--gs-space-4); min-width: 0; }
-.media-music-toggle { display: grid; flex: none; place-items: center; box-sizing: border-box; width: 56px; height: 56px; min-height: 56px; padding: 0; border-radius: var(--gs-radius-pill); }
-.media-music-restart { display: grid; flex: none; place-items: center; box-sizing: border-box; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border-radius: var(--gs-radius-pill); }
-.media-music-extra { min-width: 0; max-width: 100%; }
-.media-music-status { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.media-music-restart { display: grid; flex: none; place-items: center; box-sizing: border-box; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border-color: transparent; border-radius: var(--gs-radius-pill); background: transparent; color: var(--gs-ink-3); }
+.media-music-restart:not(:disabled):hover { background: var(--gs-mint-wash); color: var(--gs-ink-2); }
+.media-music-extra { flex: none; }
+.media-music-status { flex-basis: 100%; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 </style>

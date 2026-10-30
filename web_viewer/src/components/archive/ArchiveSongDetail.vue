@@ -1,6 +1,6 @@
 <template>
   <section ref="songScrollContainer" class="song-detail" data-archive-scroll-container>
-    <div class="song-detail-layout">
+    <div class="song-detail-layout" :class="{ 'has-version-panel': song.playback.experiment }">
     <header class="song-detail-hero" :class="{ 'has-jacket': song.jacketUrl }">
       <div v-if="song.jacketUrl" class="song-detail-ambient" aria-hidden="true" :style="{ backgroundImage: `url(${song.jacketUrl})` }"></div>
       <img v-if="song.jacketUrl" class="song-detail-jacket" :src="song.jacketUrl" :alt="`${song.title} 封面`" />
@@ -23,18 +23,17 @@
       <button v-if="song.parentId" class="song-parent-link" :data-archive-focus-id="`song-parent:${song.parentId}`" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
     </header>
     <div class="song-detail-body">
+      <!-- Stem songs: the version panel holds the choices; the console beside it only plays. -->
+      <ArchiveSongVersionPanel
+        v-if="song.playback.experiment"
+        class="song-version-column"
+        :audition="audition"
+        :idol-directory="idolDirectory"
+        :idol-name="idolName"
+        :idol-search="idolSearch"
+      />
       <div ref="songListenColumn" class="song-listen-column" :class="{ 'is-sticky-fit': listeningColumnFits }">
-        <ArchiveSongExperimentalPlayer
-          v-if="song.playback.experiment"
-          ref="songPlayer"
-          :song="song"
-          :audio-experiment="song.playback.experiment"
-          :idol-directory="idolDirectory"
-          :idol-name="idolName"
-          :idol-search="idolSearch"
-          @open-stage="openStage"
-          @version-change="onVersionChange"
-        />
+        <ArchiveSongAuditionConsole v-if="song.playback.experiment" :song="song" :audition="audition" />
         <ArchiveSongSinglePlayer
           v-else-if="song.playback.track"
           ref="songPlayer"
@@ -48,41 +47,14 @@
         <!-- The console's foot: the song's two tools, side by side. -->
         <div v-if="song.stageCandidate || song.gameplay" class="song-console-links">
           <button
-            v-if="song.stageCandidate"
+            v-if="song.stageCandidate || lineupStageTarget"
             type="button"
-            @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })"
-          ><Clapperboard :size="16" aria-hidden="true" />{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D 舞台' }}</button>
+            @click="openStage(lineupStageTarget || { songCode: song.id, choreographyId: song.stageCandidate.id })"
+          ><Clapperboard :size="16" aria-hidden="true" />{{ stageLabel }}</button>
           <button v-if="song.gameplay" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart()"><Music :size="16" aria-hidden="true" />谱面</button>
         </div>
       </div>
       <div class="song-record-column">
-        <section v-if="song.playback.experiment && versionUnits.length" class="song-block song-version-bar" aria-labelledby="song-version-bar-title">
-          <div class="song-block-heading"><h3 id="song-version-bar-title">版本试听</h3></div>
-          <div class="version-bar-pills" role="toolbar" aria-label="快捷试听版本">
-            <button
-              v-if="hasAllStars"
-              type="button"
-              class="version-pill"
-              :aria-pressed="isAllStarsActive"
-              @click="playAllStars"
-            >全员合唱</button>
-            <button
-              v-if="hasBacking"
-              type="button"
-              class="version-pill"
-              :aria-pressed="isBackingActive"
-              @click="playBacking"
-            >伴奏</button>
-            <button
-              v-for="unit in versionUnits"
-              :key="unit.code"
-              type="button"
-              class="version-pill"
-              :aria-pressed="isUnitActive(unit.code)"
-              @click="playUnit(unit.code)"
-            >{{ unit.name }}</button>
-          </div>
-        </section>
         <section v-if="eventRelationItems.length" class="song-block song-events">
           <div class="song-block-heading"><h3>关联活动</h3></div>
           <ArchiveRelationList :items="eventRelationItems" @select="emit('open-event', $event.payload)" />
@@ -108,27 +80,20 @@
             <div><dt>个人声部</dt><dd>{{ experimentSoloCount }} 位</dd></div>
             <div><dt>伴奏</dt><dd>{{ song.playback.experiment.backing?.url ? '已收录' : '未收录' }}</dd></div>
           </dl>
-          <p class="song-block-note">「Solo」单独试听该偶像的声部<template v-if="canAddToLineup">；「＋编成」把偶像放进上方五槽编成的下一个空位</template>。</p>
           <details class="song-subsection source-units" :open="audioArchiveOpen" @toggle="audioArchiveOpen = $event.target.open">
             <summary>按组合查看（{{ sourceUnits.length }} 组 · {{ experimentSoloCount }} 位）</summary>
             <div v-if="audioArchiveOpen">
               <section v-for="unit in sourceUnits" :key="unit.key" class="source-unit">
                 <div class="source-unit-heading">
                   <h4>{{ unit.name }}</h4>
-                  <button v-if="unit.hasTrack" type="button" class="source-action" @click="playUnit(unit.code)"><Play :size="12" aria-hidden="true" /> 组合版</button>
                   <button v-if="unit.entry?.actionable" type="button" class="source-unit-link" :data-archive-focus-id="audioFocusId(unitAudioGroup, unit.entry)" @click="emit('open-unit', unit.entry.id)">组合档案 <ChevronRight :size="14" aria-hidden="true" /></button>
                 </div>
                 <ul class="source-idols"><li v-for="entry in unit.idols" :key="entry.id">
                   <ArchiveIdolReference :reference="performerReference(entry.reference)" :show-image="false" :data-archive-focus-id="audioFocusId(vocalAudioGroup, entry)" @open="emit('open-idol', $event)" />
-                  <span class="source-actions">
-                    <button type="button" class="source-action" :aria-label="`试听 ${sourceIdolName(entry)} 的 Solo 声部`" @click="playSolo(entry.id)"><Play :size="12" aria-hidden="true" /> Solo</button>
-                    <button v-if="canAddToLineup" type="button" class="source-action" :aria-label="`把 ${sourceIdolName(entry)} 加入五槽编成`" @click="addToLineup(entry)">＋编成</button>
-                  </span>
                 </li></ul>
               </section>
             </div>
           </details>
-          <p v-if="sourceStatus" class="song-block-note source-status" role="status">{{ sourceStatus }}</p>
         </section>
         <section v-else-if="song.audioGroups.length" class="song-block song-sources">
           <div class="song-block-heading"><h3>音源收录</h3></div>
@@ -214,7 +179,9 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { eventKindLabels, historicalDate } from '../../presentation/DomainPresentation.mjs'
-import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
+import ArchiveSongVersionPanel from './ArchiveSongVersionPanel.vue'
+import ArchiveSongAuditionConsole from './ArchiveSongAuditionConsole.vue'
+import { useSongAudition } from '../../composables/useSongAudition.js'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 const props = defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] },
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' } })
@@ -244,6 +211,8 @@ const eventRelationItems = computed(() => (props.song.relatedEvents || []).map(e
   imageUrl: event.banner?.url || '', imageAlt: event.title, payload: { event_id: event.event_id },
 })))
 const songPlayer = ref(null)
+// A stem song's audition: one state, read by the version panel and the console.
+const audition = useSongAudition(() => props.song.playback.experiment, { idolName: (code, name) => props.idolName(code, name) })
 const songScrollContainer = ref(null), songListenColumn = ref(null)
 const listeningColumnFits = ref(false)
 let listeningResizeObserver = null
@@ -271,10 +240,9 @@ function observeListeningColumnFit() {
   listeningResizeObserver.observe(songListenColumn.value)
   updateListeningColumnFit()
 }
-// 音源收录 for stem songs: idols grouped by unit, each with a Solo and a lineup action into the player above.
+// 音源收录 for stem songs: the collected vocals grouped by unit; playing them is the version panel's job.
 const experimentSoloCount = computed(() => Object.keys(props.song.playback.experiment?.solo_tracks || {}).length)
 const experimentUnitCount = computed(() => (props.song.playback.experiment?.unit_tracks || []).length)
-const canAddToLineup = computed(() => (props.song.playback.experiment?.vocal_settings?.modes || []).some(mode => mode.id === 'formation'))
 const unitAudioGroup = computed(() => props.song.audioGroups.find(group => group.kind === 'unit') || { title: '', kind: 'unit', entries: [] })
 const vocalAudioGroup = computed(() => props.song.audioGroups.find(group => group.title === '个人声部') || { title: '', kind: 'idol', entries: [] })
 const sourceUnits = computed(() => {
@@ -297,27 +265,6 @@ const sourceUnits = computed(() => {
   }
   return [...groups.values()]
 })
-const versionUnits = computed(() => sourceUnits.value.filter(u => u.hasTrack))
-const hasAllStars = computed(() => Boolean(props.song.playback.experiment?.vocal_settings?.modes?.some(mode => mode.id === 'all_stars') || props.song.playback.experiment?.single_tracks?.full_mix))
-const hasBacking = computed(() => Boolean(props.song.playback.experiment?.backing?.url))
-const activePlaybackVersion = ref({ mode: 'all_stars', unitKey: '', singleKey: '' })
-function onVersionChange(version) {
-  activePlaybackVersion.value = version
-}
-const isAllStarsActive = computed(() => activePlaybackVersion.value.mode === 'all_stars' || (activePlaybackVersion.value.mode === 'single' && activePlaybackVersion.value.singleKey === 'full_mix'))
-const isBackingActive = computed(() => activePlaybackVersion.value.mode === 'single' && activePlaybackVersion.value.singleKey === 'backing')
-const isUnitActive = unitCode => activePlaybackVersion.value.mode === 'unit' && activePlaybackVersion.value.unitKey === `unit:${unitCode}`
-
-function playAllStars() {
-  songPlayer.value?.playAllStars?.()
-  sourceStatus.value = ''
-  revealPlayer()
-}
-function playBacking() {
-  songPlayer.value?.playBacking?.()
-  sourceStatus.value = ''
-  revealPlayer()
-}
 // Official 3D live uploads load only on request; the poster is YouTube's own thumbnail.
 const playingVideo = ref('')
 const officialVideos = computed(() => (props.song.officialVideos || []).map(video => ({
@@ -329,36 +276,6 @@ const officialVideos = computed(() => (props.song.officialVideos || []).map(vide
 const unlistedMovies = computed(() => officialVideos.value.length ? [] : props.song.movies)
 const albums = computed(() => (props.song.albums || props.song.links.map(url => ({ url, title: '', catalogNumber: '' })))
   .map(album => ({ ...album, displayTitle: album.title.replace(/^THE IDOLM@STER SideM\s+/, '') || '专辑页面' })))
-const sourceStatus = ref('')
-const sourceIdolName = entry => props.idolName(entry.id, entry.displayName) || entry.displayName
-// The player sits above this list on phones; bring it into view when an action changes what it plays.
-function revealPlayer() {
-  const column = songListenColumn.value
-  if (!column) return
-  const rect = column.getBoundingClientRect()
-  const reduceMotion = typeof globalThis.matchMedia === 'function' && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (rect.bottom < 80 || rect.top > (globalThis.innerHeight || 0) - 80) {
-    column.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' })
-  }
-}
-function playSolo(code) {
-  songPlayer.value?.playSolo?.(code)
-  sourceStatus.value = ''
-  revealPlayer()
-}
-function playUnit(code) {
-  songPlayer.value?.playUnit?.(code)
-  sourceStatus.value = ''
-  revealPlayer()
-}
-// Adding stays in the list, so several idols can be added in a row; the status line reports each one.
-async function addToLineup(entry) {
-  if (!songPlayer.value?.addToLineup) return
-  const position = await songPlayer.value.addToLineup(entry.id)
-  sourceStatus.value = position
-    ? `已把 ${sourceIdolName(entry)} 放进五槽编成的位置 ${position}。`
-    : '五个位置都已选满；先在上方清空一个位置再加入。'
-}
 function performerFocusId(entry) {
   return entry.reference?.actionable ? `song-performer:${props.song.id}:${entry.id}` : undefined
 }
@@ -387,9 +304,7 @@ watch(() => props.song.id, () => {
   prepareRevision += 1
   performersOpen.value = false
   audioArchiveOpen.value = false
-  sourceStatus.value = ''
   playingVideo.value = ''
-  activePlaybackVersion.value = { mode: 'all_stars', unitKey: '', singleKey: '' }
   announceReady()
 })
 onBeforeUnmount(() => {
@@ -404,9 +319,15 @@ function performerReference(reference) {
     ? { ...reference, displayName: props.idolName(reference.idolCode, reference.displayName) || reference.displayName }
     : reference
 }
-function openStage(target) { songPlayer.value?.pause(); emit('open-stage', target) }
+// The page's one stage entry: a loaded five-slot lineup goes along; otherwise the default choreography opens.
+const lineupStageTarget = computed(() => audition.stageTarget)
+const stageLabel = computed(() => {
+  if (lineupStageTarget.value) return '2D 舞台 · 带编成'
+  return props.song.stageCandidate?.stageKind === 'special_single' ? '社长特别演出' : '2D 舞台'
+})
+function openStage(target) { songPlayer.value?.pause(); audition.pause(); emit('open-stage', target) }
 // difficulty: a difficulty column's type; the console's 谱面 button opens on the first one.
-function openChart(difficulty = null) { songPlayer.value?.pause(); emit('open-chart', difficulty) }
+function openChart(difficulty = null) { songPlayer.value?.pause(); audition.pause(); emit('open-chart', difficulty) }
 </script>
 
 <style scoped>
@@ -452,11 +373,6 @@ function openChart(difficulty = null) { songPlayer.value?.pause(); emit('open-ch
 summary { display: flex; align-items: center; min-height: var(--gs-control-touch); color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } details[open] > summary::after { content: '⌃'; }
 
-.song-version-bar { min-width: 0; }
-.version-bar-pills { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); margin-top: var(--gs-space-3); }
-.version-pill { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); cursor: pointer; transition: color .15s, background-color .15s, border-color .15s; }
-.version-pill:hover { border-color: var(--gs-ink-3); color: var(--gs-ink); }
-.version-pill[aria-pressed="true"] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); border-color: var(--gs-selected-line); font-weight: var(--gs-weight-semibold); }
 
 /* Difficulties as a hairline table: dot, name, level, max Combo; one row each. */
 .song-block :deep(.song-block-heading small) { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
@@ -524,10 +440,6 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .source-idols li > :first-child { flex: 1 1 auto; min-width: 0; }
 /* The unit heading already names the unit; the reference's unit subtitle would repeat it on every row. */
 .source-idols :deep(.idol-reference-copy small) { display: none; }
-.source-actions { display: inline-flex; flex: none; gap: var(--gs-space-2); }
-.source-action { display: inline-flex; align-items: center; gap: var(--gs-space-1); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); white-space: nowrap; cursor: pointer; }
-.source-action svg { color: var(--gs-mint-ink); }
-.source-status { color: var(--gs-mint-ink); }
 .official-video { margin: var(--gs-space-4) 0 0; }
 .video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--gs-radius-panel); background: var(--gs-media-bg); }
 .video-frame iframe, .video-poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
@@ -555,7 +467,6 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
   .variant-list button:hover strong { color: var(--gs-mint-ink); }
   .chip-list button:hover:not(:disabled) { border-color: var(--gs-ink-3); }
   .link-list a:hover { text-decoration: underline; }
-  .source-action:hover { border-color: var(--gs-ink-3); }
   .album-list a:hover strong { color: var(--gs-mint-ink); }
   .official-video figcaption a:hover { text-decoration: underline; }
   .video-poster:hover .video-play { background: var(--gs-mint-ink); }
@@ -578,11 +489,18 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
   .song-detail-body { display: contents; }
   .song-listen-column { grid-column: 2; grid-row: 1; }
   .song-record-column { grid-column: 1 / -1; grid-row: 2; padding-top: var(--gs-space-6); border-top: 1px solid var(--gs-rule); }
+  /* Stem songs: the version panel fills the identity column under the head; the console spans both rows. */
+  .has-version-panel .song-version-column { grid-column: 1; grid-row: 2; }
+  .has-version-panel .song-listen-column { grid-row: 1 / span 2; }
+  /* Row 2 is flexible: when the console outgrows head + panel, the extra lands under the panel instead of
+     being shared with the head row, so the head and the five slots never shift while the console changes. */
+  .song-detail-layout.has-version-panel { grid-template-rows: auto 1fr auto; }
+  .has-version-panel .song-record-column { grid-row: 3; }
 }
 @media (max-width: 760px) {
   .song-detail { padding: var(--gs-space-5); }
   .song-detail-title h2 { font-size: var(--gs-text-section); }
   .song-listen-column { padding: var(--gs-space-4); }
-  .song-parent-link, .link-list a, .song-history a, .song-console-links button, .chip-list button, .source-action, .source-unit-link, .version-pill { min-height: var(--gs-control-touch); }
+  .song-parent-link, .link-list a, .song-history a, .song-console-links button, .chip-list button, .source-unit-link { min-height: var(--gs-control-touch); }
 }
 </style>

@@ -32,9 +32,12 @@ assert.equal(byId.brndnf.attributeLabel, 'Intelli')
 assert.equal(byId.drvalv.attributeLabel, 'ALL')
 assert.ok(presentations.every(song => ['Physical', 'Intelli', 'Mental', 'ALL'].includes(song.attributeLabel)))
 assert.equal(buildSongPresentation({ ...catalog.songs.brndnf, attribute: undefined }, identity).attributeLabel, '待确认')
-// Booklet 2.0: the stage door sits at the console's foot as 「2D 舞台」 (「社长特别演出」 for the special single).
-assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /class="song-console-links"[\s\S]{0,400}'社长特别演出' : '2D 舞台'/)
-assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /openStage\(\{ songCode: song\.id, choreographyId: song\.stageCandidate\.id \}\)/, 'stage navigation preserves its own source identity')
+// Booklet 2.0: the stage door sits at the console's foot as 「2D 舞台」 (「社长特别演出」 for the special single);
+// a loaded five-slot lineup rides along through the same button (「2D 舞台 · 带编成」).
+const songDetailSource = read('src/components/archive/ArchiveSongDetail.vue')
+assert.match(songDetailSource, /class="song-console-links"[\s\S]{0,400}\{\{ stageLabel \}\}/)
+assert.match(songDetailSource, /'2D 舞台 · 带编成'[\s\S]{0,160}'社长特别演出' : '2D 舞台'/)
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /openStage\(lineupStageTarget \|\| \{ songCode: song\.id, choreographyId: song\.stageCandidate\.id \}\)/, 'stage navigation preserves its own source identity')
 assert.equal(byId.brndnf.performers[0].displayName, '天ヶ瀬 冬馬')
 assert.equal(byId.brndnf.performers[0].reference.unitName, 'Jupiter')
 assert.equal(byId.brndnf.performers[0].reference.imageCandidates[0].kind, 'idol_icon')
@@ -115,7 +118,7 @@ assert.equal(leaks('<p>{{ resource.uploader.name }}</p>').length, 0)
 assert.equal(leaks("<p>{{ item.resource_id ? '已收录' : '未收录' }}</p>").length, 0)
 assert.equal(leaks('<button :key="item.id" @click="open(item.id)">{{ item.title }}</button>').length, 0)
 assert.equal(leaks('<ArchiveTechnicalDetails><code>{{ item.resource_id }}</code></ArchiveTechnicalDetails>').length, 0)
-const migrated = ['ArchiveSongDetail', 'ArchiveSongCatalog', 'ArchiveSongSinglePlayer', 'ArchiveSongExperimentalPlayer', 'ArchiveSongLineupPlayer', 'ArchiveRelationList', 'ArchiveUnitDetail', 'ArchiveIdolDetail', 'ArchiveEventDetail', 'ArchiveGashaDetail', 'ArchiveGashaCatalog', 'ArchiveCardDetail', 'ArchiveMobileArchive', 'ArchiveSeasonalCampaign', 'ArchiveWorkStory', 'ArchiveStoryCatalog', 'ArchiveStoryCollection', 'ArchiveCardList', 'ArchiveIdolStory']
+const migrated = ['ArchiveSongDetail', 'ArchiveSongCatalog', 'ArchiveSongSinglePlayer', 'ArchiveSongVersionPanel', 'ArchiveSongAuditionConsole', 'ArchiveRelationList', 'ArchiveUnitDetail', 'ArchiveIdolDetail', 'ArchiveEventDetail', 'ArchiveGashaDetail', 'ArchiveGashaCatalog', 'ArchiveCardDetail', 'ArchiveMobileArchive', 'ArchiveSeasonalCampaign', 'ArchiveWorkStory', 'ArchiveStoryCatalog', 'ArchiveStoryCollection', 'ArchiveCardList', 'ArchiveIdolStory']
 for (const name of migrated) {
   const source = read(`src/components/archive/${name}.vue`)
   assert.deepEqual(leaks(parse(source).descriptor.template.content), [], name)
