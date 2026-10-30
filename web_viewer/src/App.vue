@@ -2640,8 +2640,9 @@ watch(view,next=> {
   if(['player','reader'].includes(next))return
   for(const [catalog,detail,owners] of [
     [cardReadModelCatalog,cardReadModelDetail,['cards','card_detail','idols']],
-    // The chart tool owns the song detail it shows and the catalogue its picker lists.
-    [songReadModelCatalog,songReadModelDetail,['song_catalog','song_detail','chibi_stage','chart_lab']],
+    // The chart tool owns the song detail it shows and the catalogue its picker lists; LIVE lists the same
+    // catalogue (and only asks for it when it is missing, before this post-flush sweep runs).
+    [songReadModelCatalog,songReadModelDetail,['song_catalog','song_detail','chibi_stage','chart_lab','live']],
     [idolReadModelCatalog,idolReadModelDetail,['idol_detail','idols']],
     [unitReadModelCatalog,unitReadModelDetail,['unit_catalog','unit_detail']],
     [gashaReadModelCatalog,gashaReadModelDetail,['gashas','gasha_detail']],
