@@ -1,7 +1,8 @@
 // 315 岁时记: the all-idol Portal's month view — whose birthday falls in a month, and which events and gasha
-// pools opened in that month across the years (reprints and reruns included). The read-model generator builds it once into the
-// all-idol scope with these same functions; the Portal only picks a month. Months are Japan time, the
-// game's own calendar.
+// pools opened in that month across the years (reprints and reruns included). The read-model generator builds
+// it once with these same functions: birthdays and events into the all-idol scope, gasha openings into their own
+// portal/almanac-gashas.json (the scope has a 64 KiB budget), which the Portal merges in. The Portal only picks a
+// month. Months are Japan time, the game's own calendar.
 
 const JST_OFFSET_SECONDS = 9 * 3600
 export const ALMANAC_MONTHS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
@@ -44,14 +45,22 @@ export function almanacGashaRuns(catalog = [], kindLabel = category => category)
   })
 }
 
+/** Generation-time builder of portal/almanac-gashas.json: the openings from almanacGashaRuns by Japan-time month. */
+export function buildAlmanacGashaMonths(runs = []) {
+  const months = Object.fromEntries(ALMANAC_MONTHS.map(month => [month, []]))
+  for (const run of runs) months[japanMonthDay(run.startAt).month].push(run)
+  for (const month of ALMANAC_MONTHS) months[month].sort((a, b) => a.startAt - b.startAt || a.id.localeCompare(b.id))
+  return { months }
+}
+
 /**
  * Generation-time builder. `idols` are the bootstrap idols (order kept within a day), `birthdays` maps an
  * idol code to its profile birthday text, `events` are the Portal's event entries (with releaseAt, image,
- * title and a subtitle whose first part is the event kind, e.g. "THEATER · 2021年10月10日"), `reprints`
- * the set of event ids that are reprints, and `gashas` the pool openings from almanacGashaRuns.
+ * title and a subtitle whose first part is the event kind, e.g. "THEATER · 2021年10月10日") and `reprints`
+ * the set of event ids that are reprints.
  */
-export function buildPortalAlmanac({ idols = [], birthdays = {}, events = [], reprints = new Set(), gashas = [] }) {
-  const months = Object.fromEntries(ALMANAC_MONTHS.map(month => [month, { birthdays: [], events: [], gashas: [] }]))
+export function buildPortalAlmanac({ idols = [], birthdays = {}, events = [], reprints = new Set() }) {
+  const months = Object.fromEntries(ALMANAC_MONTHS.map(month => [month, { birthdays: [], events: [] }]))
   for (const idol of idols) {
     const birthday = parseIdolBirthday(birthdays[idol.id])
     if (birthday) months[birthday.month].birthdays.push({ idolCode: idol.id, ...birthday })
@@ -63,11 +72,9 @@ export function buildPortalAlmanac({ idols = [], birthdays = {}, events = [], re
       kind: String(event.subtitle || '').split(' · ')[0], isReprint: reprints.has(String(event.id)),
       image: { url: event.image.url, width: event.image.width, height: event.image.height } })
   }
-  for (const gasha of gashas) months[japanMonthDay(gasha.startAt).month].gashas.push(gasha)
   for (const month of ALMANAC_MONTHS) {
     months[month].birthdays.sort((a, b) => a.day - b.day)
     months[month].events.sort((a, b) => a.releaseAt - b.releaseAt)
-    months[month].gashas.sort((a, b) => a.startAt - b.startAt || a.id.localeCompare(b.id))
   }
   return { months }
 }
@@ -78,11 +85,22 @@ export function almanacEventDate(unixSeconds) {
   return [date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()].map((part, index) => index ? String(part).padStart(2, '0') : part).join('.')
 }
 
-/** One month of a scope's almanac, or null when the scope predates it. */
+/**
+ * The scope's almanac with the gasha openings merged in. `gashaMonths` is the loaded almanac-gashas payload,
+ * `undefined` while it loads, or null when the release has none (built before it) or it failed to load.
+ */
+export function withAlmanacGashas(almanac, gashaMonths) {
+  if (!almanac?.months) return almanac
+  const gashaState = gashaMonths === undefined ? 'loading' : gashaMonths?.months ? 'ready' : 'unavailable'
+  return { ...almanac, gashaState, months: Object.fromEntries(Object.entries(almanac.months).map(([month, row]) =>
+    [month, { ...row, gashas: gashaState === 'ready' && Array.isArray(gashaMonths.months[month]) ? gashaMonths.months[month] : [] }])) }
+}
+
+/** One month of a scope's almanac, or null when the scope predates it; gashaState says whether pools show. */
 export function portalAlmanacMonth(almanac, month) {
   const row = almanac?.months?.[month]
-  // Read models built before the gasha column carry no `gashas`; the month still shows, without pools.
-  return row && Array.isArray(row.birthdays) && Array.isArray(row.events) ? { ...row, gashas: Array.isArray(row.gashas) ? row.gashas : [] } : null
+  return row && Array.isArray(row.birthdays) && Array.isArray(row.events)
+    ? { ...row, gashas: Array.isArray(row.gashas) ? row.gashas : [], gashaState: almanac.gashaState || 'unavailable' } : null
 }
 
 /** The Portal targets: an idol's birthday story collection, and an event's detail page. */

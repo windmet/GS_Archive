@@ -12,6 +12,17 @@ export function createPortalRepository({bootstrap, client}) {
           throw Error('Portal scope identity or shape mismatch')
       }})
     },
+    // 315 岁时记 gasha openings (all-idol scope); null for a release built before the file existed.
+    async loadAlmanacGashas(options = {}) {
+      const index = await client.load(bootstrap.domains.portal, options)
+      const descriptor = index.almanacGashas
+      if (!descriptor) return null
+      if (!descriptor.sha256 || descriptor.kind !== 'portal.almanac_gashas') throw Error('Almanac gasha descriptor invalid')
+      return client.load(descriptor, {...options, validate(data) {
+        if (!data?.months || Object.keys(data.months).length !== 12 || !Object.values(data.months).every(Array.isArray))
+          throw Error('Almanac gasha shape mismatch')
+      }})
+    },
   }
 }
 

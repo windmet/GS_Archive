@@ -1,7 +1,7 @@
 import { buildPortalDesktopOverview } from '../../src/presentation/ArchivePortalPresentation.js';
 import { storyGateways, storyGatewayCount } from '../../src/presentation/StoryGateways.js';
 import { eventResources, storyEventResources } from '../../src/data/eventResourceGraph.js';
-import { almanacGashaRuns, buildPortalAlmanac } from '../../src/presentation/PortalAlmanac.js';
+import { almanacGashaRuns, buildAlmanacGashaMonths, buildPortalAlmanac } from '../../src/presentation/PortalAlmanac.js';
 import { gashaCategoryLabel } from '../../src/data/gashaCatalog.js';
 import { supplementGashaCatalog } from '../../src/data/gashaTicketCatalog.js';
 import { assert } from './common.mjs';
@@ -56,15 +56,20 @@ export function portalProjection({ bootstrap, rows, product, preferredIdol = nul
     card:homeCues.filter(cue => cue.source === 'card').length} : null;
   // The all-idol scope lists no events of its own: its event column is the almanac (the timeline pick it
   // replaced was retired on 10-30).
-  // 315 岁时记 (all-idol scope only): birthdays by month from the idol profiles, every event by the month it
-  // opened, reprints included, and every dated gasha opening of the catalogue (announced pools plus the ticket
-  // supplement's wiki runs); a few KB instead of the browser fetching the event and gasha directories.
+  // 315 岁时记 (all-idol scope only): birthdays by month from the idol profiles, and every event by the
+  // month it opened, reprints included; a few KB instead of the browser fetching the event directory.
+  // Its gasha openings travel apart (portalAlmanacGashas).
   const almanac = preferredIdol ? null : buildPortalAlmanac({ idols: bootstrap.idols,
     birthdays: Object.fromEntries(product.extraDomains.idols.records.map(row => [row.id, row.view?.profile?.birthday])),
-    events: full.events, reprints: new Set(rows.events.filter(row => row.isReprint).map(row => String(row.id))),
-    gashas: almanacGashaRuns(supplementGashaCatalog(rows.gashas).rows, gashaCategoryLabel) });
+    events: full.events, reprints: new Set(rows.events.filter(row => row.isReprint).map(row => String(row.id))) });
   return {...metadata, ...(almanac ? {almanac} : {}), collections:{cards,songs,stories,events:preferredIdol ? full.events : []},
     storyCounts, songCounts, gatewayCountsByAction, homeVoiceCounts, collectionCounts,
     cardCounts:{total:full.cards.length,rarity:counts(full.cards,'rarity'),attribute:counts(full.cards,'attribute')},
     units:preferredIdol ? [] : source.units, eventYears:[], scopeId:preferredIdol?.id || '', projectionVersion:2};
+}
+
+// 315 岁时记 gasha openings, by month: every announced pool at its start and every wiki-dated run of a
+// ticket-only pool, from the gasha directory rows through the catalogue's own ticket supplement.
+export function portalAlmanacGashas({ rows }) {
+  return buildAlmanacGashaMonths(almanacGashaRuns(supplementGashaCatalog(rows.gashas).rows, gashaCategoryLabel));
 }

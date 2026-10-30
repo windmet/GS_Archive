@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
-import { ALMANAC_MONTHS, buildPortalAlmanac, parseIdolBirthday, portalAlmanacMonth, almanacEventDate, birthdayCollectionTarget, almanacEventTarget, almanacGashaTarget } from '../src/presentation/PortalAlmanac.js'
+import { ALMANAC_MONTHS, buildPortalAlmanac, parseIdolBirthday, portalAlmanacMonth, withAlmanacGashas, almanacEventDate, birthdayCollectionTarget, almanacEventTarget, almanacGashaTarget } from '../src/presentation/PortalAlmanac.js'
 
 const root = process.argv[2]
 assert.ok(root && fs.existsSync(path.join(root, 'bootstrap.inline.json')), 'Supply a build_readmodels output root')
@@ -68,14 +68,20 @@ for (const month of ALMANAC_MONTHS) {
 }
 assert.equal(almanacEventDate(1633845600), '2021.10.10')
 
-// Gashas: every directory pool once at its start, and every wiki-dated run of a ticket-only pool once, each in
-// its Japan-time month. Read from the gasha directory and the evidence file, not through the catalogue helpers.
+// Gashas (portal/almanac-gashas.json, named by the portal index): every directory pool once at its start, and
+// every wiki-dated run of a ticket-only pool once, each in its Japan-time month. Read from the gasha directory and
+// the evidence file, not through the catalogue helpers.
+const portalIndex = payload(path.join(base, 'portal', 'index.json'))
+assert.equal(portalIndex.almanacGashas?.kind, 'portal.almanac_gashas', 'the portal index names the almanac gasha file')
+const gashaMonths = payload(path.join(base, 'portal', 'almanac-gashas.json')).months
+assert.deepEqual(Object.keys(gashaMonths).map(Number), ALMANAC_MONTHS, 'gasha openings for twelve months')
+assert.ok(!Object.values(almanac.months).some(row => 'gashas' in row), 'the scope itself carries no gasha openings')
 const gashaDirectory = fs.readdirSync(path.join(base, 'gashas', 'catalog')).sort().flatMap(file => {
   const page = payload(path.join(base, 'gashas', 'catalog', file)); return page.rows ?? page })
 const evidence = json(new URL('../public/data/editorial/gasha-ticket-evidence.json', import.meta.url))
 const expectedRuns = [...gashaDirectory.map(row => ({ id: String(row.id), startAt: row.start_at, banner: row.banner_url, reprint: Boolean(row.is_reprint) })),
   ...evidence.rows.filter(row => !row.matched_ids.length).flatMap(row => (row.wiki_pools || []).map(run => ({ id: row.id, startAt: run.start_at, banner: null, reprint: false })))]
-const gashas = ALMANAC_MONTHS.flatMap(month => almanac.months[month].gashas.map(row => ({ ...row, listedMonth: month })))
+const gashas = ALMANAC_MONTHS.flatMap(month => gashaMonths[month].map(row => ({ ...row, listedMonth: month })))
 assert.ok(gashaDirectory.length > 0 && expectedRuns.length > gashaDirectory.length, 'the directory and the ticket runs both contribute')
 assert.equal(gashas.length, expectedRuns.length, `${expectedRuns.length} gasha openings, each listed once`)
 const runKey = row => `${row.id}@${row.startAt}`
@@ -89,7 +95,7 @@ for (const row of gashas) {
   if (source.banner) assert.equal(row.image?.url, source.banner, `${runKey(row)} shows its announcement banner`)
 }
 for (const month of ALMANAC_MONTHS) {
-  const times = almanac.months[month].gashas.map(row => row.startAt)
+  const times = gashaMonths[month].map(row => row.startAt)
   assert.deepEqual(times, [...times].sort((a, b) => a - b), `month ${month} gashas by date`)
 }
 
@@ -98,13 +104,18 @@ const scopes = fs.readdirSync(path.join(base, 'portal', 'scopes')).filter(file =
 assert.ok(scopes.length > 0 && scopes.every(file => !payload(path.join(base, 'portal', 'scopes', file)).overview.almanac), 'idol scopes carry no almanac')
 assert.equal(portalAlmanacMonth(undefined, 10), null)
 assert.equal(portalAlmanacMonth({ months: {} }, 10), null)
-assert.deepEqual(portalAlmanacMonth({ months: { 10: { birthdays: [], events: [] } } }, 10).gashas, [], 'an older almanac shows no pools')
+const merged = withAlmanacGashas(almanac, { months: gashaMonths })
+assert.deepEqual(portalAlmanacMonth(merged, 10).gashas, gashaMonths[10], 'the merged month carries its pools')
+assert.equal(portalAlmanacMonth(merged, 10).gashaState, 'ready')
+assert.equal(portalAlmanacMonth(withAlmanacGashas(almanac, undefined), 10).gashaState, 'loading')
+assert.equal(portalAlmanacMonth(withAlmanacGashas(almanac, null), 10).gashaState, 'unavailable', 'a release without the file hides the pools')
+assert.equal(portalAlmanacMonth(almanac, 10).gashaState, 'unavailable')
 const bytes = fs.statSync(allFile).size
 assert.ok(bytes <= 64 * 1024, `all-idol scope ${bytes} B within its 64 KiB budget`)
 assert.deepEqual(birthdayCollectionTarget('029ass'), { domain: 'collections', view: 'story_collection', collectionId: 'birthday:029ass', storyDomain: 'birthday', sectionId: '029ass' })
 assert.deepEqual(almanacEventTarget(410001), { domain: 'events', view: 'event_detail', eventId: '410001' })
 assert.deepEqual(almanacGashaTarget(210003), { domain: 'gashas', view: 'gasha_detail', gashaId: '210003' })
-assert.deepEqual(buildPortalAlmanac({}).months[1], { birthdays: [], events: [], gashas: [] })
+assert.deepEqual(buildPortalAlmanac({}).months[1], { birthdays: [], events: [] })
 
-const perMonth = ALMANAC_MONTHS.map(month => `${month}:${almanac.months[month].birthdays.length}/${almanac.months[month].events.length}/${almanac.months[month].gashas.length}`).join(' ')
+const perMonth = ALMANAC_MONTHS.map(month => `${month}:${almanac.months[month].birthdays.length}/${almanac.months[month].events.length}/${gashaMonths[month].length}`).join(' ')
 console.log(`PASS Portal almanac: ${birthdays.length} birthdays, ${events.length} events (${events.filter(row => row.isReprint).length} reprints) and ${gashas.length} gasha openings by Japan-time month [${perMonth}]; idol scopes without it; all-idol scope ${bytes} B`)

@@ -1,5 +1,6 @@
 import { createPortalRepository, portalDisplayOverview } from '../../data/PortalRepository.js'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { withAlmanacGashas } from '../../presentation/PortalAlmanac.js'
 import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOMAINS, portalSearchPageDescriptors, validatePortalSearchRows } from '../../presentation/ArchivePortalPresentation.js'
 
 // Portal data is independent of catalogue filters and never owns a player detail.
@@ -35,11 +36,19 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     try {
       const data = await repository.loadScope(code || 'all', {signal:owner.signal,priority:'foreground'})
       if (disposed || owner.signal.aborted || ticket !== revision) return
-      projection.value = data.overview
+      projection.value = data.overview.almanac ? {...data.overview, almanac: withAlmanacGashas(data.overview.almanac, undefined)} : data.overview
+      if (data.overview.almanac) void loadAlmanacGashas(ticket, owner)
     } catch (cause) {
       if (disposed || owner.signal.aborted || ticket !== revision) return
       error.value = '门户资料暂时无法读取，可直接进入各目录或重试。'
     } finally { if (!disposed && ticket === revision) loading.value = false }
+  }
+  // The almanac's gasha openings are their own file; the month shows at once and the pools follow.
+  async function loadAlmanacGashas(ticket, owner) {
+    let months = null
+    try { months = await repository.loadAlmanacGashas({signal:owner.signal,priority:'background'}) } catch {}
+    if (disposed || owner.signal.aborted || ticket !== revision || !projection.value?.almanac) return
+    projection.value = {...projection.value, almanac: withAlmanacGashas(projection.value.almanac, months)}
   }
   async function expandCardPool() {
     const ticket = revision, owner = overviewController
