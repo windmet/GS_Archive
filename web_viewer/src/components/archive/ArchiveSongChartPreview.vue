@@ -407,11 +407,9 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-group .chart-number { width: 56px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-2); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .chart-group .chart-range { flex: 0 1 96px; width: auto; min-width: 48px; margin: 0; }
 /* Labels keep one line: the label column takes its own width and the control gives way (a slider narrows first).
-   The ⓘ bubble spans its row, under it, so a scrolling settings column never cuts it off at the side. */
-.chart-group .gs-row:not(.stacked) { position: relative; grid-template-columns: auto minmax(0, 1fr); }
+   The ⓘ bubble places itself (GsInfo, top layer), so the scrolling settings column cannot cut it off. */
+.chart-group .gs-row:not(.stacked) { grid-template-columns: auto minmax(0, 1fr); }
 .chart-group :deep(.gs-row-label) { white-space: nowrap; }
-.chart-group :deep(.gs-info) { position: static; }
-.chart-group :deep(.gs-info-bubble) { top: calc(100% - var(--gs-space-2)); right: 0; left: 0; width: auto; max-width: none; transform: none; white-space: normal; }
 /* The scoped `button` rule above reaches GsSwitch's root; give the switch its own box back. */
 .chart-group .gs-switch { min-height: 0; padding: 0; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-switch-off); }
 .chart-group .gs-switch[aria-checked=true] { background: var(--gs-switch-on); }
