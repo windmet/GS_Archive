@@ -86,21 +86,13 @@ export function almanacEventDate(unixSeconds) {
 }
 
 /**
- * The scope's almanac with the gasha openings merged in. `gashaMonths` is the loaded almanac-gashas payload,
- * `undefined` while it loads, or null when the release has none (built before it) or it failed to load.
+ * One month of a scope's almanac, or null when the scope predates it, with that month's gasha openings from
+ * `gashaMonths` (the almanac-gashas payload: undefined while it loads, null when the release has none).
  */
-export function withAlmanacGashas(almanac, gashaMonths) {
-  if (!almanac?.months) return almanac
-  const gashaState = gashaMonths === undefined ? 'loading' : gashaMonths?.months ? 'ready' : 'unavailable'
-  return { ...almanac, gashaState, months: Object.fromEntries(Object.entries(almanac.months).map(([month, row]) =>
-    [month, { ...row, gashas: gashaState === 'ready' && Array.isArray(gashaMonths.months[month]) ? gashaMonths.months[month] : [] }])) }
-}
-
-/** One month of a scope's almanac, or null when the scope predates it; gashaState says whether pools show. */
-export function portalAlmanacMonth(almanac, month) {
+export function portalAlmanacMonth(almanac, month, gashaMonths) {
   const row = almanac?.months?.[month]
-  return row && Array.isArray(row.birthdays) && Array.isArray(row.events)
-    ? { ...row, gashas: Array.isArray(row.gashas) ? row.gashas : [], gashaState: almanac.gashaState || 'unavailable' } : null
+  return row && Array.isArray(row.birthdays) && Array.isArray(row.events) ? { ...row, gashas: gashaMonths?.months?.[month] || [],
+    gashaState: gashaMonths === undefined ? 'loading' : gashaMonths?.months ? 'ready' : 'unavailable' } : null
 }
 
 /** The Portal targets: an idol's birthday story collection, and an event's detail page. */

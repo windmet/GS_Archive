@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
-import { ALMANAC_MONTHS, buildPortalAlmanac, parseIdolBirthday, portalAlmanacMonth, withAlmanacGashas, almanacEventDate, birthdayCollectionTarget, almanacEventTarget, almanacGashaTarget } from '../src/presentation/PortalAlmanac.js'
+import { ALMANAC_MONTHS, buildPortalAlmanac, parseIdolBirthday, portalAlmanacMonth, almanacEventDate, birthdayCollectionTarget, almanacEventTarget, almanacGashaTarget } from '../src/presentation/PortalAlmanac.js'
 
 const root = process.argv[2]
 assert.ok(root && fs.existsSync(path.join(root, 'bootstrap.inline.json')), 'Supply a build_readmodels output root')
@@ -104,12 +104,11 @@ const scopes = fs.readdirSync(path.join(base, 'portal', 'scopes')).filter(file =
 assert.ok(scopes.length > 0 && scopes.every(file => !payload(path.join(base, 'portal', 'scopes', file)).overview.almanac), 'idol scopes carry no almanac')
 assert.equal(portalAlmanacMonth(undefined, 10), null)
 assert.equal(portalAlmanacMonth({ months: {} }, 10), null)
-const merged = withAlmanacGashas(almanac, { months: gashaMonths })
-assert.deepEqual(portalAlmanacMonth(merged, 10).gashas, gashaMonths[10], 'the merged month carries its pools')
-assert.equal(portalAlmanacMonth(merged, 10).gashaState, 'ready')
-assert.equal(portalAlmanacMonth(withAlmanacGashas(almanac, undefined), 10).gashaState, 'loading')
-assert.equal(portalAlmanacMonth(withAlmanacGashas(almanac, null), 10).gashaState, 'unavailable', 'a release without the file hides the pools')
-assert.equal(portalAlmanacMonth(almanac, 10).gashaState, 'unavailable')
+assert.deepEqual(portalAlmanacMonth(almanac, 10, { months: gashaMonths }).gashas, gashaMonths[10], 'the month carries its pools')
+assert.equal(portalAlmanacMonth(almanac, 10, { months: gashaMonths }).gashaState, 'ready')
+assert.equal(portalAlmanacMonth(almanac, 10, undefined).gashaState, 'loading')
+assert.equal(portalAlmanacMonth(almanac, 10, null).gashaState, 'unavailable', 'a release without the file hides the pools')
+assert.deepEqual(portalAlmanacMonth(almanac, 10, null).gashas, [])
 const bytes = fs.statSync(allFile).size
 assert.ok(bytes <= 64 * 1024, `all-idol scope ${bytes} B within its 64 KiB budget`)
 assert.deepEqual(birthdayCollectionTarget('029ass'), { domain: 'collections', view: 'story_collection', collectionId: 'birthday:029ass', storyDomain: 'birthday', sectionId: '029ass' })

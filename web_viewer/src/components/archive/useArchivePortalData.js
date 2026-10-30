@@ -36,19 +36,14 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
       const data = await repository.loadScope(code || 'all', {signal:owner.signal,priority:'foreground'})
       if (disposed || owner.signal.aborted || ticket !== revision) return
       projection.value = data.overview
-      if (data.overview.almanac) void loadAlmanacGashas(ticket, owner)
+      // The almanac's gasha openings are their own file: the month shows at once and the pools follow.
+      // almanacGashas stays undefined while loading, null when the release has none or it failed.
+      if (data.overview.almanac) repository.loadAlmanacGashas({signal:owner.signal,priority:'background'}).catch(() => null)
+        .then(almanacGashas => { if (!disposed && ticket === revision && projection.value) projection.value = {...projection.value, almanacGashas} })
     } catch (cause) {
       if (disposed || owner.signal.aborted || ticket !== revision) return
       error.value = '门户资料暂时无法读取，可直接进入各目录或重试。'
     } finally { if (!disposed && ticket === revision) loading.value = false }
-  }
-  // The almanac's gasha openings are their own file; the month shows at once and the pools follow.
-  // `almanacGashas` stays undefined while loading and null when the release has none; the overview merges it.
-  async function loadAlmanacGashas(ticket, owner) {
-    let months = null
-    try { months = await repository.loadAlmanacGashas({signal:owner.signal,priority:'background'}) } catch {}
-    if (disposed || owner.signal.aborted || ticket !== revision || !projection.value?.almanac) return
-    projection.value = {...projection.value, almanacGashas: months}
   }
   async function expandCardPool() {
     const ticket = revision, owner = overviewController
