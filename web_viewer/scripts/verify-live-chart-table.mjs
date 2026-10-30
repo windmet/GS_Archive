@@ -43,4 +43,9 @@ for (const [file, source] of [['ArchiveLiveChartTable.vue', page], ['GsFilterPan
   assert.match(style, /\[aria-pressed=true\][^{]*\{[^}]*var\(--gs-selected-bg\)/, `${file}: chosen chips use the selected role`)
 }
 assert.match(page, /\.chart-row:hover \{ background: var\(--gs-mint-wash\); \}/)
+// Headers carry only their label so they line up with the figures; the one source note sits by the legend, and its
+// bubble wraps even under the nowrap table text.
+assert.equal(page.match(/<GsInfo /g)?.length, 1, 'one source note, not one per header')
+assert.match(page, /<span class="chart-table-notes">[\s\S]*?<GsInfo /)
+assert.match(text('src/components/gs/GsInfo.vue'), /\.gs-info-bubble \{[^}]*white-space: normal/)
 console.log(`PASS live chart table: ${table.songs.length} songs, ${charts.length} charts match the sources; wiring and stage-light states ok`)

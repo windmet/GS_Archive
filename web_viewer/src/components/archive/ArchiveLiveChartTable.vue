@@ -23,14 +23,16 @@
     <template v-else>
       <div class="chart-table-meta">
         <span>{{ rows.length }} 张谱面 · 按{{ sortLabel }}{{ direction > 0 ? '升序' : '降序' }}</span>
-        <span class="chart-table-legend" aria-hidden="true">音符构成<span v-for="kind in NOTE_KINDS" :key="kind.key"><i :class="`is-${kind.key}`"></i>{{ kind.label }}</span></span>
+        <span class="chart-table-notes">
+          <span class="chart-table-legend" aria-hidden="true">音符构成<span v-for="kind in NOTE_KINDS" :key="kind.key"><i :class="`is-${kind.key}`"></i>{{ kind.label }}</span></span>
+          <GsInfo label="BPM、时长和音符构成的来源">BPM 与音符构成由谱面文件统计，时长是完整混音音频的长度；三者都不是主数据字段。</GsInfo>
+        </span>
       </div>
       <div class="chart-grid chart-head">
         <template v-for="column in COLUMNS" :key="column.key">
           <span class="chart-head-cell" :class="[`col-${column.key}`, { 'is-end': column.num }]">
             <button v-if="column.sort" type="button" :aria-pressed="sort === column.sort" :aria-label="`按${column.label}排序`" @click="sortBy(column.sort, true)">{{ column.label }}<component :is="direction > 0 ? ArrowUp : ArrowDown" v-if="sort === column.sort" :size="13" aria-hidden="true" /></button>
             <span v-else-if="column.label">{{ column.label }}</span>
-            <GsInfo v-if="column.source" :label="`${column.label}的来源`">{{ column.source }}</GsInfo>
           </span>
         </template>
       </div>
@@ -90,9 +92,8 @@ const NOTE_KINDS = [{ key: 'tap', label: '点击' }, { key: 'hold', label: '长�
 const SORTS = [{ key: 'order', label: '实装顺序' }, { key: 'level', label: '等级' }, { key: 'combo', label: 'Combo' }, { key: 'bpm', label: 'BPM' }, { key: 'time', label: '时长' }]
 const COLUMNS = [
   { key: 'song', label: '曲目', sort: 'order' }, { key: 'diff', label: '难度' }, { key: 'level', label: '等级', sort: 'level', num: true },
-  { key: 'combo', label: 'Combo', sort: 'combo', num: true }, { key: 'bpm', label: 'BPM', sort: 'bpm', num: true, source: '由谱面文件的速度标记读出，不是主数据字段。' },
-  { key: 'time', label: '时长', sort: 'time', num: true, source: '完整混音音频的长度，不是主数据字段。' },
-  { key: 'mix', label: '音符构成', source: '由谱面文件逐个音符统计：点击、长按、滑键、大音符、Special。' },
+  { key: 'combo', label: 'Combo', sort: 'combo', num: true }, { key: 'bpm', label: 'BPM', sort: 'bpm', num: true },
+  { key: 'time', label: '时长', sort: 'time', num: true }, { key: 'mix', label: '音符构成' },
   { key: 'since', label: '实装', sort: 'since' }, { key: 'stage', label: '' },
 ]
 const SORT_KEYS = {
@@ -167,6 +168,10 @@ const rows = computed(() => {
 .chart-table-status { margin: var(--gs-space-5) 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
 .chart-table-status button { min-height: var(--gs-control-normal); margin-left: var(--gs-space-3); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink); cursor: pointer; }
 .chart-table-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-3); padding-bottom: var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+/* Where the derived figures come from: one note for the three columns, beside the legend, so the headers carry
+   nothing but their label and line up with the figures under them. */
+.chart-table-notes { display: flex; align-items: center; gap: var(--gs-space-2); }
+.chart-table-notes :deep(.gs-info-bubble) { right: 0; left: auto; transform: none; }
 .chart-table-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-4); }
 .chart-table-legend > span { display: inline-flex; align-items: center; gap: var(--gs-space-2); }
 .chart-table-legend i { width: 10px; height: 10px; }
@@ -177,6 +182,8 @@ const rows = computed(() => {
 .chart-head { border-bottom: 1px solid var(--gs-rule); }
 .chart-head-cell { display: flex; align-items: center; gap: var(--gs-space-1); min-width: 0; min-height: var(--gs-control-toolbar); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); white-space: nowrap; }
 .chart-head-cell.is-end { justify-content: flex-end; }
+/* A right-aligned column keeps its label flush over the figures; the sort arrow goes on the label's left. */
+.chart-head-cell.is-end button { flex-direction: row-reverse; }
 .chart-head-cell button { display: inline-flex; align-items: center; gap: var(--gs-space-1); min-height: var(--gs-control-toolbar); padding: 0; border: 0; background: none; color: inherit; font-weight: inherit; white-space: nowrap; cursor: pointer; }
 .chart-head-cell button[aria-pressed=true] { color: var(--gs-ink); }
 .chart-rows { margin: 0; padding: 0; list-style: none; }
