@@ -1,7 +1,8 @@
 <template>
   <details ref="root" class="song-balance" :open="open" @toggle="open = $event.target.open">
     <summary :aria-label="label" :title="label"><component :is="layered ? SlidersHorizontal : Volume2" :size="18" aria-hidden="true" /></summary>
-    <div class="song-balance-panel"><slot /></div>
+    <!-- Rendered only while open: a shut <details> still lays its content out, so the layer would sit on the lyrics rule. -->
+    <div v-if="open" class="song-balance-panel"><slot /></div>
   </details>
 </template>
 
