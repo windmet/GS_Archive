@@ -44,6 +44,11 @@ const drafts = [
   { dir: 'B034-card-scenarios-r33-edited-20261008', documents: 59, units: 653 },
   { dir: 'B035-birthday-small-talk-r33-edited-20261009', documents: 4, units: 59 },
   { dir: 'B036-seasonal-valentine-2022-1-r33-edited-20261017', documents: 26, units: 411 },
+  { dir: 'B037-seasonal-valentine-2022-rest-r33-edited-20261031', documents: 26, units: 380 },
+  { dir: 'B038-seasonal-white-day-2022-1-r33-edited-20261031', documents: 26, units: 401 },
+  { dir: 'B039-seasonal-white-day-2022-2-r33-edited-20261031', documents: 26, units: 385 },
+  { dir: 'B040-seasonal-valentine-2023-r33-edited-20261031', documents: 52, units: 538 },
+  { dir: 'B041-seasonal-white-day-2023-r33-edited-20261031', documents: 52, units: 524 },
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 const indexes = await loadStudioIndexes()
