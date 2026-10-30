@@ -1,6 +1,6 @@
 <template>
-  <template v-for="node in nodes" :key="node.kind === 'row' ? node.item.row.anchor.row_id : node.key">
-    <ReadingTranscriptRow v-if="node.kind === 'row'" :item="node.item" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
+  <template v-for="(node, index) in nodes" :key="node.kind === 'row' ? node.item.row.anchor.row_id : node.key">
+    <ReadingTranscriptRow v-if="node.kind === 'row'" :item="node.item" :continued="continuesSpeaker(nodes[index - 1], node)" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
     <div v-else-if="node.kind === 'continuation'" v-show="!node.retryIndices.includes(selection[node.choice] ?? 0)" class="branch-continuation">
       <ReadingTranscriptNodes :nodes="node.nodes" :selection="selection" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" @select="emit('select', $event)" />
     </div>
@@ -33,6 +33,10 @@ import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 const props = defineProps({ nodes: Array, selection: Object, mode: String, anchor: String, idolDirectory: Array, searchMatchIds: Set })
 const emit = defineEmits(['select'])
 const selected = node => props.selection[node.choice] ?? 0
+// A line that follows the same speaker's line in the same list drops the repeated face and name;
+// a branch box, a narration or any other row in between starts a new speaker block.
+const speakerKey = item => item.row.kind === 'dialogue' && !item.mergedTitle && item.view.speaker.display ? `${item.avatar || ''}|${item.view.speaker.display}` : ''
+const continuesSpeaker = (previous, node) => previous?.kind === 'row' && Boolean(speakerKey(node.item)) && speakerKey(previous.item) === speakerKey(node.item)
 function focusChoices(event) { event.currentTarget.closest('.reader-branch')?.querySelector('[role=tab][aria-selected=true]')?.focus() }
 async function moveTab(event, node, index) {
   const direction = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key]

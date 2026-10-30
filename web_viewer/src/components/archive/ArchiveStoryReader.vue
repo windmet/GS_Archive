@@ -16,14 +16,17 @@
       </template>
       <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-label="剧情阅读" @keydown="controls?.onReaderKey($event)">
         <div class="reader-body">
-        <p class="reader-subtitle">{{ episodeLabel }}</p>
-        <p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p>
-        <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
-          已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
+        <!-- One compact EP head: label and source title on the left, play on the right. -->
+        <header class="reader-episode-head">
+          <div><p class="reader-subtitle">{{ episodeLabel }}</p><p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p></div>
+          <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情' }}</button>
+        </header>
+        <!-- The 原 / 译 switch already says which text is shown; only exceptions get a line here. -->
+        <p v-if="state.status === 'ready' && mode !== 'original' && (translationStatus || localization.retryAvailable.value || localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid'))" class="reader-notice" role="status">
+          {{ translationStatus }}
           <span v-if="localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')">部分姓名译文暂时无法载入，保留原名。</span>
           <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
         </p>
-        <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情' }}</button>
         <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
         <div v-if="state.status === 'loading'" class="reader-loading" role="status">正在载入正文…<div class="reader-loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
         <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
@@ -90,7 +93,7 @@ const translationStatus = computed(() => {
   if (localization.loading.value) return '正在读取译文…'
   if (translationLoadFailed.value) return '译文暂时无法载入，当前显示原文。'
   if (fallbackCount.value) return `${fallbackCount.value} 处暂无可用译文，已显示原文。`
-  return props.mode === 'bilingual' ? '当前显示原文与译文。' : '当前显示译文。'
+  return ''
 })
 const searchText = text => String(text || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 const searchMatches = computed(() => {
@@ -157,9 +160,11 @@ button { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
 button { min-height: 44px; border: 0; background: none; color: var(--reader-accent-text); }
 button:focus-visible { outline: 3px solid var(--reader-accent-text); outline-offset: 3px; }
 .reader-body { max-width: var(--gs-reading-width); margin: 0 auto; padding: 28px max(24px, var(--archive-safe-right)) 60px max(24px, var(--archive-safe-left)); }
-.reader-subtitle { font-size: 14px; color: var(--reader-text-sub); margin: 4px 0 22px; }
-.reader-source-title { font-size:13px; color:var(--reader-text-sub); margin:-12px 0 22px; }
-.reader-full-play { padding: 10px 20px; border-radius: 8px; background: var(--reader-active); color: var(--reader-on-accent); }
+.reader-episode-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--reader-border); }
+.reader-episode-head > div { min-width: 0; }
+.reader-subtitle { font-size: 14px; font-weight: 600; color: var(--reader-text-main); margin: 0; }
+.reader-source-title { font-size:13px; color:var(--reader-text-sub); margin:2px 0 0; }
+.reader-full-play { flex: none; min-height: 40px; padding: 6px 14px; border: 1px solid var(--reader-border); border-radius: 8px; background: var(--reader-bg-card); color: var(--reader-accent-text); font-size: var(--gs-text-body); }
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
 .reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: var(--reader-text-sub); }
 .reader-feedback h2 { font-size: 18px; color: var(--reader-text-main); }

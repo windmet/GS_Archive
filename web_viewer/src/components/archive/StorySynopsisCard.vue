@@ -1,15 +1,20 @@
 <template>
-  <div class="story-synopsis-card" :class="{ 'is-pending': pending }" :aria-busy="pending || undefined">
+  <div class="story-synopsis-card" :class="{ 'is-pending': pending, 'is-collapsed': folds && !open }" :aria-busy="pending || undefined">
     <div class="synopsis-heading"><span>简介</span><div v-if="switchable" role="group" aria-label="简介语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode',item.id)">{{ item.label }}</button></div></div>
     <strong v-if="title" :class="{ 'is-title-pending': titlePending }">{{ title }}</strong>
     <p class="synopsis-primary" :lang="view.primary.locale">{{ reflowReadingText(view.primary.text,view.primary.locale) }}</p>
     <p v-if="view.secondary" class="synopsis-secondary" :lang="view.secondary.locale">{{ reflowReadingText(view.secondary.text,view.secondary.locale) }}</p>
+    <button v-if="folds" type="button" class="synopsis-toggle" :aria-expanded="open" @click="open = !open">{{ open ? '收起简介' : '展开简介' }}</button>
     <p v-if="notice" class="synopsis-notice" role="status">{{ notice }} <button v-if="retryable" @click="emit('retry')">重试简介</button></p>
   </div>
 </template>
 <script setup>
+import { computed, ref } from 'vue'
 import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
-defineProps({view:{type:Object,required:true},title:String,mode:String,switchable:Boolean,notice:String,retryable:Boolean,pending:Boolean,titlePending:Boolean})
+// collapsible: on phones a long synopsis shows three lines first, so the story itself starts on screen.
+const props=defineProps({view:{type:Object,required:true},title:String,mode:String,switchable:Boolean,notice:String,retryable:Boolean,pending:Boolean,titlePending:Boolean,collapsible:Boolean})
+const open=ref(false)
+const folds=computed(()=>props.collapsible && [...String(props.view.primary?.text||'')].length + [...String(props.view.secondary?.text||'')].length > 80)
 const emit=defineEmits(['mode','retry'])
 const modes=[{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
 </script>
@@ -27,5 +32,11 @@ p { margin:6px 0; max-width:52em; font-size:16px; line-height:1.85; white-space:
 /* Waiting for the translation: keep the source text's space so nothing jumps, but do not show it. */
 .is-pending .synopsis-primary, .is-pending .synopsis-secondary, .is-title-pending { visibility:hidden; }
 :focus-visible { outline:2px solid var(--reader-accent-text, var(--gs-mint)); outline-offset:2px; }
+.synopsis-toggle { display:none; }
 @media(max-width:620px) { .story-synopsis-card { padding:12px 14px; } strong { font-size:16px; } p { font-size:15px; } .synopsis-secondary { font-size:14px; } }
+@media(max-width:760px) {
+  .synopsis-toggle { display:inline-flex; align-items:center; min-height:40px; padding:0; color:var(--reader-accent-text, var(--gs-mint-ink)); }
+  .is-collapsed .synopsis-primary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; overflow:hidden; }
+  .is-collapsed .synopsis-secondary { display:none; }
+}
 </style>

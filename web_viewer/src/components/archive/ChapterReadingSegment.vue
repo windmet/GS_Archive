@@ -2,7 +2,8 @@
   <section :id="`reading-document-${segment.documentId || segment.episodeKey}`" class="chapter-reading-segment" :data-document-id="segment.documentId" :data-revision="segment.entry?.sha256" :data-source-file="segment.source_file" :data-text-catalog="segment.document?.text_catalog_id" tabindex="-1">
     <header><h2>{{ label }}</h2><button v-if="segment.status === 'ready'" :disabled="busy" @click="emit('play', { documentId: segment.documentId, rowId: anchor })">{{ uiText('reader.playSegment') }}</button></header>
     <template v-if="segment.status === 'ready'">
-      <p v-if="mode !== 'original' && !translationPending" role="status" class="segment-notice">{{ translationNotice }} <span v-if="localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')">部分姓名译文暂时无法载入，保留原名。</span> <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button></p>
+      <!-- The 原 / 译 switch already says which text is shown; only exceptions get a line here. -->
+      <p v-if="mode !== 'original' && !translationPending && (translationNotice || entityTrouble || localization.retryAvailable.value)" role="status" class="segment-notice">{{ translationNotice }} <span v-if="entityTrouble">部分姓名译文暂时无法载入，保留原名。</span> <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button></p>
       <div v-if="translationPending" class="segment-placeholder" aria-busy="true"><p>正在载入本段译文…</p></div>
       <ReadingTranscriptSection v-else :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="new Set(matches(query).map(item => item.rowId))" />
     </template>
@@ -27,7 +28,8 @@ const label = computed(() => presentIdolEpisodeLabel({ sourceName: props.segment
 const document = computed(() => props.segment.status === 'ready' ? props.segment.document : null)
 const { localization, presentedRows, translationPending } = useReadingPresentation(document, computed(() => props.mode))
 const translationNotice = computed(() => localization.loading.value ? '正在读取本段译文…' :
-  presentedRows.value.some(item => item.row.kind !== 'stamp' && item.view.translation.fallbackUsed) ? '本段部分台词暂无可用译文，保留原文。' : props.mode === 'bilingual' ? '本段显示原文与译文。' : '本段显示译文。')
+  presentedRows.value.some(item => item.row.kind !== 'stamp' && item.view.translation.fallbackUsed) ? '本段部分台词暂无可用译文，保留原文。' : '')
+const entityTrouble = computed(() => localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid'))
 const normalize = value => String(value || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 function matches(query) {
   const text = normalize(query)
@@ -42,9 +44,9 @@ defineExpose({ matches, presentationLoading })
 </script>
 <style scoped>
 .chapter-reading-segment { scroll-margin-top:20px; outline:none; margin:32px 0; overflow-anchor:auto; }
-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--reader-border); }
+header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--reader-border); }
 h2 { margin:0; font-size:20px; color:var(--reader-text-main); }
-button { min-height:44px; padding:8px 14px; border:1px solid var(--reader-border); border-radius:8px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }
+button { min-height:40px; padding:6px 14px; border:1px solid var(--reader-border); border-radius:8px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }
 button:disabled { opacity:.5; cursor:wait; }
 .segment-placeholder { min-height:240px; padding:20px; background:var(--reader-bg-card); color:var(--reader-text-sub); }
 .segment-notice { color:var(--reader-text-sub); font-size:14px; }

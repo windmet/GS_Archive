@@ -177,6 +177,10 @@ try {
   assert.ok(!html.includes('从这里演出') && !html.includes('记住此处'))
   assert.ok(!html.includes('role="search"'), 'search starts collapsed')
   for (const row of document.rows) assert.ok(html.includes(`id="reading-${row.anchor.row_id}"`), 'all source row anchors survive')
+  // Same-speaker runs read as one block: later lines keep their anchors but drop the face and name.
+  const continued = [...html.matchAll(/<section[^>]*class="reader-row kind-dialogue[^"]*\bcontinued\b[^"]*"[^>]*>([\s\S]*?)<\/section>/g)].map(match => match[1])
+  assert.ok(continued.length > 0 && continued.length <= 12, `same-speaker lines are grouped (${continued.length} of at most 12 adjacent pairs)`)
+  assert.ok(continued.every(body => !body.includes('reader-speaker') && !body.includes('reader-avatar')), 'a continued line repeats neither name nor face')
   const chapter = JSON.parse(readFileSync(new URL('../public/data/reading/1_1_001_01_a.json', import.meta.url)))
   const firstTitle = chapter.rows[0]
   const frontMatter = projectReadingFrontMatter(chapter.rows, chapter.presentation.title)

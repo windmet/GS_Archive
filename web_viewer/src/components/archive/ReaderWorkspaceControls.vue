@@ -10,20 +10,21 @@
     <div class="reader-frame">
       <!-- Wide readers: the chapter directory stays on the left (236) and the text column is centred beside it. -->
       <ReaderTocRail v-if="hasDirectory || hasChapters" class="reader-rail" :title="title" :title-pending="titlePending" :chapter-label="chapterLabel" :segments="segments" :active-document-id="activeDocumentId" :chapter-navigation="chapterNavigation" :allow-unlinked="allowUnlinked" @select="emit('select', $event)" @chapter="emit('chapter', $event)" />
-      <div class="reader-main">
-        <!-- Thin toolbar: B-level text language, theme dots, then search and P name. -->
-        <div class="reader-desktop-toolbar">
+      <div class="reader-main" @scroll.capture.passive="onReadingScroll">
+        <!-- Thin toolbar: B-level text language, theme dots, then search and P name; its row is the
+             text column's width and axis, so the eye does not cross the screen to reach the text. -->
+        <div class="reader-desktop-toolbar"><div class="toolbar-column">
           <button v-if="hasDirectory" class="toolbar-directory icon-button" aria-label="本话 EP 目录" title="本话 EP 目录" aria-haspopup="dialog" :aria-expanded="panel === 'directory'" @click="openPanel('directory', $event)"><ListOrdered :size="19" aria-hidden="true" /></button>
           <div class="compact-languages" role="group" aria-label="正文语言" :style="{'--modes':modes.length,'--mode-index':Math.max(0, modes.findIndex(item => item.id === mode))}"><span v-if="modes.some(item => item.id === mode)" class="mode-thumb" aria-hidden="true"></span><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button></div>
           <div class="compact-themes" role="group" aria-label="阅读主题"><button v-for="theme in READER_THEMES" :key="theme.id" :title="theme.label" :aria-label="theme.label" :aria-pressed="readerTheme === theme.id" @click="setReaderTheme(theme.id)"><span :style="{background:theme.swatch}" /></button></div>
           <span class="toolbar-spacer" aria-hidden="true"></span>
           <button class="icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
           <button class="icon-button" aria-label="P 名字" title="P 名字" @click="openPanel('producer', $event)"><UserRound :size="19" aria-hidden="true" /></button>
-        </div>
+        </div></div>
         <slot />
       </div>
     </div>
-    <nav class="reader-floating-dock" aria-label="阅读浮动导航">
+    <nav class="reader-floating-dock" :class="{ 'is-tucked': dockTucked && !panel }" aria-label="阅读浮动导航">
       <button class="icon-button" :disabled="!previousSegment" aria-label="上一 EP" :title="previousSegment ? `上一 EP · ${segmentLabel(previousSegment)}` : '已到本话首个 EP'" @click="emit('select', previousSegment)"><ChevronLeft :size="21" aria-hidden="true" /></button>
       <button class="dock-directory" :disabled="!hasDirectory" aria-haspopup="dialog" :aria-expanded="panel === 'directory'" @click="openPanel('directory', $event)"><span class="dock-episode">{{ activeLabel }}</span><span class="dock-position">{{ activePosition ? `${activePosition} · ` : '' }}目录</span></button>
       <button class="icon-button" :disabled="!nextSegment" aria-label="下一 EP" :title="nextSegment ? `下一 EP · ${segmentLabel(nextSegment)}` : '本话末个 EP；下一话入口在正文末尾'" @click="emit('select', nextSegment)"><ChevronRight :size="21" aria-hidden="true" /></button>
@@ -61,7 +62,7 @@ const props = defineProps({ title:String, titlePending:Boolean, subtitle:String,
 const emit = defineEmits(['back','chapter','select','mode'])
 const modes = [{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
 const dockModes = [{id:'original',label:'原',ariaLabel:'原文'},{id:'translation',label:'译',ariaLabel:'译文'}]
-const dialog = ref(null), heading = ref(null), panel = ref('')
+const dialog = ref(null), heading = ref(null), panel = ref(''), dockTucked = ref(false)
 // What the sheet shows. It outlives panel by the exit fade (gs-motion.css) so a closing sheet keeps
 // its content instead of flashing to the settings view; it then clears and the content unmounts.
 const shownPanel = ref(''), SHEET_EXIT_MS = 160
@@ -104,6 +105,19 @@ function onReaderKey(event) {
   const segment = readerSegmentNeighbour(props.segments, props.activeDocumentId, event.key === 'ArrowLeft' ? -1 : 1, props.allowUnlinked)
   if (segment) { event.preventDefault(); emit('select', segment) }
 }
+// Phones: reading down tucks the dock away so it covers no line; any upward scroll, or reaching
+// the top or the end of the text, brings it back.
+const scrollTops = new WeakMap()
+function onReadingScroll(event) {
+  const box = event.target
+  if (!(box instanceof Element) || !box.classList.contains('story-reader')) return
+  const top = box.scrollTop, delta = top - (scrollTops.get(box) ?? top)
+  scrollTops.set(box, top)
+  if (top < 80 || box.scrollHeight - top - box.clientHeight < 120) dockTucked.value = false
+  else if (delta > 6) dockTucked.value = true
+  else if (delta < -6) dockTucked.value = false
+}
+watch(() => [props.activeDocumentId, props.chapterNavigation?.chapterId], () => { dockTucked.value = false })
 watch(() => props.chapterNavigation?.chapterId, () => closePanel({restoreFocus:false}))
 onBeforeUnmount(() => { clearTimeout(releaseTimer); dialog.value?.close() })
 defineExpose({openSearch:() => openPanel('search'),closePanel,focusHeading:() => heading.value?.focus({preventScroll:true}),onReaderKey})
@@ -126,7 +140,10 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 .reader-rail { display:none; }
 .reader-main { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
 .reader-main > :deep(.story-reader) { flex:1; min-height:0; }
-.reader-desktop-toolbar { flex:none; display:flex; align-items:center; gap:12px; height:52px; padding:0 max(20px,var(--archive-safe-right)) 0 20px; border-bottom:1px solid var(--reader-border); }
+.reader-desktop-toolbar { flex:none; height:52px; overflow:hidden; scrollbar-gutter:stable; border-bottom:1px solid var(--reader-border); }
+/* Same box as .reader-body (reading width, 24 gutters inside), and the same scrollbar gutter as the text below. */
+.toolbar-column { box-sizing:border-box; display:flex; align-items:center; gap:12px; height:100%; max-width:var(--gs-reading-width); margin:0 auto; padding:0 max(24px,var(--archive-safe-right)) 0 24px; }
+.toolbar-column > .icon-button:last-child { margin-right:-10px; }
 .toolbar-spacer { flex:1; }
 /* B-level switch: recessed track, one raised thumb sliding to the chosen text language. */
 .compact-languages { position:relative; display:grid; grid-template-columns:repeat(var(--modes),minmax(0,1fr)); padding:2px; border-radius:var(--gs-radius-control); background:color-mix(in oklab, var(--reader-text-main) 7%, var(--reader-bg-page)); }
@@ -159,6 +176,8 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
   .reader-compact-header { padding:0 max(10px,var(--archive-safe-right)) 0 max(8px,var(--archive-safe-left)); gap:6px; }
   h1 { font-size:14px; }
   .reader-floating-dock { position:absolute; left:50%; bottom:calc(10px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); display:flex; align-items:center; gap:2px; width:min(440px,calc(100% - 24px)); box-sizing:border-box; height:52px; padding:4px 6px; border:1px solid var(--reader-border); border-radius:var(--gs-radius-panel); background:var(--reader-bg-card); box-shadow:0 6px 24px #0002; }
+  .reader-floating-dock { transition:transform var(--gs-motion-sheet) var(--gs-ease-out), opacity var(--gs-motion-sheet) var(--gs-ease-out); }
+  .reader-floating-dock.is-tucked:not(:focus-within) { transform:translate(-50%, calc(100% + 16px + env(safe-area-inset-bottom,0px))); opacity:0; pointer-events:none; }
   .reader-floating-dock .icon-button { width:40px; }
   .dock-directory { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:0 4px; gap:1px; line-height:1.25; }
   .dock-episode { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; font-variant-numeric:tabular-nums; }
@@ -169,5 +188,5 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
   .reader-sheet { width:100%; max-height:80dvh; max-width:100%; margin:0; inset:auto 0 0; border-radius:20px 20px 0 0; border-bottom:0; --gs-dialog-travel:translateY(100%); --gs-dialog-duration:var(--gs-motion-sheet); }
   .reader-sheet-content { padding:8px max(16px,var(--archive-safe-right)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,var(--archive-safe-left)); }
 }
-@media (prefers-reduced-motion: reduce) { .mode-thumb { transition:none; } }
+@media (prefers-reduced-motion: reduce) { .mode-thumb, .reader-floating-dock { transition:none; } }
 </style>
