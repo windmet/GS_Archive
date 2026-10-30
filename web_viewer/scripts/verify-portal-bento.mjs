@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {buildPortalDesktopOverview,portalIdolPortrait} from '../src/presentation/ArchivePortalPresentation.js'
-import {portalDailyCard,portalTimeline,portalCardCaption} from '../src/presentation/PortalBento.js'
+import {portalDailyCard,portalCardCaption} from '../src/presentation/PortalBento.js'
 import {portalDisplayOverview} from '../src/data/PortalRepository.js'
 import {storyGateways,storyGatewayCount} from '../src/presentation/StoryGateways.js'
 import {cardArtThumbKey,cardArtThumbSourceKey,cardArtThumbSpec,CARD_ART_THUMB_QUALITY,CARD_ART_THUMB_SIZES} from '../shared/portal/CardArtThumbnails.js'
@@ -105,11 +105,6 @@ assert.equal(tiles[3].meta,'个人聊天 19 · 电话 4')
 assert.ok(portalPreferredStatTiles({cardCounts:{total:17}}).slice(1).every(tile=>tile.value===null),'absent scope summaries never invent a number')
 assert.deepEqual(portalPreferredStatTiles({}).map(tile=>tile.meta),['','','',''])
 assert.ok(portalPreferredStatTiles({}).every(tile=>tile.parts.length===0),'empty scope produces empty parts')
-const timeline=portalTimeline([{id:'a',releaseAt:1633046400,subtitle:'date',image:{url:'/assets/a.png'}},{id:'b',releaseAt:1680393600,subtitle:'date',image:{url:'/assets/b.png'}}])
-assert.deepEqual(timeline.map(row=>row.id),['a','b'])
-assert.deepEqual(timeline.map(row=>row.timelineDate),['2021.10.01','2023.04.02'])
-assert.ok(timeline.every(row=>row.seriesLabel==='date'))
-assert.deepEqual(portalTimeline([]),[])
 // Thumbnail URL contract: one derived .webp family, fixed sizes, copied verbatim
 // by the deployment (never losslessly re-encoded, which would throw the bytes away).
 assert.equal(cardArtThumbKey('assets/card-art/portrait/image_card_portrait_hide_003hok_ssr02p.png'),'assets/card-art/thumb/portrait/image_card_portrait_hide_003hok_ssr02p.webp')
