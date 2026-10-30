@@ -10,7 +10,7 @@ import { resolveStoryText } from './StoryTextResolver.js'
 import { TranslationRepository } from './TranslationRepository.js'
 import { EntityTranslationRepository } from './EntityTranslationRepository.js'
 import { speakerDisplayLookup, speakerLabelCandidates, speakerLabelKey } from './SpeakerDisplayNames.js'
-import { chatTranslation, isLegacyChat, loadChatTranslations } from './ChatTranslations.js'
+import { chatOverlayEntry, isChatCandidate, loadChatTranslations } from './ChatTranslations.js'
 
 export const STORY_LOCALIZATION_KEY = Symbol('story-localization')
 
@@ -72,7 +72,7 @@ export function createStoryLocalization({
   const loading = ref(false)
   const reloadRevision = ref(0)
   const overlay = shallowRef(null)
-  // Legacy chats (no text units) translate by source text from the shared chat overlay.
+  // Chats translate by source text; modern text_refs also require catalogue/hash bindings.
   const chatEntries = shallowRef(null)
   const diagnostics = ref(null)
   const entityDiagnostics = ref([])
@@ -124,7 +124,7 @@ export function createStoryLocalization({
             }
           })
         }
-        if (isLegacyChat(compiledData?.value)) {
+        if (isChatCandidate(compiledData?.value)) {
           try {
             const entries = await loadChatTranslations({ signal })
             if (requestGeneration !== generation) return
@@ -171,8 +171,7 @@ export function createStoryLocalization({
     const unitId = textRef?.unit_id
     if (unitId && overlay.value?.entries?.[unitId]) return overlay.value.entries[unitId]
     if (inlineEntry) return inlineEntry
-    const chat = !textRef && chatTranslation(chatEntries.value, source)
-    return chat ? { source_hash: null, text: chat, status: 'draft' } : null
+    return chatOverlayEntry(chatEntries.value, compiledData?.value, source, textRef)
   }
 
   function resolveUnit({ source = '', textRef = null, speaker = null, inlineEntry = null } = {}) {
