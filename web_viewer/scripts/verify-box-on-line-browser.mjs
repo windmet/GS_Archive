@@ -27,7 +27,7 @@ const ROUTES = [
   ['stories', '/stories/'], ['stories-event', '/stories/event/'], ['story-main', '/stories/main/101/'], ['events', '/events/'],
   ['gashas', '/gashas/'], ['gasha', '/gashas/', '[data-archive-focus-id^=gasha]'], ['items', '/items/'], ['costumes', '/costumes/'],
   ['honors', '/honors/'], ['currencies', '/currencies/'], ['photos', '/photos/'], ['unused', '/unused/'], ['mobile', '/mobile/001tom/'],
-  ['studio', '/studio/'], ['about', '/about/'], ['scores', '/scores/'], ['chart', '/live/', '.song-go[aria-label$="的谱面"]'],
+  ['studio', '/studio/'], ['about', '/about/'], ['scores', '/scores/'], ['chart', '/live/', '.chart-row-open'],
 ]
 const WINDOWS = [['m', 390, 844, true], ['d', 1280, 800, false]]
 

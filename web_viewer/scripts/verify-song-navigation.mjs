@@ -95,6 +95,16 @@ try {
     t.openChartLab(2); await t.selectChartSong('drv999'); assert.equal(t.chartDifficulty.value, null)
     t.scope.stop()
   }
+  // A LIVE chart-table row names its difficulty; LIVE itself loads the catalogue but not the chart manifest.
+  {
+    const before = fetchCalls
+    const t = fixture('live'); await flush()
+    assert.equal(fetchCalls, before, 'LIVE does not fetch the chart manifest')
+    await t.openChartSong('brndnf', 4)
+    assert.equal(t.state.view.value, 'chart_lab'); assert.equal(t.state.currentSongId.value, 'brndnf'); assert.equal(t.chartDifficulty.value, 4)
+    await t.openChartSong('drv999', { type: 'click' }); assert.equal(t.chartDifficulty.value, null, 'an event object is not a difficulty')
+    t.scope.stop()
+  }
   // A chart selection supersedes an openSong request before either commits a new revision.
   for (const failure of [false, true]) {
     const t = fixture(), old = deferred(), newest = deferred()

@@ -146,8 +146,8 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
     captureDetailSource(); filterQuery.value = ''; currentSongId.value = ''
     commitView('chart_lab')
   }
-  // A song's 谱面 door on the LIVE landing: the tool opens already on that song.
-  function openChartSong(songCode) { openChartTool(); return selectChartSong(songCode) }
+  // A row of the LIVE chart table: the tool opens already on that song, at the row's difficulty when it names one.
+  function openChartSong(songCode, difficulty = null) { openChartTool(); return selectChartSong(songCode, difficulty) }
   async function prepareChartTool() {
     await Promise.all([ensureSongCatalog(), ensureChartManifest()])
   }
@@ -171,9 +171,9 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
     }
   }
   // Replacing the history entry makes Back leave the tool after any number of selections.
-  async function selectChartSong(songCode) {
+  async function selectChartSong(songCode, difficulty = null) {
     if (!songCode || view.value !== 'chart_lab') return
-    chartDifficulty.value = null
+    chartDifficulty.value = Number.isInteger(difficulty) ? difficulty : null
     const request = ++pendingSongNavigation
     const revision = navigation.getRevision()
     songReadModelStatus.value = '正在读取谱面…'
@@ -223,8 +223,8 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
     return true
   }
 
-  // The LIVE landing lists every song with its chart, so it needs the same two files as the chart tool.
-  watch(view, next => { if (next === 'chart_lab' || next === 'live') void prepareChartTool() }, { immediate: true })
+  // The LIVE chart table joins its bundled figures to the catalogue rows; only the chart tool needs the manifest.
+  watch(view, next => { if (next === 'chart_lab') void prepareChartTool(); else if (next === 'live') void ensureSongCatalog() }, { immediate: true })
   watch([view, currentSongId], ([nextView, songCode]) => {
     if (nextView !== 'song_detail' || !songCode || songReadModelDetail.value?.id === songCode) return
     const request = ++pendingSongNavigation
