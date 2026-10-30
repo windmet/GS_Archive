@@ -37,10 +37,10 @@
         <span>偶像资料页「自己紹介」· 1 段语音</span>
       </div>
       <div class="idol-intro-body">
-        <p class="idol-intro-line gs-flow" :lang="introLine.lang" :class="{ 'is-pending': introLine.pending }">{{ introLine.text }}</p>
-        <button type="button" class="idol-intro-play" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction.file)">
-          <Play :size="15" fill="currentColor" aria-hidden="true" /><span>播放 ADV</span>
+        <button type="button" class="idol-intro-play" aria-label="播放自我介绍 ADV" title="播放 ADV" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction.file)">
+          <Play :size="18" fill="currentColor" aria-hidden="true" />
         </button>
+        <p class="idol-intro-line gs-flow" :lang="introLine.lang" :class="{ 'is-pending': introLine.pending }">{{ introLine.text }}</p>
       </div>
     </section>
 
@@ -344,11 +344,13 @@ function formatDate(timestamp) {
 .song-links button > svg { margin: auto; color: var(--gs-ink-3); }
 .song-links span { display: grid; min-width: 0; }
 .song-links strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.idol-intro-body { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--gs-space-5); padding-top: var(--gs-space-2); }
+.idol-intro-body { display: flex; align-items: flex-start; gap: var(--gs-space-3); padding-top: var(--gs-space-3); }
+.idol-intro-line { padding-top: var(--gs-space-2); }
 .idol-intro-line { margin: 0; color: var(--gs-ink); line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; }
 .idol-intro-line.is-pending { visibility: hidden; }
-.idol-intro-play { display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
-@media (hover: hover) { .idol-intro-play:hover { background: var(--gs-paper); } }
+/* A 44px play icon leading the line, like an episode row: out of the heading rule, no pill. */
+.idol-intro-play { display: grid; flex: none; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); margin-top: calc(-1 * var(--gs-space-2)); padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--gs-mint-ink); cursor: pointer; }
+@media (hover: hover) { .idol-intro-play:hover { background: var(--gs-current-bg-inset); } }
 .honor-group + .honor-group { margin-top: var(--gs-space-7); }
 .honor-group h4 { display: flex; align-items: center; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-3); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .honor-group h4 small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
@@ -399,7 +401,6 @@ function formatDate(timestamp) {
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .related-grid, .song-links { grid-template-columns: 1fr; gap: 0; }
   .related-grid button { grid-template-columns: 60px minmax(0, 1fr) auto; }
-  .idol-intro-body { flex-direction: column; }
   .honor-plates, .honor-plates.is-ranked, .honor-plates.is-chocolate { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
   .honor-plate { height: auto; min-height: 36px; }
 }

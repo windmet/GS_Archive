@@ -1,5 +1,4 @@
 import { buildPortalDesktopOverview } from '../../src/presentation/ArchivePortalPresentation.js';
-import { portalTimeline } from '../../src/presentation/PortalBento.js';
 import { storyGateways, storyGatewayCount } from '../../src/presentation/StoryGateways.js';
 import { eventResources, storyEventResources } from '../../src/data/eventResourceGraph.js';
 import { buildPortalAlmanac } from '../../src/presentation/PortalAlmanac.js';
@@ -53,12 +52,14 @@ export function portalProjection({ bootstrap, rows, product, preferredIdol = nul
   const homeCues = preferredIdol ? product.home.find(row => row.id === preferredIdol.id)?.cues || [] : [];
   const homeVoiceCounts = preferredIdol ? {idol:homeCues.filter(cue => cue.source === 'idol').length,
     card:homeCues.filter(cue => cue.source === 'card').length} : null;
+  // The all-idol scope lists no events of its own: its event column is the almanac (the timeline pick it
+  // replaced was retired on 10-30).
   // 315 岁时记 (all-idol scope only): birthdays by month from the idol profiles, and every event by the
   // month it opened, reprints included; a few KB instead of the browser fetching the event directory.
   const almanac = preferredIdol ? null : buildPortalAlmanac({ idols: bootstrap.idols,
     birthdays: Object.fromEntries(product.extraDomains.idols.records.map(row => [row.id, row.view?.profile?.birthday])),
     events: full.events, reprints: new Set(rows.events.filter(row => row.isReprint).map(row => String(row.id))) });
-  return {...metadata, ...(almanac ? {almanac} : {}), collections:{cards,songs,stories,events:preferredIdol ? full.events : portalTimeline(full.events)},
+  return {...metadata, ...(almanac ? {almanac} : {}), collections:{cards,songs,stories,events:preferredIdol ? full.events : []},
     storyCounts, songCounts, gatewayCountsByAction, homeVoiceCounts, collectionCounts,
     cardCounts:{total:full.cards.length,rarity:counts(full.cards,'rarity'),attribute:counts(full.cards,'attribute')},
     units:preferredIdol ? [] : source.units, eventYears:[], scopeId:preferredIdol?.id || '', projectionVersion:2};

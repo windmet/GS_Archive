@@ -222,7 +222,7 @@ const emptyComponent = { render: () => null }
 const imports = {
   vue: Vue,
   '@lucide/vue': Object.fromEntries(['Activity', 'CheckCircle2', 'ChevronLeft', 'ChevronRight', 'CircleSlash',
-    'Expand', 'HeartPulse', 'ImageOff', 'PackageOpen', 'Play', 'Shirt'].map(name => [name, emptyComponent])),
+    'Expand', 'HeartPulse', 'ImageOff', 'MonitorPlay', 'PackageOpen', 'Play', 'Shirt'].map(name => [name, emptyComponent])),
   '../../presentation/ArchiveText.js': { reflowArchiveText },
   '../../presentation/ProducerAddressingText.js': { presentProducerAddressingText },
   '../../presentation/CardSkillDescriptionPresenter.js': { presentCardSkillDescription },

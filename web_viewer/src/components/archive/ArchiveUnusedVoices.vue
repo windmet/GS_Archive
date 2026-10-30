@@ -26,9 +26,9 @@
             <p class="unused-note">{{ scene.note }}</p>
             <ol class="unused-lines">
               <li v-for="line in scene.lines" :key="line.cue" :data-office-cue="line.cue">
-                <button type="button" class="unused-play" :aria-pressed="playing === line.cue" :aria-label="`播放 ${scene.label} ${line.cue}`" @click="play(line.cue)"><component :is="playing === line.cue ? Pause : Play" :size="14" aria-hidden="true" /></button>
+                <button type="button" class="unused-play" :aria-pressed="playing === line.cue" :aria-label="`播放 ${scene.label} ${line.cue}`" @click="play(line.cue)"><component :is="playing === line.cue ? Pause : Play" :size="18" aria-hidden="true" /></button>
                 <span class="unused-text gs-flow" :lang="officeLine(line).lang" :class="{ 'is-pending': officeLine(line).pending }">{{ officeLine(line).text }}</span>
-                <button type="button" class="voice-preview-btn" :aria-label="`演出预览 ${line.cue}`" @click="preview(line.cue)">演出预览</button>
+                <button type="button" class="voice-preview-btn" :aria-label="`演出预览 ${line.cue}`" title="演出预览" @click="preview(line.cue)"><MonitorPlay :size="18" aria-hidden="true" /></button>
               </li>
             </ol>
           </section>
@@ -36,7 +36,7 @@
         <ol v-else-if="family.speakers.length === 1" class="unused-lines">
           <template v-for="speaker in family.speakers" :key="speaker.code">
             <li v-for="line in speaker.cues" :key="line.cue" :data-unused-cue="line.cue">
-              <button type="button" class="unused-play" :aria-pressed="playing === line.cue" :aria-label="`播放 ${speakerName(speaker.code)} ${line.cue}`" @click="play(line.cue)"><component :is="playing === line.cue ? Pause : Play" :size="14" aria-hidden="true" /></button>
+              <button type="button" class="unused-play" :aria-pressed="playing === line.cue" :aria-label="`播放 ${speakerName(speaker.code)} ${line.cue}`" @click="play(line.cue)"><component :is="playing === line.cue ? Pause : Play" :size="18" aria-hidden="true" /></button>
               <span v-if="line.text" class="unused-text gs-flow" :lang="lineText(line).lang" :class="{ 'is-pending': lineText(line).pending }">{{ lineText(line).text }}</span>
               <span v-else class="unused-text is-voice-only">{{ line.cue }} · 无文字</span>
             </li>
@@ -63,7 +63,7 @@
 </template>
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { Pause, Play } from '@lucide/vue'
+import { MonitorPlay, Pause, Play } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ARCHIVE from '../../data/unusedVoiceArchive.json'
 import OFFICE_VOICES from '../../data/officeSystemVoices.json'
@@ -134,8 +134,9 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 /* A scroll container's automatic minimum height is 0, so the page grid would collapse the row without one. */
 .unused-shelves { display: flex; gap: var(--gs-space-3); min-height: var(--gs-control-compact); overflow-x: auto; scrollbar-width: none; }
 .unused-shelves::-webkit-scrollbar { display: none; }
-.unused-shelves button { flex: none; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
-.unused-shelves button[aria-pressed='true'] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
+/* Shelves are the second tier under the place tabs: plain text, the current one ink and bold (no pills on the rule). */
+.unused-shelves button { flex: none; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-1); border: 0; background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
+.unused-shelves button[aria-pressed='true'] { color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .unused-shelf { display: grid; gap: var(--gs-space-4); padding: var(--gs-space-6); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-surface); background: var(--gs-surface); }
 .unused-family { display: grid; gap: var(--gs-space-2); }
 .unused-family:not(:first-child) { margin-top: var(--gs-space-3); padding-top: var(--gs-space-5); border-top: 1px solid var(--gs-line); }
@@ -147,8 +148,9 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 .office-scene { display: grid; gap: 6px; padding-top: var(--gs-space-3); }
 .office-scene h4 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-ui); }
 .office-scene h4 small { margin-left: 4px; color: var(--gs-ink-3); font-weight: 400; }
-.voice-preview-btn { flex: none; align-self: center; min-height: 32px; padding: 0 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-meta); cursor: pointer; }
-.voice-preview-btn:hover { border-color: var(--gs-mint-ink); }
+/* Play and stage preview are 44px icons on the line row, not boxes on its rule. */
+.voice-preview-btn { flex: none; display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); margin: -6px 0; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
+.voice-preview-btn:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
 .unused-speakers { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
 .unused-speakers > li { display: grid; align-content: start; gap: 8px; padding: 10px; border-radius: var(--gs-radius-control); background: var(--gs-paper); }
 .unused-speaker { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: var(--gs-text-ui); }
@@ -159,8 +161,8 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 .unused-chip[aria-pressed='true'], .unused-play[aria-pressed='true'] { border-color: var(--gs-mint-ink); background: var(--gs-mint-wash); color: var(--gs-mint-ink); }
 .unused-lines { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .unused-lines li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 4px; border-top: 1px solid var(--gs-line); }
-.unused-play { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--gs-line); border-radius: 50%; background: var(--gs-surface); color: var(--gs-mint-ink); cursor: pointer; }
-.unused-text { flex: 1; min-width: 0; padding-top: 5px; font-size: var(--gs-text-ui); line-height: 1.65; white-space: pre-line; }
+.unused-play { flex: none; display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); margin: -6px 0; border: 0; border-radius: 50%; background: transparent; color: var(--gs-mint-ink); cursor: pointer; }
+.unused-text { flex: 1; min-width: 0; padding-top: 4px; font-size: var(--gs-text-ui); line-height: 1.65; white-space: pre-line; }
 .unused-text.is-pending { visibility: hidden; }
 .unused-text.is-voice-only { color: var(--gs-ink-3); font-variant-numeric: tabular-nums; }
 .unused-status { min-height: 1em; margin: 0; color: var(--gs-critical); font-size: var(--gs-text-ui); }

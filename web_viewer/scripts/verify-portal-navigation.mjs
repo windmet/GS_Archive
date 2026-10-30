@@ -285,19 +285,22 @@ assert.doesNotMatch(shellSource, /^import ArchiveNavigationDrawer/m, 'the drawer
 assert.match(shellSource, /<ArchiveNavigationDrawer v-if="drawerOpen"[^>]*:groups="navigationGroups"/, 'the drawer renders only while open, from the sidebar groups')
 const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavigationDrawer.vue', import.meta.url), 'utf8')
 assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups/, 'the drawer keeps no destination list of its own')
-assert.deepEqual(drawerSource.match(/ARCHIVE_SECTIONS(?:\[[^\]]+\]\?\.\w+)?/g), ['ARCHIVE_SECTIONS', 'ARCHIVE_SECTIONS[item.id]?.blurb'], 'the drawer reads only descriptions from the dictionary')
 assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
-// Booklet 2.0: rows in a table of contents. Groups are told apart by their sidebar titles, not by boxes.
-assert.match(drawerSource.split('<script')[0], /<h2>\{\{ group\.label \}\}<\/h2>/, 'each drawer group is titled with its sidebar group name')
-assert.match(drawerSource, /props\.groups\.filter\(group => \(TIER_OF_GROUP\[group\.id\] \|\| 'core'\) === id\)/, 'every drawer tier is cut from the sidebar groups')
-// 图鉴 names run two to four characters; a fixed icon column and full-width rules keep them aligned, without filled cells.
-assert.doesNotMatch(drawerSource.split('<style')[1], /background: var\(--gs-paper\)|border: 1px solid/, 'no filled cells or outlined cards')
-assert.match(drawerSource, /\.archive-drawer-blank \{[^}]*border-bottom: 1px solid var\(--gs-line\)/, 'blank rows keep the rules running across a short group')
-assert.match(drawerSource, /const TIER_OF_GROUP = \{ collection: 'collection', live: 'tools', studio: 'tools', resources: 'footer' \}/, 'catalogues, 图鉴, tools and the maintainer page each have their tier')
-// The tools are players and editors, not lists: a row that says what it opens, from the dictionary, ending in ↗.
-assert.match(drawerSource, /<template v-if="tier\.id === 'tools'"><small v-if="item\.blurb">\{\{ item\.blurb \}\}<\/small><ArrowUpRight /, 'tool rows carry a one-line description and ↗')
-assert.match(drawerSource, /blurb: ARCHIVE_SECTIONS\[item\.id\]\?\.blurb/, 'tool descriptions come from the dictionary')
-assert.deepEqual(Object.values(ARCHIVE_SECTIONS).filter(section => section.blurb).map(section => section.id), ['live', 'studio'], 'only the two tools carry a description')
+// 线框减法册 L2: the drawer and the archive home draw one directory component — icon cells, no rules, three
+// sections told apart by space and a 12px name. The drawer keeps only its footer line of its own.
+const gridSource = readFileSync(new URL('../src/components/archive/ArchiveDirectoryGrid.vue', import.meta.url), 'utf8')
+assert.match(drawerSource, /<ArchiveDirectoryGrid :groups="groups\.filter\(group => group\.id !== 'resources'\)"/, 'the drawer draws the directory grid from the sidebar groups')
+assert.doesNotMatch(drawerSource + gridSource, /border(?:-top|-bottom|-block)?: 1px solid/, 'no rules in the drawer or the directory grid')
+assert.doesNotMatch(gridSource, /archiveRoute|archiveNavigationGroups/, 'the grid keeps no destination list of its own')
+assert.match(gridSource, /\{ id: 'core', label: '资料目录'[\s\S]*\{ id: 'collection', label: '图鉴'[\s\S]*\{ id: 'tools', label: '工具'/, 'three sections: 资料目录, 图鉴, 工具')
+assert.match(gridSource, /\.directory-cells \{ display: grid; grid-template-columns: repeat\(4, minmax\(0, 1fr\)\); \}/, 'four columns of cells')
+assert.match(gridSource, /min-height: 66px;/, 'cells are 66px tall')
+assert.match(gridSource, /\.directory-cells button\.active \{ background: var\(--gs-current-bg-inset\); \}/, 'the current destination sits on the inset slice, as in the sidebar')
+assert.match(gridSource, /<ArrowUpRight v-if="section\.id === 'tools'"/, 'the two tools end in ↗')
+assert.match(drawerSource, /props\.keyboard \? current \|\| sheet\.value\?\.querySelector\('button'\) : sheet\.value/, 'a tap focuses the sheet, not the first cell; the keyboard lands on the current cell')
+assert.match(shellSource, /drawerByKeyboard\.value = event\?\.detail === 0/, 'the shell tells keyboard opens from taps')
+assert.match(shellSource, /provide\('openNavigationDrawer', openNavigationDrawer\)/, 'the shell lends its one drawer to the archive home')
+assert.match(shellSource, /\(drawerOpener\?\.isConnected \? drawerOpener : drawerToggle\.value\)\?\.focus\(\)/, 'Esc returns focus to whichever control opened the drawer')
 // 回到页顶 and 关于本站 close the drawer as a footer line; 回到页顶 scrolls the archive scroll area.
 assert.match(drawerSource, /<p class="archive-drawer-footer">[\s\S]*?<button type="button" class="archive-drawer-top" :disabled="!canScrollTop" @click="scrollToTop">回到页顶<\/button>[\s\S]*?sectionLabel\('about'\)[\s\S]*?<\/p>/, 'the footer offers 回到页顶 (disabled at the top) and 关于本站')
 assert.match(drawerSource, /const scrollArea = \(\) => document\.querySelector\('\[data-archive-scroll-container\]'\)/, '回到页顶 scrolls the archive scroll area')
@@ -316,10 +319,17 @@ assert.match(tokenSource, /@media \(max-width: 760px\) \{ \[data-archive-scroll-
 const phoneOverview = overviewSource.slice(overviewSource.lastIndexOf('@media (max-width:760px)'))
 assert.match(phoneOverview, /\.portal-overview \{ padding:var\(--gs-space-3\) var\(--gs-space-5\) /, 'the portal keeps the 16px side margin of the other pages')
 assert.match(phoneOverview, /\.overview-personal \{ display:flex;align-items:stretch; \}/, 'the hero stays one column at every phone width')
-assert.match(phoneOverview, /\.overview-directory \{ display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\);/, 'the phone directory has four columns')
-assert.doesNotMatch(phoneOverview, /\.overview-directory \{ grid-template-columns:/, 'no width changes the directory columns')
-assert.equal(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items).length % 4, 0, 'the four-column directory has no partial row')
+assert.match(overviewSource, /const DIRECTORY_PICK = \['stories', 'interactions', 'idols', 'cards', 'songs', 'events', 'live'\]/, 'the archive home lists seven common destinations')
+assert.equal((overviewSource.match(/<ArchiveDirectoryGrid :groups="destinations" :pick="DIRECTORY_PICK" focus-prefix="portal-directory" @navigate="id => emit\('navigate', id\)" @more="openNavigationDrawer" \/>/g) || []).length, 2, 'both portal views draw the same two rows, the eighth cell opening the drawer')
+assert.match(gridSource, /<span>全部栏目<\/span>/, 'the eighth cell is 全部栏目')
+assert.doesNotMatch(phoneOverview, /\.overview-directory \{[^}]*border/, 'the home directory has no rules above or below')
 console.log('Navigation naming: one dictionary for entries, breadcrumbs and tabs; portal lens always in the address; phone 2+1 bar, lazy drawer and hero-first portal passed')
 import { ARCHIVE_SECTIONS } from '../src/core/archiveSections.js'
 import { buildArchiveBreadcrumbs } from '../src/core/archiveRoute.js'
 import { archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+// 315 岁时记 replaced the 运营轨迹 timeline (10-30): the Portal keeps no fallback column and no producer for it;
+// prepare-readmodel-preview refuses a release whose all-idol scope lacks the almanac.
+const portalOverviewSource = readFileSync(new URL('../src/components/archive/ArchivePortalOverview.vue', import.meta.url), 'utf8')
+assert.doesNotMatch(portalOverviewSource, /运营轨迹|overview-timeline|portalTimeline/, 'the Portal has no timeline fallback beside the almanac')
+assert.doesNotMatch(readFileSync(new URL('../src/presentation/PortalBento.js', import.meta.url), 'utf8'), /portalTimeline/, 'the timeline producer is retired')
+assert.match(readFileSync(new URL('./prepare-readmodel-preview.mjs', import.meta.url), 'utf8'), /verify-portal-almanac\.mjs/, 'a preview package checks the almanac first')

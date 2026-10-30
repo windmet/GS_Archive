@@ -38,16 +38,14 @@
         <span class="tool-copy">
           <strong>{{ tool.heading }}<ArrowUpRight :size="16" aria-hidden="true" /></strong>
           <span>{{ tool.summary }}</span>
-          <small>首次约 {{ tool.size }} · {{ tool.sizeNote }}</small>
+          <small>首次约 {{ tool.size }}<span class="tool-size-note"> · {{ tool.sizeNote }}</span></small>
         </span>
       </button>
     </div>
 
     <section class="song-start" aria-labelledby="live-song-start">
-      <header class="song-start-head">
-        <h2 id="live-song-start">从一首歌开始</h2>
-        <GsSegmented v-model="category" :options="categoryOptions" aria-label="歌曲类别" compact />
-      </header>
+      <h2 id="live-song-start">从一首歌开始</h2>
+      <GsTabs v-model="category" :options="categoryOptions" aria-label="歌曲类别" />
       <label class="song-start-search">
         <Search :size="17" aria-hidden="true" />
         <input v-model="query" type="search" aria-label="搜索曲目" placeholder="搜索歌名或组合" autocomplete="off" />
@@ -63,9 +61,9 @@
               <span v-else class="song-nojacket" aria-hidden="true"></span>
               <span class="song-copy"><strong :title="song.title">{{ song.title }}</strong><small>{{ subline(song) }}</small></span>
               <span v-if="difficulties(song)" class="song-dots" :title="`${difficulties(song)} 档难度`" aria-hidden="true"><i v-for="n in difficulties(song)" :key="n"></i></span>
-              <button v-if="difficulties(song)" type="button" class="song-go" :aria-label="`${song.title} 的谱面`" @click="emit('chart-song', song.song_code)">谱面</button>
+              <button v-if="difficulties(song)" type="button" class="song-go is-chart" :aria-label="`${song.title} 的谱面`" @click="emit('chart-song', song.song_code)"><AudioLines :size="16" aria-hidden="true" />谱面</button>
               <span v-else class="song-go is-none" aria-label="没有谱面">—</span>
-              <button type="button" class="song-go" :aria-label="`${song.title} 的舞台`" @click="emit('stage-song', song.song_code)">舞台</button>
+              <button type="button" class="song-go is-stage" :aria-label="`${song.title} 的舞台`" @click="emit('stage-song', song.song_code)"><Clapperboard :size="16" aria-hidden="true" />舞台</button>
             </li>
           </ul>
         </section>
@@ -76,9 +74,9 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { ArrowUpRight, ChevronRight, History, Images, Search, UserRound } from '@lucide/vue'
+import { ArrowUpRight, AudioLines, ChevronRight, Clapperboard, History, Images, Search, UserRound } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
-import GsSegmented from '../gs/GsSegmented.vue'
+import GsTabs from '../gs/GsTabs.vue'
 import { groupSongTiers } from '../../presentation/SongTiers.js'
 import { classifySongLineup } from '../../presentation/SongPresentation.js'
 import chartImage from '../../assets/tools/chart.webp'
@@ -113,7 +111,7 @@ const matches = computed(() => {
     (!needle || normalize([song.title, song.kana, song.song_code, song.performance?.unitName].join(' ')).includes(needle)))
 })
 const categoryOptions = computed(() => [['all', '全部'], ['configurable_formation', '代表曲'], ['fixed_unit', '组合曲'], ['fixed_special_lineup', '特别']]
-  .map(([value, label]) => ({ value, label: `${label} ${value === 'all' ? props.songs.length : props.songs.filter(song => classifySongLineup(song) === value).length}` })))
+  .map(([value, label]) => ({ value, label, count: props.songs.length ? (value === 'all' ? props.songs.length : props.songs.filter(song => classifySongLineup(song) === value).length) : null })))
 const groups = computed(() => {
   const tiers = groupSongTiers(matches.value, classifySongLineup)
   return [
@@ -156,10 +154,10 @@ function startWithIdol() {
 .tool-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 @media (hover: hover) { .tool:hover { background: var(--gs-hover); } }
 
-.song-start { max-width: var(--gs-content-width); margin: var(--gs-space-6) auto 0; padding-top: var(--gs-space-5); border-top: 1px solid var(--gs-line); }
-.song-start-head { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-5); flex-wrap: wrap; }
-.song-start-head h2 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
-.song-start-search { display: flex; align-items: center; gap: var(--gs-space-3); height: var(--gs-control-normal); margin: var(--gs-space-4) 0; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-3); }
+/* The category tabs' own rule is the section's only line (线框减法册 rule 2); the search sits 16px under it. */
+.song-start { max-width: var(--gs-content-width); margin: var(--gs-space-7) auto 0; }
+.song-start > h2 { margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
+.song-start-search { display: flex; align-items: center; gap: var(--gs-space-3); height: var(--gs-control-normal); margin: var(--gs-space-5) 0 var(--gs-space-4); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-3); }
 .song-start-search:focus-within { border-color: var(--gs-ink-3); box-shadow: 0 0 0 var(--gs-focus-ring) var(--gs-mint); }
 .song-start-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .song-start-status { margin: var(--gs-space-5) 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
@@ -172,8 +170,14 @@ function startWithIdol() {
 .song-copy small { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
 .song-dots { display: flex; flex: none; gap: 3px; }
 .song-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--gs-ink-3); }
-.song-go { flex: none; min-width: 44px; height: 36px; padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; }
+/* The two doors on each row: an icon that names the tool (a wave for the chart, a clapperboard for the
+   stage) and its word, no frame and no fill on the row's hairline (线框减法册 rule 3). The icons carry the
+   site's two colours, navy for the chart and the mint stage light for the stage; a press answers with a wash. */
+.song-go { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 5px; min-width: 64px; height: 44px; padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); cursor: pointer; transition: background var(--gs-motion-feedback) var(--gs-ease-out); }
+.song-go.is-chart svg { color: var(--gs-chrome); }
+.song-go.is-stage svg { color: var(--gs-mint-ink); }
 .song-go.is-none { display: grid; place-items: center; color: var(--gs-ink-3); cursor: default; }
+button.song-go:active { background: var(--gs-mint-wash); }
 @media (hover: hover) { button.song-go:hover { background: var(--gs-hover); color: var(--gs-ink); } }
 
 /* Studio: the picture, and the ways in. */
@@ -197,15 +201,19 @@ function startWithIdol() {
 
 @media (max-width: 760px) {
   .landing { padding: var(--gs-space-4) var(--gs-space-5) var(--gs-space-7); }
-  .tool-pair { grid-template-columns: 1fr; gap: var(--gs-space-2); }
-  .tool img { width: 112px; height: 63px; }
+  /* The two tools side by side: a 16:9 picture over the name ↗ and one line of size (线框减法册 L4). */
+  .tool-pair { gap: var(--gs-space-4); }
+  .tool { flex-direction: column; align-items: stretch; gap: var(--gs-space-2); padding: 0; }
+  .tool img { width: 100%; height: auto; aspect-ratio: 16 / 9; }
+  .tool-copy { gap: 2px; }
+  .tool-copy strong { font-size: var(--gs-text-ui); }
   .tool-copy > span { display: none; }
+  .tool-size-note { display: none; }
   .song-start { margin-top: var(--gs-space-4); }
-  .song-row { height: auto; min-height: 64px; flex-wrap: wrap; padding: var(--gs-space-3) 0; }
-  .song-copy { flex-basis: calc(100% - 56px); }
+  /* Phones keep one line per song: the doors sit at the row's end, the title gives way. */
+  .song-row { height: 60px; gap: var(--gs-space-3); }
   .song-dots { display: none; }
-  .song-go { flex: 1; height: 52px; border: 1px solid var(--gs-line); }
-  .song-row img, .song-nojacket { align-self: flex-start; }
+  .song-go { min-width: 0; padding: 0 var(--gs-space-2); }
   .landing-studio { grid-template-columns: 1fr; gap: var(--gs-space-5); }
 }
 </style>

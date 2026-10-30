@@ -28,8 +28,9 @@ assert.equal([...tokens.matchAll(/^\s*--gs-idol\s*:/gm)].length, 1, '--gs-idol m
 
 const dir = path.join(root, 'src/components/gs')
 const files = readdirSync(dir).filter(name => name.endsWith('.vue')).sort()
-// P1.6 added GsFilterMenu (the many-values filter that replaced native selects); it meets the same rules.
-assert.deepEqual(files, ['GsFilterMenu.vue', 'GsInfo.vue', 'GsRow.vue', 'GsSegmented.vue', 'GsSwitch.vue'])
+// P1.6 added GsFilterMenu (the many-values filter that replaced native selects); 线框减法册 L4 added GsTabs (underline
+// tabs for 3–5 categories); L7 added GsChoice (the 2–3 value text toggle). They meet the same rules.
+assert.deepEqual(files, ['GsChoice.vue', 'GsFilterMenu.vue', 'GsInfo.vue', 'GsRow.vue', 'GsSegmented.vue', 'GsSwitch.vue', 'GsTabs.vue'])
 for (const file of files) {
   const source = readFileSync(path.join(dir, file), 'utf8')
   const used = [...source.matchAll(/var\((--gs-[a-z0-9-]+)/g)].map(match => match[1])
@@ -52,6 +53,8 @@ assert.match(read('GsSwitch.vue'), /role="switch"/)
 assert.match(read('GsSegmented.vue'), /role="radiogroup"/)
 assert.match(read('GsInfo.vue'), /role="tooltip"/)
 assert.match(read('GsSwitch.vue'), /ariaLabel: \{ type: String, required: true \}/, 'a switch has no text: its label is mandatory')
+assert.match(read('GsTabs.vue'), /ariaLabel: \{ type: String, required: true \}/, 'a tab row names its group')
+assert.match(read('GsTabs.vue'), /:aria-pressed="option\.value === modelValue"/, 'the current tab is announced')
 
 // Keyboard model of the mode switch: arrows wrap, disabled segments are skipped.
 const opts = values => values.map(value => ({ value, disabled: value === 'x' }))
