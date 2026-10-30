@@ -206,7 +206,7 @@ import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import GsSegmented from '../gs/GsSegmented.vue'
 import PortalCardBento from './PortalCardBento.vue'
 import { useNearViewportKeys } from './useNearViewport.js'
-import {ALMANAC_MONTHS,almanacEventDate,almanacEventTarget,almanacGashaTarget,birthdayCollectionTarget,currentJapanMonth,portalAlmanacMonth} from '../../presentation/PortalAlmanac.js'
+import {ALMANAC_MONTHS,almanacEventDate,almanacEventTarget,almanacGashaTarget,birthdayCollectionTarget,currentJapanMonth,portalAlmanacMonth,withAlmanacGashas} from '../../presentation/PortalAlmanac.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import {portalCardFilters,portalHubGroups,portalPreferredStatTiles} from '../../presentation/PortalOverviewPanels.js'
@@ -297,7 +297,7 @@ function openStatTile(tile){
 // 315 岁时记 opens on this month in Japan time. It replaced the old event timeline (retired 10-30); a bound
 // release must carry it (prepare-readmodel-preview runs verify-portal-almanac before any deploy).
 const almanacMonthNumber=ref(currentJapanMonth())
-const almanacMonth=computed(()=>props.preferredReference?.actionable ? null : portalAlmanacMonth(props.desktopOverview.almanac,almanacMonthNumber.value))
+const almanacMonth=computed(()=>props.preferredReference?.actionable ? null : portalAlmanacMonth(withAlmanacGashas(props.desktopOverview.almanac,props.desktopOverview.almanacGashas),almanacMonthNumber.value))
 // The month is a stepper (‹ 10 月 ›): previous and next wrap around the year.
 const stepAlmanacMonth=delta=>{ const at=ALMANAC_MONTHS.indexOf(almanacMonthNumber.value); almanacMonthNumber.value=ALMANAC_MONTHS[(at+delta+ALMANAC_MONTHS.length)%ALMANAC_MONTHS.length] }
 const almanacIdolName=code=>props.idolName(code,props.idols.find(row=>row.id===code)?.name) || props.idols.find(row=>row.id===code)?.name || code
