@@ -357,7 +357,7 @@ function periodRange(period, { weekday=true, withYear=false }={}) {
 }
 const timeBlock=computed(()=>{
   const period=props.view?.period || {}, start=jstParts(period.startAt)
-  const after=[['结果展示至',period.displayEndAt],['兑换至',period.exchangeEndAt]]
+  const after=[['结果公示至',period.displayEndAt],['兑换至',period.exchangeEndAt]]
     .map(([label,at])=>[label,jstParts(at)]).filter(([,parts])=>parts).map(([label,parts])=>`${label} ${shortDate(parts,start?.year)}`)
   return { year:start ? `${start.year} 年` : '年份未记录', range:periodRange(period), after:after.join(' · ') }
 })
