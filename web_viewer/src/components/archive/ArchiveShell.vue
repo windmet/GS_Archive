@@ -342,9 +342,9 @@ onBeforeUnmount(() => navObserver?.disconnect())
 /* Current = one level above the paper: ink text and icon, the slice behind it; weight and rules unchanged. */
 .archive-nav-link.active { color: var(--gs-ink); }
 .archive-nav-link.active svg { color: var(--gs-ink); }
-/* Groups are clusters of ordinary links, a little apart from each other. */
+/* Groups carry no heading, so they carry no extra gap either: every row sits the same 4px from the next and
+   the one rule before the tools is the only break (an unlabelled 8px between groups read as uneven spacing). */
 .archive-nav-cluster { display: grid; gap: var(--gs-space-1); }
-.archive-nav-cluster + .archive-nav-cluster { margin-top: var(--gs-space-2); }
 .archive-nav-divider { margin: var(--gs-space-4) var(--gs-space-4); border: 0; border-top: 1px solid var(--gs-line); }
 /* The foot: fold button on the rail's icon axis, 关于本站 beside it, quieter than the destinations above. */
 .archive-sidebar-foot { display: flex; flex: none; align-items: center; gap: var(--gs-space-2); padding: var(--gs-space-3) var(--gs-space-3) var(--gs-space-3) 13px; }
@@ -586,10 +586,11 @@ onBeforeUnmount(() => navObserver?.disconnect())
  .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader):has(.archive-search.is-open) { --archive-topbar:calc(48px + var(--gs-control-touch) + var(--gs-space-3) + var(--archive-safe-top)); }
  .is-compact-mobile .archive-topbar {display:grid;grid-template-columns:44px minmax(0,1fr) 44px 48px;grid-template-rows:48px;gap:0;padding:var(--archive-safe-top) max(10px,var(--archive-safe-right)) 0 max(10px,var(--archive-safe-left));}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) {grid-template-columns:44px minmax(0,1fr) 48px;}
- .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:center;}
+ .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:left;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) .archive-heading {grid-column:2;}
- /* A long entity name wraps to a second line inside the 48px bar instead of being cut off. */
- .is-compact-mobile .archive-topbar h1 {display:-webkit-box;font-size:var(--gs-text-subtitle);line-height:1.3;overflow:hidden;white-space:normal;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2;}
+ /* One line, left-aligned after the back arrow (线框减法册 L1): a long entity name ends in an ellipsis;
+    the full name is the page's own heading below the bar. */
+ .is-compact-mobile .archive-topbar h1 {display:block;font-size:var(--gs-text-subtitle);line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
  .is-compact-mobile .archive-heading {align-self:center;}
  .is-compact-mobile .archive-heading :deep(.archive-breadcrumb),.is-compact-mobile :deep(.archive-back span) {display:none;}
  .is-compact-mobile .archive-topbar :deep(.archive-back) {width:44px;padding:0;}
