@@ -43,3 +43,33 @@
 - 截图：E:/Web_build/GS_Archive_Domain_Work/chats-translation-qa-20261031（chat-index-desktop.png、chat-index-mobile.png、chat-player-desktop.png、chat-player-mobile.png、chat-choice-desktop.png）。
 
 本批只提交、推送当前翻译分支，不合入 master，不部署。
+
+## 第二批完成（G-chats-20261031-002）
+
+`G-chats-20261031-002` 全部 999 条逐句校订，修改 992 条，导入为 draft / not_final。覆盖樱庭薰后半段（001–135，接续第 1 批）、柏木翼（136–350）、都筑圭（351–574）、神乐丽（575–787）及鹰城恭二前半段（788–999）。
+
+- [999 条原文与校订译文](../translation/studio/general/returns/G-chats-20261031-002/review.md)
+- [原始回传](../translation/studio/general/returns/G-chats-20261031-002/output.original.md)、[校订输出](../translation/studio/general/returns/G-chats-20261031-002/output.edited.json)
+- [992 条修改记录](../translation/studio/general/returns/G-chats-20261031-002/edits.json)、[来源与哈希凭据](../translation/studio/general/returns/G-chats-20261031-002/receipt.json)
+- [12 批回传状态快照](../translation/studio/general/returns/G-chats-20261031-002/wave-status.json)
+
+原机器回传在平假名理解、家庭关系、人名昵称及偶像组合术语上存在大量荒谬误译。修订重点示例：
+
+| RID | 原文 | 原回传问题 | 校订 |
+|---|---|---|---|
+| 008 | お気遣いには及びません | 没必要担心 | 您不用这么费心 |
+| 232 | 弟と妹が真似をして、モデルさんごっこを始めてしまいました | 哥哥姐姐都模仿我 开始玩模型 它消失了 | 弟弟妹妹都跟着模仿，玩起模特过家家游戏来了 |
+| 465 | けいこ、がんばってくださいね | 惠子，加油！ | 排练请加油哦 |
+| 478 | あなたにきょうふはありますか | 你的京府有吗？ | 你会有恐惧感吗？ |
+| 505 | 音楽にりゆうはありません | 音乐没有瑞宇 | 音乐并没有什么特别的理由 |
+| 584 | 先ほど貴殿から頂いたメールへの返信です | 这封邮件是回复您刚才发给你的主的。 | 这是对我刚才收到阁下发来邮件的回复 |
+| 626 | 兜と祭りを回っている | 我正在兜里逛祭典呢 | 我和大吾正在逛庙会祭典 |
+| 711 | フントと走ってきました | 我和伊诺洪德一起跑步 | 我刚才带着小猎去跑步了 |
+| 803 | きょうじかっこいい！ | 今天真是太酷了！ | 恭二好帅！ |
+| 942 | Beitはとても素敵なユニットですね | Beit是一个非常漂亮的单位 | Beit是一支非常优秀的组合呢 |
+
+严守制作人占位符宏原字节（`●●●●プロデューサー` / `●●●●プロデューサーさん`），阿拉伯数字与原文受保护 token 100% 精确对齐。
+
+TM 累计有效条目增至 9,961 条（0 orphan）。发布分片 chats.json 增至 1,481 条对白与 652 条选项。
+verify:general-translation-workflow 与 verify-chat-translation 全部通过。
+下一批从 `G-chats-20261031-003` 接续。
