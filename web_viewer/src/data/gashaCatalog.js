@@ -6,6 +6,10 @@ const CATEGORY_LABELS = {
   ticket_named: '票券招募',
 }
 
+export function gashaCategoryLabel(category) {
+  return CATEGORY_LABELS[category] || ''
+}
+
 export function resolveGashaRelatedCards(gasha, index) {
   if (!gasha || !gasha.related_pickup_count) return gasha
   const sourceCode = gasha.related_pickup_source === 'reprint' ? gasha.reprint_of : gasha.primary_code
