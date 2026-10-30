@@ -53,6 +53,7 @@ watch(shown, async open => {
 onBeforeUnmount(stop)
 </script>
 <style scoped>
+/* The bubble wraps on its own even under a nowrap label or table header, which would push the text past its card. */
 .gs-info { position: relative; display: inline-flex; vertical-align: middle; }
 .gs-info-button { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--gs-ink-3); cursor: pointer; }
 .gs-info-button:hover { background: var(--gs-hover); color: var(--gs-ink-2); }

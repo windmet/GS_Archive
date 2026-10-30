@@ -29,8 +29,9 @@ assert.equal([...tokens.matchAll(/^\s*--gs-idol\s*:/gm)].length, 1, '--gs-idol m
 const dir = path.join(root, 'src/components/gs')
 const files = readdirSync(dir).filter(name => name.endsWith('.vue')).sort()
 // P1.6 added GsFilterMenu (the many-values filter that replaced native selects); 线框减法册 L4 added GsTabs (underline
-// tabs for 3–5 categories); L7 added GsChoice (the 2–3 value text toggle). They meet the same rules.
-assert.deepEqual(files, ['GsChoice.vue', 'GsFilterMenu.vue', 'GsInfo.vue', 'GsRow.vue', 'GsSegmented.vue', 'GsSwitch.vue', 'GsTabs.vue'])
+// tabs for 3–5 categories); L7 added GsChoice (the 2–3 value text toggle); the LIVE chart table added GsFilterPanel
+// (several filters behind one button: a panel on wide screens, a sheet on phones). They meet the same rules.
+assert.deepEqual(files, ['GsChoice.vue', 'GsFilterMenu.vue', 'GsFilterPanel.vue', 'GsInfo.vue', 'GsRow.vue', 'GsSegmented.vue', 'GsSwitch.vue', 'GsTabs.vue'])
 for (const file of files) {
   const source = readFileSync(path.join(dir, file), 'utf8')
   const used = [...source.matchAll(/var\((--gs-[a-z0-9-]+)/g)].map(match => match[1])
