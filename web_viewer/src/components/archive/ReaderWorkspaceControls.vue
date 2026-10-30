@@ -28,8 +28,7 @@
       <button class="icon-button" :disabled="!previousSegment" aria-label="上一 EP" :title="previousSegment ? `上一 EP · ${segmentLabel(previousSegment)}` : '已到本话首个 EP'" @click="emit('select', previousSegment)"><ChevronLeft :size="21" aria-hidden="true" /></button>
       <button class="dock-directory" :disabled="!hasDirectory" aria-haspopup="dialog" :aria-expanded="panel === 'directory'" @click="openPanel('directory', $event)"><span class="dock-episode">{{ activeLabel }}</span><span class="dock-position">{{ activePosition ? `${activePosition} · ` : '' }}目录</span></button>
       <button class="icon-button" :disabled="!nextSegment" aria-label="下一 EP" :title="nextSegment ? `下一 EP · ${segmentLabel(nextSegment)}` : '本话末个 EP；下一话入口在正文末尾'" @click="emit('select', nextSegment)"><ChevronRight :size="21" aria-hidden="true" /></button>
-      <!-- 原 / 译 ride on the dock; 双语 stays in the settings sheet. -->
-      <div class="dock-languages" role="group" aria-label="正文语言（原 / 译）"><button v-for="item in dockModes" :key="item.id" :aria-pressed="mode === item.id" :aria-label="item.ariaLabel" @click="emit('mode', item.id)">{{ item.label }}</button></div>
+      <!-- The text language lives in the settings sheet (原文 / 译文 / 双语); the dock only moves through the chapter. -->
       <button class="icon-button" aria-label="阅读设置" title="阅读设置" aria-haspopup="dialog" :aria-expanded="panel === 'settings' || panel === 'search'" @click="openPanel('settings', $event)"><Settings2 :size="19" aria-hidden="true" /></button>
     </nav>
     <dialog ref="dialog" class="reader-sheet gs-dialog-motion" :aria-label="panelTitle" @cancel.prevent="closePanel" @click="onBackdrop">
@@ -61,7 +60,6 @@ import { readerSegmentNeighbour } from '../../presentation/ReaderControls.js'
 const props = defineProps({ title:String, titlePending:Boolean, subtitle:String, segments:{type:Array,default:()=>[]}, documentId:String, activeDocumentId:String, chapterNavigation:{type:Object,default:null}, mode:String, searchable:{type:Boolean,default:true}, allowUnlinked:Boolean })
 const emit = defineEmits(['back','chapter','select','mode'])
 const modes = [{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
-const dockModes = [{id:'original',label:'原',ariaLabel:'原文'},{id:'translation',label:'译',ariaLabel:'译文'}]
 const dialog = ref(null), heading = ref(null), panel = ref(''), dockTucked = ref(false)
 // What the sheet shows. It outlives panel by the exit fade (gs-motion.css) so a closing sheet keeps
 // its content instead of flashing to the settings view; it then clears and the content unmounts.
@@ -141,8 +139,8 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 .reader-main { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
 .reader-main > :deep(.story-reader) { flex:1; min-height:0; }
 .reader-desktop-toolbar { flex:none; height:52px; overflow:hidden; scrollbar-gutter:stable; border-bottom:1px solid var(--reader-border); }
-/* Same box as .reader-body (reading width, 24 gutters inside), and the same scrollbar gutter as the text below. */
-.toolbar-column { box-sizing:border-box; display:flex; align-items:center; gap:12px; height:100%; max-width:var(--gs-reading-width); margin:0 auto; padding:0 max(24px,var(--archive-safe-right)) 0 24px; }
+/* Same box as the reading sheet (reading width, 40 inside), and the same scrollbar gutter as the text below. */
+.toolbar-column { box-sizing:border-box; display:flex; align-items:center; gap:12px; height:100%; max-width:var(--gs-reading-width); margin:0 auto; padding:0 40px; }
 .toolbar-column > .icon-button:last-child { margin-right:-10px; }
 .toolbar-spacer { flex:1; }
 /* B-level switch: recessed track, one raised thumb sliding to the chosen text language. */
@@ -175,16 +173,13 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
   .reader-desktop-toolbar { display:none; }
   .reader-compact-header { padding:0 max(10px,var(--archive-safe-right)) 0 max(8px,var(--archive-safe-left)); gap:6px; }
   h1 { font-size:14px; }
-  .reader-floating-dock { position:absolute; left:50%; bottom:calc(10px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); display:flex; align-items:center; gap:2px; width:min(440px,calc(100% - 24px)); box-sizing:border-box; height:52px; padding:4px 6px; border:1px solid var(--reader-border); border-radius:var(--gs-radius-panel); background:var(--reader-bg-card); box-shadow:0 6px 24px #0002; }
+  .reader-floating-dock { position:absolute; left:50%; bottom:calc(10px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); display:flex; align-items:center; gap:2px; width:min(400px,calc(100% - 24px)); box-sizing:border-box; height:52px; padding:4px 6px; border:1px solid var(--reader-border); border-radius:var(--gs-radius-panel); background:var(--reader-bg-card); box-shadow:0 6px 24px #0002; }
   .reader-floating-dock { transition:transform var(--gs-motion-sheet) var(--gs-ease-out), opacity var(--gs-motion-sheet) var(--gs-ease-out); }
   .reader-floating-dock.is-tucked:not(:focus-within) { transform:translate(-50%, calc(100% + 16px + env(safe-area-inset-bottom,0px))); opacity:0; pointer-events:none; }
   .reader-floating-dock .icon-button { width:40px; }
   .dock-directory { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:0 4px; gap:1px; line-height:1.25; }
   .dock-episode { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; font-variant-numeric:tabular-nums; }
   .dock-position { font-size:12px; color:var(--reader-text-sub); font-variant-numeric:tabular-nums; }
-  .dock-languages { display:flex; flex:none; padding:2px; border-radius:var(--gs-radius-control); background:color-mix(in oklab, var(--reader-text-main) 7%, var(--reader-bg-card)); }
-  .dock-languages button { min-height:36px; min-width:36px; padding:0 6px; border-radius:var(--gs-radius-segment); color:var(--reader-text-sub); }
-  .dock-languages button[aria-pressed=true] { background:var(--reader-bg-card); color:var(--reader-text-main); box-shadow:0 1px 2px rgb(19 33 58 / 12%); }
   .reader-sheet { width:100%; max-height:80dvh; max-width:100%; margin:0; inset:auto 0 0; border-radius:20px 20px 0 0; border-bottom:0; --gs-dialog-travel:translateY(100%); --gs-dialog-duration:var(--gs-motion-sheet); }
   .reader-sheet-content { padding:8px max(16px,var(--archive-safe-right)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,var(--archive-safe-left)); }
 }

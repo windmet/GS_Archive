@@ -1,8 +1,8 @@
 <template>
-          <section :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id || item.anchorAliases?.includes(anchor), 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle, continued }]">
+          <section :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id || item.anchorAliases?.includes(anchor), 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle, continued }]" :style="speakerInk ? { '--speaker-ink': speakerInk } : undefined">
             <template v-if="!item.mergedTitle">
             <span v-for="alias in item.anchorAliases" :key="alias" :id="`reading-${alias}`" class="reader-anchor-alias" tabindex="-1" aria-hidden="true"></span>
-            <ArchiveIdolAvatar v-if="item.avatar && !continued" class="reader-avatar" :idol-code="item.avatar" :size="40" :accent-color="idolDirectory.find(idol => idol.id === item.avatar)?.color" decorative />
+            <ArchiveIdolAvatar v-if="item.avatar && !continued" class="reader-avatar" :idol-code="item.avatar" :size="40" :accent-color="speakerInk" decorative />
             <!-- Speakers without an icon (P, passers-by) keep the text axis with a plain disc, not a hole. -->
             <span v-else-if="!item.avatar && !continued && item.row.kind === 'dialogue' && item.view.speaker.display" class="reader-avatar reader-avatar-plain" aria-hidden="true">{{ [...item.view.speaker.display][0] }}</span>
             <div class="reader-content">
@@ -25,13 +25,23 @@ import MobileStamp from '../mobile/MobileStamp.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import StorySynopsisCard from './StorySynopsisCard.vue'
 import ReadingInlineText from './ReadingInlineText.vue'
-defineProps({ item: Object, continued: Boolean, mode: String, anchor: String, idolDirectory:{type:Array,default:()=>[]}, searchMatchIds: { type: Set, default: () => new Set() } })
+import { computed } from 'vue'
+const props = defineProps({ item: Object, continued: Boolean, mode: String, anchor: String, idolDirectory:{type:Array,default:()=>[]}, searchMatchIds: { type: Set, default: () => new Set() } })
+// The speaker's own colour draws the thread that ties a run of their lines to their face.
+const speakerInk = computed(() => props.item.avatar ? props.idolDirectory.find(idol => idol.id === props.item.avatar)?.color || '' : '')
 </script>
 <style scoped>
 .reader-row { --reader-avatar-column:40px; --reader-column-gap:14px; position:relative; display:grid; grid-template-columns:var(--reader-avatar-column) minmax(0,1fr); column-gap:var(--reader-column-gap); margin:0; padding:12px 4px; border-bottom:1px solid color-mix(in oklab, var(--reader-border) 60%, transparent); scroll-margin-top:20px; outline:none; }
-/* One speaker block: the next line by the same speaker follows without face, name or rule. */
-.reader-row:has(+ .reader-row.continued) { padding-bottom:2px; border-bottom-color:transparent; }
-.reader-row.continued { padding-top:2px; }
+/* One speaker block: the next line by the same speaker follows without face, name or rule. A thread
+   in the speaker's colour runs down from the face, and a dot on it marks where each line begins. */
+.reader-row { --thread-x:calc(4px + var(--reader-avatar-column) / 2 - 1px); --thread-dot-y:26px; --thread:color-mix(in oklab, var(--speaker-ink, var(--reader-text-sub)) 55%, var(--reader-border)); }
+.reader-row:has(+ .reader-row.continued) { padding-bottom:6px; border-bottom-color:transparent; }
+.reader-row.continued { padding-top:6px; }
+.reader-row:has(+ .reader-row.continued)::after, .reader-row.continued::after { content:''; position:absolute; left:var(--thread-x); width:2px; border-radius:var(--gs-radius-pill); background:var(--thread); pointer-events:none; }
+.reader-row:has(+ .reader-row.continued)::after { top:calc(15px + var(--reader-avatar-column) + 6px); bottom:-1px; } /* over the row's transparent rule, so the thread has no seam */
+.reader-row.continued::after { top:0; bottom:-1px; }
+.reader-row.continued:not(:has(+ .reader-row.continued))::after { bottom:auto; height:var(--thread-dot-y); }
+.reader-row.continued::before { content:''; position:absolute; left:calc(var(--thread-x) - 3px); top:calc(var(--thread-dot-y) - 4px); width:8px; height:8px; border-radius:50%; box-sizing:border-box; border:2px solid var(--reader-bg-page); background:color-mix(in oklab, var(--speaker-ink, var(--reader-text-sub)) 80%, var(--reader-text-sub)); pointer-events:none; }
 .reader-avatar-plain { display:grid; place-items:center; width:var(--reader-avatar-column); height:var(--reader-avatar-column); border-radius:50%; background:color-mix(in oklab, var(--reader-text-main) 7%, var(--reader-bg-page)); color:var(--reader-text-sub); font-size:var(--gs-text-ui); font-weight:var(--gs-weight-semibold); }
 .reader-content { grid-column:2; min-width:0; }
 .reader-anchor-alias { position:absolute; top:0; width:0; height:0; overflow:hidden; scroll-margin-top:20px; outline:none; }
@@ -52,6 +62,6 @@ defineProps({ item: Object, continued: Boolean, mode: String, anchor: String, id
 .kind-synopsis { display:block; padding:0; margin:12px 0 20px; border:0; }
 .kind-choice, .kind-choice_detail { display:block; margin:8px 0; padding:12px 18px; border:0; border-left:3px solid var(--reader-accent); background:var(--reader-bg-card); }
 .reader-kind { display: inline-block; margin-inline-end: 8px; font-size: 12px; color: var(--reader-text-sub); }
-@media (max-width:760px) { .reader-row { --reader-avatar-column:34px; --reader-column-gap:10px; padding-block:10px; } .reader-avatar { --idol-avatar-override-size:34px; } .reader-primary { font-size:15px; } .reader-secondary { font-size:14px; } .kind-title .reader-primary { font-size:19px; } }
+@media (max-width:760px) { .reader-row { --reader-avatar-column:34px; --reader-column-gap:10px; --thread-dot-y:24px; padding-block:10px; } .reader-avatar { --idol-avatar-override-size:34px; } .reader-primary { font-size:15px; } .reader-secondary { font-size:14px; } .kind-title .reader-primary { font-size:19px; } }
 
 </style>

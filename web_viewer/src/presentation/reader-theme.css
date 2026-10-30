@@ -49,3 +49,15 @@
 }
 .reader-context{padding:5px 18px;border-bottom:1px solid var(--reader-border);background:var(--reader-bg-page)}
 .reader-event-link{padding:6px 0;border:0;background:none;color:var(--reader-accent-text);font-size:12px;cursor:pointer}
+/* Desktop: the text sits on a sheet laid on the reading desk, so the space beside the 680 column reads
+   as desk, not as unused page. Inside the sheet the two surfaces swap: the sheet is the page, and
+   cards (synopsis, branches, the selected line) recess into the desk colour instead of white on white. */
+@media (min-width: 761px) {
+  .reader-container .story-reader { --reader-desk: var(--reader-bg-page); --reader-sheet: var(--reader-bg-card); }
+  .reader-container .story-reader > .reader-body {
+    --reader-bg-page: var(--reader-sheet); --reader-bg-card: var(--reader-desk);
+    margin: 24px auto 48px; padding: 8px 40px 40px;
+    background: var(--reader-sheet); border: 1px solid var(--reader-border); border-radius: var(--gs-radius-surface);
+    box-shadow: 0 1px 2px rgb(19 33 58 / 6%);
+  }
+}
