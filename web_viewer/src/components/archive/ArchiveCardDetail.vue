@@ -112,9 +112,11 @@
                     {{ skillCategory }}
                   </span>
                 </div>
-                <select v-if="card.gameplay.skill.levels?.length" v-model.number="selectedSkillLevel" aria-label="技能等级">
-                  <option v-for="level in card.gameplay.skill.levels" :key="level.level" :value="level.level">Lv.{{ level.level }}</option>
-                </select>
+                <div v-if="card.gameplay.skill.levels?.length" class="skill-level-stepper" role="group" aria-label="技能等级">
+                  <button type="button" aria-label="上一级" :disabled="skillLevelIndex <= 0" @click="stepSkillLevel(-1)"><ChevronLeft :size="18" aria-hidden="true" /></button>
+                  <output aria-live="polite">Lv {{ selectedSkillLevel }}</output>
+                  <button type="button" aria-label="下一级" :disabled="skillLevelIndex >= card.gameplay.skill.levels.length - 1" @click="stepSkillLevel(1)"><ChevronRight :size="18" aria-hidden="true" /></button>
+                </div>
               </div>
               <p>{{ presentCardSkillDescription(selectedSkill?.description) }}</p>
             </div>
@@ -204,7 +206,7 @@
             <strong>普通</strong>
             <div v-if="card.card_text_voices?.normal" class="card-text-voice">
               <ArchiveVoiceRow :src="voiceUrl(card.card_text_voices.normal)" />
-              <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
+              <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" type="button" class="voice-preview-btn" aria-label="演出预览" title="演出预览" @click="emit('preview-voice', card.card_text_voices.normal)"><MonitorPlay :size="20" aria-hidden="true" /></button>
             </div>
           </div>
           <p v-bind="cardLine('card-line', 'normal', card.texts.normal).attrs"><span class="authored-text">{{ cardLine('card-line', 'normal', card.texts.normal).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-line', 'normal', card.texts.normal).text) }}</span></p>
@@ -214,7 +216,7 @@
             <strong>{{ card.single_state ? '卡面台词' : '特训后' }}</strong>
             <div v-if="card.card_text_voices?.awakened" class="card-text-voice">
               <ArchiveVoiceRow :src="voiceUrl(card.card_text_voices.awakened)" />
-              <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
+              <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" type="button" class="voice-preview-btn" aria-label="演出预览" title="演出预览" @click="emit('preview-voice', card.card_text_voices.awakened)"><MonitorPlay :size="20" aria-hidden="true" /></button>
             </div>
           </div>
           <p v-bind="cardLine('card-line', 'awakened', card.texts.awakened).attrs"><span class="authored-text">{{ cardLine('card-line', 'awakened', card.texts.awakened).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-line', 'awakened', card.texts.awakened).text) }}</span></p>
@@ -234,7 +236,7 @@
               <p v-if="cue.preview?.text" v-bind="cardLine('card-touch', 'text', cue.preview.text).attrs"><span class="authored-text">{{ cardLine('card-touch', 'text', cue.preview.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-touch', 'text', cue.preview.text).text) }}</span></p>
             </div>
             <ArchiveVoiceRow compact :src="voiceUrl(cue.cue)" />
-            <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
+            <button v-if="cardVoicePreviewStep(card, cue)" type="button" class="voice-preview-btn" aria-label="演出预览" title="演出预览" @click="emit('preview-voice', cue)"><MonitorPlay :size="20" aria-hidden="true" /></button>
           </div>
         </div>
       </section>
@@ -251,7 +253,7 @@
               <p v-if="cue.text?.trim() && cue.text.trim() !== '0'" v-bind="operationalLine(cue.text).attrs"><span class="authored-text">{{ operationalLine(cue.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(operationalLine(cue.text).text) }}</span></p>
             </div>
             <ArchiveVoiceRow compact :src="voiceUrl(cue.cue)" />
-            <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
+            <button v-if="cardVoicePreviewStep(card, cue)" type="button" class="voice-preview-btn" aria-label="演出预览" title="演出预览" @click="emit('preview-voice', cue)"><MonitorPlay :size="20" aria-hidden="true" /></button>
           </div>
         </div>
       </section>
@@ -286,7 +288,7 @@
             <div v-for="cue in card.voice_candidates.unmapped_card_only" :key="cue" class="voice-row">
               <span>{{ cue }}</span>
               <ArchiveVoiceRow :src="voiceUrl(cue)" />
-              <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
+              <button v-if="cardVoicePreviewStep(card, cue)" type="button" class="voice-preview-btn" aria-label="演出预览" title="演出预览" @click="emit('preview-voice', cue)"><MonitorPlay :size="20" aria-hidden="true" /></button>
             </div>
           </div>
         </section>
@@ -311,7 +313,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
 const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines', [[kind, field]], source))
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
-import { CheckCircle2, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
+import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, MonitorPlay, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveVideoPlayer from './ArchiveVideoPlayer.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
@@ -374,6 +376,13 @@ const lightboxOpen = ref(false)
 const displayCardTitle = computed(()=>archiveText('card',props.card?.title,'title') || '卡名待确认')
 const lightboxIndex = ref(0)
 const selectedSkillLevel = ref(1)
+// Skill levels 1–5 step with ‹ Lv N › instead of an inline native select (线框减法册 E).
+const skillLevelIndex = computed(() => (props.card?.gameplay?.skill?.levels || []).findIndex(level => level.level === selectedSkillLevel.value))
+function stepSkillLevel(delta) {
+  const levels = props.card?.gameplay?.skill?.levels || []
+  const next = levels[skillLevelIndex.value + delta]
+  if (next) selectedSkillLevel.value = next.level
+}
 const framedPortrait = computed(() => props.artMode === 'framed')
 const rawCandidateActive = computed(() => isRawCardCandidate(props.card?.resource_id))
 const normalPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resource_id, false, framedPortrait.value))
@@ -739,7 +748,10 @@ function openRelation(item) {
 /* The game's own skill-category colour, kept as a small semantic mark. */
 .skill-category { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
 .skill-category::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--skill-category-color, var(--gs-mint)); }
-.skill-heading select { flex: 0 0 auto; min-height: var(--gs-control-compact); max-width: 100%; padding: 0 var(--gs-space-7) 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); }
+.skill-level-stepper { display: inline-flex; flex: none; align-items: center; }
+.skill-level-stepper button { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
+.skill-level-stepper button:disabled { color: var(--gs-ink-3); opacity: .4; cursor: default; }
+.skill-level-stepper output { min-width: 3.5em; color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; text-align: center; }
 .limitbreak-item-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); }
 .limitbreak-item-row small { display: block; margin-bottom: var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .limitbreak-item-row strong { color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
@@ -808,15 +820,17 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
 .voice-label { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); }
 .voice-label small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .voice-label small.source-curated { color: var(--gs-mint-ink); }
-.voice-preview-btn, .scenario-link-btn { border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; }
-.voice-preview-btn { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); font-size: var(--gs-text-ui); white-space: nowrap; }
+.voice-preview-btn, .scenario-link-btn { cursor: pointer; }
+/* The stage preview is a 44px icon beside the play control, like the 通信 and episode rows: no box on the row rule. */
+.voice-preview-btn { display: inline-grid; flex: none; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); }
 .scenario-link-list { gap: 0; }
 .scenario-link-btn { display: grid; gap: var(--gs-space-1); min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; text-align: left; font-size: var(--gs-text-body); }
 .scenario-link-btn:disabled { color: var(--gs-ink-3); cursor: default; }
 .scenario-link-btn span { font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .scenario-link-btn small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 @media (hover: hover) {
-  .voice-preview-btn:hover, .limitbreak-item-open:hover { border-color: var(--gs-ink-3); }
+  .limitbreak-item-open:hover { border-color: var(--gs-ink-3); }
+  .voice-preview-btn:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
   .scenario-link-btn:hover:not(:disabled) span { color: var(--gs-mint-ink); }
 }
 
@@ -840,16 +854,16 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
   .is-pair .card-stage-art { flex: 0 0 84%; scroll-snap-align: start; }
   .is-single .card-stage-rail { max-width: 420px; }
   .card-stage-controls, .is-single .card-stage-controls { justify-content: start; }
-  .voice-row { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
-  .voice-preview-btn { justify-self: start; }
+  .voice-row { grid-template-columns: auto minmax(0, 1fr); gap: var(--gs-space-2) var(--gs-space-3); }
+  .voice-row > .voice-preview-btn { justify-self: start; }
+  .voice-row > .voice-copy, .voice-row > span:first-child { grid-column: 1 / -1; }
 }
 @media (max-width: 760px) {
   .card-detail { gap: var(--gs-space-8); padding: var(--gs-space-5) var(--gs-space-5) var(--gs-space-9); }
   .card-identity h3 { font-size: var(--gs-text-section); }
   .authored-text { display: none; }
   .reflowed-text { display: inline; }
-  .card-tabs button, .voice-preview-btn, .skill-heading select { min-height: var(--gs-control-touch); }
-  .skill-heading select { font-size: var(--gs-text-subtitle); }
+  .card-tabs button { min-height: var(--gs-control-touch); }
   .card-text-voice, .card-text-voice audio { width: 100%; }
   .asset-status-grid { grid-template-columns: minmax(0, 1fr); }
 }

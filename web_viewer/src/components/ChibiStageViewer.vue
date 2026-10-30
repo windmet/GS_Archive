@@ -294,7 +294,7 @@
                 <span class="stage-row-label">偶像</span>
                 <span class="slot-editor-copy"><ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="28" decorative /><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronRight :size="17" />
               </button>
-              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><optgroup v-for="group in editingCostumeGroups" :key="group.id" :label="group.label"><option v-for="costume in group.costumes" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></optgroup></select></label>
+              <GsFilterMenu class="costume-control" variant="row" label="衣装" :model-value="editingSlot.costumeId" :options="editingCostumeOptions" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @update:model-value="editingSlot.costumeId = $event; costumeNotice = ''; loadSlot(editingSlot)" />
               <button class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
             </section>
             <section v-if="stageVocalAvailable || oneshotAvailable" class="stage-group" aria-labelledby="stage-group-vocal">
@@ -306,16 +306,18 @@
             </div>
             <!-- Unit_serif: the mix leaves this line silent and the game plays the deck center card's own take. -->
             <div v-if="oneshotAvailable" class="lineup-oneshot">
-              <label><span>Center 台词</span><select v-model="oneshotSelection" aria-label="Center 台词音轨" :disabled="booting"><option :value="ONESHOT_CENTER">跟随 Center · {{ oneshotIdolLabel(oneshotCenterIdolCode) || '空位' }}</option><option v-for="code in oneshotIdolCodes" :key="code" :value="code">{{ oneshotIdolLabel(code) }}</option><option :value="ONESHOT_OFF">关闭 · 保留原曲留白</option></select></label>
+              <GsFilterMenu variant="row" label="Center 台词" :model-value="oneshotSelection" :options="oneshotOptions" :disabled="booting" @update:model-value="oneshotSelection = $event" />
               <small>{{ oneshotTriggerLabel }} 原曲在此留白，游戏播放编成 Center 卡偶像的台词；此处可任选 {{ oneshotIdolCodes.length }} 人试听。</small>
             </div>
             </section>
             <section class="stage-group common-costume-actions" aria-label="套服搭配" :data-stage-costume-scope="costumeScope" :data-stage-costume-family="selectedCostumeFamily?.id" :data-stage-costume-version="selectedCostumeChoice?.version.sourceName">
               <header class="stage-group-head"><h3>套服</h3></header>
-              <label class="costume-control"><span>适用范围</span><select v-model="costumeScope" aria-label="套服适用范围" :disabled="costumeSelectionBusy" @change="costumeNotice = ''; costumeFamilyId = ''; costumeVersionKey = ''"><option v-for="scope in sharedCostumeScopes" :key="scope.id" :value="scope.id">{{ scope.label }}</option></select></label>
+              <GsTabs class="costume-scope-tabs" size="panel" aria-label="套服适用范围" :model-value="costumeScope" :options="sharedCostumeScopes.map(scope => ({ value: scope.id, label: scope.label }))" @update:model-value="costumeSelectionBusy || (costumeScope = $event, costumeNotice = '', costumeFamilyId = '', costumeVersionKey = '')" />
               <template v-if="selectedCostumeFamily">
-                <label class="costume-control"><span>款式</span><select :value="selectedCostumeFamily.id" aria-label="套服款式" :disabled="costumeSelectionBusy" @change="costumeFamilyId = $event.target.value; costumeVersionKey = ''; costumeNotice = ''"><option v-for="family in availableCostumeFamilies" :key="family.id" :value="family.id">{{ stageFamilyLabel(family) }}</option></select></label>
-                <label v-if="selectedFamilyVersions.length" class="costume-control"><span>版本</span><select :value="selectedCostumeChoice?.key" aria-label="套服版本" :disabled="costumeSelectionBusy" @change="costumeVersionKey = $event.target.value; costumeNotice = ''"><option v-for="choice in selectedFamilyVersions" :key="choice.key" :value="choice.key">{{ choice.version.another ? '另一款' : '普通款' }} · {{ choice.plan.matched.length }}/{{ activeSlots.length }} 人可用</option></select></label>
+                <GsFilterMenu class="costume-control" variant="row" label="款式" :model-value="selectedCostumeFamily.id" :options="availableCostumeFamilies.map(family => ({ value: family.id, label: stageFamilyLabel(family) }))" :disabled="costumeSelectionBusy" @update:model-value="costumeFamilyId = $event; costumeVersionKey = ''; costumeNotice = ''" />
+                <div v-if="selectedFamilyVersions.length" class="costume-control costume-version" role="group" aria-label="套服版本"><span>版本</span>
+                  <span class="costume-version-choices"><template v-for="(choice, index) in selectedFamilyVersions" :key="choice.key"><span v-if="index" class="costume-version-divider" aria-hidden="true">/</span><button type="button" :aria-pressed="choice.key === selectedCostumeChoice?.key" :disabled="costumeSelectionBusy" @click="costumeVersionKey = choice.key; costumeNotice = ''">{{ choice.version.another ? '另一款' : '普通款' }} <small>{{ choice.plan.matched.length }}/{{ activeSlots.length }}</small></button></template></span>
+                </div>
                 <p v-if="selectedCostumeChoice" class="costume-coverage" role="status">{{ selectedCostumeChoice.plan.matched.length }}/{{ activeSlots.length }} 位出演成员可用<template v-if="selectedCostumeChoice.plan.unmatched.length">；{{ costumeUnmatchedNames }}无此版本，保留原装</template>。</p>
                 <button type="button" class="costume-family-apply" :disabled="costumeSelectionBusy || !selectedCostumeChoice" @click="applyFamilyCostume">应用给可用成员</button>
               </template>
@@ -334,7 +336,7 @@
             <section class="stage-group" aria-labelledby="stage-group-play">
             <header class="stage-group-head"><h3 id="stage-group-play">播放</h3></header>
             <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
-            <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
+            <GsFilterMenu class="viewing-select" variant="row" label="帧率" :model-value="frameRateSetting" :options="frameRateOptions" @update:model-value="frameRateSetting = $event; setFrameRate()" />
             </section>
             <!-- 加载方式 is a row that reopens the same two-step dialog; choosing there rebuilds the stage, not a dropdown here. -->
             <section class="stage-group" aria-labelledby="stage-group-load">
@@ -553,6 +555,8 @@ import { bodyUniformsAt } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import GsSwitch from './gs/GsSwitch.vue'
+import GsFilterMenu from './gs/GsFilterMenu.vue'
+import GsTabs from './gs/GsTabs.vue'
 import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
@@ -1103,6 +1107,8 @@ const costumeScope = ref('all'), costumeFamilyId = ref(''), costumeVersionKey = 
 const sharedCostumeScopes = STAGE_COSTUME_SCOPES.filter(scope => scope.id !== 'personal')
 const costumeFamilies = computed(() => stageCostumeFamilies(characters.value, props.idolDirectory))
 const editingCostumeGroups = computed(() => stageCostumeOptionsForCharacter(costumeFamilies.value, characterForSlot(editingSlot.value)))
+// The panel shows values in rows (线框减法册 L5); the list layer takes the old <optgroup>s as group headings.
+const editingCostumeOptions = computed(() => editingCostumeGroups.value.flatMap(group => group.costumes.map(costume => ({ value: costume.id, label: stageCostumeLabel(costume), group: group.label }))))
 const costumeChoices = computed(() => stageFamilyChoices(costumeFamilies.value, lineup.value, characters.value, activePositions.value, costumeScope.value))
 const availableCostumeFamilies = computed(() => costumeFamilies.value.filter(family => costumeChoices.value.some(choice => choice.family.id === family.id)))
 const selectedCostumeFamily = computed(() => availableCostumeFamilies.value.find(family => family.id === costumeFamilyId.value) || availableCostumeFamilies.value[0] || null)
@@ -1172,6 +1178,8 @@ const stageOneshot = useStageOneshotVoice({
 const oneshotSelection = stageOneshot.selection
 const oneshotAvailable = stageOneshot.available
 const oneshotIdolCodes = stageOneshot.idolCodes
+const oneshotOptions = computed(() => [{ value: ONESHOT_CENTER, label: `跟随 Center · ${oneshotIdolLabel(oneshotCenterIdolCode.value) || '空位'}` },
+  ...oneshotIdolCodes.value.map(code => ({ value: code, label: oneshotIdolLabel(code) })), { value: ONESHOT_OFF, label: '关闭 · 保留原曲留白' }])
 function oneshotIdolLabel(code) {
   return code ? stageIdolName(characters.value.find(character => character.id === code)) || code : ''
 }
@@ -1563,6 +1571,8 @@ const AUTO_FRAME_TIERS = [30, 60, 0]
 const autoFrameTier = ref(0)
 let lastStageFrame = 0, frameWindow = null, frameStepUpAfter = 0
 let stageAudioTailActive = false
+const frameRateOptions = computed(() => [{ value: 'auto', label: `自动${frameRateSetting.value === 'auto' ? `（当前 ${frameRateLabel.value}）` : ''}` },
+  { value: '30', label: '30 帧 · 省电' }, { value: '60', label: '60 帧' }, { value: 'max', label: '跟随屏幕刷新率' }])
 const frameRateLabel = computed(() => {
   const cap = frameRateSetting.value === 'auto' ? AUTO_FRAME_TIERS[autoFrameTier.value] : frameRateSetting.value === 'max' ? 0 : Number(frameRateSetting.value)
   return cap ? `${cap} 帧` : '跟随屏幕'
@@ -4486,7 +4496,8 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* 编队 / 画面: groups 24 apart, each a 12px label over a hairline, then 44px rows on hairlines. */
 .lineup-section, .viewing-section { gap: var(--gs-gap-group); }
 .stage-group { display: grid; min-width: 0; }
-.stage-group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; border-bottom: 1px solid var(--line); }
+/* Group names are 12px grey titles with no rule under them; the rows keep their hairlines (线框减法册 L5). */
+.stage-group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
 .stage-group-head h3 { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
 .stage-group > .camera-toggle, .stage-group > .viewing-range, .stage-group > .viewing-select, .stage-group > .costume-control, .stage-group > .idol-change-action { min-height: 44px; border-bottom: 1px solid var(--line); }
 .singing-icon { color: var(--idol-accent, #258e81); }
@@ -4525,7 +4536,6 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .viewing-load { grid-template-columns: 72px minmax(0, 1fr) auto; }
 .viewing-load strong { color: var(--gs-ink); font-weight: var(--gs-weight-medium); }
 .viewing-load button { min-height: 44px; padding: 0 4px; border: 0; background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.viewing-select select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
 .immersive-hint { position: absolute; z-index: 5; top: 10px; left: 50%; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 4px 4px 4px 12px; border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); translate: -50% 0; box-shadow: var(--gs-shadow-float); }
 .immersive-hint span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .immersive-hint button { display: inline-flex; flex: none; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
@@ -4548,7 +4558,6 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-vocal small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
 .lineup-oneshot { display: grid; gap: 4px; padding: 4px 0 8px; border-bottom: 1px solid var(--line); }
 .lineup-oneshot label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
-.lineup-oneshot select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
 .lineup-oneshot small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
 .lineup-vocal-mix { display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
 .slot-editor { min-width: 0; }
@@ -4560,7 +4569,18 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .costume-sync-action { justify-self: start; min-height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); color: var(--gs-ink-2); background: transparent; cursor: pointer; font-size: var(--gs-text-ui); text-decoration: underline; text-underline-offset: 3px; }
 .costume-sync-action:disabled { opacity: .4; cursor: default; }
 .common-costume-actions .costume-coverage { margin-top: 8px; }
-.common-costume-actions .costume-family-apply { margin-top: 12px; }
+.common-costume-actions .costume-family-apply { margin-top: 16px; }
+/* Value rows open GsFilterMenu's list layer; the row is the whole trigger. */
+.gs-filter-menu.viewing-select, .gs-filter-menu.costume-control { display: flex; }
+.costume-scope-tabs { margin-bottom: 4px; }
+/* 版本: two values as a text toggle, the same part as the title bar's 中 / 日. */
+.costume-version-choices { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; min-width: 0; margin-left: -6px; }
+.costume-version-choices button { min-height: 44px; padding: 0 6px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); }
+.costume-version-choices button[aria-pressed='true'] { color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.costume-version-choices button small { font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
+.costume-version-choices button:disabled { opacity: .45; cursor: default; }
+.costume-version-choices button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
+.costume-version-divider { color: var(--gs-rule); }
 .costume-coverage { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
 .costume-family-apply { min-height: 44px; width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); color: var(--gs-ink); background: var(--gs-surface); cursor: pointer; font-size: var(--gs-text-ui); }
 .costume-family-apply:disabled { opacity: .4; cursor: default; }

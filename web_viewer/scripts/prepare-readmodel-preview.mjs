@@ -30,6 +30,8 @@ const { budget, acceptance } = await readBuildAudit(bundle)
 assert(!budget.sourceDirty && !budget.forbiddenModules.length && acceptance.globalArchiveLoadRemoved,
   'Preview requires committed source, clean initial imports and no global archive loader')
 await verifyArtifacts(models)
+// The Portal's 315 岁时记 has no fallback since the 运营轨迹 timeline was retired: a release without it is not packaged.
+execFileSync(process.execPath, [path.join(root, 'scripts/verify-portal-almanac.mjs'), models], { cwd: root, stdio: 'pipe' })
 const bootstrap = await fs.readFile(path.join(models, 'bootstrap.inline.json'), 'utf8')
 const boot = JSON.parse(bootstrap)
 assert(boot.release === budget.release, 'Model release differs from code')

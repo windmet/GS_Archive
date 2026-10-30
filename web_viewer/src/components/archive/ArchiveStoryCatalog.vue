@@ -224,13 +224,14 @@
       </section>
 
       <section class="story-section event-section" aria-labelledby="event-story-title">
-        <div class="story-section-head">
+        <!-- The year tabs' rule is this section's line; the heading above carries none (线框减法册 rule 2). -->
+        <div class="story-section-head has-tabs">
           <h2 id="event-story-title">活动剧情 <small>{{ eventCount }} 部</small></h2>
-          <div class="story-chips event-year-chips" role="group" aria-label="年份">
-            <button type="button" :aria-pressed="!eventYear" @click="eventYear = ''">全部</button>
-            <button v-for="year in recentEventYears" :key="year" type="button" :aria-pressed="eventYear === year" @click="eventYear = year">{{ year }}</button>
-          </div>
           <button class="story-more" @click="openDomain('event')">查看全部 {{ eventCount }} 部 <ArrowRight :size="15" /></button>
+        </div>
+        <div class="story-chips event-year-chips" role="group" aria-label="年份">
+          <button type="button" :aria-pressed="!eventYear" @click="eventYear = ''">全部</button>
+          <button v-for="year in recentEventYears" :key="year" type="button" :aria-pressed="eventYear === year" @click="eventYear = year">{{ year }}</button>
         </div>
         <!-- The newest four, the same size: they read as "latest", not as one recommended event. -->
         <div v-if="featuredEvents.length" class="event-four">
@@ -276,37 +277,10 @@
       <StoryDiscovery :external-filters-active="Boolean(domain || section || availability !== 'all' || sort !== 'domain')" @reset-filters="emit('update:availability','all');emit('update:sort','domain')" :entries="searchEntries" :query="searchQuery" @update:query="emit('update:search-query',$event)" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @series-change="emit('update:domain','');emit('clear-section')" @select="emit('select',$event)">
       <template #filters>
       <div class="catalog-toolbar">
-        <label>
-          <span>故事分类</span>
-          <select :value="domain" @change="emit('update:domain', $event.target.value)">
-            <option value="">全部（{{ catalogTotal }}）</option>
-            <option v-for="option in domainOptions" :key="option.id" :value="option.id">
-              {{ option.label }}（{{ option.count }}）
-            </option>
-          </select>
-        </label>
-        <label v-if="domain === 'event'">
-          <span>活动类型</span>
-          <select :value="eventScope" @change="emit('update:event-scope', $event.target.value)">
-            <option value="all">全部活动</option>
-            <option v-for="option in eventScopeOptions" :key="option.id" :value="option.id">
-              {{ option.label }}（{{ option.count }}）
-            </option>
-          </select>
-        </label>
-        <label>
-          <span>可用性</span>
-          <select :value="availability" @change="emit('update:availability', $event.target.value)">
-            <option value="all">全部</option><option value="playable">可播放</option><option value="missing">缺少文件</option>
-          </select>
-        </label>
-        <label>
-          <span>排序</span>
-          <select :value="sort" @change="emit('update:sort', $event.target.value)">
-            <option value="latest">最新优先</option>
-            <option value="domain">故事分类</option><option value="title">标题</option><option value="resource">资源 ID</option><option value="steps_desc">步骤数</option>
-          </select>
-        </label>
+        <GsFilterMenu label="故事分类" neutral="" :model-value="domain" :options="[{ value: '', label: '全部', count: catalogTotal }, ...domainOptions.map(option => ({ value: option.id, label: option.label, count: option.count }))]" @update:model-value="emit('update:domain', $event)" />
+        <GsFilterMenu v-if="domain === 'event'" label="活动类型" neutral="all" :model-value="eventScope" :options="[{ value: 'all', label: '全部活动' }, ...eventScopeOptions.map(option => ({ value: option.id, label: option.label, count: option.count }))]" @update:model-value="emit('update:event-scope', $event)" />
+        <GsFilterMenu label="可用性" neutral="all" :model-value="availability" :options="[{ value: 'all', label: '全部' }, { value: 'playable', label: '可播放' }, { value: 'missing', label: '缺少文件' }]" @update:model-value="emit('update:availability', $event)" />
+        <GsFilterMenu label="排序" neutral="domain" :model-value="sort" :options="[{ value: 'latest', label: '最新优先' }, { value: 'domain', label: '故事分类' }, { value: 'title', label: '标题' }, { value: 'resource', label: '资源 ID' }, { value: 'steps_desc', label: '步骤数' }]" @update:model-value="emit('update:sort', $event)" />
         <button v-if="section" class="section-filter" @click="emit('clear-section')">
           {{ chapterLabel(sectionLabel) }} <X :size="14" />
         </button>
@@ -326,6 +300,7 @@ import { chapterLabel } from '../../presentation/chapterLabel.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { computed, ref } from 'vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { ArrowRight, BookOpen, Cake, ChevronRight, LayoutGrid, Search, X } from '@lucide/vue'
@@ -504,11 +479,10 @@ function formatExtraDate(timestamp) {
 .main-start strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .main-start-action { display: inline-flex; align-items: center; align-self: flex-start; gap: var(--gs-space-1); min-height: var(--gs-control-normal); margin-top: var(--gs-space-2); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); box-shadow: inset 0 0 0 1px var(--gs-rule); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); }
 
-/* Events: year chips sit in the heading; the newest four share one row at the same size. */
+/* Events: year tabs under the heading; the newest four share one row at the same size. */
 .event-section .story-section-head { justify-content: flex-start; }
 .event-section .story-more { margin-left: auto; }
-.event-year-chips { margin: 0 0 0 var(--gs-space-4); padding: 0; }
-.event-year-chips button { min-height: 26px; padding: 0 var(--gs-space-3); font-size: var(--gs-text-meta); }
+.story-section-head.has-tabs { margin-bottom: 0; border-bottom: 0; }
 .event-four { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-5); }
 .event-four-item { display: flex; flex-direction: column; min-width: 0; padding: 0; border: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; }
 .event-four-item :deep(.resource-image) { aspect-ratio: 940 / 510 !important; }
@@ -532,9 +506,6 @@ function formatExtraDate(timestamp) {
 }
 
 .catalog-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--gs-space-4); }
-.catalog-toolbar label { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 120px; }
-.catalog-toolbar label > span { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
-.catalog-toolbar select { min-height: 34px; padding: 0 28px 0 9px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-meta); }
 .section-filter { display: inline-flex; align-items: center; gap: 5px; height: 30px; margin-bottom: 1px; padding: 0 8px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-mint-wash); color: var(--gs-mint-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-caption); }
 .catalog-count { display: none; }
 .search-view { isolation: isolate; }
@@ -552,6 +523,7 @@ function formatExtraDate(timestamp) {
 @container story-page (max-width: 560px) {
   /* Phones: chapters half-width each, no start column; the year chips leave the heading; the logos become one sideways row. */
   .main-start, .event-year-chips { display: none; }
+  .story-section-head.has-tabs { margin-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
   .unit-logos { grid-auto-columns: 96px; grid-auto-flow: column; grid-template-columns: none; overflow-x: auto; margin-right: calc(-1 * var(--gs-space-5)); overscroll-behavior-x: contain; scrollbar-width: none; }
   .unit-logos button, .unit-logos button:nth-child(8n) { height: 54px; border-right: 1px solid var(--gs-line); }
   .unit-logos img { width: 72px; height: 32px; }
@@ -559,6 +531,5 @@ function formatExtraDate(timestamp) {
   /* The unit landing lists every unit, two to a row. */
   .unit-grid-full { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .catalog-toolbar label { min-width: 0; }
 }
 </style>

@@ -54,8 +54,8 @@
       </p>
       <!-- Phones have no sidebar: the archive home doubles as the index of every destination. Following an
            idol, that idol's hero comes first and the index follows it (inside the featured section below). -->
-      <nav v-if="!preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
-        <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
+      <nav v-if="!preferredReference?.actionable" class="overview-directory" aria-label="常用栏目">
+        <ArchiveDirectoryGrid :groups="destinations" :pick="DIRECTORY_PICK" focus-prefix="portal-directory" @navigate="id => emit('navigate', id)" @more="openNavigationDrawer" />
       </nav>
 
       <!-- Announced only: the placeholders below already hold the layout, so this line must not move it. -->
@@ -109,8 +109,8 @@
               <span v-if="tile.meta" class="overview-stat-meta" aria-hidden="true">{{ tile.meta }}</span>
             </button>
           </div>
-          <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
-            <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
+          <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="常用栏目">
+            <ArchiveDirectoryGrid :groups="destinations" :pick="DIRECTORY_PICK" focus-prefix="portal-directory" @navigate="id => emit('navigate', id)" @more="openNavigationDrawer" />
           </nav>
           <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading overview-chip-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }} <small v-if="desktopOverview.cardCounts?.total">{{ formatCount(desktopOverview.cardCounts.total) }}</small></h3>
@@ -157,7 +157,7 @@
           </div>
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
-          <header class="overview-section-heading" :class="{'overview-chip-heading':almanacMonth}"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : almanacMonth ? `315 岁时记 · ${almanacMonthNumber} 月` : '运营轨迹 · 315 的回忆录' }} <small v-if="!almanacMonth">{{ collectionCount('events') }}</small></h2>
+          <header class="overview-section-heading" :class="{'overview-chip-heading':almanacMonth}"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : `315 岁时记 · ${almanacMonthNumber} 月` }}</h2>
             <div v-if="almanacMonth" class="overview-month-step" role="group" aria-label="选择月份"><button type="button" aria-label="上个月" @click="stepAlmanacMonth(-1)"><ChevronLeft :size="18" aria-hidden="true" /></button><output aria-live="polite">{{ almanacMonthNumber }} 月</output><button type="button" aria-label="下个月" @click="stepAlmanacMonth(1)"><ChevronRight :size="18" aria-hidden="true" /></button></div>
             <button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <!-- 315 岁时记: the month's birthdays beside every event that opened in that month, reprints included. -->
@@ -171,9 +171,8 @@
               <p v-else class="overview-empty">这个月还没有开过活动。</p>
             </div>
           </div>
-          <div v-else-if="!preferredReference?.actionable" class="overview-timeline" tabindex="0" aria-label="运营时间画卷，可横向滚动"><article v-for="(event,index) in timeline" :key="event.id"><small class="timeline-date">{{ event.timelineDate }}</small><span class="timeline-dot" aria-hidden="true"></span><button type="button" @click="emit('open-result',event)"><img :src="event.image.url" alt="" loading="lazy" /><small>{{ event.seriesLabel }}</small><strong>{{ event.title }}</strong><ArrowUpRight :size="15" /></button></article></div>
-          <div v-else-if="events.length" class="overview-event-grid"><article v-for="event in events" :key="event.id" class="overview-event"><DomainMediaPreview v-if="event.image?.url" class="overview-event-image" :binding="event.image" :name="event.title" deferred /><button type="button" :disabled="!event.target" :data-archive-focus-id="`portal-event:${event.id}`" @click="emit('open-result', event)"><span><strong>{{ event.title }}</strong><small v-if="event.subtitle">{{ event.subtitle }}</small><small v-if="event.relationLabel" class="overview-relation">{{ event.relationLabel }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
-          <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取活动预览…' : '暂无可展示的活动记录，可前往目录查阅。' }}</p>
+          <div v-else-if="preferredReference?.actionable && events.length" class="overview-event-grid"><article v-for="event in events" :key="event.id" class="overview-event"><DomainMediaPreview v-if="event.image?.url" class="overview-event-image" :binding="event.image" :name="event.title" deferred /><button type="button" :disabled="!event.target" :data-archive-focus-id="`portal-event:${event.id}`" @click="emit('open-result', event)"><span><strong>{{ event.title }}</strong><small v-if="event.subtitle">{{ event.subtitle }}</small><small v-if="event.relationLabel" class="overview-relation">{{ event.relationLabel }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
+          <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取活动预览…' : preferredReference?.actionable ? '暂无可展示的活动记录，可前往目录查阅。' : '岁时记暂时无法载入，可前往活动目录查阅。' }}</p>
         </section>
       </div>
       <ArchiveTerminalDialog class="portal-scope-dialog" :open="scopeOpen" title="切换资料馆视角" title-id="portal-scope-title" @close="scopeOpen = false">
@@ -189,7 +188,7 @@
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
-import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronLeft, ChevronRight, ChevronsUpDown, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
@@ -202,7 +201,6 @@ import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import GsSegmented from '../gs/GsSegmented.vue'
 import PortalCardBento from './PortalCardBento.vue'
 import { useNearViewportKeys } from './useNearViewport.js'
-import {portalTimeline} from '../../presentation/PortalBento.js'
 import {ALMANAC_MONTHS,almanacEventDate,almanacEventTarget,birthdayCollectionTarget,currentJapanMonth,portalAlmanacMonth} from '../../presentation/PortalAlmanac.js'
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
@@ -211,6 +209,8 @@ import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { classifySongLineup } from '../../presentation/SongPresentation.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
+// The directory grid is shared with the navigation drawer and loads with it, outside the startup bundle.
+const ArchiveDirectoryGrid = defineAsyncComponent(() => import('./ArchiveDirectoryGrid.vue'))
 
 const props = defineProps({
   canGoBack: Boolean,
@@ -265,8 +265,10 @@ const homeVoiceLabel = computed(() => {
   const counts = props.desktopOverview.homeVoiceCounts
   return counts ? [counts.idol && `通用 ${counts.idol}`, counts.card && `卡面 ${counts.card}`].filter(Boolean).join(' · ') + ' 句语音' : ''
 })
-// Phones have no sidebar: every section, in sidebar order, as one grid of icons.
-const directoryItems = destinations.flatMap(group => group.items)
+// Phones: two rows of the common destinations; the eighth cell, 全部栏目, opens the bar's drawer, which is the
+// one full directory (线框减法册 L2). Both draw the same ArchiveDirectoryGrid.
+const DIRECTORY_PICK = ['stories', 'interactions', 'idols', 'cards', 'songs', 'events', 'live']
+const openNavigationDrawer = inject('openNavigationDrawer', () => {})
 const scopeOpen = ref(false), storyTab = ref('all'), portraitFailed = ref(false)
 const collections = computed(() => props.desktopOverview.collections || {})
 const activePortrait=computed(()=>props.desktopOverview.portrait)
@@ -287,13 +289,13 @@ function openStatTile(tile){
   if(tile.action==='mobile') return emit('open-preferred',{action:'mobile',idolCode:props.preferredReference?.idolCode})
   openDirectory(tile.action)
 }
-// 315 岁时记 opens on this month in Japan time; a scope without it keeps the timeline.
+// 315 岁时记 opens on this month in Japan time. It replaced the old event timeline (retired 10-30); a bound
+// release must carry it (prepare-readmodel-preview runs verify-portal-almanac before any deploy).
 const almanacMonthNumber=ref(currentJapanMonth())
 const almanacMonth=computed(()=>props.preferredReference?.actionable ? null : portalAlmanacMonth(props.desktopOverview.almanac,almanacMonthNumber.value))
 // The month is a stepper (‹ 10 月 ›): previous and next wrap around the year.
 const stepAlmanacMonth=delta=>{ const at=ALMANAC_MONTHS.indexOf(almanacMonthNumber.value); almanacMonthNumber.value=ALMANAC_MONTHS[(at+delta+ALMANAC_MONTHS.length)%ALMANAC_MONTHS.length] }
 const almanacIdolName=code=>props.idolName(code,props.idols.find(row=>row.id===code)?.name) || props.idols.find(row=>row.id===code)?.name || code
-const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
 const lensIdolCode = computed(() => props.preferredReference?.actionable ? props.preferredReference.idolCode : props.savedIdolCode)
@@ -499,11 +501,12 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-heading-chips.has-overflow { -webkit-mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%);mask-image:linear-gradient(to right, black calc(100% - var(--gs-space-6)), transparent 100%); }
 .overview-heading-chips::-webkit-scrollbar { display:none; }
 .overview-section-heading .overview-heading-chips.overview-story-tabs { margin:calc(-1 * var(--gs-space-1)) 0; }
-/* One pill for every chip: the heading chips share the story tabs' look (below). */
-.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
+/* Chips are text, not pills (线框减法册 rule 2): no frame or fill on the heading rule; a chosen tab is ink
+   with the mint underline, the card filters are plain links into the card directory. */
+.overview-section-heading .overview-heading-chips button { flex:none;gap:0;padding:0 var(--gs-space-2);border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
 .overview-heading-chips button small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
-.overview-section-heading .overview-heading-chips button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
-.overview-section-heading .overview-heading-chips button[aria-pressed=true] small { color:inherit;opacity:.75; }
+.overview-section-heading .overview-heading-chips button[aria-pressed=true] { border-bottom-color:var(--gs-selected-line);color:var(--gs-ink);font-weight:var(--gs-weight-semibold); }
+.overview-section-heading .overview-heading-chips button[aria-pressed=true] small { color:var(--gs-ink-3); }
 .overview-section-heading .overview-heading-chips .is-attribute { color:var(--attribute);font-weight:var(--gs-weight-semibold); }
 .overview-heading-chips .is-attribute::before { content:"";flex:none;width:15px;height:15px;margin-right:4px;background:var(--attribute-icon) center / contain no-repeat; }
 .overview-heading-chips button:disabled { opacity:.55;cursor:default; }
@@ -608,10 +611,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-hub-card-count { margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
 
 /* Filter chips: stories by kind, songs by lineup. One scrolling row. */
-.overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
-.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui);white-space:nowrap; }
-.overview-story-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);font-weight:var(--gs-weight-semibold); }
-.overview-story-tabs small { margin-left:var(--gs-space-2);color:inherit;opacity:.75;font-variant-numeric:tabular-nums; }
+.overview-story-tabs { display:flex;gap:var(--gs-space-5);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:0;scrollbar-width:none; }
+.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-1);border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--gs-ink-3);font-size:var(--gs-text-ui);white-space:nowrap; }
+.overview-story-tabs button[aria-pressed=true] { border-bottom-color:var(--gs-selected-line);color:var(--gs-ink);font-weight:var(--gs-weight-semibold); }
+.overview-story-tabs small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-weight:var(--gs-weight-regular);font-variant-numeric:tabular-nums; }
 
 /* Rows: picture, title and one line of meta, split by hairlines; the whole row opens. */
 .overview-song-list, .overview-story-list { display:grid; }
@@ -690,18 +693,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-birthday-action { display:inline-flex;flex:none;align-items:center;gap:2px;color:var(--gs-ink-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
 .overview-birthdays button:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
 
-/* Global events: a horizontal timeline of banners (scopes built before the almanac). */
-.overview-timeline { display:flex;gap:var(--gs-space-5);overflow-x:auto;padding:var(--gs-space-1) 0 var(--gs-space-4);scroll-snap-type:x proximity;scrollbar-width:thin; }
-.overview-timeline article { position:relative;flex:1 0 210px;max-width:300px;min-width:0;scroll-snap-align:start; }
-.overview-timeline article::before { content:'';position:absolute;top:33px;right:calc(-1 * var(--gs-space-5));left:0;height:1px;background:var(--gs-line); }
-.overview-timeline article:last-child::before { right:0; }
-.timeline-date { display:block;margin-bottom:22px;color:var(--gs-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums; }
-.timeline-dot { position:absolute;top:30px;left:0;width:8px;height:8px;border-radius:50%;background:var(--gs-mint); }
-.overview-timeline button { position:relative;display:grid;align-content:start;gap:var(--gs-space-2);width:100%;padding:0;border:0;background:none;color:inherit;text-align:left; }
-.overview-timeline img { width:100%;height:auto;aspect-ratio:2 / 1;object-fit:contain;border-radius:var(--gs-radius-media); }
-.overview-timeline button > small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.overview-timeline strong { font-size:var(--gs-text-ui);line-height:1.5;overflow-wrap:anywhere; }
-.overview-timeline button > svg { justify-self:end;color:var(--gs-ink-3); }
 
 /* Scope dialog and footer. */
 .overview-dialog-note { margin:0 0 var(--gs-space-4);color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
@@ -712,14 +703,14 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footer-link { min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-mint-ink);font:inherit;text-decoration:underline;text-underline-offset:3px; }
 
 @media (hover:hover) and (pointer:fine) {
-  .overview-heading-chips button:not(:disabled):hover { border-color:var(--gs-selected-line); }
+  .overview-heading-chips button:not(:disabled):hover, .overview-story-tabs button:hover { color:var(--gs-ink); }
   .overview-birthdays button:hover strong { color:var(--gs-ink); }
   .overview-icon-button:hover { background:var(--gs-mint-wash); }
   .overview-preferred-actions button:hover { background:var(--gs-hover);color:var(--gs-ink); }
   .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
   .overview-section-heading button:hover, .overview-personal-meta button:hover, .overview-search-results li > button:hover,
   .overview-story-gateways button:hover strong, .overview-main-index button:hover strong { color:var(--gs-ink); }
-  .overview-song-detail:hover strong, .overview-story > button:hover strong, .overview-event > button:hover strong, .overview-timeline button:hover strong { color:var(--gs-ink); }
+  .overview-song-detail:hover strong, .overview-story > button:hover strong, .overview-event > button:hover strong { color:var(--gs-ink); }
   .overview-stage-button:hover, .overview-home-action:hover { color:var(--gs-ink); }
   .overview-unit-tile:hover { background:var(--gs-hover); }
 }
@@ -775,12 +766,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-footprint { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--gs-space-5);font-size:var(--gs-text-meta); }
   .overview-footprint button { display:flex;align-items:baseline;min-width:0;min-height:var(--gs-control-touch);text-align:left;white-space:nowrap; }
   .overview-footprint b { font-size:var(--gs-text-subtitle); }
-  /* The archive tab is the index of every section: all of them, in sidebar order, visible at once
-     as a compact grid between two hairlines — no tiles, neutral icons, labels always shown. */
-  .overview-directory { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:var(--gs-space-4) 0 0;padding:var(--gs-space-2) 0;border-block:1px solid var(--gs-line); }
-  .overview-directory button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-2);min-width:0;min-height:60px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
-  .overview-directory button svg { width:22px;height:22px;color:var(--gs-ink-2); }
-  .overview-directory button:active { background:var(--gs-mint-wash); }
+  /* Two rows of common destinations, no rules (线框减法册 L2); the cells are ArchiveDirectoryGrid's. */
+  .overview-directory { display:block;margin:var(--gs-space-4) 0 0; }
   .overview-panel { margin-top:var(--gs-space-8); }
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */

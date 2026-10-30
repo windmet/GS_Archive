@@ -6,19 +6,7 @@
     </ul>
 
     <div class="catalog-filter">
-      <div class="category-tabs" role="group" aria-label="卡池类型">
-        <button
-          v-for="option in categoryOptions"
-          :key="option.value"
-          :class="{ active: category === option.value }"
-          type="button"
-          :aria-pressed="category === option.value"
-          @click="emit('update:category', option.value)"
-        >
-          <span>{{ option.label }}</span>
-          <small>{{ option.count }}</small>
-        </button>
-      </div>
+      <GsTabs class="category-tabs" :model-value="category" :options="categoryOptions" aria-label="卡池类型" @update:model-value="emit('update:category', $event)" />
       <span v-if="loaded && gashas.length !== totalGashas" class="result-count">{{ gashas.length }} 个结果</span>
     </div>
 
@@ -54,6 +42,7 @@
 
 <script setup>
 import { ChevronRight } from '@lucide/vue'
+import GsTabs from '../gs/GsTabs.vue'
 import ArchiveGashaArt from './ArchiveGashaArt.vue'
 import {gashaText} from './useArchiveGashaText.js'
 
@@ -101,12 +90,9 @@ function formatDate(timestamp) {
 .catalog-footprint, .catalog-filter, .catalog-status, .gasha-grid { max-width: var(--gs-content-width); margin-inline: auto; padding-inline: var(--gs-space-7); box-sizing: border-box; }
 .catalog-footprint { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-5); margin-block: 0; padding-block: var(--gs-space-6) var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-ui); list-style: none; }
 .catalog-footprint b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
-.catalog-filter { display: flex; align-items: center; gap: var(--gs-space-4); padding-block: var(--gs-space-2) var(--gs-space-3); border-bottom: 1px solid var(--gs-line); }
-.category-tabs { display: flex; flex: 1; gap: var(--gs-space-3); min-width: 0; overflow-x: auto; padding: var(--gs-space-1) 0; scrollbar-width: none; }
-.category-tabs button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); cursor: pointer; font-size: var(--gs-text-ui); white-space: nowrap; }
-.category-tabs button.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
-.category-tabs small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-variant-numeric: tabular-nums; }
-.category-tabs button.active small { color: inherit; }
+/* The category tabs sit on the filter row's rule: that rule is their underline (线框减法册 rule 2). */
+.catalog-filter { display: flex; align-items: center; gap: var(--gs-space-4); padding-block: var(--gs-space-2) 0; border-bottom: 1px solid var(--gs-line); }
+.catalog-filter .category-tabs { flex: 1; border-bottom: 0; }
 .result-count { flex: 0 0 auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .catalog-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-4); margin-block: 0; padding-block: var(--gs-space-5); color: var(--gs-ink-2); line-height: 1.6; }
 .catalog-status button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; }
@@ -121,12 +107,11 @@ function formatDate(timestamp) {
 .gasha-meta { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .gasha-catalog button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 /* The horizontal rail clips an outer ring; keep this control's ring inside. */
-.category-tabs button:focus-visible { outline-offset: calc(-1 * var(--gs-focus-ring)); }
-@media (hover: hover) { .gasha-item:hover strong { color: var(--gs-mint-ink); } .category-tabs button:not(.active):hover { border-color: var(--gs-ink-3); } }
+@media (hover: hover) { .gasha-item:hover strong { color: var(--gs-mint-ink); } }
 @container gasha-catalog (max-width: 560px) {
   .catalog-footprint, .catalog-filter, .catalog-status, .gasha-grid { padding-inline: var(--gs-space-5); }
   .catalog-footprint { padding-top: var(--gs-space-4); }
-  .category-tabs button, .catalog-status button { min-height: var(--gs-control-touch); }
+  .catalog-status button { min-height: var(--gs-control-touch); }
   .gasha-grid { grid-template-columns: 1fr; }
   .gasha-item { grid-template-columns: 96px minmax(0, 1fr) 16px; gap: var(--gs-space-4); }
 }
