@@ -3,12 +3,13 @@
     <button v-if="!opened" type="button" class="chart-open" @click="opened = true">打开谱面预览</button>
     <template v-else>
       <header class="chart-toolbar">
+        <div v-if="$slots.lead" class="chart-lead"><slot name="lead" /></div>
         <div class="chart-difficulties" role="group" aria-label="谱面难度"><button v-for="d in difficulties" :key="d.type" type="button" :class="`difficulty-${d.type}`" :aria-pressed="selected === d.type" @click="selected = d.type">{{ d.label }} <small>Lv {{ d.levelLabel }}</small></button></div>
         <GsSegmented class="chart-modes" v-model="mode" :options="MODE_OPTIONS" aria-label="谱面视图" />
         <button v-if="mode === 'long'" type="button" :aria-pressed="followPlayback" @click="followPlayback = !followPlayback">跟随播放</button>
         <button v-if="chart && !immersive" type="button" class="chart-immersive-enter" @click="enterImmersive"><Maximize :size="15" aria-hidden="true" />沉浸查看</button>
         <button v-if="immersive" type="button" class="chart-immersive-exit" @click="leaveImmersive"><Minimize :size="15" aria-hidden="true" />退出沉浸</button>
-        <div class="chart-actions"><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
+        <div class="chart-actions"><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><slot name="actions" /><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
       </header>
       <div class="chart-layout" :class="{ 'has-panel': residentPanel }">
       <div class="chart-main">
@@ -24,9 +25,7 @@
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div v-if="maintainer" class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
           <div class="chart-navigation"><div class="chart-step" role="group" aria-label="谱面播放操作"><button type="button" aria-label="回到开头" title="歌曲开头 · 0 秒" @click="seek(0)"><SkipBack :size="19" aria-hidden="true" /></button><button type="button" aria-label="上一个音符" title="上一个音符 · ←" :disabled="!previousNote" @click="step(-1)"><ChevronLeft :size="23" aria-hidden="true" /></button><button type="button" class="chart-play" :aria-label="starting || playing ? '暂停' : '播放'" :disabled="!audioTrack?.url" @click="togglePlayback"><component :is="starting || playing ? Pause : Play" :size="21" aria-hidden="true" />{{ starting || playing ? '暂停' : '播放' }}</button><button type="button" aria-label="下一个音符" title="下一个音符 · →" :disabled="!nextNote" @click="step(1)"><ChevronRight :size="23" aria-hidden="true" /></button><button type="button" aria-label="播放末尾" title="播放末尾（含尾奏）" @click="seekSeconds(totalSeconds)"><SkipForward :size="19" aria-hidden="true" /></button></div></div>
           <p v-if="clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
-          <p v-if="maintainer && demonstrationEnabled && demonstrationState" class="chart-demonstration chart-position-status" aria-label="自动演示事件统计" :data-count="demonstrationState.count" :data-total="demonstrationState.total" :data-epoch="demonstrationState.epoch" :data-seconds="demonstrationState.seconds">演示事件 {{ demonstrationState.count }} / {{ demonstrationState.total }} <span>· 持续长条 {{ demonstrationState.holds.length }}</span><span v-for="hold in demonstrationState.holds" :key="hold.sourceIndex" :data-hold-source="hold.sourceIndex" :data-lane="hold.lane"> · 轨位 {{ (hold.lane + 1).toFixed(1) }}</span></p>
-          <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
-        </footer>
+          <p v-if="maintainer && demonstrationEnabled && demonstrationState" class="chart-demonstration chart-position-status" aria-label="自动演示事件统计" :data-count="demonstrationState.count" :data-total="demonstrationState.total" :data-epoch="demonstrationState.epoch" :data-seconds="demonstrationState.seconds">演示事件 {{ demonstrationState.count }} / {{ demonstrationState.total }} <span>· 持续长条 {{ demonstrationState.holds.length }}</span><span v-for="hold in demonstrationState.holds" :key="hold.sourceIndex" :data-hold-source="hold.sourceIndex" :data-lane="hold.lane"> · 轨位 {{ (hold.lane + 1).toFixed(1) }}</span></p>        </footer>
       </template>
       </div>
         <div v-if="panelVisible" :id="`${uid}-settings`" class="chart-settings" :class="wide ? 'is-resident' : 'is-tabbed'" role="group" aria-label="谱面视图设置">
@@ -52,7 +51,7 @@
           </section>
         </div>
       </div>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p v-if="maintainer">五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条依照原生 poly 内部索引生成；预览不进行游戏判定。</p><p v-if="maintainer">完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长、逐音符速度（含 Special）、轨道坐标、音符四角及长条网格已有原生依据；滑键箭头随歌曲时间循环移动，暂停时冻结。打击音的四套样式可用于任意歌曲，也可单独关闭；预览不进行触摸判定。</p></div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart" class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p v-if="maintainer">五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条依照原生 poly 内部索引生成；预览不进行游戏判定。</p><p v-if="maintainer">完整混音音频作为播放时钟，与 2D 舞台使用同一音频资源。谱面按各段 BPM 换算时间。视图的基础读取时长、逐音符速度（含 Special）、轨道坐标、音符四角及长条网格已有原生依据；滑键箭头随歌曲时间循环移动，暂停时冻结。打击音的四套样式可用于任意歌曲，也可单独关闭；预览不进行触摸判定。</p></div>
     </template>
   </section>
 </template>
@@ -385,6 +384,8 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .difficulty-4 { --diff-color: #994070; }
 .chart-difficulties button[aria-pressed=true] { background: var(--diff-color); color: var(--gs-surface); }
 .chart-actions { margin-left: auto; }
+/* lead: what the host puts first in the row (the chart tool's song); it gives way before the controls wrap. */
+.chart-lead { display: flex; flex: 1 1 160px; min-width: 0; }
 .chart-actions button { height: var(--gs-control-touch); gap: 6px; }
 .chart-actions svg { flex-shrink: 0; }
 .chart-export-actions { display: flex; align-items: center; gap: var(--gs-space-2); }
@@ -404,7 +405,13 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-group h3 { margin: 0; padding-bottom: var(--gs-space-2); border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: var(--gs-track-label); }
 .chart-group select { min-width: 0; max-width: 150px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .chart-group .chart-number { width: 56px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-2); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
-.chart-group .chart-range { width: 96px; margin: 0; }
+.chart-group .chart-range { flex: 0 1 96px; width: auto; min-width: 48px; margin: 0; }
+/* Labels keep one line: the label column takes its own width and the control gives way (a slider narrows first).
+   The ⓘ bubble spans its row, under it, so a scrolling settings column never cuts it off at the side. */
+.chart-group .gs-row:not(.stacked) { position: relative; grid-template-columns: auto minmax(0, 1fr); }
+.chart-group :deep(.gs-row-label) { white-space: nowrap; }
+.chart-group :deep(.gs-info) { position: static; }
+.chart-group :deep(.gs-info-bubble) { top: calc(100% - var(--gs-space-2)); right: 0; left: 0; width: auto; max-width: none; transform: none; white-space: normal; }
 /* The scoped `button` rule above reaches GsSwitch's root; give the switch its own box back. */
 .chart-group .gs-switch { min-height: 0; padding: 0; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-switch-off); }
 .chart-group .gs-switch[aria-checked=true] { background: var(--gs-switch-on); }
@@ -419,7 +426,7 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-hud strong { color: var(--gs-surface); font-size: var(--gs-text-meta); }
 .chart-hud span { font-variant-numeric: tabular-nums; }
 .is-long .chart-hud { position: static; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-radius: 0; border-top-left-radius: var(--gs-radius-media); border-top-right-radius: var(--gs-radius-media); background: var(--gs-chrome); }
-/* The transport sits on the paper under the canvas: a hairline, then time, then the step controls. */
+/* The transport sits on the paper under the canvas: a hairline, then time and the step controls (one row when there is room). */
 .chart-transport { margin-top: var(--gs-space-3); padding: var(--gs-space-3) 0 0; border-top: 1px solid var(--gs-line); }
 .chart-timeline { display: flex; align-items: center; gap: var(--gs-space-4); }
 .chart-time { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -435,7 +442,7 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-step .chart-play { width: 100px; height: 48px; margin: 0 var(--gs-space-2); border-color: var(--gs-play-bg); border-radius: var(--gs-radius-pill); background: var(--gs-play-bg); color: var(--gs-play-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 input[type=range] { min-height: var(--gs-control-compact); accent-color: var(--gs-mint); cursor: pointer; }
 .chart-position-status, .chart-shortcuts { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.7; }
-.chart-shortcuts { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--gs-space-1); }
+.chart-shortcuts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-1); }
 kbd { padding: 0 var(--gs-space-1); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-media); background: var(--gs-surface); color: var(--gs-ink-2); font-family: inherit; font-size: var(--gs-text-caption); }
 .chart-shortcuts > span { margin: 0 var(--gs-space-1); color: var(--gs-ink-3); }
 .chart-info { margin-top: var(--gs-space-3); padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.7; }
@@ -446,7 +453,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport
 .chart-immersive-exit { display: none; }
 section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: var(--gs-space-2); margin: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); border: 0; background: var(--gs-paper); overscroll-behavior: none; touch-action: none; }
 .is-immersive .chart-toolbar { flex: none; margin: 0; }
-.is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
+.is-immersive .chart-lead, .is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
 .is-immersive .chart-immersive-exit { display: inline-flex; height: var(--gs-control-touch); margin-left: auto; }
 .is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; container-type: size; }
 .is-immersive .chart-viewport :deep(.track-preview) { width: min(100cqw, calc(100cqh * 16 / 9)); }
@@ -457,7 +464,14 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
   .is-immersive .chart-transport { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); }
   .is-immersive .chart-navigation { margin: 0; }
 }
+@container chart-preview (min-width: 561px) {
+  /* One row under the canvas: the canvas edge already parts them, so no hairline (a rule 8px over the play button). */
+  .chart-transport { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--gs-space-5); padding-top: 0; border-top: 0; }
+  .chart-transport > .chart-navigation { margin: 0; }
+  .chart-transport > p { grid-column: 1 / -1; }
+}
 @container chart-preview (max-width: 560px) {
+  .chart-lead { flex-basis: 100%; }
   .chart-difficulties { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: var(--gs-space-2); }
   .chart-difficulties button { min-width: 0; padding: 0 var(--gs-space-1); }
   .chart-toolbar { gap: var(--gs-space-3); }

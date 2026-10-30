@@ -14,8 +14,9 @@ const emit = defineEmits(['update:modelValue'])
 .gs-switch[aria-checked=true] .gs-switch-knob { transform: translateX(16px); }
 .gs-switch:disabled { opacity: .5; cursor: default; }
 .gs-switch:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-/* The 40x24 track is the visual; the touch target grows around it without moving neighbours. */
-.gs-switch::after { content: ""; position: absolute; inset: -10px -4px; }
+/* The 40x24 track is the visual; the touch target grows to 44px tall without moving neighbours. It does not grow
+   sideways: a switch sits flush with its row's end, and anything past that edge widens a scrolling panel. */
+.gs-switch::after { content: ""; position: absolute; inset: -10px 0; }
 .gs-switch.on-dark:not([aria-checked=true]) { background: var(--gs-stage-thumb); }
 @media (prefers-reduced-motion: reduce) { .gs-switch, .gs-switch-knob { transition: none; } }
 </style>
