@@ -1,5 +1,5 @@
 <template>
-  <section ref="previewRoot" class="chart-preview" :class="{ 'is-long': mode === 'long', 'is-immersive': immersive }" aria-label="谱面查看器" @keydown.esc="immersive && leaveImmersive()">
+  <section ref="previewRoot" class="chart-preview" :class="{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && !controlsShown }" aria-label="谱面查看器" @keydown.esc="immersive && leaveImmersive()" @pointerdown="immersive && revealControls()">
     <button v-if="!opened" type="button" class="chart-open" @click="opened = true">打开谱面预览</button>
     <template v-else>
       <header class="chart-toolbar">
@@ -87,13 +87,28 @@ const emit = defineEmits(['request-play'])
 // (iPhone Safari) the fixed full-window view still applies.
 const previewRoot = ref(null), immersive = ref(false)
 const { active: fullscreenActive, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
+// The controls float over the full-screen canvas: a touch shows them, three idle seconds hide them, and they stay
+// while paused. `playing` is declared below; the timer only reads it after setup.
+const controlsShown = ref(true)
+let controlsTimer = 0
+function revealControls() {
+  controlsShown.value = true
+  clearTimeout(controlsTimer)
+  controlsTimer = setTimeout(() => { if (playing.value) controlsShown.value = false }, 3000)
+}
+onBeforeUnmount(() => clearTimeout(controlsTimer))
 function enterImmersive() {
   mode.value = 'perspective'; infoOpen.value = false
   immersive.value = true
+  revealControls()
+  // Phones that allow it play this landscape; a refusal is not an error.
+  try { void screen.orientation?.lock?.('landscape')?.catch?.(() => {}) } catch { /* unsupported */ }
   void enterFullscreen(previewRoot.value)
 }
 function leaveImmersive() {
   immersive.value = false
+  clearTimeout(controlsTimer)
+  try { screen.orientation?.unlock?.() } catch { /* unsupported */ }
   if (fullscreenActive.value) void leaveFullscreen()
 }
 watch(fullscreenActive, (active, was) => { if (was && !active) immersive.value = false })
@@ -144,6 +159,7 @@ const safeSpeed = computed(() => Math.round(Math.max(1, Math.min(11, Number(spee
 const currentSeconds = computed(() => Math.max(0,transportSeconds.value))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
+watch(() => playing.value, () => { if (immersive.value) revealControls() })
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 // Defaults: perspective track, auto demonstration, hit sound SE1 at 70%, Combo on.
 const demonstrationEnabled = ref(true), demonstrationState = shallowRef(null)
@@ -449,13 +465,17 @@ button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport
 /* 沉浸查看: one fixed screen; the track takes the room left by the difficulty row and the transport
    and keeps its 16:9. touch-action: none stops pans and pinches from reaching the page. */
 .chart-immersive-exit { display: none; }
-section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: var(--gs-space-2); margin: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); border: 0; background: var(--gs-paper); overscroll-behavior: none; touch-action: none; }
-.is-immersive .chart-toolbar { flex: none; margin: 0; }
+section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; border: 0; background: #0b141c; overscroll-behavior: none; touch-action: none; }
+/* chart-layout and chart-main sit between the section and the canvas; without flex here the canvas collapses to its min-height. */
+.is-immersive .chart-layout, .is-immersive .chart-main { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; }
+.is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; border: 0; container-type: size; }
+.is-immersive .chart-viewport :deep(.track-preview) { width: min(100cqw, calc(100cqh * 16 / 9)); }
+.is-immersive .chart-toolbar, .is-immersive .chart-transport { position: absolute; z-index: 3; left: 0; right: 0; margin: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
+.is-immersive .chart-toolbar { top: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-4) max(12px, env(safe-area-inset-left)); background: linear-gradient(rgb(0 0 0 / 0.6), transparent); }
+.is-immersive .chart-transport { bottom: 0; padding: var(--gs-space-4) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: linear-gradient(transparent, rgb(0 0 0 / 0.6)); }
+.is-immersive.controls-hidden .chart-toolbar, .is-immersive.controls-hidden .chart-transport { opacity: 0; pointer-events: none; }
 .is-immersive .chart-lead, .is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
 .is-immersive .chart-immersive-exit { display: inline-flex; height: var(--gs-control-touch); margin-left: auto; }
-.is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; container-type: size; }
-.is-immersive .chart-viewport :deep(.track-preview) { width: min(100cqw, calc(100cqh * 16 / 9)); }
-.is-immersive .chart-transport { flex: none; margin: 0; padding-top: var(--gs-space-2); }
 .is-immersive .chart-navigation { margin-top: var(--gs-space-1); }
 @media (max-height: 500px) {
   .is-immersive .chart-difficulties button { height: var(--gs-control-normal); }
