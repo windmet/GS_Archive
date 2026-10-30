@@ -465,7 +465,8 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
   .is-immersive .chart-navigation { margin: 0; }
 }
 @container chart-preview (min-width: 561px) {
-  .chart-transport { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--gs-space-5); }
+  /* One row under the canvas: the canvas edge already parts them, so no hairline (a rule 8px over the play button). */
+  .chart-transport { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--gs-space-5); padding-top: 0; border-top: 0; }
   .chart-transport > .chart-navigation { margin: 0; }
   .chart-transport > p { grid-column: 1 / -1; }
 }

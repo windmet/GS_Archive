@@ -59,7 +59,8 @@ function choose(code) { pickerOpen.value = false; selectedCode.value = code; emi
    and the width a 16:9 track cannot use goes to the settings column (292–400px) instead of dark bars beside it.
    --chart-chrome-block is the toolbar row plus the one-row transport; if either wraps, the split is only an estimate
    and the track still fits. Long view: the drawing scrolls inside the canvas. The settings scroll on their own. */
-.chart-lab :deep(.chart-preview:has(.chart-layout.has-panel)) { --chart-chrome-block: 117px; container-type: size; overflow: hidden; }
+.chart-lab:has(.chart-layout.has-panel) { padding-top: var(--gs-space-5); }
+.chart-lab :deep(.chart-preview:has(.chart-layout.has-panel)) { --chart-chrome-block: 104px; container-type: size; overflow: hidden; }
 .chart-lab :deep(.chart-layout.has-panel) { flex: 1 1 0; grid-template-rows: minmax(0, 1fr); align-items: stretch; min-height: 0; }
 .chart-lab :deep(.chart-preview:not(.is-long) .chart-layout.has-panel) { grid-template-columns: clamp(100cqw - 400px - var(--gs-gap-group), (100cqh - var(--chart-chrome-block)) * 16 / 9 + 2px, 100cqw - var(--gs-tool-panel-compact) - var(--gs-gap-group)) minmax(0, 1fr); }
 .chart-lab :deep(.chart-layout.has-panel .chart-main) { display: flex; flex-direction: column; min-height: 0; }
