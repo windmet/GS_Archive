@@ -11,3 +11,13 @@
 | RR-03 | P3 | `/studio/edit/` / 摄影搜索输入 | 320×720；搜索聚焦 | NEEDS_CONFIRMATION | 初始 Browser 计算字号13px；`src/styles/picture-studio.css:27,67,189`；参见[原报告](RESPONSIVE_RELIABILITY_AUDIT_20261030.md) | iOS 输入聚焦缩放风险；字号已观测，真实缩放未复现。A5 真机审计；不可标记为已确认 iOS 缺陷 |
 
 这些 REPRODUCED 状态引用同一未变化主干上的首次 Browser 证据，不表示 A0 对正式 UI 做了修复或完整回归。A1–A5 的分配是本轮建议，后续可按正式批次定义调整。
+
+## A1 更新（2026-10-30）
+
+正式源码基线仍为c5efb7a0，没有修复。RR-01/RR-02保持REPRODUCED，RR-03保持NEEDS_CONFIRMATION。摄影交互成功不等于RR-02布局已修复；模拟输入不等于RR-03真机风险消失。
+
+| ID | 级别 | 页面/组件 | 视口/状态 | 状态 | 证据/定位 | 根因/后续 |
+|---|---|---|---|---|---|---|
+| A1-V01 | P1候选，产品级别未确认 | 多类深链接刷新/返回；既有path-locator Browser verifier及App路由恢复 | 1280×900与390×844；冷刷新、页面返回、筛选恢复 | NEEDS_CONFIRMATION | `E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a1/path-contracts-corrected/journey.json`，同目录截图；`scripts/verify-portal-path-locator-browser.mjs:109–125,323–348`；独立双尺寸反证见A1的run-0MQvUC等 | 17个旧断言失败；已独立复核两类未复现。可能混有等待时序/过期定位与真实缺陷，根因未定；不能称为17个已确认产品问题。其余前后截图与稳定复现PENDING，保留为A1验证阻塞，不自动转A2已通过 |
+
+详情、已执行状态和未执行项见[本轮报告](UI_AUDIT_A1_INTERACTION_20261030.md)。
