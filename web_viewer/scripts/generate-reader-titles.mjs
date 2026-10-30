@@ -7,6 +7,8 @@ import { validateReaderTitles, validateReaderTitleShard, readerTitleShardKey, RE
 const root = new URL('../public/',import.meta.url)
 const hash = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
 const manifest = JSON.parse(await fs.readFile(new URL('data/reading/manifest.json',root),'utf8'))
+const profileOverlay = JSON.parse(await fs.readFile(new URL('translations/zh-CN/archive-general/profiles.json',root),'utf8'))
+const seasonalTitles = profileOverlay.entries['seasonal-title']?.title || {}
 const titles = [], translated = new Map(), chosen = new Map(), ownTitles = new Map()
 // A document is named by the title row that matches its manifest title. Where none does (extra and
 // some event documents carry a synopsis line as their manifest title), its opening title row
@@ -21,6 +23,14 @@ for (const entry of manifest.entries) {
   const row = exact || titleRows.find(row => leadingTitle.test(row.text_ref?.unit_id || ''))
   const key = exact || !row ? entry.logical_id : `document:${entry.document_id}`
   chosen.set(entry.document_id, { key, source: row ? row.source_text : entry.title })
+  // A seasonal metadata heading has no invented story-text identity. It binds the
+  // exact original through the existing General TM namespace and this document revision.
+  if (entry.domain === 'seasonal' && seasonalTitles[entry.title]) {
+    const sourceHash = hash(entry.title)
+    ownTitles.set(entry.document_id, {source:entry.title,text:seasonalTitles[entry.title],source_hash:sourceHash,
+      unit_id:`metadata:v1:seasonal-title:title:${sourceHash.slice(7)}`})
+    continue
+  }
   if (!row) continue
   const catalogId = document.text_catalog_id || document.scenario_id
   let overlay

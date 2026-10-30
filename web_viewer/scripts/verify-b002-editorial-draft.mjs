@@ -6,6 +6,7 @@ import { loadSourceSupersessions, reconstructCatalogue, rebindEvidence, verifyCa
 import { parseStudioResult, renderStudioInput, checkStudioRows } from './lib/ai-studio-markdown.mjs'
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 import { restoreProducerAddressingAfterTranslation, protectProducerAddressingForTranslation } from '../src/localization/story/ProducerAddressing.js'
+import {beforeSpacingAmendment} from './lib/story-spacing-amendment.mjs'
 
 // Editorial drafts replay original model output → optional ID remap / metadata row fill → logged edits → public overlays.
 const drafts = [
@@ -51,6 +52,10 @@ const drafts = [
   { dir: 'B041-seasonal-white-day-2023-r33-edited-20261031', documents: 52, units: 524 },
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
+const spacing = await read(path.join(projectRoot,'translation/studio/amendments/20261031-b036-spacing.json'))
+assert.equal(spacing.schema,'GS-STORY-SPACING-AMENDMENT-V1')
+const spacingByCatalogue = new Map(spacing.catalogues.map(record=>[record.scenario_id,record]))
+const spacingSeen = new Set()
 const indexes = await loadStudioIndexes()
 // Documents retired after review (e.g. a combined source split into its parts) keep their receipt
 // evidence; the record names each one, its batch and the bytes it had, and nothing else may vanish.
@@ -180,8 +185,10 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
       continue
     }
     const rekeyed = supersessions.catalogues.get(file.scenario_id)
-    const bytes = rekeyed ? await reconstructCatalogue(rekeyed)
+    const currentBytes = rekeyed ? await reconstructCatalogue(rekeyed)
       : await fs.readFile(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`))
+    const bytes = beforeSpacingAmendment(currentBytes,spacingByCatalogue.get(file.scenario_id))
+    if(spacingByCatalogue.has(file.scenario_id))spacingSeen.add(file.scenario_id)
     assert.equal(sha256(bytes), file.sha256, `Reviewed catalogue drift: ${file.scenario_id}`)
     const overlay = JSON.parse(bytes)
     assert(validateStoryTranslationOverlay(overlay, { scenarioId: file.scenario_id, locale: 'zh-CN' }).valid)
@@ -201,5 +208,6 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
   console.log(`${dir}: ${documents} documents/catalogues, ${units} rows, source identities, edit replay and protected addresses verified`)
 }
 assert.deepEqual([...retiredSeen].sort(), [...retired.keys()].sort(), 'every retirement record names a reviewed document')
+assert.deepEqual([...spacingSeen].sort(),[...spacingByCatalogue.keys()].sort(),'every spacing amendment replays a historical receipt')
 assert.deepEqual([...supersededSeen].sort(), [...supersessions.documents.keys()].sort(), 'every supersession record names a reviewed document')
 console.log(`Source supersession: ${supersededSeen.size} reviewed documents rebound; ${moved.catalogues} catalogues reproduce byte-for-byte from ${moved.targets} collection catalogues`)
