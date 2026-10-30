@@ -157,7 +157,7 @@
           </div>
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
-          <header class="overview-section-heading" :class="{'overview-chip-heading':almanacMonth}"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : `315 岁时记 · ${almanacMonthNumber} 月` }}</h2>
+          <header class="overview-section-heading" :class="{'overview-chip-heading overview-month-heading':almanacMonth}"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : `315 岁时记 · ${almanacMonthNumber} 月` }}</h2>
             <div v-if="almanacMonth" class="overview-month-step" role="group" aria-label="选择月份"><button type="button" aria-label="上个月" @click="stepAlmanacMonth(-1)"><ChevronLeft :size="18" aria-hidden="true" /></button><output aria-live="polite">{{ almanacMonthNumber }} 月</output><button type="button" aria-label="下个月" @click="stepAlmanacMonth(1)"><ChevronRight :size="18" aria-hidden="true" /></button></div>
             <button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <!-- 315 岁时记: the month's birthdays beside every event that opened in that month, reprints included. -->
@@ -671,6 +671,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-story-gateways small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 
 /* 315 岁时记: birthdays and events of one month on the page's 50:50 axis; the events reuse the event rows. */
+/* The stepper's buttons carry no text, so a baseline row would lift it; the month heading centres its row instead. */
+.overview-month-heading { align-items:center; }
 .overview-month-step { display:inline-flex;align-items:center;gap:var(--gs-space-2);margin-left:auto; }
 .overview-month-step output { min-width:56px;color:var(--gs-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);text-align:center;font-variant-numeric:tabular-nums; }
 .overview-month-step button { display:grid;place-items:center;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2);cursor:pointer; }
@@ -720,6 +722,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-almanac { grid-template-columns:minmax(0,1fr);row-gap:var(--gs-space-6); }
   .overview-chip-heading { flex-wrap:wrap;row-gap:var(--gs-space-2); }
   .overview-chip-heading .overview-heading-chips { order:3;flex-basis:100%;margin:0 calc(-1 * var(--gs-space-1)); }
+  /* 查看全部 always takes its own line under the month, whatever width the month label has. */
+  .overview-month-heading > button { order:3;flex-basis:100%;justify-content:flex-start; }
   .overview-featured { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-section); }
   .overview-personal { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:var(--gs-space-3) var(--gs-space-7); }
   .overview-identity { grid-row:1 / span 2; }
