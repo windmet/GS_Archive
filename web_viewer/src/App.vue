@@ -115,7 +115,7 @@
       <ArchiveAbout v-if="view === 'about'" />
       <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" :shelf="currentVoiceShelf" @shelf="currentVoiceShelf = $event; syncArchiveRoute({ replace: true })" @preview-office-voice="previewOfficeVoice" />
       <ArchiveScoreArchive v-if="view === 'score_archive'" :shelf="currentSoundShelf" :load-stories="loadStoryReadModelCatalog" @shelf="currentSoundShelf = $event; syncArchiveRoute({ replace: true })" @open-story="openStoryDetail($event, 'score_archive')" @open-song="openSong" />
-      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" :songs="stageSongDirectory" :chart-songs="chartSongs" :preferred-idol="preferredArchiveIdol" :preferred-name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
+      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" :songs="stageSongDirectory" :preferred-idol="preferredArchiveIdol" :preferred-name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
         @charts="openChartTool" @chart-song="openChartSong" @stage="openChibiStage()" @stage-song="openChibiStage({ songCode: $event })" @photo="startPictureStudio" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"

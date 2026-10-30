@@ -113,10 +113,10 @@ try {
   let rows = 0
   for (let i = 0; i < 60 && !rows; i++) { await sleep(500); rows = await evaluate(liveRows) }
   assert.ok(rows > 0, 'the LIVE song list did not load on a direct visit')
-  await evaluate(`[...document.querySelectorAll('.song-row button, .song-row a')].find(element => element.textContent.trim() === '谱面').click(); true`)
+  await evaluate(`document.querySelector('.song-row .chart-row-open').click(); true`)
   let opened = false
   for (let i = 0; i < 60 && !opened; i++) { await sleep(500); opened = await evaluate(`Boolean(document.querySelector('.track-preview svg'))`) }
-  assert.ok(opened, 'a song\'s 谱面 on LIVE did not open the chart tool')
+  assert.ok(opened, 'a chart-table row on LIVE did not open the chart tool')
   await evaluate(`document.querySelector('.experiment-frame header button').click(); true`)
   rows = 0
   for (let i = 0; i < 30 && !rows; i++) { await sleep(500); rows = await evaluate(liveRows) }
