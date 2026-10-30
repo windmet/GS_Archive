@@ -18,5 +18,5 @@ watch([() => props.anchor, () => props.rows?.[0]?.row.anchor.row_id], () => {
 }, {immediate:true,flush:'sync'})
 </script>
 <style scoped>
-.reader-transcript { margin-top:18px; }
+.reader-transcript { margin-top:12px; }
 </style>

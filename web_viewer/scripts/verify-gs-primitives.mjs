@@ -53,6 +53,16 @@ const read = file => readFileSync(path.join(dir, file), 'utf8')
 assert.match(read('GsSwitch.vue'), /role="switch"/)
 assert.match(read('GsSegmented.vue'), /role="radiogroup"/)
 assert.match(read('GsInfo.vue'), /role="tooltip"/)
+// The ⓘ bubble positions itself once, in the top layer at viewport coordinates; a page that moves
+// it locally (top / left / transform on .gs-info-bubble) brings back the clipped-bubble bugs.
+assert.match(read('GsInfo.vue'), /popover="manual"/, 'the info bubble opens in the top layer')
+assert.match(read('GsInfo.vue'), /floatingOverlayPosition\(/, 'the info bubble is clamped to the viewport by the shared helper')
+{
+  const src = path.join(dir, '..', '..')
+  const walkFiles = folder => readdirSync(folder, { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? walkFiles(path.join(folder, entry.name)) : /\.(vue|css)$/.test(entry.name) ? [path.join(folder, entry.name)] : [])
+  const local = walkFiles(src).filter(file => !file.endsWith(`${path.sep}GsInfo.vue`) && /gs-info-bubble/.test(readFileSync(file, 'utf8')))
+  assert.deepEqual(local.map(file => path.relative(src, file).replaceAll(path.sep, '/')), [], 'only GsInfo styles its bubble')
+}
 assert.match(read('GsSwitch.vue'), /ariaLabel: \{ type: String, required: true \}/, 'a switch has no text: its label is mandatory')
 assert.match(read('GsTabs.vue'), /ariaLabel: \{ type: String, required: true \}/, 'a tab row names its group')
 assert.match(read('GsTabs.vue'), /:aria-pressed="option\.value === modelValue"/, 'the current tab is announced')

@@ -177,6 +177,10 @@ try {
   assert.ok(!html.includes('从这里演出') && !html.includes('记住此处'))
   assert.ok(!html.includes('role="search"'), 'search starts collapsed')
   for (const row of document.rows) assert.ok(html.includes(`id="reading-${row.anchor.row_id}"`), 'all source row anchors survive')
+  // Same-speaker runs read as one block: later lines keep their anchors but drop the face and name.
+  const continued = [...html.matchAll(/<section[^>]*class="reader-row kind-dialogue[^"]*\bcontinued\b[^"]*"[^>]*>([\s\S]*?)<\/section>/g)].map(match => match[1])
+  assert.ok(continued.length > 0 && continued.length <= 12, `same-speaker lines are grouped (${continued.length} of at most 12 adjacent pairs)`)
+  assert.ok(continued.every(body => !body.includes('reader-speaker') && !body.includes('reader-avatar')), 'a continued line repeats neither name nor face')
   const chapter = JSON.parse(readFileSync(new URL('../public/data/reading/1_1_001_01_a.json', import.meta.url)))
   const firstTitle = chapter.rows[0]
   const frontMatter = projectReadingFrontMatter(chapter.rows, chapter.presentation.title)
@@ -190,7 +194,19 @@ try {
     state: { status: 'ready', entries: [], document: chapter }, documentId: chapter.document_id, mode: 'original', anchor: '',
   }))
   assert.ok(chapterHtml.includes(`id="reading-${firstTitle.anchor.row_id}"`), 'merged title anchor stays addressable')
-  assert.equal(chapterHtml.split(chapter.presentation.title).length - 1, 2, 'one desktop heading and one mobile dock title; leading source heading stays merged')
+  assert.equal(chapterHtml.split(chapter.presentation.title).length - 1, 1, 'one heading for every width (the phone dock carries the EP, not the title); leading source heading stays merged')
+  // Wide readers keep the chapter directory on the left; the phone dock only moves through the chapter
+  // (the text language is in the settings sheet, by the user's 10-30 decision).
+  const railHtml = await renderToString(createSSRApp(Reader, {
+    state: { status: 'ready', entries: [{ document_id: chapter.document_id, logical_id: 'rail', episode_label: 'EPISODE 01' }, { document_id: 'rail-2', logical_id: 'rail', episode_label: 'EPISODE 02' }], document: chapter },
+    documentId: chapter.document_id, mode: 'translation', anchor: '',
+  }))
+  const rail = railHtml.match(/<aside class="reader-toc-rail[^"]*" aria-label="本话目录"[^>]*>([\s\S]*?)<\/aside>/)?.[1] || ''
+  assert.ok(rail.includes('EP 01') && rail.includes('EP 02'), 'the resident directory lists every EP of the chapter')
+  assert.equal(rail.split('aria-current="location"').length - 1, 1, 'exactly one current EP in the directory')
+  const dock = railHtml.match(/aria-label="阅读浮动导航"[^>]*>([\s\S]*?)<\/nav>/)?.[1] || ''
+  assert.ok(dock && !dock.includes('正文语言') && !/aria-label="(原文|译文)"/.test(dock), 'the phone dock carries no text-language switch')
+  assert.ok(railHtml.includes('1 / 2 · 目录'), 'the dock shows the EP position and opens the directory')
   assert.ok(chapterHtml.includes('第1話'), 'distinct structural episode title stays visible')
   assert.ok(chapterHtml.includes('kind-synopsis front-matter'), 'synopsis is projected as front matter')
   const prologue = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_00_a.json', import.meta.url)))

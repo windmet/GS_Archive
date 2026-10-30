@@ -568,10 +568,13 @@ onBeforeUnmount(() => navObserver?.disconnect())
 @media (prefers-reduced-motion: reduce) {
   .archive-pending-layer :deep(.gs-loading-indicator) { animation: none; }
 }
-.archive-shell.is-home-focus { --archive-sidebar: 0px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
-.archive-shell.is-home-focus .archive-sidebar, .archive-shell.is-home-focus .archive-topbar, .archive-shell.is-home-focus .archive-mobile-nav { display: none; }
-.archive-shell.is-home-focus .archive-content { grid-column: 1; grid-row: 1; }
-.archive-shell.is-home-focus .archive-pending-layer { grid-column: 1; grid-row: 1; }
+/* Full-page modes: home focus, and the reader, which is its own page like LIVE and the photo studio
+   (its header carries the way back, so the archive sidebar and topbar step aside at every width). */
+.archive-shell.is-home-focus, .archive-shell.is-reader { --archive-sidebar: 0px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.archive-shell.is-home-focus .archive-sidebar, .archive-shell.is-home-focus .archive-topbar, .archive-shell.is-home-focus .archive-mobile-nav,
+.archive-shell.is-reader .archive-sidebar, .archive-shell.is-reader .archive-topbar { display: none; }
+.archive-shell.is-home-focus .archive-content, .archive-shell.is-reader .archive-content { grid-column: 1; grid-row: 1; }
+.archive-shell.is-home-focus .archive-pending-layer, .archive-shell.is-reader .archive-pending-layer { grid-column: 1; grid-row: 1; }
 @media (pointer: coarse) {
   .archive-search { height: var(--gs-control-touch); }
   .archive-search input { font-size: var(--gs-text-subtitle); }

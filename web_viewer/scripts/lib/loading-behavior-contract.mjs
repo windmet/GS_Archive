@@ -145,8 +145,9 @@ export async function verifyLoadingBehavior({ source, render, LoadingScreen }) {
   assert.equal(notice.value, '译文暂时无法载入，当前显示原文。')
   readerState.localization.diagnostics.value = null
   assert.equal(notice.value, '3 处暂无可用译文，已显示原文。')
-  readerState.fallbackCount.value = 0; assert.equal(notice.value, '当前显示译文。')
-  readerState.props.mode = 'bilingual'; assert.equal(notice.value, '当前显示原文与译文。')
+  // A plain success needs no line: the 原 / 译 switch already shows which text is on screen.
+  readerState.fallbackCount.value = 0; assert.equal(notice.value, '')
+  readerState.props.mode = 'bilingual'; assert.equal(notice.value, '')
 
   const story = sfc(source('core/StoryViewer.vue'))
   const storyState = { computed, initialReadyEmitted: ref(false), runtimeReadinessStatus: ref('waiting'),

@@ -171,7 +171,6 @@ const rows = computed(() => {
 /* Where the derived figures come from: one note for the three columns, beside the legend, so the headers carry
    nothing but their label and line up with the figures under them. */
 .chart-table-notes { display: flex; align-items: center; gap: var(--gs-space-2); }
-.chart-table-notes :deep(.gs-info-bubble) { right: 0; left: auto; transform: none; }
 .chart-table-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-4); }
 .chart-table-legend > span { display: inline-flex; align-items: center; gap: var(--gs-space-2); }
 .chart-table-legend i { width: 10px; height: 10px; }
