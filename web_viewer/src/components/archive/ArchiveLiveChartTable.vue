@@ -30,7 +30,7 @@
       </div>
       <div class="chart-grid chart-head">
         <template v-for="column in COLUMNS" :key="column.key">
-          <span class="chart-head-cell" :class="[`col-${column.key}`, { 'is-end': column.num }]">
+          <span class="chart-head-cell" :class="[`col-${column.key}`, { 'is-center': column.key !== 'song' }]">
             <button v-if="column.sort" type="button" :aria-pressed="sort === column.sort" :aria-label="`按${column.label}排序`" @click="sortBy(column.sort, true)">{{ column.label }}<component :is="direction > 0 ? ArrowUp : ArrowDown" v-if="sort === column.sort" :size="13" aria-hidden="true" /></button>
             <span v-else-if="column.label">{{ column.label }}</span>
           </span>
@@ -181,9 +181,12 @@ const rows = computed(() => {
 .chart-grid { display: grid; grid-template-columns: minmax(220px, 1fr) 80px 48px 64px 72px 72px minmax(112px, 168px) 88px 44px; align-items: center; column-gap: var(--gs-space-5); }
 .chart-head { border-bottom: 1px solid var(--gs-rule); }
 .chart-head-cell { display: flex; align-items: center; gap: var(--gs-space-1); min-width: 0; min-height: var(--gs-control-toolbar); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); white-space: nowrap; }
-.chart-head-cell.is-end { justify-content: flex-end; }
-/* A right-aligned column keeps its label flush over the figures; the sort arrow goes on the label's left. */
-.chart-head-cell.is-end button { flex-direction: row-reverse; }
+/* One axis per column: the song reads from the left, every figure column (and the note-mix bar, the release and the
+   stage door) is centred under a centred label, so no right edge meets the next column's left edge. The sort arrow hangs
+   outside the label and never moves it off the centre. */
+.chart-head-cell.is-center { justify-content: center; }
+.chart-head-cell button { position: relative; }
+.chart-head-cell button svg { position: absolute; left: calc(100% + var(--gs-space-1)); }
 .chart-head-cell button { display: inline-flex; align-items: center; gap: var(--gs-space-1); min-height: var(--gs-control-toolbar); padding: 0; border: 0; background: none; color: inherit; font-weight: inherit; white-space: nowrap; cursor: pointer; }
 .chart-head-cell button[aria-pressed=true] { color: var(--gs-ink); }
 .chart-rows { margin: 0; padding: 0; list-style: none; }
@@ -201,14 +204,15 @@ const rows = computed(() => {
 .chart-attr { flex: none; width: 14px; height: 14px; background: center / contain no-repeat; }
 .chart-row-copy .chart-row-stats, .chart-row-copy .chart-mix { display: none; }
 .chart-row-diff { color: var(--diff); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: .06em; white-space: nowrap; }
-.chart-row-level { color: var(--diff); font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; line-height: 1; text-align: right; }
-.is-num { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.chart-row-diff, .chart-row-level, .chart-row > .col-since, .chart-row > .col-stage { text-align: center; }
+.chart-row-level { color: var(--diff); font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; line-height: 1; }
+.is-num { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
 .chart-mix { display: flex; height: 6px; overflow: hidden; border-radius: var(--gs-radius-pill); background: var(--gs-line); }
 .chart-mix i { flex-basis: 0; }
 .chart-row > .col-mix { pointer-events: auto; }
 .col-since { display: grid; gap: var(--gs-space-1); color: var(--gs-ink-2); font-size: var(--gs-text-ui); white-space: nowrap; }
 .col-since small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); }
-.chart-row > .col-stage { pointer-events: auto; text-align: right; }
+.chart-row > .col-stage { pointer-events: auto; }
 .chart-row-stage { display: inline-grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-mint-ink); cursor: pointer; }
 @media (hover: hover) { .chart-row-stage:hover { background: var(--gs-surface); } }
 
@@ -237,6 +241,6 @@ const rows = computed(() => {
   .chart-row-copy .chart-row-stats { display: flex; color: var(--gs-ink-2); font-family: var(--gs-font-stage); }
   .chart-row-copy .chart-mix { display: flex; height: 4px; margin-top: var(--gs-space-1); }
   .chart-row-diff { grid-column: 2; grid-row: 1; align-self: end; text-align: right; }
-  .chart-row-level { grid-column: 2; grid-row: 2; align-self: start; }
+  .chart-row-level { grid-column: 2; grid-row: 2; align-self: start; text-align: right; }
 }
 </style>
