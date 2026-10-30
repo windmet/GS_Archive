@@ -72,10 +72,6 @@
     </div>
 
     </details>
-    <div v-if="selectedArrangement?.capabilities?.stage?.kind === 'choreography_candidate'" class="lineup-stage-handoff">
-      <button type="button" :disabled="!session.ready.value || !stageLineup.some(Boolean)" @click="openStageWithLineup">进入 Chibi 舞台 →</button>
-
-    </div>
 
     <ArchiveSongLyrics :song-code="audioExperiment.song_code" :source-timeline="selectedArrangement"
       stage-clock :current-time="session.currentTime.value" :ready="session.ready.value" @seek="session.seek" />
@@ -109,7 +105,7 @@ const props = defineProps({
   audioExperiment: { type: Object, required: true },
   idolName: { type: Function, default: () => '' },
 })
-const emit = defineEmits(['open-stage', 'request-play', 'pick-slot'])
+const emit = defineEmits(['request-play', 'pick-slot'])
 
 const session = useSongPerformanceSession()
 const slotNumbers = [1, 2, 3, 4, 5]
@@ -120,7 +116,6 @@ const stageLineup = ref([])
 const loadingTimeline = ref(false)
 // Nothing downloads until the reader picks an idol in this visit (or asks to load a remembered lineup).
 const armed = ref(false)
-defineExpose({ pause: () => session.pause(), assignStagePosition, nextEmptyStagePosition, addIdol, stageLineup })
 let loadGeneration = 0
 let arrangementsLoad = Promise.resolve()
 let disposed = false
@@ -296,8 +291,9 @@ async function togglePlayback() {
   else { emit('request-play'); await session.play() }
 }
 
-function openStageWithLineup() {
-  if (!session.ready.value) return
+// The stage entry lives at the console's foot; once the lineup is loaded it carries the five picks there.
+const stageTarget = computed(() => {
+  if (!session.ready.value || selectedArrangement.value?.capabilities?.stage?.kind !== 'choreography_candidate') return null
   const handoff = createSongStageHandoff({
     songCode: props.audioExperiment.song_code,
     arrangement: selectedArrangement.value,
@@ -307,19 +303,13 @@ function openStageWithLineup() {
     backingGain: session.backingGain.value,
     sourceTimeSeconds: session.currentTime.value,
   })
-  if (!handoff) return
-  session.release()
-  emit('open-stage', {
-    songCode: handoff.songCode,
-    choreographyId: handoff.choreographyId,
-    stageHandoff: handoff,
-  })
-}
-
+  return handoff ? { songCode: handoff.songCode, choreographyId: handoff.choreographyId, stageHandoff: handoff } : null
+})
 
 watch(() => props.audioExperiment, () => { arrangementsLoad = loadArrangements() })
 onMounted(() => { arrangementsLoad = loadArrangements() })
 onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
+defineExpose({ pause: () => session.pause(), assignStagePosition, nextEmptyStagePosition, addIdol, stageLineup, stageTarget })
 </script>
 
 <style scoped>
@@ -352,10 +342,6 @@ onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
 .lineup-gains { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5); margin-top: var(--gs-space-3); }
 .lineup-gains label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .lineup-gains input { accent-color: var(--gs-mint-ink); }
-.lineup-stage-handoff { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-4); margin-top: var(--gs-space-4); padding-top: var(--gs-space-4); border-top: 1px solid var(--gs-line); }
-.lineup-stage-handoff button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-5); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
-.lineup-stage-handoff button:disabled { opacity: .45; cursor: wait; }
-.lineup-stage-handoff p { flex: 1 1 230px; margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
 .lineup-evidence { margin-top: var(--gs-space-3); }
 .lineup-status, .lineup-error { margin-top: var(--gs-space-3); }
 .lineup-error { color: var(--gs-critical); }

@@ -32,7 +32,6 @@
           :idol-directory="idolDirectory"
           :idol-name="idolName"
           :idol-search="idolSearch"
-          @open-stage="openStage"
           @version-change="onVersionChange"
         />
         <ArchiveSongSinglePlayer
@@ -48,10 +47,10 @@
         <!-- The console's foot: the song's two tools, side by side. -->
         <div v-if="song.stageCandidate || song.gameplay" class="song-console-links">
           <button
-            v-if="song.stageCandidate"
+            v-if="song.stageCandidate || lineupStageTarget"
             type="button"
-            @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })"
-          ><Clapperboard :size="16" aria-hidden="true" />{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D 舞台' }}</button>
+            @click="openStage(lineupStageTarget || { songCode: song.id, choreographyId: song.stageCandidate.id })"
+          ><Clapperboard :size="16" aria-hidden="true" />{{ stageLabel }}</button>
           <button v-if="song.gameplay" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart()"><Music :size="16" aria-hidden="true" />谱面</button>
         </div>
       </div>
@@ -404,6 +403,12 @@ function performerReference(reference) {
     ? { ...reference, displayName: props.idolName(reference.idolCode, reference.displayName) || reference.displayName }
     : reference
 }
+// The page's one stage entry: a loaded five-slot lineup goes along; otherwise the default choreography opens.
+const lineupStageTarget = computed(() => songPlayer.value?.stageTarget || null)
+const stageLabel = computed(() => {
+  if (lineupStageTarget.value) return '2D 舞台 · 带编成'
+  return props.song.stageCandidate?.stageKind === 'special_single' ? '社长特别演出' : '2D 舞台'
+})
 function openStage(target) { songPlayer.value?.pause(); emit('open-stage', target) }
 // difficulty: a difficulty column's type; the console's 谱面 button opens on the first one.
 function openChart(difficulty = null) { songPlayer.value?.pause(); emit('open-chart', difficulty) }

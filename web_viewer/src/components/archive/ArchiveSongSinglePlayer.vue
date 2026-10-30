@@ -2,7 +2,6 @@
   <section class="song-block single-song-player" aria-labelledby="song-single-player-title" :data-clock-phase="clockSnapshot.phase">
     <div class="song-block-heading">
       <h3 id="song-single-player-title">歌曲播放</h3>
-      <slot name="header-action" />
     </div>
     <p class="song-block-note">完整混音试听</p>
     <audio

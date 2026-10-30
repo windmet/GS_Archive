@@ -3,7 +3,6 @@
     <div class="song-block-heading">
       <h3 id="song-experimental-player-title">演唱试听</h3>
       <small v-if="maintainer">分轨混音 · 实验</small>
-      <slot name="header-action" />
     </div>
     <p class="song-block-note">分轨试听与原游戏混音可能不同。</p>
     <div v-if="mode === 'unit' && !unitSelectorOpen" class="unit-preset-indicator">
@@ -50,7 +49,6 @@
       :audio-experiment="audioExperiment"
       :idol-name="idolName"
       @request-play="emit('request-play')"
-      @open-stage="emit('open-stage', $event)"
       @pick-slot="openSlotPicker"
     />
 
@@ -129,7 +127,7 @@ const props = defineProps({
   idolName: { type: Function, default: () => '' },
   idolSearch: { type: Function, default: () => '' },
 })
-const emit = defineEmits(['open-stage', 'request-play', 'version-change'])
+const emit = defineEmits(['request-play', 'version-change'])
 const lineupPlayer = ref(null)
 // How the audition is decoded and clocked is a maintainer note, not reader copy.
 const maintainer = isMaintainerMode()
@@ -147,6 +145,8 @@ function playBacking() {
   mode.value = 'single'
 }
 defineExpose({
+  // Only a loaded five-slot lineup changes where the console's stage button goes.
+  get stageTarget() { return mode.value === 'lineup' ? lineupPlayer.value?.stageTarget || null : null },
   pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() },
   // Entry points for the song page's 音源收录 list.
   playSolo: id => selectSolo(id),
