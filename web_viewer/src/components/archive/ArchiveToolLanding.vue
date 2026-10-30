@@ -63,9 +63,9 @@
               <span v-else class="song-nojacket" aria-hidden="true"></span>
               <span class="song-copy"><strong :title="song.title">{{ song.title }}</strong><small>{{ subline(song) }}</small></span>
               <span v-if="difficulties(song)" class="song-dots" :title="`${difficulties(song)} 档难度`" aria-hidden="true"><i v-for="n in difficulties(song)" :key="n"></i></span>
-              <button v-if="difficulties(song)" type="button" class="song-go" :aria-label="`${song.title} 的谱面`" @click="emit('chart-song', song.song_code)">谱面</button>
+              <button v-if="difficulties(song)" type="button" class="song-go is-chart" :aria-label="`${song.title} 的谱面`" @click="emit('chart-song', song.song_code)"><AudioLines :size="16" aria-hidden="true" />谱面</button>
               <span v-else class="song-go is-none" aria-label="没有谱面">—</span>
-              <button type="button" class="song-go" :aria-label="`${song.title} 的舞台`" @click="emit('stage-song', song.song_code)">舞台</button>
+              <button type="button" class="song-go is-stage" :aria-label="`${song.title} 的舞台`" @click="emit('stage-song', song.song_code)"><Clapperboard :size="16" aria-hidden="true" />舞台</button>
             </li>
           </ul>
         </section>
@@ -76,7 +76,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { ArrowUpRight, ChevronRight, History, Images, Search, UserRound } from '@lucide/vue'
+import { ArrowUpRight, AudioLines, ChevronRight, Clapperboard, History, Images, Search, UserRound } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import GsSegmented from '../gs/GsSegmented.vue'
 import { groupSongTiers } from '../../presentation/SongTiers.js'
@@ -172,8 +172,14 @@ function startWithIdol() {
 .song-copy small { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
 .song-dots { display: flex; flex: none; gap: 3px; }
 .song-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--gs-ink-3); }
-.song-go { flex: none; min-width: 44px; height: 36px; padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; }
+/* The two doors on each row: an icon that names the tool (a wave for the chart, a clapperboard for the
+   stage) and its word, no frame and no fill on the row's hairline (线框减法册 rule 3). The icons carry the
+   site's two colours, navy for the chart and the mint stage light for the stage; a press answers with a wash. */
+.song-go { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 5px; min-width: 64px; height: 44px; padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); cursor: pointer; transition: background var(--gs-motion-feedback) var(--gs-ease-out); }
+.song-go.is-chart svg { color: var(--gs-chrome); }
+.song-go.is-stage svg { color: var(--gs-mint-ink); }
 .song-go.is-none { display: grid; place-items: center; color: var(--gs-ink-3); cursor: default; }
+button.song-go:active { background: var(--gs-mint-wash); }
 @media (hover: hover) { button.song-go:hover { background: var(--gs-hover); color: var(--gs-ink); } }
 
 /* Studio: the picture, and the ways in. */
@@ -201,11 +207,10 @@ function startWithIdol() {
   .tool img { width: 112px; height: 63px; }
   .tool-copy > span { display: none; }
   .song-start { margin-top: var(--gs-space-4); }
-  .song-row { height: auto; min-height: 64px; flex-wrap: wrap; padding: var(--gs-space-3) 0; }
-  .song-copy { flex-basis: calc(100% - 56px); }
+  /* Phones keep one line per song: the doors sit at the row's end, the title gives way. */
+  .song-row { height: 60px; gap: var(--gs-space-3); }
   .song-dots { display: none; }
-  .song-go { flex: 1; height: 52px; border: 1px solid var(--gs-line); }
-  .song-row img, .song-nojacket { align-self: flex-start; }
+  .song-go { min-width: 0; padding: 0 var(--gs-space-2); }
   .landing-studio { grid-template-columns: 1fr; gap: var(--gs-space-5); }
 }
 </style>
