@@ -12,9 +12,7 @@
       <button type="button" @click="jumpToUnit('')">全部 <small>{{ unitOptions.length }}</small></button>
       <button v-for="unit in unitOptions" :key="unit.id" type="button" :disabled="!currentUnit && !displayedGroups.some(group=>group.id===unit.id)" @click="jumpToUnit(unit.id)">{{ unit.name }}</button>
     </nav>
-    <label v-else class="roster-filter">组合筛选
-      <select :value="currentUnit" @change="emit('select-unit', $event.target.value)"><option value="">全部偶像（{{ idolsBeforeUnitFilter }}）</option><option v-for="unit in unitOptions" :key="unit.id" :value="unit.id">{{ unit.name }}（{{ unit.count }}）</option></select>
-    </label>
+    <GsFilterMenu v-else class="roster-filter" label="组合" neutral="" :model-value="currentUnit" :options="[{ value: '', label: '全部偶像', count: idolsBeforeUnitFilter }, ...unitOptions.map(unit => ({ value: unit.id, label: unit.name, count: unit.count }))]" @update:model-value="emit('select-unit', $event)" />
     <button v-if="currentUnit" class="clear-unit" type="button" @click="emit('select-unit','')">当前组合筛选 · 查看全部偶像</button>
     <p v-if="!idols.length" class="empty-state">没有符合当前条件的偶像</p>
     <div class="idol-sections" :class="{'is-roster':browseMode==='roster'}">
@@ -36,6 +34,7 @@
 </template>
 <script setup>
 import {computed,nextTick,ref} from 'vue'
+import GsFilterMenu from '../gs/GsFilterMenu.vue'
 import {ChevronRight} from '@lucide/vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
@@ -62,13 +61,13 @@ async function jumpToUnit(id){
 .idol-view-switch { display: flex; gap: var(--gs-space-1); padding: var(--gs-space-1); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); }
 .idol-view-switch button { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-pill); background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
 .idol-view-switch button[aria-pressed=true] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
-.unit-rail { position: sticky; top: 0; z-index: 2; display: flex; gap: var(--gs-space-3); overflow-x: auto; padding-block: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); scrollbar-width: none; white-space: nowrap; }
-.unit-rail button { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
+/* A locator strip, not pills (线框减法册 B): unit names as text on the rail's own bottom line. */
+.unit-rail { position: sticky; top: 0; z-index: 2; display: flex; gap: var(--gs-space-5); overflow-x: auto; padding-block: 0; border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); scrollbar-width: none; white-space: nowrap; }
+.unit-rail button { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: 44px; padding: 0 var(--gs-space-1); border: 0; border-radius: 0; background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
 .unit-rail button small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
 .unit-rail button:disabled { opacity: .4; cursor: default; }
 .clear-unit { display: block; min-height: var(--gs-control-normal); margin-block: var(--gs-space-3); border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
-.roster-filter { display: flex; align-items: center; gap: var(--gs-space-3); padding-block: var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.roster-filter select { min-width: 0; max-width: 100%; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.roster-filter { display: flex; padding-block: var(--gs-space-3); }
 .idol-sections { display: grid; gap: var(--gs-space-8); padding-block: var(--gs-space-6) var(--gs-space-section); }
 .idol-unit-section { min-width: 0; scroll-margin-top: calc(var(--idol-rail-control-height) + var(--gs-space-3) * 2 + var(--gs-space-3)); }
 .idol-unit-heading { display: flex; align-items: center; gap: var(--gs-space-4); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
@@ -85,12 +84,11 @@ async function jumpToUnit(id){
 .empty-state { padding-block: var(--gs-space-6); color: var(--gs-ink-3); text-align: center; }
 .list-screen :is(button, select):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .unit-rail button:focus-visible { outline-offset: calc(-1 * var(--gs-focus-ring)); }
-@media (hover: hover) { .idol-card:hover .idol-name { color: var(--gs-mint-ink); } .unit-rail button:hover:not(:disabled) { border-color: var(--gs-ink-3); } }
+@media (hover: hover) { .idol-card:hover .idol-name { color: var(--gs-mint-ink); } .unit-rail button:hover:not(:disabled) { color: var(--gs-ink); } }
 @container idol-directory (max-width: 560px) {
   .idol-toolbar, .unit-rail, .roster-filter, .clear-unit, .idol-sections, .empty-state { padding-inline: var(--gs-space-5); }
   .idol-toolbar { padding-top: var(--gs-space-4); }
-  .idol-view-switch button, .unit-rail button, .roster-filter select { min-height: var(--gs-control-touch); }
-  .roster-filter select { font-size: var(--gs-text-subtitle); }
+  .idol-view-switch button, .unit-rail button { min-height: var(--gs-control-touch); }
   .idol-unit-heading > img { width: 56px; height: 28px; }
   .idol-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--gs-space-4); }
   .idol-card { gap: var(--gs-space-3); }

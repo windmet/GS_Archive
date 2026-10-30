@@ -98,7 +98,7 @@ async function mount(code){
   expert.click();await settle()
   for(let i=0;i<400&&!document.querySelector('.track-svg');i++)await new Promise(r=>setTimeout(r,10))
   // The settings rows stay in the DOM (resident column, or tabs under the canvas), so no button opens them.
-  await settle();const sound=document.querySelector('[aria-label="谱面打击音套装"]');sound.value='off';sound.dispatchEvent(new Event('change',{bubbles:true}));await settle();await enable()
+  await settle();document.querySelector('[aria-label^="谱面打击音套装："]').click();await settle();[...document.querySelectorAll('.gs-filter-option')].find(option=>option.textContent.trim()==='关闭').click();await settle();await enable()
 }
 function checkPosition(seconds){
   check(Number(state().dataset.count)===events.filter(e=>e.seconds<=seconds).length,`count at ${seconds}`)
