@@ -473,6 +473,8 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
 .is-immersive .chart-toolbar, .is-immersive .chart-transport { position: absolute; z-index: 3; left: 0; right: 0; margin: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
 .is-immersive .chart-toolbar { top: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-4) max(12px, env(safe-area-inset-left)); background: linear-gradient(rgb(0 0 0 / 0.6), transparent); }
 .is-immersive .chart-transport { bottom: 0; padding: var(--gs-space-4) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: linear-gradient(transparent, rgb(0 0 0 / 0.6)); }
+.is-immersive .chart-transport { color: #eef6f6; }
+.is-immersive .chart-time, .is-immersive .chart-time small { color: inherit; }
 .is-immersive.controls-hidden .chart-toolbar, .is-immersive.controls-hidden .chart-transport { opacity: 0; pointer-events: none; }
 .is-immersive .chart-lead, .is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
 .is-immersive .chart-immersive-exit { display: inline-flex; height: var(--gs-control-touch); margin-left: auto; }
