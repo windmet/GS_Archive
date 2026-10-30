@@ -54,8 +54,8 @@
       </p>
       <!-- Phones have no sidebar: the archive home doubles as the index of every destination. Following an
            idol, that idol's hero comes first and the index follows it (inside the featured section below). -->
-      <nav v-if="!preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
-        <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
+      <nav v-if="!preferredReference?.actionable" class="overview-directory" aria-label="常用栏目">
+        <ArchiveDirectoryGrid :groups="destinations" :pick="DIRECTORY_PICK" focus-prefix="portal-directory" @navigate="id => emit('navigate', id)" @more="openNavigationDrawer" />
       </nav>
 
       <!-- Announced only: the placeholders below already hold the layout, so this line must not move it. -->
@@ -109,8 +109,8 @@
               <span v-if="tile.meta" class="overview-stat-meta" aria-hidden="true">{{ tile.meta }}</span>
             </button>
           </div>
-          <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="全部栏目">
-            <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
+          <nav v-if="preferredReference?.actionable" class="overview-directory" aria-label="常用栏目">
+            <ArchiveDirectoryGrid :groups="destinations" :pick="DIRECTORY_PICK" focus-prefix="portal-directory" @navigate="id => emit('navigate', id)" @more="openNavigationDrawer" />
           </nav>
           <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading overview-chip-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }} <small v-if="desktopOverview.cardCounts?.total">{{ formatCount(desktopOverview.cardCounts.total) }}</small></h3>
@@ -188,7 +188,7 @@
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { useStoryTitles } from './useReaderTitles.js'
-import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronLeft, ChevronRight, ChevronsUpDown, ContactRound, Layers, MessageCircle, Phone, Play, Search, Shuffle, Users, X } from '@lucide/vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
@@ -209,6 +209,8 @@ import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { classifySongLineup } from '../../presentation/SongPresentation.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
+// The directory grid is shared with the navigation drawer and loads with it, outside the startup bundle.
+const ArchiveDirectoryGrid = defineAsyncComponent(() => import('./ArchiveDirectoryGrid.vue'))
 
 const props = defineProps({
   canGoBack: Boolean,
@@ -263,8 +265,10 @@ const homeVoiceLabel = computed(() => {
   const counts = props.desktopOverview.homeVoiceCounts
   return counts ? [counts.idol && `通用 ${counts.idol}`, counts.card && `卡面 ${counts.card}`].filter(Boolean).join(' · ') + ' 句语音' : ''
 })
-// Phones have no sidebar: every section, in sidebar order, as one grid of icons.
-const directoryItems = destinations.flatMap(group => group.items)
+// Phones: two rows of the common destinations; the eighth cell, 全部栏目, opens the bar's drawer, which is the
+// one full directory (线框减法册 L2). Both draw the same ArchiveDirectoryGrid.
+const DIRECTORY_PICK = ['stories', 'interactions', 'idols', 'cards', 'songs', 'events', 'live']
+const openNavigationDrawer = inject('openNavigationDrawer', () => {})
 const scopeOpen = ref(false), storyTab = ref('all'), portraitFailed = ref(false)
 const collections = computed(() => props.desktopOverview.collections || {})
 const activePortrait=computed(()=>props.desktopOverview.portrait)
@@ -761,12 +765,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-footprint { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--gs-space-5);font-size:var(--gs-text-meta); }
   .overview-footprint button { display:flex;align-items:baseline;min-width:0;min-height:var(--gs-control-touch);text-align:left;white-space:nowrap; }
   .overview-footprint b { font-size:var(--gs-text-subtitle); }
-  /* The archive tab is the index of every section: all of them, in sidebar order, visible at once
-     as a compact grid between two hairlines — no tiles, neutral icons, labels always shown. */
-  .overview-directory { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:var(--gs-space-4) 0 0;padding:var(--gs-space-2) 0;border-block:1px solid var(--gs-line); }
-  .overview-directory button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-2);min-width:0;min-height:60px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
-  .overview-directory button svg { width:22px;height:22px;color:var(--gs-ink-2); }
-  .overview-directory button:active { background:var(--gs-mint-wash); }
+  /* Two rows of common destinations, no rules (线框减法册 L2); the cells are ArchiveDirectoryGrid's. */
+  .overview-directory { display:block;margin:var(--gs-space-4) 0 0; }
   .overview-panel { margin-top:var(--gs-space-8); }
   .overview-featured { margin-top:var(--gs-space-6); }
   .overview-featured > .overview-directory { margin:calc(var(--gs-space-5) - var(--gs-space-section)) 0 0; } /* hero, then the index close beneath it */
