@@ -1,7 +1,9 @@
 import { buildPortalDesktopOverview } from '../../src/presentation/ArchivePortalPresentation.js';
 import { storyGateways, storyGatewayCount } from '../../src/presentation/StoryGateways.js';
 import { eventResources, storyEventResources } from '../../src/data/eventResourceGraph.js';
-import { buildPortalAlmanac } from '../../src/presentation/PortalAlmanac.js';
+import { almanacGashaRuns, buildAlmanacGashaMonths, buildPortalAlmanac } from '../../src/presentation/PortalAlmanac.js';
+import { gashaCategoryLabel } from '../../src/data/gashaCatalog.js';
+import { supplementGashaCatalog } from '../../src/data/gashaTicketCatalog.js';
 import { assert } from './common.mjs';
 
 const group = row => ['main','event'].includes(row.domain) ? row.domain :
@@ -56,6 +58,7 @@ export function portalProjection({ bootstrap, rows, product, preferredIdol = nul
   // replaced was retired on 10-30).
   // 315 岁时记 (all-idol scope only): birthdays by month from the idol profiles, and every event by the
   // month it opened, reprints included; a few KB instead of the browser fetching the event directory.
+  // Its gasha openings travel apart (portalAlmanacGashas).
   const almanac = preferredIdol ? null : buildPortalAlmanac({ idols: bootstrap.idols,
     birthdays: Object.fromEntries(product.extraDomains.idols.records.map(row => [row.id, row.view?.profile?.birthday])),
     events: full.events, reprints: new Set(rows.events.filter(row => row.isReprint).map(row => String(row.id))) });
@@ -63,4 +66,10 @@ export function portalProjection({ bootstrap, rows, product, preferredIdol = nul
     storyCounts, songCounts, gatewayCountsByAction, homeVoiceCounts, collectionCounts,
     cardCounts:{total:full.cards.length,rarity:counts(full.cards,'rarity'),attribute:counts(full.cards,'attribute')},
     units:preferredIdol ? [] : source.units, eventYears:[], scopeId:preferredIdol?.id || '', projectionVersion:2};
+}
+
+// 315 岁时记 gasha openings, by month: every announced pool at its start and every wiki-dated run of a
+// ticket-only pool, from the gasha directory rows through the catalogue's own ticket supplement.
+export function portalAlmanacGashas({ rows }) {
+  return buildAlmanacGashaMonths(almanacGashaRuns(supplementGashaCatalog(rows.gashas).rows, gashaCategoryLabel));
 }
