@@ -21,3 +21,15 @@
 | A1-V01 | P1候选，产品级别未确认 | 多类深链接刷新/返回；既有path-locator Browser verifier及App路由恢复 | 1280×900与390×844；冷刷新、页面返回、筛选恢复 | NEEDS_CONFIRMATION | `E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a1/path-contracts-corrected/journey.json`，同目录截图；`scripts/verify-portal-path-locator-browser.mjs:109–125,323–348`；独立双尺寸反证见A1的run-0MQvUC等 | 17个旧断言失败；已独立复核两类未复现。可能混有等待时序/过期定位与真实缺陷，根因未定；不能称为17个已确认产品问题。其余前后截图与稳定复现PENDING，保留为A1验证阻塞，不自动转A2已通过 |
 
 详情、已执行状态和未执行项见[本轮报告](UI_AUDIT_A1_INTERACTION_20261030.md)。
+
+
+## A2 更新（2026-10-30）
+
+起始HEAD dcb3e3d4；执行期间master合入#151至a2c07d16，审计线通过merge同步至3f0ab713。消费release仍bc38bea99…。只提交QA工具/fixture/文档，正式UI没有修复，未部署。RR-01/RR-02仍REPRODUCED，RR-03/A1-V01仍NEEDS_CONFIRMATION。
+
+| ID | 级别 | 页面/组件 | 视口/状态 | 状态 | 证据/定位 | 根因/后续 |
+|---|---|---|---|---|---|---|
+| A2-01 | P2 | 摄影“继续上次构图”→`/studio/edit/`；PictureStudio/useStudioComposition | 320×720、1440×900；SYNTHETIC有效1人构图，第一次photos请求受控失败→正式重试 | REPRODUCED | [失败前正常1层](E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a2/run-aSMh9T/0001-studio-Normal-320x720.png)、[失败](E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a2/run-Jj3dPi/0001-studio-Error-320x720.png)、[重试后0层](E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a2/run-Jj3dPi/0001-studio-Error-320x720-retry.png)；PictureStudio.vue:386–387，useStudioComposition.js:435–456,534–539 | busy在失败时也变false，restoreAsked被提前消耗，资料成功后不再自动恢复。受控fixture在两个视口重复复现；真实网络/完整入口条件Pending，不宣称保存数据永久丢失。后续A3状态合同与授权修复批次；不在本轮修复 |
+| A2-02 | P3 | `/live/`；ArchiveLiveChartTable | 320×720、1440×900；SYNTHETIC catalog=[]，QA loader已完成 | NEEDS_CONFIRMATION | [窄屏](E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a2/run-MbT4pZ/0091-live-Empty-320x720.png)、[桌面](E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a2/run-MbT4pZ/0187-live-Empty-1440x900.png)；ArchiveLiveChartTable.vue:22 | !songs.length同时表示loading和empty。正式release含60条，未复现真实loaded-empty返回；仅记录Fragile候选，后续A3核对父级数据状态，不能升级生产已确认故障 |
+
+[完整A2报告](UI_AUDIT_A2_WORST_CASE_20261030.md)区分真实源、SYNTHETIC、Reader/ADV边界、旧工具误用与Pending。候选几何结果不批量转PASS。
