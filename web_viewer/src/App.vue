@@ -2398,6 +2398,8 @@ async function openPortalResult(result) {
     } else if (target.domain === 'events' && target.view === 'event_detail') {
       const rows = await loadEventCatalog()
       if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, 'portal')
+    } else if (target.domain === 'gashas' && target.view === 'gasha_detail') {
+      if (stillHere()) return openGasha({ id: target.gashaId })
     }
   } catch (error) {
     if (stillHere()) userPreferenceNotice.value = '该资料暂时无法打开，请重试。'

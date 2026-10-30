@@ -1,8 +1,8 @@
 // The chart tool in one screen, in a real browser: on a wide window the song shares the toolbar row, and under it the
 // canvas, the one-row transport and the resident settings column all fit. Perspective: the track keeps 16:9 inside the
 // canvas. Long: the drawing scrolls inside the canvas, and the transport stays under it (never over the settings).
-// Nothing else scrolls except the settings column (only vertically); its labels keep one line and an info bubble stays
-// inside the column. Round trip: LIVE -> a song's 谱面 -> 返回 lands on a LIVE song list that has loaded (the song
+// Nothing else scrolls except the settings column (only vertically); its labels keep one line and an info bubble opens
+// whole inside the window (GsInfo places itself in the top layer). Round trip: LIVE -> a song's 谱面 -> 返回 lands on a LIVE song list that has loaded (the song
 // catalogue the chart tool used must not be swept away on the way back).
 //   node scripts/verify-chart-one-screen-browser.mjs [--base=http://127.0.0.1:5173]
 // Needs a running dev server and a cached Playwright Chromium or chrome-headless-shell (no npm package required).
@@ -47,7 +47,8 @@ const MEASURE = `(() => {
     ready: Boolean(q('.chart-layout.has-panel') && q(location.hash === '#long' ? '.chart-scroll .chart-drawing' : '.track-preview svg') && q('.chart-transport')),
     long: Boolean(q('.chart-preview.is-long')), labels, bubble: box(q('.gs-info-bubble')), lead: box(q('.chart-lead')), difficulties: box(q('.chart-difficulties')),
     transportFixed: Boolean(q('.chart-transport')) && getComputedStyle(q('.chart-transport')).position === 'fixed', main: box(q('.chart-main')),
-    scrollers, wide: document.documentElement.scrollWidth - innerWidth, height: innerHeight,
+    scrollers, wide: document.documentElement.scrollWidth - innerWidth, height: innerHeight, width: innerWidth,
+    bubbleTop: Boolean(q('.gs-info-bubble')?.matches(':popover-open')),
     viewport: box(q('.chart-viewport')), track: box(q('.track-preview')), transport: box(q('.chart-transport')), timeline: box(q('.chart-timeline')), play: box(q('.chart-play')), settings: box(q('.chart-settings')),
   })
 })()`
@@ -104,7 +105,7 @@ try {
     check(m.transport.top >= m.viewport.bottom - 0.5, 'the transport overlaps the canvas')
     check(m.settings.bottom <= m.height + 0.5, `the settings column ends at ${m.settings.bottom}, below the window`)
     check(m.labels.length === 0, `settings labels wrap: ${m.labels.join(', ')}`)
-    check(m.bubble && m.bubble.left >= m.settings.left - 0.5 && m.bubble.right <= m.settings.right + 0.5, `the info bubble ${JSON.stringify(m.bubble)} leaves the settings column`)
+    check(m.bubble && m.bubble.left >= -0.5 && m.bubble.top >= -0.5 && m.bubble.right <= m.width + 0.5 && m.bubble.bottom <= m.height + 0.5 && m.bubbleTop, `the info bubble ${JSON.stringify(m.bubble)} is cut off or not in the top layer`)
   }
   // Round trip from the LIVE landing through the chart tool and back.
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false })
@@ -124,7 +125,7 @@ try {
 
   assert.equal(checked, VIEWPORTS.length * 2, `only ${checked} of ${VIEWPORTS.length * 2} window states rendered the chart tool`)
   assert.deepEqual(failures, [], '\n' + failures.join('\n'))
-  console.log(`Chart one screen: ${checked} states (perspective + long x ${VIEWPORTS.map(v => v.join('x')).join(', ')}): song on the toolbar row, track 16:9 inside the canvas, long drawing scrolls in place, transport under the canvas, one-line labels, bubble inside the column; LIVE -> 谱面 -> 返回 keeps the song list passed`)
+  console.log(`Chart one screen: ${checked} states (perspective + long x ${VIEWPORTS.map(v => v.join('x')).join(', ')}): song on the toolbar row, track 16:9 inside the canvas, long drawing scrolls in place, transport under the canvas, one-line labels, bubble whole inside the window; LIVE -> 谱面 -> 返回 keeps the song list passed`)
 } finally {
   socket?.close()
   chrome.kill()

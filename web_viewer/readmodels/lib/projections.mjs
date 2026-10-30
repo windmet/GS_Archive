@@ -1,4 +1,4 @@
-import { portalProjection } from './portal_projection.mjs';
+import { portalAlmanacGashas, portalProjection } from './portal_projection.mjs';
 import { ArtifactWriter, assert, entityKey, shardKey, pick, stripEvidence, jsonBytes } from './common.mjs';
 
 /** Directory identity comes from the same confirmed mapping and idol references as song detail. */
@@ -207,7 +207,8 @@ export async function writeReadModels(root, release, product, provenance = {}) {
     summaries[id] = await writer.emit(`portal/scopes/${id}.json`, 'portal.scope',
       {id,overview}, {maxRaw:preferredIdol ? 32*1024 : 64*1024});
   }
-  domains.portal = await writer.emit('portal/index.json','portal.index',{scopes:summaries},{maxRaw:32*1024});
+  const almanacGashas = await writer.emit('portal/almanac-gashas.json','portal.almanac_gashas',portalAlmanacGashas({rows:domainRows}),{maxRaw:64*1024});
+  domains.portal = await writer.emit('portal/index.json','portal.index',{scopes:summaries,almanacGashas},{maxRaw:32*1024});
   }
   assert(jsonBytes(bootstrap).length <= 64 * 1024, 'Bootstrap must fit 64 KiB decoded; never embed domain-wide descriptors');
   const fs = await import('node:fs/promises'); const path = await import('node:path');

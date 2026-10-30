@@ -31,7 +31,7 @@ button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-
 /* B-level language switch: recessed track, a raised thumb and ink text; the accent fill is for the theme dots' ring and the like. */
 .reader-languages button { border-radius:var(--gs-radius-segment); font-weight:500; }
 .reader-languages button[aria-pressed=true] { background:var(--reader-bg-card); color:var(--reader-text-main); font-weight:500; box-shadow:0 1px 2px rgb(19 33 58 / 12%); }
-.reader-producer-name { display:flex; flex:1 1 245px; align-items:center; gap:10px; min-width:0; color:var(--reader-text-sub); }
+.reader-producer-name { display:flex; flex:1 1 245px; align-items:center; gap:10px; min-width:0; color:var(--reader-text-sub); white-space:nowrap; }
 input { box-sizing:border-box; min-width:0; width:100%; max-width:210px; min-height:44px; padding:8px 10px; border:1px solid var(--reader-border); border-radius:5px; background:var(--reader-bg-card); color:var(--reader-text-main); font:inherit; }
 .reader-search-toggle { display:flex; gap:7px; align-items:center; border:1px solid var(--reader-border); white-space:nowrap; }
 .reader-theme-switchers { display:flex; align-items:center; gap:0; margin-inline-start:auto; }

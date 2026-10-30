@@ -1,7 +1,8 @@
-// 315 岁时记: the all-idol Portal's month view — whose birthday falls in a month, and which events opened
-// in that month across the years (reprints included). The read-model generator builds it once into the
-// all-idol scope with these same functions; the Portal only picks a month. Months are Japan time, the
-// game's own calendar.
+// 315 岁时记: the all-idol Portal's month view — whose birthday falls in a month, and which events and gasha
+// pools opened in that month across the years (reprints and reruns included). The read-model generator builds
+// it once with these same functions: birthdays and events into the all-idol scope, gasha openings into their own
+// portal/almanac-gashas.json (the scope has a 64 KiB budget), which the Portal merges in. The Portal only picks a
+// month. Months are Japan time, the game's own calendar.
 
 const JST_OFFSET_SECONDS = 9 * 3600
 export const ALMANAC_MONTHS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
@@ -26,6 +27,30 @@ export function parseIdolBirthday(text) {
   if (!last) return null
   const month = Number(last[1]), day = Number(last[2])
   return month >= 1 && month <= 12 && day >= 1 && day <= 31 ? { month, day } : null
+}
+
+/**
+ * Every dated opening of a gasha pool, as the gasha catalogue lists them (`catalog` is the output of
+ * supplementGashaCatalog): an announced pool opens once at its start; a ticket-only pool opens once per
+ * wiki-recorded run, so a reprinted ticket pool appears in each month it ran. Undated ticket pools are left out.
+ * `kindLabel` maps a catalogue category to its label.
+ */
+export function almanacGashaRuns(catalog = [], kindLabel = category => category) {
+  return catalog.flatMap(gasha => {
+    const art = gasha.pool_art?.banner || gasha.pool_art?.logo || null
+    const image = gasha.banner_url ? { url: gasha.banner_url, width: 940, height: 510 } : art ? { url: art.url, width: art.width, height: art.height } : null
+    const base = { id: String(gasha.id), title: gasha.display_name, kind: kindLabel(gasha.category), image }
+    const starts = gasha.source_type === 'item-masterdata' ? (gasha.wiki_pools || []).map(run => run.start_at) : [gasha.start_at]
+    return starts.filter(Number.isFinite).map(startAt => ({ ...base, startAt, isReprint: Boolean(gasha.is_reprint) }))
+  })
+}
+
+/** Generation-time builder of portal/almanac-gashas.json: the openings from almanacGashaRuns by Japan-time month. */
+export function buildAlmanacGashaMonths(runs = []) {
+  const months = Object.fromEntries(ALMANAC_MONTHS.map(month => [month, []]))
+  for (const run of runs) months[japanMonthDay(run.startAt).month].push(run)
+  for (const month of ALMANAC_MONTHS) months[month].sort((a, b) => a.startAt - b.startAt || a.id.localeCompare(b.id))
+  return { months }
 }
 
 /**
@@ -60,10 +85,14 @@ export function almanacEventDate(unixSeconds) {
   return [date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()].map((part, index) => index ? String(part).padStart(2, '0') : part).join('.')
 }
 
-/** One month of a scope's almanac, or null when the scope predates it. */
-export function portalAlmanacMonth(almanac, month) {
+/**
+ * One month of a scope's almanac, or null when the scope predates it, with that month's gasha openings from
+ * `gashaMonths` (the almanac-gashas payload: undefined while it loads, null when the release has none).
+ */
+export function portalAlmanacMonth(almanac, month, gashaMonths) {
   const row = almanac?.months?.[month]
-  return row && Array.isArray(row.birthdays) && Array.isArray(row.events) ? row : null
+  return row && Array.isArray(row.birthdays) && Array.isArray(row.events) ? { ...row, gashas: gashaMonths?.months?.[month] || [],
+    gashaState: gashaMonths === undefined ? 'loading' : gashaMonths?.months ? 'ready' : 'unavailable' } : null
 }
 
 /** The Portal targets: an idol's birthday story collection, and an event's detail page. */
@@ -72,4 +101,7 @@ export function birthdayCollectionTarget(idolCode) {
 }
 export function almanacEventTarget(eventId) {
   return { domain: 'events', view: 'event_detail', eventId: String(eventId) }
+}
+export function almanacGashaTarget(gashaId) {
+  return { domain: 'gashas', view: 'gasha_detail', gashaId: String(gashaId) }
 }

@@ -19,6 +19,9 @@ defineProps({ compactMobile: { type: Boolean, default: true }, dropdown:Boolean,
 .archive-language-dropdown{display:flex;align-items:center;gap:5px;padding:0 8px;color:inherit}.archive-language-dropdown select{max-width:88px;min-height:40px;border:0;background:transparent;color:inherit;font:inherit;font-size:var(--gs-text-meta);cursor:pointer}.archive-language-dropdown select:focus-visible{outline:2px solid #258a8a;outline-offset:2px}
 .archive-language-switch { display:inline-flex; flex:none; align-items:center; }
 .locale-toggle { display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:48px;min-height:44px;padding:0 6px;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-3);font:inherit;font-size:var(--gs-text-ui);cursor:pointer; }
+/* Both glyphs in the toggle's own face: lang="ja" would otherwise switch 日 to the Japanese stack
+   (GS_UI_TOKENS [lang|="ja"]), whose different ascent lifts it above 中 on systems without Noto. */
+.locale-toggle > span { font-family:inherit;line-height:1; }
 .locale-toggle .selected { color:var(--gs-ink);font-weight:var(--gs-weight-bold); }
 .locale-toggle .locale-divider { color:var(--gs-rule); }
 .locale-toggle:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint); outline-offset:var(--gs-focus-offset); }
