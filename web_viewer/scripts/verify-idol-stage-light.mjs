@@ -60,7 +60,7 @@ assert.match(read('src/components/archive/ArchiveProducerSettings.vue'), /<GsSwi
 
 // Errors never rely on the critical colour alone.
 for (const [file, cls] of [['src/components/ChibiStageViewer.vue', 'audio-error'], ['src/components/SpineViewer.vue', 'audio-error'],
-  ['src/components/archive/ArchiveSongLineupPlayer.vue', 'lineup-error'], ['src/components/archive/ArchiveSongExperimentalPlayer.vue', 'experimental-error'],
+  ['src/components/archive/ArchiveSongAuditionConsole.vue', 'audition-error'],
   ['src/components/archive/ArchiveSongLyrics.vue', 'song-lyrics-error'], ['src/components/archive/ArchiveSongSinglePlayer.vue', 'single-song-error']]) {
   assert.match(read(file), new RegExp(`<ArchiveErrorNote [^>]*class="${cls}"`), `${file}: ${cls} uses ArchiveErrorNote`)
 }

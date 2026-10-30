@@ -98,7 +98,9 @@ const SongDetail = await compileComponent('src/components/archive/ArchiveSongDet
   '@lucide/vue': { ChevronRight: emptyComponent, Clapperboard: emptyComponent, ExternalLink: emptyComponent, Music: emptyComponent, Play: emptyComponent },
   './ArchiveTechnicalDetails.vue': { default: emptyComponent },
   './ArchiveIdolReference.vue': { default: IdolReference },
-  './ArchiveSongExperimentalPlayer.vue': { default: emptyComponent },
+  './ArchiveSongVersionPanel.vue': { default: emptyComponent },
+  './ArchiveSongAuditionConsole.vue': { default: emptyComponent },
+  '../../composables/useSongAudition.js': { useSongAudition: () => Vue.reactive({ stageTarget: null, pause() {} }) },
   './ArchiveSongSinglePlayer.vue': { default: emptyComponent },
   './ArchiveRelationList.vue': { default: { props: { items: Array }, emits: ['select'],
     setup(props, { emit }) { relationLists.push({ props, emit }); return () => null } } },
@@ -473,7 +475,8 @@ for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['an
   t.app.unmount()
 }
 {
-  // Stem songs list every collected vocal with Solo and lineup actions; full-mix-only songs have no 音源收录.
+  // Stem songs list every collected vocal as a record; playing them belongs to the version panel alone,
+  // so the list carries no play actions. Full-mix-only songs have no 音源收录.
   const t = fixture('drvalv', { presentation: { audioExperiment: experiments.songs.drvalv } }); await flush()
   const sources = all(t.root).find(item => hasClass(item, 'song-sources'))
   assert.ok(sources)
@@ -481,9 +484,8 @@ for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['an
   assert.deepEqual(all(sources).filter(item => item.type === 'dd').map(text), ['已收录', '16 组', '49 位', '已收录'])
   const archive = await openAudioArchive(t)
   assert.equal(referenceCards(archive).length, 49)
-  const actions = all(archive).filter(item => hasClass(item, 'source-action')).map(text)
-  assert.equal(actions.filter(label => label.includes('Solo')).length, 49)
-  assert.equal(actions.filter(label => label === '＋编成').length, 49)
+  assert.equal(all(archive).filter(item => item.type === 'button' && /Solo|编成|组合版/.test(text(item))).length, 0,
+    '音源收录 has no second way to choose what plays')
   t.app.unmount()
   const plain = fixture('anwhre'); await flush()
   assert.equal(all(plain.root).some(item => hasClass(item, 'song-sources')), false)

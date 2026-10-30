@@ -3,7 +3,7 @@
     <div class="song-block-heading">
       <h3 id="song-single-player-title">歌曲播放</h3>
     </div>
-    <p class="song-block-note">完整混音试听</p>
+    <p class="single-song-now"><span>正在播放</span><strong>完整混音</strong></p>
     <audio
       ref="audioElement"
       preload="metadata"
@@ -12,7 +12,7 @@
       @error="audioError = '暂时无法播放，请稍后重试。'"
     />
     <ArchiveMediaTransport music :playing="['playing', 'waiting'].includes(clockSnapshot.phase)" :duration="clockSnapshot.duration" :current-time="clockSnapshot.currentTime" @toggle="togglePlayback" @restart="clock.seek(0)" @seek="clock.seek">
-      <details><summary aria-label="音量"><Volume2 :size="16" aria-hidden="true" /></summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume * masterVolume; centerLine.setVolume(volume * masterVolume)" /></label></details>
+      <ArchiveSongBalance><label>音量<input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume * masterVolume; centerLine.setVolume(volume * masterVolume)" /></label></ArchiveSongBalance>
     </ArchiveMediaTransport>
     <!-- Unit_serif: the mix leaves one line silent; the game plays the deck center card's take there. -->
     <div v-if="songCenterLine && centerLineAvailable" class="center-line-slot">
@@ -27,10 +27,10 @@
 </template>
 
 <script setup>
-import { Volume2 } from '@lucide/vue'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
+import ArchiveSongBalance from './ArchiveSongBalance.vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
@@ -99,10 +99,9 @@ watch(() => props.track, () => { audioError.value = '' })
 
 <style scoped>
 .single-song-player audio { display: none; }
-.single-song-player :deep(details) summary { display: flex; align-items: center; justify-content: center; min-height: var(--gs-control-touch); color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; list-style: none; }
-.single-song-player :deep(details) summary::-webkit-details-marker { display: none; }
-.single-song-player :deep(details) summary:hover { color: var(--gs-ink); }
-.single-song-player :deep(details) input { accent-color: var(--gs-mint-ink); }
+.single-song-now { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-1) var(--gs-space-3); margin: var(--gs-space-4) 0 0; }
+.single-song-now span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.single-song-now strong { color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .center-line-slot { display: grid; gap: var(--gs-space-2); margin-top: var(--gs-space-3); }
 .center-line-slot label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .center-line-slot select { min-width: 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; }

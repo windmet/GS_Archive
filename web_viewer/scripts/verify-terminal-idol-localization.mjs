@@ -157,8 +157,7 @@ try {
   const { default: Media } = await server.ssrLoadModule('/src/components/archive/DomainMediaPreview.vue')
   ;({ uiLocale: renderedLocale } = await server.ssrLoadModule('/src/localization/ui/UiLocaleStore.js'))
   previousRenderedLocale = renderedLocale.value
-  const { default: Experimental } = await server.ssrLoadModule('/src/components/archive/ArchiveSongExperimentalPlayer.vue')
-  const { default: Lineup } = await server.ssrLoadModule('/src/components/archive/ArchiveSongLineupPlayer.vue')
+  const { default: VersionPanel } = await server.ssrLoadModule('/src/components/archive/ArchiveSongVersionPanel.vue')
   const idolProps = { idol: profile, events: idolEvents, songs: idolSongs }
   const unitProps = { unit: unitEntry.unit, members: unitEntry.members,
     identity: dictionary, manifest, cardStats: unitEntry.cardStats, eventRelations: unitEntry.eventRelations }
@@ -359,40 +358,48 @@ try {
     }
     checks++
     for (const query of ['阿斯兰', 'アスラン', '别西卜II世']) {
-      let state
-      const solo = await render(withState(Experimental, value => {
-        state = value
-        value.soloOpen.value = true
-        value.soloQuery.value = query
-        value.selectedIdolCode.value = '029ass'
-        value.mode.value = 'solo'
-      }), { song: drive, audioExperiment: drive.playback.experiment, ...callbacks })
-      assert.match(solo, /1 位偶像 · 选择后回到播放条/)
+      let picker, audition
+      // Render through SongDetail so the callbacks must reach the shared audition, the version panel and
+      // the site's one idol picker inside its drawer.
+      const solo = await render(withState(Song, value => {
+        audition = value.audition
+        audition.mode = 'solo'
+        audition.idolCode = '029ass'
+        value.ArchiveSongVersionPanel = withState(VersionPanel, state => {
+          state.pickerOpen.value = true
+          state.ArchiveIdolPickerPanel = withState(Picker, pickerState => {
+            picker = pickerState
+            pickerState.query.value = query
+          })
+        })
+      }), { song: drive, ...callbacks })
+      assert.match(solo, /选择后立即切换/)
+      assert.match(solo, /1 位偶像<span[^>]*> · 已选：/)
       assert.ok(elementText(solo, 'strong').includes(displayed))
-      assert.ok(solo.includes(`当前 Solo · ${displayed}`))
-      assert.deepEqual(state.filteredSoloEntries.value.map(entry => entry.idol_code), ['029ass'])
-      assert.deepEqual(state.soloEntries.value.map(entry => entry.idol_code), soloCodes)
+      assert.ok(solo.includes(`Solo · ${displayed}`))
+      assert.match(solo, /class="idol-avatar-shell is-plain"/, 'candidates wear the group ring, not their identity ring')
+      assert.deepEqual(picker.matches.value.map(idol => idol.id), ['029ass'])
+      assert.deepEqual(audition.soloEntries.map(entry => entry.idol_code), soloCodes)
       checks++
     }
-    // Render through SongDetail, ExperimentalPlayer and LineupPlayer to catch
+    // Render the lineup through SongDetail, the version panel and the console to catch
     // missing callback forwarding, while retaining the real 49 track identities.
     const lineupSong = withState(Song, value => {
-      value.ArchiveSongExperimentalPlayer = withState(Experimental, player => {
-        player.mode.value = 'lineup'
-        player.ArchiveSongLineupPlayer = withState(Lineup, lineup => {
-          lineup.stageLineup.value = ['029ass', '', '', '', '']
-          // Supply an active slot for label rendering without decoding or playing audio.
-          lineup.session.activePerformerSlots = ref([1])
-        })
-      })
+      value.audition.mode = 'lineup'
+      value.audition.stageLineup = ['029ass', '', '', '', '']
+      // Supply a ready session and an active slot for label rendering without decoding or playing audio.
+      value.audition.lineupSession.ready = true
+      value.audition.lineupSession.activePerformerSlots = ref([1])
     })
     const lineup = await render(lineupSong, { song: drive, ...callbacks })
     const slots = [...lineup.matchAll(/<button[^>]*class="slot-pick"[^]*?<\/button>/g)].map(match => match[0])
     assert.equal(slots.length, 5)
     assert.ok(slots[0].includes(`aria-label="舞台位置 1：${displayed}"`))
     assert.ok(elementText(slots[0], 'strong').includes(displayed))
-    assert.ok(slots.slice(1).every(slot => slot.includes('选择偶像')))
-    assert.ok(lineup.includes(`${displayed}（舞台位 1）`))
+    assert.ok(slots.slice(1).every(slot => elementText(slot, 'strong').includes('选择')))
+    assert.ok(lineup.includes(`${displayed}（位置 1）`))
+    // A filled position wears the idol's own colour ring, through the shared avatar.
+    assert.match(slots[0], /class="idol-avatar-shell[^"]*slot-avatar"[^>]*--idol-avatar-color:#/)
     checks++
   }
   const group = await render(withState(Picker, { query: '  café PARADE  ' }), { idols, ...callbacks })
@@ -410,13 +417,17 @@ try {
   const fallbackSong = await render(Song, { song: altessimo })
   assert.ok(fallbackSong.includes(`aria-label="查看${sourceNames['007kei']}的偶像资料"`))
   let fallbackState
-  const fallbackSolo = await render(withState(Experimental, value => {
-    fallbackState = value
-    value.soloOpen.value = true
-  }), { song: drive, audioExperiment: drive.playback.experiment })
-  assert.match(fallbackSolo, /49 位偶像 · 选择后回到播放条/)
+  const fallbackSolo = await render(withState(Song, value => {
+    value.audition.mode = 'solo'
+    value.ArchiveSongVersionPanel = withState(VersionPanel, state => {
+      state.pickerOpen.value = true
+      state.ArchiveIdolPickerPanel = withState(Picker, pickerState => { fallbackState = pickerState })
+    })
+  }), { song: drive })
+  assert.match(fallbackSolo, /选择后立即切换/)
+  assert.match(fallbackSolo, /49 位偶像/)
   assert.ok(elementText(fallbackSolo, 'strong').includes(sourceNames['029ass']))
-  assert.deepEqual(fallbackState.filteredSoloEntries.value.map(entry => entry.idol_code), soloCodes)
+  assert.deepEqual(fallbackState.matches.value.map(idol => idol.id).sort(), [...soloCodes].sort())
   const unresolved = buildIdolReference('999xxx', dictionary, manifest, 'card:unknown')
   context.cardReadModelDetail.value = { id: card.resource_id, ownerReference: unresolved }
   assert.equal(displayedOwner.value, unresolved, 'unresolved ownership remains inert and unchanged')

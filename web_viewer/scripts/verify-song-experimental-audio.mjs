@@ -9,8 +9,10 @@ const manifestPath = new URL('public/data/song_experimental_audio.json', root)
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
 const appSource = fs.readFileSync(new URL('src/App.vue', root), 'utf8')
 const stageSource = fs.readFileSync(new URL('src/components/ChibiStageViewer.vue', root), 'utf8')
-const detailPlayerSource = fs.readFileSync(new URL('src/components/archive/ArchiveSongExperimentalPlayer.vue', root), 'utf8')
-const lineupPlayerSource = fs.readFileSync(new URL('src/components/archive/ArchiveSongLineupPlayer.vue', root), 'utf8')
+// One audition state (composable) with two views: the version panel chooses, the console plays.
+const detailPlayerSource = ['src/composables/useSongAudition.js', 'src/components/archive/ArchiveSongVersionPanel.vue',
+  'src/components/archive/ArchiveSongAuditionConsole.vue'].map(file => fs.readFileSync(new URL(file, root), 'utf8')).join('\n')
+const lineupPlayerSource = detailPlayerSource
 const performanceSessionSource = fs.readFileSync(new URL('src/composables/useSongPerformanceSession.js', root), 'utf8')
 const performanceDataSource = fs.readFileSync(new URL('src/utils/songPerformanceData.js', root), 'utf8')
 const {
@@ -107,11 +109,10 @@ for (const [label, source, needles] of [
     '浏览器近似，不代表游戏官方混音参数',
   ]],
   ['song detail player', detailPlayerSource, [
-    'ArchiveSongLineupPlayer',
     'data-vocal-setting-selector',
     '自由编成 · 5 槽',
     '组合预设',
-    'soloOpen = true',
+    "if (id === 'solo' && !experiment.value?.solo_tracks?.[idolCode.value])",
     '全员合唱',
     '收录音轨',
     "if (mode.value === 'all_stars')",
@@ -119,28 +120,28 @@ for (const [label, source, needles] of [
     'useSongPerformanceSession()',
     'soloSession.configure({',
     'continuous: true',
-    'data-solo-clock="mode === \'solo\' ? \'audio-context-scheduled\' : undefined"',
+    `:data-solo-clock="audition.mode === 'solo' ? 'audio-context-scheduled' : undefined"`,
     '声部与伴奏已在播放前完整解码',
   ]],
   ['portal lineup player', lineupPlayerSource, [
     '选满五位后才能试听',
     'if (filledCount.value < 5) return',
-    "emit('pick-slot', stagePosition)",
-    'session.prefetch(trackUrls.value)',
+    'openPicker(stagePosition)',
+    'lineupSession.prefetch(trackUrls.value)',
     'stageLineup.value = rememberedLineup()',
     '重复偶像共用声部与演唱区间',
     '五个位置对应舞台位置',
     'stagePositionForSlot(slot)',
     'performerSlotForStagePosition(stagePosition)',
-    'lineup[Number(stagePosition) - 1] = idolCode',
+    'lineup[Number(stagePosition) - 1] = code',
     'stageLineup.value[Number(stagePositionForSlot(performerSlot)) - 1]',
-    ':data-active-stage-positions="activeStagePositions.join(\',\')"',
-    "entry.positions?.length === props.audioExperiment.stage_vocal.slot_count",
+    "audition.activeStagePositions.join(',')",
+    'entry.positions?.length === source.stage_vocal.slot_count',
     '&& !entry.variant',
-    'activeSingerEntries',
+    'activeSingers',
     '当前演唱',
     'fetchSongPerformanceArrangements',
-    'data-clock-mode="audio-context-scheduled"',
+    "audition.mode === 'lineup' || audition.mode === 'solo' ? 'audio-context-scheduled'",
     '播放前完整解码',
   ]],
   ['shared performance session', performanceSessionSource, [
