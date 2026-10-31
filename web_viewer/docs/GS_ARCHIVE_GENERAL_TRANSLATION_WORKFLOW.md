@@ -63,3 +63,9 @@ node scripts/general-translation-workflow.mjs review G-chats-20261015-001 --revi
 ## 剧情正文（含季节企划）
 
 剧情按 Reader 文档导出：`node scripts/prepare-ai-studio-batches.mjs --documents <ID,...> --batch B0NN-<名称> --out .analysis/translation-studio/<目录>`，回传走 `translation:studio:check` / `translation:studio:import`。季节企划 306 篇、2,639 句的批次见 `TRANSLATION_WAVE2_INVENTORY_20261009.md` §6。
+
+## 当前聊天脚本的 text_ref（2026-10-31）
+
+聊天仍由 General TM 按精确原文管理。当前 compiled 聊天已带 story-text 类型 text_ref，不能再用“有 text_ref 就不是聊天”的旧假设。chats 发布分片附带源索引中的聊天 catalogue 清单和每条发布原文的 SHA-256；Player 只有在 catalogue、文本引用前缀及原文哈希一致时才使用这份译文。既有剧情 overlay 优先，其他剧情不能借用聊天译文。旧无引用聊天继续兼容。
+
+通信目录的首句预览按 data_pipeline/build_index.py 的 derive_title 规则生成（原文前 80 个 Unicode 字符、换行转空格），由首句译文派生别名，不另建一份 TM。精确原文条目优先，有不同候选的歧义预览不覆盖。随机话题仍按原有首句关联。回归：node scripts/verify-chat-translation.mjs。

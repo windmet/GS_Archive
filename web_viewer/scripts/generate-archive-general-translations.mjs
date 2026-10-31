@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
-import {randomTalkTitleAliases} from './lib/random-talk-titles.mjs';
+import {randomTalkTitleAliases,chatPreviewTitleAliases} from './lib/random-talk-titles.mjs';
 import {sourceUnits,loadGeneralRevisions,shards,rootOverlayEntries} from './lib/general-translation-batches.mjs';
 import {writeCardLineShards} from './lib/card-line-shards.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
@@ -86,7 +87,9 @@ for (const row of missing.filter(row => row.kind === 'currency')) {
 }
 // Random-talk topic titles take their opening line's translation (scripts/lib/random-talk-titles.mjs).
 const topicTitles = randomTalkTitleAliases(root, entries['chat-line']?.text);
+const previewTitles = chatPreviewTitleAliases(root, entries['chat-line']?.text);
 if (Object.keys(topicTitles).length) Object.assign(entries['chat-line'].text, topicTitles);
+if (Object.keys(previewTitles).length) Object.assign(entries['chat-line'].text, previewTitles);
 const rootEntries = rootOverlayEntries(entries);
 const target = path.join(root, 'public/translations/zh-CN/archive-general.json');
 fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', status: 'draft',
@@ -95,8 +98,16 @@ const shardDirectory = path.join(root,'public/translations/zh-CN/archive-general
 fs.mkdirSync(shardDirectory,{recursive:true});
 // One shard map for batches and published shards (general-translation-batches.mjs).
 for (const [name, select] of Object.entries(shards)) {
+  const shardEntries = Object.fromEntries(Object.entries(entries).filter(([kind])=>select(kind)));
+  // Current compiled chats carry story text_refs too. The General translation
+  // still owns their text: authorize only tracked chat catalogues and exact hashes.
+  const chatBinding = name === 'chats' ? {
+    catalogues: Object.keys(read('translation/studio/source/chat-text-index.json').files).map(file=>file.replace(/\.json$/, '')).sort(),
+    source_hashes: Object.fromEntries([...new Set(Object.values(shardEntries).flatMap(fields=>Object.values(fields).flatMap(texts=>Object.keys(texts))))]
+      .sort().map(source=>[source,`sha256:${createHash('sha256').update(source).digest('hex')}`])),
+  } : {};
   fs.writeFileSync(path.join(shardDirectory,`${name}.json`),JSON.stringify({schemaVersion:1,status:'draft',
-    entries:Object.fromEntries(Object.entries(entries).filter(([kind])=>select(kind)))},null,2)+'\n');
+    ...chatBinding,entries:shardEntries},null,2)+'\n');
 }
 // Pages read card lines from per-line shards (src/presentation/CardLineShards.mjs).
 writeCardLineShards(shardDirectory, Object.fromEntries(Object.entries(entries).filter(([kind])=>shards['card-lines'](kind))));
@@ -108,4 +119,4 @@ fs.mkdirSync(path.join(root, '.analysis/archive-general-localization'), {recursi
 fs.writeFileSync(path.join(root, '.analysis/archive-general-localization/untranslated.json'), JSON.stringify(uniqueMissing, null, 2) + '\n');
 console.log(JSON.stringify({sourceRows: corpus.length, translatedRows: corpus.length - missing.length,
   uniqueTranslations: Object.fromEntries(Object.entries(entries).map(([kind, fields]) => [kind, Object.values(fields).reduce((sum, values) => sum + Object.keys(values).length, 0)])),
-  untranslatedUnique: uniqueMissing.length, bondSourceEntries: Object.keys(bonds).length, randomTalkTitleAliases: Object.keys(topicTitles).length}, null, 2));
+  untranslatedUnique: uniqueMissing.length, bondSourceEntries: Object.keys(bonds).length, randomTalkTitleAliases: Object.keys(topicTitles).length, chatPreviewTitleAliases: Object.keys(previewTitles).length}, null, 2));

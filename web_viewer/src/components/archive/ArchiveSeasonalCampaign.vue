@@ -45,7 +45,7 @@
           <tr class="ledger-row common-row" :class="{ selected: participantCode === COMMON }" @click="open(COMMON)">
             <th scope="row"><button type="button" class="who-button" @click.stop="open(COMMON)"><span class="who-mark" aria-hidden="true"><Users :size="16" /></span><span class="who-name">共通导入</span></button></th>
             <td v-for="campaign in campaigns" :key="campaign.id" :class="{ focused: focusId === campaign.id }">
-              <span v-for="episode in campaign.introduction" :key="episode.id" class="ledger-title" lang="ja">{{ episodeTitle(episode) }}</span>
+              <span v-for="episode in campaign.introduction" :key="episode.id" class="ledger-title">{{ episodeTitle(episode) }}</span>
             </td>
           </tr>
         </tbody>
@@ -60,7 +60,7 @@
             </th>
             <td v-for="campaign in campaigns" :key="campaign.id" :class="{ focused: focusId === campaign.id }">
               <span v-for="(episode, index) in row.episodes[campaign.id]" :key="episode.id" class="ledger-title">
-                <span v-if="row.episodes[campaign.id].length > 1" class="part-mark" aria-hidden="true">{{ PARTS[index] }}</span><span lang="ja">{{ episodeTitle(episode) }}</span>
+                <span v-if="row.episodes[campaign.id].length > 1" class="part-mark" aria-hidden="true">{{ PARTS[index] }}</span><span>{{ episodeTitle(episode) }}</span>
               </span>
             </td>
           </tr>
@@ -73,7 +73,7 @@
           <span class="who-mark" aria-hidden="true"><Users :size="18" /></span>
           <span class="list-copy">
             <strong>共通导入</strong>
-            <span v-for="line in listLines({ episodes: commonEpisodes })" :key="line.key" class="list-line"><small>{{ line.label }}</small><span lang="ja">{{ line.title }}</span></span>
+            <span v-for="line in listLines({ episodes: commonEpisodes })" :key="line.key" class="list-line"><small>{{ line.label }}</small><span>{{ line.title }}</span></span>
           </span>
           <ChevronRight :size="18" aria-hidden="true" />
         </button>
@@ -83,7 +83,7 @@
             <ArchiveIdolAvatar :idol-code="row.participant_code" :accent-color="row.color" :size="40" :ring-width="2" decorative :fallback-text="row.name.slice(0, 1)" />
             <span class="list-copy">
               <strong>{{ row.name }}</strong>
-              <span v-for="line in listLines(row)" :key="line.key" class="list-line"><small>{{ line.label }}</small><span lang="ja">{{ line.title }}</span></span>
+              <span v-for="line in listLines(row)" :key="line.key" class="list-line"><small>{{ line.label }}</small><span>{{ line.title }}</span></span>
             </span>
             <ChevronRight :size="18" aria-hidden="true" />
           </button>
@@ -123,7 +123,7 @@
                     <button type="button" class="drawer-episode" :disabled="!episode.reading" @click="emit('read', episode.reading.document_id)">
                       <span v-if="block.episodes.length > 1" class="part-mark" aria-hidden="true">{{ PARTS[index] }}</span>
                       <span class="drawer-episode-copy">
-                        <strong lang="ja">{{ episodeTitle(episode) }}</strong>
+                        <strong>{{ episodeTitle(episode) }}</strong>
                         <small v-if="episode.level">Lv.{{ episode.level }} 解锁</small>
                       </span>
                       <BookOpen :size="16" aria-hidden="true" />

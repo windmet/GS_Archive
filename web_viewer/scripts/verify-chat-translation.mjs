@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import { createHash } from 'node:crypto'
 import { effectScope, ref } from 'vue'
 import { sourceUnits, CHAT_KINDS, shards, rootOverlayEntries } from './lib/general-translation-batches.mjs'
 import { planCompactBatches, renderCompactInput } from './lib/general-translation-markdown.mjs'
-import { chatTranslation, isLegacyChat } from '../src/localization/story/ChatTranslations.js'
+import { chatTranslation, isLegacyChat, isChatCandidate, chatOverlayEntry } from '../src/localization/story/ChatTranslations.js'
 import { createStoryLocalization } from '../src/localization/story/StoryLocalizationContext.js'
-import { randomTalkTitleAliases, titleTranslation } from './lib/random-talk-titles.mjs'
+import { randomTalkTitleAliases, titleTranslation, chatPreviewTitleAliases, chatPreviewSpelling } from './lib/random-talk-titles.mjs'
 
 // Chats (personal and unit talks, random topics) translate by source text through the general
 // workflow, conversation by conversation, and reach the Player through the shared chats overlay.
@@ -40,6 +41,12 @@ const name = '●'.repeat(4) + 'プロデューサー'
 const overlay = { schemaVersion: 1, status: 'draft', entries: {
   'chat-line': { text: { [`お疲れ、\n${name}`]: `辛苦了，\n${name}`, 'おう、任せとけ！': '嗯，交给我吧！', [`スロット${name}消失`]: '（没有占位符）' } },
   'chat-choice': { text: { '流石です！': '真厉害！' }, detail: { '流石です！\n頑張ってください。': '真厉害！\n加油哦。' } } } }
+const modernId = '001tom_301_2_3_001_01_09_a'
+const sourceHash = source => `sha256:${createHash('sha256').update(source).digest('hex')}`
+overlay.catalogues = [modernId]
+overlay.source_hashes = Object.fromEntries(Object.values(overlay.entries).flatMap(fields => Object.values(fields)
+  .flatMap(texts => Object.keys(texts))).map(source => [source, sourceHash(source)]))
+const textRef = source => ({unit_id:`story-text:v1:${modernId}:part:cmd-000001:dialogue:000`,source_hash:sourceHash(source)})
 assert.equal(chatTranslation(overlay.entries, '流石です！'), '真厉害！')
 const chat = { scenario_id: '8_1_x_fixture', steps: [
   { step_id: 1, type: 'talk', dialogue: { speaker: '天ヶ瀬 冬馬', text: `お疲れ、\n${name}`, text_jp: `お疲れ、\n${name}`, text_cn: '' } },
@@ -68,6 +75,35 @@ try {
   for (let tries = 0; localization.loading.value && tries < 100; tries++) await new Promise(resolve => setTimeout(resolve, 5))
   assert.equal(localization.resolveDialogue(chat.steps[1].dialogue).text, 'おう、任せとけ！', 'the original stays Japanese')
   scope.stop()
+
+  // Current compiled chats use the text contract. Exercise the actual shared
+  // localization path, including choices; a catalogue or hash mismatch stays Japanese.
+  const modern = {...chat,scenario_id:modernId,text_catalog_id:modernId,steps:chat.steps.map(step=>({...step,state:{talk_mode:true},
+    dialogue:{...step.dialogue,text_ref:textRef(step.dialogue.text)}}))}
+  assert.equal(isLegacyChat(modern),false)
+  assert.equal(isChatCandidate(modern),true)
+  assert.equal(isChatCandidate({steps:[{type:'talk',state:{phone_mode:true},dialogue:{text_ref:textRef('x')}}]}),false)
+  const modernScope = effectScope()
+  const modernPreferences = ref({story_content_mode:'translation',story_translation_locale:'zh-CN'})
+  const modernLocalization = modernScope.run(()=>createStoryLocalization({compiledData:ref(modern),storyPreferences:modernPreferences,
+    repository:{async loadScenario(){return null},getDiagnostics(){return null}},
+    entityRepository:{async loadEntity(){},getDiagnostics(){return null},getEntry(){return null}}}))
+  for(let tries=0;modernLocalization.loading.value && tries<100;tries++)await new Promise(resolve=>setTimeout(resolve,5))
+  assert.equal(modernLocalization.loading.value,false)
+  assert.equal(modernLocalization.resolveDialogue(modern.steps[1].dialogue).text,'嗯，交给我吧！')
+  assert.equal(modernLocalization.resolveChoiceOption({text:'流石です！',text_ref:textRef('流石です！'),
+    detail:'流石です！\n頑張ってください。',detail_text_ref:textRef('流石です！\n頑張ってください。')}).text,'真厉害！')
+  assert.equal(modernLocalization.resolveChoiceOption({text:'流石です！',text_ref:textRef('流石です！'),
+    detail:'流石です！\n頑張ってください。',detail_text_ref:textRef('流石です！\n頑張ってください。')},{detail:true}).text,'真厉害！\n加油哦。')
+  const source=chat.steps[1].dialogue.text, binding=textRef(source)
+  assert.equal(chatOverlayEntry(overlay,{scenario_id:'another-story'},source,binding),null)
+  assert.equal(chatOverlayEntry(overlay,modern,source,{...binding,unit_id:binding.unit_id.replace(modernId,'another-story')}),null)
+  assert.equal(chatOverlayEntry(overlay,modern,source,{...binding,source_hash:'sha256:'+'0'.repeat(64)}),null)
+  assert.equal(chatOverlayEntry({...overlay,source_hashes:{}},modern,source,binding),null)
+  assert.equal(chatOverlayEntry(overlay,modern,'新的原文',binding),null)
+  modernPreferences.value={...modernPreferences.value,story_content_mode:'original'}
+  assert.equal(modernLocalization.resolveDialogue(modern.steps[1].dialogue).text,source)
+  modernScope.stop()
 } finally { globalThis.fetch = originalFetch }
 // Random-talk topic titles (masterdata spelling) take their opening line's translation: every one of
 // the 245 topics finds its line, and an untranslated line publishes no title.
@@ -80,4 +116,25 @@ assert.deepEqual(randomTalkTitleAliases(process.cwd(), {}), {})
 assert.equal(allTitles['この前、北斗とテニスを したんだ。 思いっきり運動してきたぜ！'], '译:この前、北斗とテニスをしたんだ。思いっきり運動してきたぜ！')
 assert.equal(allTitles['この前ダンスレッスンで すっごーくカッコいい技を 見せてもらったんだ（表情）'], '译:この前ダンスレッスンですっごーくカッコいい技を見せてもらったんだ（表情）')
 assert.equal(titleTranslation('看到高中生们的dance \nlesson，\n真有活力！'), '看到高中生们的dance lesson，真有活力！')
+// Directory headings spell the same source differently; they must follow the
+// edited opening line instead of requiring a second independent translation.
+const publicOverlay = JSON.parse(fs.readFileSync('public/translations/zh-CN/archive-general/chats.json', 'utf8'))
+const published = publicOverlay.entries['chat-line'].text
+assert.deepEqual(publicOverlay.catalogues,Object.keys(index).map(file=>file.replace(/\.json$/,'')).sort())
+for(const fields of Object.values(publicOverlay.entries))for(const texts of Object.values(fields))for(const source of Object.keys(texts))
+  assert.equal(publicOverlay.source_hashes[source],sourceHash(source),'published source hashes bind both lines and reply choices')
+const tm = JSON.parse(fs.readFileSync('translation/tm/zh-CN/chats.json', 'utf8')).entries
+const lineTranslations = Object.fromEntries(Object.values(tm).filter(row => row.kind === 'chat-line').map(row => [row.source, row.translation]))
+const previews = chatPreviewTitleAliases(process.cwd(), lineTranslations)
+assert.ok(Object.keys(previews).length > 0)
+for (const [title, translation] of Object.entries(previews)) assert.equal(published[title], translation)
+const opening = index['001tom_301_2_3_001_01_09_a.json'].rows.find(row => row.kind === 'line').source
+assert.equal(published[chatPreviewSpelling(opening)], titleTranslation(lineTranslations[opening]))
+assert.equal(chatPreviewSpelling('😀'.repeat(81) + '\n末尾'), '😀'.repeat(80), 'Python truncates Unicode code points, not UTF-16 halves')
+assert.equal(chatPreviewSpelling('甲\n乙'), '甲 乙')
+assert.deepEqual(chatPreviewTitleAliases(process.cwd(), {}), {})
+const edited = chatPreviewTitleAliases(process.cwd(), { [opening]: '新校订译文' })
+assert.equal(edited[chatPreviewSpelling(opening)], '新校订译文', 'editing the line updates its directory heading')
+const exact = chatPreviewTitleAliases(process.cwd(), { [opening]: '新校订译文', [chatPreviewSpelling(opening)]: '精确原文的译文' })
+assert.equal(exact[chatPreviewSpelling(opening)], undefined, 'derived headings never overwrite exact source entries')
 console.log(`Chat translation: ${chats.length} units (${indexRows.length} rows, 649 chats) in ${chatBatches.length} batches; Player lookup verified; random-talk titles follow their opening line`)
