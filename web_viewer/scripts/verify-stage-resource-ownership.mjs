@@ -70,7 +70,7 @@ for(const mode of ['success','cancel','failure']){
   const abort=new AbortController(),gates=[];let running=0,maximum=0,started=0
   const runtimes=new Map([1,2,3,4,5].map(position=>[position,{stagePosition:position,preloadedSongs:new Set()}]))
   const context={AbortController,selectedSong:ref({id:'song',motionIds:[1,2,3,4]}),stageReady:ref(true),runtimes,
-    activeSlots:ref([...runtimes.keys()].map(position=>({position}))),motionCatalog:ref(new Map([1,2,3,4].map(id=>[id,{id}]))),
+    activeSlots:ref([...runtimes.keys()].map(position=>({position}))),motionCatalog:ref(new Map([1,2,3,4,5].map(id=>[id,{id}]))),eventsForPosition:position=>position===1?[{motion:5},{motion:2}]:[],
     songMotionsReady:ref(false),preloading:ref(false),preloadProgress:ref(0),audioError:ref(''),console:{error(){}},
     injectLiveChibiMotion:async(_runtime,_motion,{signal})=>{started++;running++;maximum=Math.max(maximum,running);const gate=deferred();gates.push(gate);signal.addEventListener('abort',()=>gate.reject(new DOMException('Cancelled','AbortError')),{once:true});try{await gate.promise}finally{running--}}}
   install(context,['preloadSongMotions'])
@@ -80,6 +80,7 @@ for(const mode of ['success','cancel','failure']){
   else if(mode==='failure')gates[0].reject(Error('motion failure'))
   else{for(let i=0;i<24;i++){for(const gate of gates.splice(0))gate.resolve();await flush()}}
   assert.equal(await pending,mode==='success');await flush();assert.equal(running,0)
+  if(mode==='success')assert.equal(started,21,'Each slot loads the song motions plus its own scripted ones, each once (5 slots × 4 + one extra)')
   assert.ok(maximum<=3);for(const runtime of runtimes.values())assert.equal(runtime.preloadedSongs.has('song'),mode==='success')
   if(mode!=='success')assert.equal(started,3,'Failed/cancelled batch stops the remaining queue');cases++
 }
