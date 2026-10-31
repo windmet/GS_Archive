@@ -48,6 +48,7 @@ for(const reference of registry.followups) {
 const units=sourceUnits(process.cwd()),memory=readMemory(process.cwd())
 const published=read('public/translations/zh-CN/archive-general/chats.json')
 const seen=new Set()
+const semanticBatches=new Set([...receipt.scope.semantic_rechecked_batches,...stages.map(stage=>stage.receipt.batch)])
 let count=0
 for(const [id,base] of Object.entries(receipt.bases)) {
   const directory=`translation/studio/general/returns/${id}`
@@ -100,6 +101,7 @@ for(const [id,base] of Object.entries(receipt.bases)) {
       checkTranslation(row,{translation,decision,notes},row.key)
       stage.seen.add(row.key)
     }
+    if(semanticBatches.has(id)) assert(!translation.includes('\\n')||row.source.includes('\\n'),`${id}/${index+1}: escaped newline in semantically accepted translation`)
     const entry=memory.get(row.key)
     assert(entry,`${id}/${index+1}: missing TM`)
     assert.equal(entry.source,row.source);assert.equal(entry.translation,translation)

@@ -2,7 +2,19 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat005 全量语义复验
+## 续验：chat006 全量语义复验
+
+输入 HEAD `e9d6b079`。chat006 的 999 条全部逐句对照原文和当前 TM，追加修正 176 条，保持 draft。发现并修复 70 条字面 `\n`（反斜线加 n）误代换行；全 Chats 扫描未发现其他批次有同类条目。补回さん称谓，按项目规则保留四季的 Mega、统一にゃこ为“喵子”，修正“花”误作“话语”、“茶叶品名”误作“茶树品种”及其他增译。
+
+くまっち 3 条和仅用假名书写的招式名てんげんひょうじんは 1 条，未找到本轮足以核准中文定名的证据，撤去擅定译名、保留原文并标 uncertain。没有据旧回填“招式名平假名直译”的说明认定汉字译名已核准。全 Chats 当前 uncertain 为 8（本批新增 4）；missing/stale 仍为 0。chat002–006 已逐句语义复验；007–012 共 **5,600 条**待继续，不能据此提升为 reviewed/final。
+
+[176 条原文与验收前后对照](../translation/studio/general/acceptance/chats-006-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-006-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-006-semantic-20261031/receipt.json)
+
+验证：正式 import --replace 写入 176 条、823 条不变；验收链重放首轮 746 条及四次续验共 454 条修正，10,535 条来源绑定通过。General 严格验证 19,497 条有效、0 orphan；审计 invalid/unpublished 均为 0。验收 verifier 对已逐句验收的批次新增字面换行检查；注入异常 after、同步更新 receipt 与索引哈希后，仍被该检查拒绝，测试未改工作区凭据。verify-chat-translation、verify:general-translation-workflow 均通过；本次数据与独立校验工具变更未重复 Vite 构建或复制资源包。
+
+Browser 复用 5251 / PID 26452；HTTP chats.json 与本工作区一致（3,692,717 bytes）。通信→若里春名→信赖度聊天 `8_1_x_023har_8_1_1_023.json`，完成两次回复交互并推进到 15/49，正文“今天的演出／辛苦啦！”及后续对白正常换行，页面文本无字面 `\n`。1440×900 和 390×844 均截图，页面非空、无框架错误覆盖层，console error/warn 为空，返回目录正常。快进范围已还原“仅已读”、视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/006-newline-repair-desktop.png` 与 `006-newline-repair-mobile.png`。未将此旅程扩展为全聊天、全部 detail 气泡或实体手机验收；菜单既有“译文暂时无法载入”提示仍保留。没有部署。
+
+## chat005 全量语义复验（上一批）
 
 输入 HEAD `5f65ac98`。chat005 的 999 条全部逐句对照原文和当前 TM，追加修正 86 条，保持 draft。补齐原文“隼人さん／旬さん／夏来さん／春名さん”的先生称谓；九郎不擅用“我等”；撤去“热血笨蛋”“即兴改编”“瓷砖反射”“穿给大家看”等原文没有的贬义、演奏方式、材质和动作限定，纠正“今”误写“刚才”、重复字“2人人”及不自然的句尾断句。
 
