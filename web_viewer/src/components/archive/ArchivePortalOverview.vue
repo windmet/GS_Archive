@@ -750,7 +750,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-personal-stats { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:var(--gs-space-3); }
   /* The hero's quiet settings sit on the same line as 去事务所, at the other corner, clear of the face. */
   .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
-  .overview-featured:not(.is-all-view) .overview-personal { display:flex;flex-direction:column;gap:var(--gs-space-3); }
+  .overview-featured:not(.is-all-view) .overview-personal { display:flex;flex-direction:column;align-items:stretch;gap:var(--gs-space-3); } /* the narrow block's grid centring must not shrink the hero */
 }
 @container portal (max-width:640px) {
   .overview-signature { display:none; }

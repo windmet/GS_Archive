@@ -47,6 +47,10 @@ export function readingSpeakerAvatarEntity(row) {
     && (!speaker.entityId || speaker.entityId === actor)
     && (!speaker.entityType || speaker.entityType === 'idol')
     && IDOL_ID_TO_NAME[actor] && compactName(speaker.sourceName) === compactName(IDOL_ID_TO_NAME[actor])) return actor
+  // A concealed (???) label keeps its text, but the line has no voice to hide behind and the story names the actor:
+  // the source actor's own icon follows the speaker, on stage or off (like the prologue). No actor, no icon (crowds, mobs).
+  if (row?.kind === 'dialogue' && speaker?.kind === 'unknown' && row.performance?.entityType === 'idol' &&
+    IDOL_ID_TO_NAME[actor] && (!speaker.entityId || speaker.entityId === actor)) return actor
   // Legacy compiled NPCs may be typed as "idol". Use their explicit canonical
   // code, never parse a localized name or infer identity from a model.
   if (row?.kind !== 'dialogue' || !['named', 'idol', 'npc'].includes(speaker?.kind) ||
