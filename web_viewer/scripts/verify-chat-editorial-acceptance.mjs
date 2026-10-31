@@ -11,6 +11,10 @@ import {protectProducerAddressingForTranslation,restoreProducerAddressingAfterTr
 const directory='translation/studio/general/acceptance/chats-002-012-20261031'
 const read=file=>JSON.parse(fs.readFileSync(file,'utf8'))
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
+const registry=read('translation/studio/general/acceptance/index.json')
+assert.equal(registry.schema,'GS-GENERAL-ACCEPTANCE-INDEX-V1')
+assert.equal(registry.base.directory,directory.split('/').at(-1))
+assert.equal(hash(fs.readFileSync(`${directory}/receipt.json`)),registry.base.receipt_sha256)
 const receipt=read(`${directory}/receipt.json`),amendments=read(`${directory}/edits.json`)
 assert.equal(receipt.schema,'GS-GENERAL-ACCEPTANCE-V1')
 assert.equal(hash(fs.readFileSync(`${directory}/edits.json`)),receipt.edits_sha256)
@@ -18,6 +22,29 @@ assert.equal(hash(fs.readFileSync('translation/studio/policy/card-line-prompt.v1
 assert.equal(amendments.length,receipt.edits)
 const byKey=new Map(amendments.map(row=>[row.key,row]))
 assert.equal(byKey.size,amendments.length,'acceptance keys cannot repeat')
+const stages=[]
+const acceptedBatches=new Set(Object.keys(receipt.bases))
+let previousHash=registry.base.receipt_sha256
+const stageDirectories=new Set([registry.base.directory])
+for(const reference of registry.followups) {
+  assert(/^[a-z0-9-]+$/u.test(reference.directory),'invalid acceptance directory')
+  assert(!stageDirectories.has(reference.directory),'duplicate acceptance stage');stageDirectories.add(reference.directory)
+  const directory=`translation/studio/general/acceptance/${reference.directory}`
+  assert.equal(hash(fs.readFileSync(`${directory}/receipt.json`)),reference.receipt_sha256)
+  const receipt=read(`${directory}/receipt.json`),edits=read(`${directory}/edits.json`)
+  assert.equal(receipt.schema,'GS-GENERAL-ACCEPTANCE-FOLLOWUP-V1')
+  assert.equal(receipt.previous_receipt_sha256,previousHash)
+  assert.equal(receipt.policy_sha256,hash(fs.readFileSync('translation/studio/policy/card-line-prompt.v1.json')))
+  assert.equal(receipt.edits_sha256,hash(fs.readFileSync(`${directory}/edits.json`)))
+  assert.equal(receipt.edits,edits.length)
+  assert.equal(receipt.status,'draft');assert.equal(receipt.not_final,true)
+  assert(Number.isInteger(receipt.semantic_units)&&receipt.semantic_units>0)
+  assert(acceptedBatches.has(receipt.batch),'follow-up batch outside original acceptance')
+  const byKey=new Map(edits.map(row=>[row.key,row]))
+  assert.equal(byKey.size,edits.length,'follow-up keys cannot repeat')
+  stages.push({receipt,byKey,seen:new Set(),count:0})
+  previousHash=reference.receipt_sha256
+}
 const units=sourceUnits(process.cwd()),memory=readMemory(process.cwd())
 const published=read('public/translations/zh-CN/archive-general/chats.json')
 const seen=new Set()
@@ -61,6 +88,18 @@ for(const [id,base] of Object.entries(receipt.bases)) {
       checkTranslation(row,{translation,decision,notes},row.key)
       seen.add(row.key)
     }
+    for(const stage of stages) {
+      if(stage.receipt.batch!==id) continue
+      stage.count++
+      const edit=stage.byKey.get(row.key)
+      if(!edit) continue
+      assert.equal(edit.batch,Number(id.slice(-3)));assert.equal(edit.rid,String(index+1).padStart(3,'0'))
+      assert.equal(edit.source,row.source);assert.equal(edit.source_hash,row.source_hash)
+      assert.equal(edit.before,translation);assert.equal(edit.before_decision,decision);assert.deepEqual(edit.before_notes,notes)
+      translation=edit.after;decision=edit.decision;notes=edit.notes
+      checkTranslation(row,{translation,decision,notes},row.key)
+      stage.seen.add(row.key)
+    }
     const entry=memory.get(row.key)
     assert(entry,`${id}/${index+1}: missing TM`)
     assert.equal(entry.source,row.source);assert.equal(entry.translation,translation)
@@ -73,4 +112,8 @@ for(const [id,base] of Object.entries(receipt.bases)) {
 }
 assert.equal(count,receipt.scope.identity_verified)
 assert.equal(seen.size,amendments.length)
-console.log(`PASS: ${count} chat source bindings, immutable receipts and original editorial replay; ${seen.size} acceptance corrections match draft TM and publication`)
+for(const stage of stages) {
+  assert.equal(stage.seen.size,stage.byKey.size,'unapplied follow-up edits')
+  assert.equal(stage.count,stage.receipt.semantic_units,'semantic batch row count')
+}
+console.log(`PASS: ${count} chat source bindings, immutable receipts and original editorial replay; ${seen.size} base + ${stages.reduce((sum,stage)=>sum+stage.seen.size,0)} follow-up corrections match draft TM and publication`)
