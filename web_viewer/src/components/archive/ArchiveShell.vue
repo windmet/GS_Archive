@@ -2,8 +2,7 @@
   <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-rail': railMode, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'has-subnav': hasSubnav, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
-        <img :src="getBrandMarkUrl()" alt="" />
-        <span class="archive-brand-text"><span class="archive-brand-name">{{ ARCHIVE_BRAND.mark }}</span><span class="archive-brand-sub">{{ ARCHIVE_BRAND.sub }}</span></span>
+        <ArchiveBrandLockup />
       </button>
       <!-- 担当 and the destinations scroll together: on a window too short for both, nothing slides under a fixed row. -->
       <div class="archive-sidebar-scroll">
@@ -109,6 +108,7 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
+import ArchiveBrandLockup from './ArchiveBrandLockup.vue'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from 'vue'
@@ -319,10 +319,6 @@ onBeforeUnmount(() => navObserver?.disconnect())
   text-align: left;
   cursor: pointer;
 }
-.archive-brand img { flex: none; width: 26px; height: 20px; object-fit: contain; filter: brightness(0); }
-.archive-brand-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.archive-brand-name { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-weight: var(--gs-weight-bold); letter-spacing: .02em; line-height: 1; white-space: nowrap; }
-.archive-brand-sub { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1; white-space: nowrap; }
 /* 担当 and the destinations share one scroller; it scrolls only if a short window cannot hold both. Its scrollbar is
    thin and in the chrome colours (Windows draws a wide light track otherwise). */
 .archive-sidebar-scroll { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gs-line) transparent; }
@@ -373,7 +369,7 @@ onBeforeUnmount(() => navObserver?.disconnect())
   .archive-nav-divider { margin-block: var(--gs-space-1); }
 }
 /* Rail: the text leaves (kept for assistive tech); icons, avatar and mark stay where they were. */
-.is-rail .archive-brand-text, .is-rail .archive-nav-link span, .is-rail .archive-sidebar-about { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.is-rail .archive-brand :deep(.archive-brand-text), .is-rail .archive-nav-link span, .is-rail .archive-sidebar-about { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .is-rail .archive-sidebar :deep(.stage-idol-copy), .is-rail .archive-sidebar :deep(.stage-idol-caret) { display: none; }
 .is-rail .archive-nav-divider { margin-inline: var(--gs-space-3); }
 @media (hover: hover) {
