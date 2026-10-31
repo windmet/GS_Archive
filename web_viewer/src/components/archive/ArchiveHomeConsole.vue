@@ -41,7 +41,7 @@
             <p v-if="filteredCostumes.pinned" class="console-note">当前：{{ costumeLabel(filteredCostumes.pinned) }}（不在此类别）</p>
             <div class="console-grid">
               <button v-for="costume in filteredCostumes.rows" :key="costume.modelId" type="button" class="console-costume" :class="{ 'is-current': activeCostume?.modelId === costume.modelId }" :aria-pressed="activeCostume?.modelId === costume.modelId" @click="emit('update:selectedCostume', costume.modelId)">
-                <Shirt :size="16" aria-hidden="true" /><span>{{ costumeLabel(costume) }}</span>
+                <img v-if="thumbOf(costume)" class="console-costume-thumb" :src="thumbOf(costume)" alt="" loading="lazy" decoding="async" /><Shirt v-else :size="16" aria-hidden="true" /><span>{{ costumeLabel(costume) }}</span>
               </button>
             </div>
             <p v-if="!filteredCostumes.rows.length" class="console-empty" role="status">这个类别下没有衣装。</p>
@@ -69,6 +69,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ChevronsUpDown, Search, Shirt, SlidersHorizontal } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import GsSegmented from '../gs/GsSegmented.vue'
+import { costumeImage } from '../../presentation/CostumeCollection.js'
 import { costumeCategoryCounts } from '../../presentation/CostumeCategories.js'
 import { groupConsoleIdols } from '../../presentation/HomeConsole.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
@@ -89,6 +90,8 @@ const activeName = computed(() => props.idolLabel(props.activeIdol))
 const activeSubject = computed(() => props.homeMode === 'card'
   ? (props.activeCard?.label || '默认卡面')
   : (props.activeCostume ? props.costumeLabel(props.activeCostume) : '未选衣装'))
+// Site renders of the spine models (CostumeCollection's own map); a model without one keeps the Shirt icon.
+const thumbOf = costume => costumeImage(costume.modelId, null)?.url || ''
 const colorOf = idol => normalizeIdolAccentColor(idol.color) || 'var(--gs-rule)'
 const ringColor = computed(() => colorOf(props.activeIdol))
 const categoryCounts = computed(() => costumeCategoryCounts(props.activeIdol.costumes))
@@ -120,6 +123,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 .console-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.1; }
 .console-capsule > svg { flex: none; color: var(--gs-ink-3); }
 .console-settings { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
+.console-costume-thumb { flex: none; width: 28px; height: 28px; border-radius: var(--gs-radius-media); object-fit: contain; background: var(--gs-paper); }
 .console-settings:hover { background: var(--gs-hover); }
 .console-capsule:focus-visible, .console-settings:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .console-scrim { display: none; }
@@ -156,10 +160,13 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 @media (max-width: 1100px) { .home-console { right: 16px; } .console-capsule { max-width: 200px; } }
 @media (max-width: 760px) {
   .home-console { top: 14px; right: 12px; }
-  .console-bar { flex-direction: column; align-items: stretch; gap: var(--gs-space-2); }
+  /* Two rows: [avatar][settings] over the full-width 立绘 | 卡面 switch. */
+  .console-bar { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; gap: var(--gs-space-2); }
+  .console-capsule { grid-area: 1 / 1; }
+  .console-settings { grid-area: 1 / 2; width: auto; }
+  .console-mode { grid-area: 2 / 1 / 3 / 3; }
   .console-capsule { justify-content: center; padding: 0; }
   .console-capsule .console-copy, .console-capsule > svg { display: none; }
-  .console-mode { align-self: center; }
   .console-mode :deep(.gs-segmented-option) { padding: 0 var(--gs-space-3); }
   .console-intro { right: 0; max-width: 220px; }
   /* A bottom sheet with an idol tab and a costume tab. */
