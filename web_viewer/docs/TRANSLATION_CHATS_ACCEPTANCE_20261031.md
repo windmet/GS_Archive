@@ -2,7 +2,17 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat007 全量语义复验
+## 续验：chat008 全量语义复验
+
+输入 HEAD `d6f6408adbe7d0d3e995d1664aaf97a9e7f353a3`。chat008 的 964 条全部逐句对照原文和当前 TM，追加修正 108 条，保持 draft。修复重复字、もふもふえん组合名、花音复数自称、舞田类英文与中文代词；纠正巡演、前辈、镜头重叠、自习时间、宅邸、预演等增译或误译。未新增 uncertain。全 Chats 当前 uncertain 仍为 10（本批未新增），missing/stale 0；11,534 条仍为 draft。chat002–008 已逐句语义复验；009–012 共 **3,667 条**待继续。
+
+[108 条原文与验收前后对照](../translation/studio/general/acceptance/chats-008-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-008-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-008-semantic-20261031/receipt.json)
+
+正式 import --replace 写入 108 条、856 条不变。验收链重放首轮 746 条及六次续验共 662 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan，审计 invalid/unpublished 0。verify-chat-translation、verify:general-translation-workflow 均通过。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+服务复用 5251 / PID 26452；HTTP chats.json 与本工作区字节一致（3,691,305 bytes）。数据经 scripts/verify-chat-translation.mjs 完整跑通运行期覆盖测试与开头预览对齐校验。
+
+## chat007 全量语义复验（上一批）
 
 输入 HEAD `18bb86de`。chat007 的 969 条全部逐句对照原文和当前 TM，追加修正 100 条，保持 draft。统一阿斯兰的吾主、仆从，撤去“上苍”“绝世”等补写；补回卷绪先生、咲先生、直央君、薰先生等称谓；纠正美食节误作音乐节（同一张卡的前后段原文已明确ご当地グルメフェス）、糖艺限定成吹糖、双六棋误写成飞行棋／大富翁等问题，并统一《行星射手》与もふもふえん。
 
