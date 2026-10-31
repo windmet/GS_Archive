@@ -53,7 +53,8 @@ for (const id of ['1_4_001_03_d','1_4_001_03_e','1_4_001_03_f','1_4_001_03_g','1
   assert.ok(candidates.length)
   for (const row of candidates) {
     assert.equal(readingSpeakerAvatarEntity(row), row.performance.entityId, 'Call/Chat and post-call ADV retain exact named source portraits')
-    assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,kind:'unknown'}}), null)
+    assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,kind:'unknown'}}), row.performance.entityId, 'a ??? line shows its stage actor')
+    assert.equal(readingSpeakerAvatarEntity({...row,performance:{entityType:null,entityId:null},speaker:{...row.speaker,kind:'unknown'}}), null, 'no actor, no icon')
     assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,sourceName:'？？？'}}), null)
     assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,sourceName:'別人'}}), null)
     // The printed name decides when the stage actor conflicts.

@@ -44,7 +44,7 @@
 新增 `ReadingSpeakerAvatar.js` 的 25 代码注册表，在 `useReadingPresentation` 的共享链路调用。
 整话与单段均复用既有 `ArchiveIdolAvatar`。对话必须有明确的已知角色代码及公开名称；
 不从译名、模型或通用 `mob` 推断人物。旧 compiled 中 NPC 被标为 `idol` 的情况予以兼容。
-`unknown` / `？？？` / Producer 不解锁 NPC 图标；原有偶像入口舞台、隐藏、离场与身份保密规则保留。
+`unknown` / `？？？` / Producer 不解锁 NPC 图标（2026-10-31 起：？？？行若有舞台演员编号，显示该演员图标，文字仍为？？？；无演员的群众/mob 无图标）；原有偶像入口舞台、隐藏、离场与身份保密规则保留。
 NPC 图标表示说话人身份，独立于舞台可见性；不改写 canonical visual / performance 证据。
 
 用户最终选择：边框与内框恢复原样，仅将共享组件的内部图片缩放默认值
