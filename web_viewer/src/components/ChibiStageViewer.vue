@@ -3909,8 +3909,12 @@ async function preloadSongMotions(intent) {
     return true
   }
 
-  const motions = selectedSong.value.motionIds.map(id => motionCatalog.value.get(id)).filter(Boolean)
-  const total = Math.max(1, targets.length * motions.length)
+  // Each slot loads every motion its own script plays, not only the song's listed motions: playSlotEvent injects any
+  // motion that is missing, and that is what used to keep downloading chibi motions after the song had started.
+  const motionsFor = runtime => [...new Set([...selectedSong.value.motionIds, ...eventsForPosition(runtime.stagePosition).map(event => event.motion)])]
+    .map(id => motionCatalog.value.get(id)).filter(Boolean)
+  const plan = targets.map(({ runtime }) => ({ runtime, motions: motionsFor(runtime) }))
+  const total = Math.max(1, plan.reduce((sum, item) => sum + item.motions.length, 0))
   let completed = 0
   preloading.value = true
   preloadProgress.value = 0
@@ -3920,7 +3924,7 @@ async function preloadSongMotions(intent) {
   intent.signal?.addEventListener('abort',cancel,{once:true})
   if (intent.signal?.aborted) cancel()
   try {
-    const jobs=motions.flatMap(motion=>targets.map(({runtime})=>({runtime,motion})))
+    const jobs=plan.flatMap(({runtime,motions})=>motions.map(motion=>({runtime,motion})))
     const worker=async()=> {
       while(intent.current() && !owner.signal.aborted && jobs.length) {
         const {runtime,motion}=jobs.shift()
