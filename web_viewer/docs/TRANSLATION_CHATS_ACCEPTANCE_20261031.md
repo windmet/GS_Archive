@@ -2,7 +2,17 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat004 全量语义复验
+## 续验：chat005 全量语义复验
+
+输入 HEAD `5f65ac98`。chat005 的 999 条全部逐句对照原文和当前 TM，追加修正 86 条，保持 draft。补齐原文“隼人さん／旬さん／夏来さん／春名さん”的先生称谓；九郎不擅用“我等”；撤去“热血笨蛋”“即兴改编”“瓷砖反射”“穿给大家看”等原文没有的贬义、演奏方式、材质和动作限定，纠正“今”误写“刚才”、重复字“2人人”及不自然的句尾断句。
+
+[86 条原文与验收前后对照](../translation/studio/general/acceptance/chats-005-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-005-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-005-semantic-20261031/receipt.json)
+
+chat002–005 已逐句语义复验；006–012 共 **6,599 条**仍待继续。全部 Chats 11,534 条仍为 draft，missing/stale 0、uncertain 4；本批没有新增 uncertain。正式 import --replace 只写入 86 条，913 条保持不变。验收链核验 10,535 条来源绑定，重放首轮 746 条与三次续验共 278 条修正；General 严格验证 19,497 条有效、0 orphan。verify-chat-translation、verify:general-translation-workflow 均通过；无前端代码改动，未重复 Vite 构建或复制资源包。
+
+Browser 复用 5251 / PID 26452，HTTP chats.json 与本工作区字节一致（3,692,931 bytes）。通信→天濑冬马→组合聊天→Jupiter 信赖度聊天 `8_2_x_001jup_8_2_1_001.json`，经过制作人回复后，18/32 的已显示正文含“冬马君真是热血啊”，与日文原文相对照；1440×900、390×844 截图均可见此条，console error/warn 为空，页面非空、无框架错误覆盖层，返回组合目录正常。快进范围已还原“仅已读”，视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/005-corrected-tone-desktop.png` 和 `005-corrected-tone-mobile.png`。未据此宣称全部 UI、所有 detail 气泡或实体手机通过；原菜单“译文暂时无法载入”提示仍保留。没有部署。
+
+## chat004 全量语义复验（上一批）
 
 输入 HEAD `871a429d`。chat004 的 983 条全部逐句对照原文和当前 TM，追加修正 111 条，保持 draft。主要修正キリオ误称“清澄”、あまね误译“雨音”、そーいちろー误译“想一郎”，以及蝶蝶小姐、制作人君和吾辈们的项目称谓。撤去“幸运女神”“小擦伤”“中暑”“倾尽全军之力”等原文未限定的性别、伤势或夸大内容。
 
