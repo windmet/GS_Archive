@@ -2,7 +2,17 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat003 全量语义复验
+## 续验：chat004 全量语义复验
+
+输入 HEAD `871a429d`。chat004 的 983 条全部逐句对照原文和当前 TM，追加修正 111 条，保持 draft。主要修正キリオ误称“清澄”、あまね误译“雨音”、そーいちろー误译“想一郎”，以及蝶蝶小姐、制作人君和吾辈们的项目称谓。撤去“幸运女神”“小擦伤”“中暑”“倾尽全军之力”等原文未限定的性别、伤势或夸大内容。
+
+[111 条原文与验收前后对照](../translation/studio/general/acceptance/chats-004-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-004-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-004-semantic-20261031/receipt.json)
+
+chat002–004 已逐句语义复验；005–012 共 **7,598 条**仍待继续。全部 Chats 11,534 条仍为 draft，missing/stale 0、uncertain 4；本批没有新增 uncertain。此次 import --replace 仅写入 111 条，872 条保持不变；原始回填和既有验收凭据未改。验收链核验 10,535 条来源绑定，重放首轮 746 条与两次续验共 192 条修正；General 严格验证 19,497 条有效、0 orphan。verify-chat-translation 和 verify:general-translation-workflow 均通过。数据变更未重复 Vite 构建或生成资源包，未部署。
+
+Browser 继续复用 5251 / PID 26452；HTTP 发布分片与本工作区一致（3,693,431 bytes）。通信→猫柳桐生，个人聊天 `017kir_301_2_3_017_01_09_a.json` 验证“制作人君”及两次回复交互；播放器回复气泡显示短文，没有将未显示的完整 detail「桐生先生」记作页面通过。随后返回随机话题池，第 01 话题入口显示“蝶蝶小姐”；第 02 话题 `8_1_x_017kir_8_1_2_017.json` 的正文显示“九郎君带来的茶点，还有庄一郎君的蛋糕”，1440×900 与 390×844 均完成截图，console error/warn 为空，页面非空、无框架错误覆盖层。截图位于 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/004-corrected-name-desktop.png` 与 `004-corrected-name-mobile.png`。返回目录后视口已恢复，临时快进范围已还原“仅已读”；未改变担当或保存屏幕方向。菜单仍显示既有“译文暂时无法载入”提示，未将所有菜单、完整 detail 气泡或实体手机验收记作通过。
+
+## chat003 全量语义复验（上一批）
 
 输入 HEAD `cd70c39a`。chat003 的 955 条已逐句对照原文与当前 TM，追加修正 81 条。修正覆盖「カエール／かえーる」的项目术语“青蛙玩偶”、实先生的称谓、サポーター不擅定为“后援会”、ファンサービス的互动含义，以及原文没有的邮件发送、快闪店、具体痣位置等补写。知恵の輪改为“益智解环”，不指定为九连环；タキシード改为无尾礼服。
 
