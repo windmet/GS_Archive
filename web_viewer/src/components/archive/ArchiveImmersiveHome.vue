@@ -165,13 +165,13 @@
           <small>此选择独立于资料馆壁纸，切换偶像时优先使用该偶像的卡面。</small>
         </label>
         <fieldset v-if="homeMode === 'spine'" class="settings-backgrounds">
-          <legend>场景背景</legend>
-          <p>固定背景不会随换人、换装或切换台词改变。</p>
-          <button type="button" class="background-auto" :aria-pressed="preferences.background === 'cue'" @click="preferences.background = 'cue'">跟随台词背景</button>
+          <legend>背景来源</legend>
+          <p>{{ backgroundSource === 'cue' ? '背景随台词所在的场景变化。' : '固定场景不会随换人、换装或切换台词改变。' }}</p>
+          <GsSegmented class="background-source" :model-value="backgroundSource" :options="BACKGROUND_SOURCES" aria-label="背景来源" @update:model-value="chooseBackgroundSource" />
           <p v-if="backgroundLoading" role="status">正在读取已收录场景…</p>
           <p v-if="backgroundError" role="status">{{ backgroundError }} <button type="button" @click="loadBackgroundCatalogue(true)">重试</button></p>
           <p v-if="backgroundUnavailable" role="status">之前选择的背景当前不可用，暂用台词背景；请重新选择。</p>
-          <label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
+          <template v-if="backgroundSource === 'fixed'"><label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
           <div v-if="backgroundVariants.length" class="background-variants" role="group" aria-label="按时段与天气筛选">
             <button type="button" :aria-pressed="!backgroundVariant" @click="backgroundVariant = ''">全部</button>
             <button v-for="entry in backgroundVariants" :key="entry.id" type="button" :aria-pressed="backgroundVariant === entry.id" @click="backgroundVariant = entry.id">{{ entry.label }} <small>{{ entry.count }}</small></button>
@@ -183,7 +183,7 @@
             </button>
           </div>
           <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多场景</button>
-          <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small>
+          <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small></template>
         </fieldset>
 
         <label class="settings-field">
@@ -423,6 +423,16 @@ const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry 
   archiveNamedBackgroundSearch(entry.label).toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
 const visibleBackgrounds = computed(() => filteredBackgrounds.value.slice(0, backgroundLimit.value))
 watch([backgroundQuery, backgroundVariant], () => { backgroundLimit.value = 12 })
+const BACKGROUND_SOURCES = [{ value: 'cue', label: '随台词变化' }, { value: 'fixed', label: '固定场景' }]
+// The segmented control is its own state: choosing 固定场景 opens the list while the line-following background keeps
+// showing until a scene is picked, and a saved fixed scene opens on 固定场景.
+const backgroundSource = ref(preferences.background === 'cue' ? 'cue' : 'fixed')
+watch(() => preferences.background, value => { if (value !== 'cue') backgroundSource.value = 'fixed' })
+function chooseBackgroundSource(value) {
+  backgroundSource.value = value
+  if (value === 'cue') preferences.background = 'cue'
+  else loadBackgroundCatalogue()
+}
 const backgroundUnavailable = computed(() => backgroundReady.value && preferences.background !== 'cue' && !backgroundEntries.value.some(entry => entry.id === preferences.background))
 const selectedBackground = computed(() => resolveHomeBackground(preferences.background, backgroundEntries.value,
   activeCue.value?.background || activeIdol.value?.representativeBg || '', backgroundReady.value))
@@ -801,7 +811,7 @@ onBeforeUnmount(() => {
 button.dialogue-card { cursor:pointer; }
 button.dialogue-card:hover { color:var(--gs-selected-ink); }
 /* The box keeps the height of three lines and the text starts at the top, so stepping between lines never moves the frame or the controls. A fourth line grows it instead of clipping. */
-.home-dialogue .dialogue-text { min-height:calc(3 * 1.7em);font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
+.home-dialogue .dialogue-text { height:calc(3 * 1.7em);overflow-y:auto;scrollbar-width:thin;font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
 .home-dialogue .dialogue-line { flex:1;min-width:0;margin:0;padding:2px 2px 4px;font-size:inherit;line-height:1.7; }
 .dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity .12s ease; }
 .dialogue-fade-enter-from,.dialogue-fade-leave-to { opacity:0; }
@@ -815,8 +825,8 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .home-dialogue .dialogue-actions .cue-index-trigger { display:inline-flex;gap:6px;width:auto;margin-left:auto;padding:0 8px;font-size:var(--gs-text-ui);font-variant-numeric:tabular-nums; }
 .cue-index-trigger small { font-size:var(--gs-text-meta);color:var(--gs-ink-3); }
 @media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
-@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { font-size:var(--gs-text-body); } }
-@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);min-height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
+@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { height:calc(4 * 1.7em);font-size:var(--gs-text-body); } }
+@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
 .scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in var(--gs-motion-enter) var(--gs-ease-out); }
 .scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
 .scene-settings.cue-index > header { background:transparent; }
