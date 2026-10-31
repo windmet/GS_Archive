@@ -1,5 +1,5 @@
 <template>
-  <section ref="previewRoot" class="chart-preview" :class="{ 'is-long': mode === 'long', 'is-immersive': immersive }" aria-label="谱面查看器" @keydown.esc="immersive && leaveImmersive()">
+  <section ref="previewRoot" class="chart-preview" :class="{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && !controlsShown }" aria-label="谱面查看器" @keydown.esc="immersive && leaveImmersive()" @pointerdown="immersive && revealControls()">
     <button v-if="!opened" type="button" class="chart-open" @click="opened = true">打开谱面预览</button>
     <template v-else>
       <header class="chart-toolbar">
@@ -24,7 +24,7 @@
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div v-if="maintainer" class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
           <div class="chart-navigation"><div class="chart-step" role="group" aria-label="谱面播放操作"><button type="button" aria-label="回到开头" title="歌曲开头 · 0 秒" @click="seek(0)"><SkipBack :size="19" aria-hidden="true" /></button><button type="button" aria-label="上一个音符" title="上一个音符 · ←" :disabled="!previousNote" @click="step(-1)"><ChevronLeft :size="23" aria-hidden="true" /></button><button type="button" class="chart-play" :aria-label="starting || playing ? '暂停' : '播放'" :disabled="!audioTrack?.url" @click="togglePlayback"><component :is="starting || playing ? Pause : Play" :size="21" aria-hidden="true" />{{ starting || playing ? '暂停' : '播放' }}</button><button type="button" aria-label="下一个音符" title="下一个音符 · →" :disabled="!nextNote" @click="step(1)"><ChevronRight :size="23" aria-hidden="true" /></button><button type="button" aria-label="播放末尾" title="播放末尾（含尾奏）" @click="seekSeconds(totalSeconds)"><SkipForward :size="19" aria-hidden="true" /></button></div></div>
-          <p v-if="clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
+          <p v-if="assetsProgress || clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ assetsProgress ? `正在加载特效与 Combo 贴图 ${assetsProgress.done}/${assetsProgress.total}…` : clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
           <p v-if="maintainer && demonstrationEnabled && demonstrationState" class="chart-demonstration chart-position-status" aria-label="自动演示事件统计" :data-count="demonstrationState.count" :data-total="demonstrationState.total" :data-epoch="demonstrationState.epoch" :data-seconds="demonstrationState.seconds">演示事件 {{ demonstrationState.count }} / {{ demonstrationState.total }} <span>· 持续长条 {{ demonstrationState.holds.length }}</span><span v-for="hold in demonstrationState.holds" :key="hold.sourceIndex" :data-hold-source="hold.sourceIndex" :data-lane="hold.lane"> · 轨位 {{ (hold.lane + 1).toFixed(1) }}</span></p>        </footer>
       </template>
       </div>
@@ -69,6 +69,7 @@ import { compileSongChartDemonstration, createSongChartDemonstration } from '../
 import { createSongChartHitEffectPool } from '../../presentation/SongChartHitEffectSelection.js'
 import { createSongChartSoundPlayer } from '../../presentation/SongChartSoundPlayer.js'
 import { createSongComboPresentation, delayedChartSeconds, noteTimingSeconds } from '../../presentation/SongComboTiming.js'
+import { preloadSongChartTrackAssets } from '../../presentation/SongChartTrackAssets.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
@@ -87,13 +88,28 @@ const emit = defineEmits(['request-play'])
 // (iPhone Safari) the fixed full-window view still applies.
 const previewRoot = ref(null), immersive = ref(false)
 const { active: fullscreenActive, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
+// The controls float over the full-screen canvas: a touch shows them, three idle seconds hide them, and they stay
+// while paused. `playing` is declared below; the timer only reads it after setup.
+const controlsShown = ref(true)
+let controlsTimer = 0
+function revealControls() {
+  controlsShown.value = true
+  clearTimeout(controlsTimer)
+  controlsTimer = setTimeout(() => { if (playing.value) controlsShown.value = false }, 3000)
+}
+onBeforeUnmount(() => clearTimeout(controlsTimer))
 function enterImmersive() {
   mode.value = 'perspective'; infoOpen.value = false
   immersive.value = true
+  revealControls()
+  // Phones that allow it play this landscape; a refusal is not an error.
+  try { void screen.orientation?.lock?.('landscape')?.catch?.(() => {}) } catch { /* unsupported */ }
   void enterFullscreen(previewRoot.value)
 }
 function leaveImmersive() {
   immersive.value = false
+  clearTimeout(controlsTimer)
+  try { screen.orientation?.unlock?.() } catch { /* unsupported */ }
   if (fullscreenActive.value) void leaveFullscreen()
 }
 watch(fullscreenActive, (active, was) => { if (was && !active) immersive.value = false })
@@ -144,6 +160,7 @@ const safeSpeed = computed(() => Math.round(Math.max(1, Math.min(11, Number(spee
 const currentSeconds = computed(() => Math.max(0,transportSeconds.value))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
+watch(() => playing.value, () => { if (immersive.value) revealControls() })
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 // Defaults: perspective track, auto demonstration, hit sound SE1 at 70%, Combo on.
 const demonstrationEnabled = ref(true), demonstrationState = shallowRef(null)
@@ -207,6 +224,13 @@ watch(noteTiming, () => {
   sounds.seek(chartSeconds(seconds)); seekDemonstration(seconds); cadence.sync(seconds)
 })
 watch(volume, value => { if (audio.value) audio.value.volume = value * masterVolume })
+// Effect and Combo textures load as soon as a chart is ready; playback waits for them (see togglePlayback)
+// so nothing is fetched once the song is running.
+const assetsProgress = ref(null)
+let assetsReady = Promise.resolve()
+function loadTrackAssets() {
+  assetsReady = preloadSongChartTrackAssets((done, total) => { assetsProgress.value = done < total ? { done, total } : null }).then(() => { assetsProgress.value = null })
+}
 async function loadChart() {
   stopPlayback(); const current = ++generation; controller?.abort()
   editingTick.value = false
@@ -230,6 +254,7 @@ async function loadChart() {
       comboPresentation = createSongComboPresentation(timeline)
       sounds.setTimeline(timeline)
       effectPool = createSongChartHitEffectPool({ setIndex: 1 })
+      loadTrackAssets()
       loading.value = false; seekSeconds(0)
     }
   } catch (e) { if (current === generation && e.name !== 'AbortError') error.value = e.message || '谱面加载失败' }
@@ -300,6 +325,8 @@ async function togglePlayback() {
   // on resume would discard the frozen effects and restart their epoch.
   try {
     soundError.value = ''
+    await assetsReady
+    if (current !== playGeneration) return
     try { await sounds.prepare(soundSet.value) }
     catch { soundError.value = '打击音加载失败，歌曲仍可播放；请重新选择套装重试。' }
     if (current !== playGeneration) return
@@ -449,13 +476,19 @@ button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport
 /* 沉浸查看: one fixed screen; the track takes the room left by the difficulty row and the transport
    and keeps its 16:9. touch-action: none stops pans and pinches from reaching the page. */
 .chart-immersive-exit { display: none; }
-section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: var(--gs-space-2); margin: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); border: 0; background: var(--gs-paper); overscroll-behavior: none; touch-action: none; }
-.is-immersive .chart-toolbar { flex: none; margin: 0; }
+section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; border: 0; background: var(--gs-stage-bg); overscroll-behavior: none; touch-action: none; }
+/* chart-layout and chart-main sit between the section and the canvas; without flex here the canvas collapses to its min-height. */
+.is-immersive .chart-layout, .is-immersive .chart-main { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; }
+.is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; border: 0; container-type: size; }
+.is-immersive .chart-viewport :deep(.track-preview) { width: min(100cqw, calc(100cqh * 16 / 9)); }
+.is-immersive .chart-toolbar, .is-immersive .chart-transport { position: absolute; z-index: 3; left: 0; right: 0; margin: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
+.is-immersive .chart-toolbar { top: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-4) max(12px, env(safe-area-inset-left)); background: linear-gradient(rgb(0 0 0 / 0.6), transparent); }
+.is-immersive .chart-transport { bottom: 0; padding: var(--gs-space-4) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: linear-gradient(transparent, rgb(0 0 0 / 0.6)); }
+.is-immersive .chart-transport { color: var(--gs-stage-ink); }
+.is-immersive .chart-time, .is-immersive .chart-time small { color: inherit; }
+.is-immersive.controls-hidden .chart-toolbar, .is-immersive.controls-hidden .chart-transport { opacity: 0; pointer-events: none; }
 .is-immersive .chart-lead, .is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
 .is-immersive .chart-immersive-exit { display: inline-flex; height: var(--gs-control-touch); margin-left: auto; }
-.is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; container-type: size; }
-.is-immersive .chart-viewport :deep(.track-preview) { width: min(100cqw, calc(100cqh * 16 / 9)); }
-.is-immersive .chart-transport { flex: none; margin: 0; padding-top: var(--gs-space-2); }
 .is-immersive .chart-navigation { margin-top: var(--gs-space-1); }
 @media (max-height: 500px) {
   .is-immersive .chart-difficulties button { height: var(--gs-control-normal); }

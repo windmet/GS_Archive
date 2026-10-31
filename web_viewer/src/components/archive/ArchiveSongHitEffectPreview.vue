@@ -5,6 +5,8 @@
     height="720"
     aria-hidden="true"
     class="track-effects-canvas"
+    data-additive-hit-layer
+    style="mix-blend-mode:plus-lighter"
     :data-hits-count="hits.length"
     :data-holds-count="holds.length"
     :data-auto-active="autoEval.active"
@@ -113,9 +115,12 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .track-effects-canvas {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: contain;
   pointer-events: none;
 }
 </style>
