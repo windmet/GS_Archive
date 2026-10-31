@@ -13,6 +13,11 @@ const baseline = JSON.parse(await fs.readFile(baselinePath, 'utf8'))
 const revision = (await hashFile(baselinePath)).sha256
 const selected = baseline.entries.filter(e => isPreviewDataSnapshotKey(e.request_key))
 const selectedKeys = new Set(selected.map(e => e.request_key))
+// The card-home and scene pickers read these two files; a snapshot without them 404s both (the 2026-10-31 preview did,
+// because public/data/terminal was an untracked directory and a clean worktree never saw it).
+for (const key of ['data/terminal/wallpapers.json', 'data/terminal/backgrounds.json']) {
+  assert.ok(selectedKeys.has(key), `Required data key missing from the source baseline: ${key}`)
+}
 for (const key of [...baseline.drift.size_changed, ...baseline.drift.same_size_content_changed]) {
   assert.ok(selectedKeys.has(key), `Uncovered source drift: ${key}`)
 }
