@@ -2,7 +2,19 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat006 全量语义复验
+## 续验：chat007 全量语义复验
+
+输入 HEAD `18bb86de`。chat007 的 969 条全部逐句对照原文和当前 TM，追加修正 100 条，保持 draft。统一阿斯兰的吾主、仆从，撤去“上苍”“绝世”等补写；补回卷绪先生、咲先生、直央君、薰先生等称谓；纠正美食节误作音乐节（同一张卡的前后段原文已明确ご当地グルメフェス）、糖艺限定成吹糖、双六棋误写成飞行棋／大富翁等问题，并统一《行星射手》与もふもふえん。
+
+辉的法被／ハッピー、調子／超幸せ两处谐音，保留字面意思并标 uncertain，未硬造中文笑点或新增“高级笑话”。全 Chats 当前 uncertain 为 10（本批新增 2），missing/stale 0；11,534 条仍为 draft。chat002–007 已逐句语义复验；008–012 共 **4,631 条**待继续。
+
+[100 条原文与验收前后对照](../translation/studio/general/acceptance/chats-007-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-007-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-007-semantic-20261031/receipt.json)
+
+正式 import --replace 写入 100 条、869 条不变。验收链重放首轮 746 条及五次续验共 554 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan，审计 invalid/unpublished 0。verify-chat-translation、verify:general-translation-workflow 均通过。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+Browser 复用 5251 / PID 26452；HTTP chats.json 与本工作区字节一致（3,692,234 bytes）。通信→阿斯兰·别西卜II世→个人聊天 `029ass_302_2_3_029_02_09_b.json`，目录与开场显示“吾主，回应吾之言语吧。”；选择“怎么了吗？”后推进到 4/12，正文显示“吾与仆从集结魔力，精炼出了暗黑的食粮。”。1440×900、390×844 均截图，页面非空、无框架错误覆盖层，console error/warn 为空，返回目录正常。视口已恢复，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/007-corrected-address-desktop.png` 与 `007-corrected-address-mobile.png`。此项仅覆盖本次通信旅程，不代表全聊天或实体手机验收；既有菜单提示本次未重新检查。
+
+## chat006 全量语义复验（上一批）
 
 输入 HEAD `e9d6b079`。chat006 的 999 条全部逐句对照原文和当前 TM，追加修正 176 条，保持 draft。发现并修复 70 条字面 `\n`（反斜线加 n）误代换行；全 Chats 扫描未发现其他批次有同类条目。补回さん称谓，按项目规则保留四季的 Mega、统一にゃこ为“喵子”，修正“花”误作“话语”、“茶叶品名”误作“茶树品种”及其他增译。
 
