@@ -525,13 +525,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
    column gap as the lists below), stretched to one height; the gallery then takes the full row. */
 .overview-personal-stats { display:none; }
 @container portal (min-width:981px) {
-  .overview-footprint.is-preferred-footprint { display:none; }
-  .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);margin-top:var(--gs-space-4); }
-  .overview-featured:not(.is-all-view) > .overview-card-showcase { grid-column:1 / -1; }
-  .overview-featured:not(.is-all-view) .overview-identity { flex:1;height:auto;min-height:228px; }
-  .overview-personal-stats { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:var(--gs-space-3); }
-  /* The hero's quiet settings sit on the same line as 去事务所, at the other corner, clear of the face. */
-  .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
   .overview-content-grid:not(.is-global-grid) .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
 }
 /* Numbers are text: a hairline row, the stage face for the figure, one grey line for the breakdown. No box. */
@@ -637,8 +630,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-song-image, .overview-story-image, .overview-event-image { position:relative;display:flex;flex:none;align-items:center;justify-content:center;margin:0;padding:0;border:0;border-radius:var(--gs-radius-media);overflow:hidden;background:var(--gs-line); }
 .overview-song-image { width:56px;height:56px; }
 .overview-story-image { width:44px;height:44px; }
-.overview-event-image { width:128px;height:72px; }
-.overview-song-image:deep(img), .overview-story-image:deep(img), .overview-event-image:deep(img) { display:block;width:100%;height:100%;margin:0;object-fit:cover; }
+.overview-event-image { width:132px;height:72px;background:var(--gs-paper); }
+.overview-song-image:deep(img), .overview-story-image:deep(img) { display:block;width:100%;height:100%;margin:0;object-fit:cover; }
+/* Banners are about 47:25.5 with their text at the edge: show the whole picture instead of cropping it. */
+.overview-event-image:deep(img) { display:block;width:100%;height:100%;margin:0;object-fit:contain; }
 .overview-song-image:deep(.domain-resource-empty), .overview-story-image:deep(.domain-resource-empty), .overview-event-image:deep(.domain-resource-empty) { display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:0;margin:0;background:transparent;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-song-image:deep(.domain-resource-empty span), .overview-story-image:deep(.domain-resource-empty span), .overview-song-image:deep(figcaption), .overview-story-image:deep(figcaption) { display:none; }
 .overview-event-image:deep(figcaption) { position:absolute;inset:auto var(--gs-space-3) var(--gs-space-2);margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
@@ -745,14 +740,27 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-main-index, .overview-story-gateways { grid-template-columns:minmax(0,1fr); }
   .overview-story-gateways button:last-child:nth-child(odd) { grid-column:auto; }
 }
+/* The 担当 banner with its 2×2 figures: from a 720px page (an iPad content area is 966–972px, short of the 981px
+   the event columns need). It follows the narrow-page block above so its single column does not win. */
+@container portal (min-width:720px) {
+  .overview-footprint.is-preferred-footprint { display:none; }
+  .overview-featured:not(.is-all-view) { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);margin-top:var(--gs-space-4); }
+  .overview-featured:not(.is-all-view) > .overview-card-showcase { grid-column:1 / -1; }
+  .overview-featured:not(.is-all-view) .overview-identity { flex:1;height:auto;min-height:228px; }
+  .overview-personal-stats { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:var(--gs-space-3); }
+  /* The hero's quiet settings sit on the same line as 去事务所, at the other corner, clear of the face. */
+  .overview-featured:not(.is-all-view) .overview-personal-meta { position:absolute;top:176px;right:var(--gs-space-5);z-index:4;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--gs-surface) 88%,transparent); }
+  .overview-featured:not(.is-all-view) .overview-personal { display:flex;flex-direction:column;gap:var(--gs-space-3); }
+}
 @container portal (max-width:640px) {
+  .overview-signature { display:none; }
   .overview-personal { display:flex;align-items:stretch; }
   .overview-unit-matrix { grid-template-columns:repeat(4,minmax(0,1fr)); }
   .overview-unit-tile { height:84px; }
   .overview-event-grid, .is-global-grid .overview-song-list { grid-template-columns:minmax(0,1fr); }
   .overview-hub-group { grid-template-columns:minmax(0,1fr);gap:0; }
   .overview-hub-group > h3 { padding-bottom:var(--gs-space-2); }
-  .overview-event-image { width:112px;height:63px; }
+  .overview-event-image { width:116px;height:63px; }
   .overview-scope-actions { grid-template-columns:minmax(0,1fr); }
   .overview-section-heading h2, .overview-section-heading h3 { font-size:var(--gs-text-subtitle); }
 }
