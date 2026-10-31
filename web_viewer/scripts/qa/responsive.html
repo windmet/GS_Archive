@@ -1,0 +1,16 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Responsive fixture lab (dev only)</title></head><body><div id="qa"></div><script type="module">
+import {createApp,h,ref} from 'vue';
+import Idol from '/src/components/archive/ArchiveIdolReference.vue';
+import bootstrap from '/readmodels/bootstrap.inline.json';
+import '/src/styles/GS_UI_TOKENS.css';
+if (!import.meta.env.DEV) throw new Error('Development only');
+const roster=bootstrap.idols || bootstrap.roster || [];
+const found=Object.values(bootstrap).find(v=>Array.isArray(v)&&v[0]?.unitCode)||roster;
+const refs=found.map(v=>({idolCode:v.id,displayName:v.name,unitName:v.unitName,accentColor:v.color,actionable:true,imageCandidates:[]}));
+createApp({setup(){const mode=ref(new URL(location.href).searchParams.get('data')||'Demo');return()=>h('main',{},[
+h('h1','GS Archive — existing component fixture'),h('p','真实 bootstrap 偶像名 / 组合名；无图片回退。此页不进入生产入口。'),
+h('nav', ['Demo','Worst case','Empty','One','Dense'].map(m=>h('button',{'aria-pressed':mode.value===m,onClick:()=>{mode.value=m;history.replaceState(null,'','?data='+encodeURIComponent(m))}},m))),
+h('section',{style:'width:min(100%,320px);margin:auto'},(mode.value==='Empty'?[]:mode.value==='One'?refs.slice(0,1):mode.value==='Worst case'?[...refs].sort((a,b)=>b.displayName.length-a.displayName.length):mode.value==='Dense'?refs:refs.slice(0,3)).map(r=>h(Idol,{reference:r}))),
+mode.value==='Empty'?h('p','0 条测试数据'):null])}}).mount('#qa');
+</script><style>body{margin:16px;background:var(--gs-paper);color:var(--gs-ink);font-family:system-ui}nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}button{min-height:44px}button[aria-pressed=true]{font-weight:bold}</style></html>
+</body></html>
