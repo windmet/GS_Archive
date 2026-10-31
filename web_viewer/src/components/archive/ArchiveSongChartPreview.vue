@@ -24,7 +24,7 @@
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div v-if="maintainer" class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
           <div class="chart-navigation"><div class="chart-step" role="group" aria-label="谱面播放操作"><button type="button" aria-label="回到开头" title="歌曲开头 · 0 秒" @click="seek(0)"><SkipBack :size="19" aria-hidden="true" /></button><button type="button" aria-label="上一个音符" title="上一个音符 · ←" :disabled="!previousNote" @click="step(-1)"><ChevronLeft :size="23" aria-hidden="true" /></button><button type="button" class="chart-play" :aria-label="starting || playing ? '暂停' : '播放'" :disabled="!audioTrack?.url" @click="togglePlayback"><component :is="starting || playing ? Pause : Play" :size="21" aria-hidden="true" />{{ starting || playing ? '暂停' : '播放' }}</button><button type="button" aria-label="下一个音符" title="下一个音符 · →" :disabled="!nextNote" @click="step(1)"><ChevronRight :size="23" aria-hidden="true" /></button><button type="button" aria-label="播放末尾" title="播放末尾（含尾奏）" @click="seekSeconds(totalSeconds)"><SkipForward :size="19" aria-hidden="true" /></button></div></div>
-          <p v-if="clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
+          <p v-if="assetsProgress || clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ assetsProgress ? `正在加载特效与 Combo 贴图 ${assetsProgress.done}/${assetsProgress.total}…` : clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
           <p v-if="maintainer && demonstrationEnabled && demonstrationState" class="chart-demonstration chart-position-status" aria-label="自动演示事件统计" :data-count="demonstrationState.count" :data-total="demonstrationState.total" :data-epoch="demonstrationState.epoch" :data-seconds="demonstrationState.seconds">演示事件 {{ demonstrationState.count }} / {{ demonstrationState.total }} <span>· 持续长条 {{ demonstrationState.holds.length }}</span><span v-for="hold in demonstrationState.holds" :key="hold.sourceIndex" :data-hold-source="hold.sourceIndex" :data-lane="hold.lane"> · 轨位 {{ (hold.lane + 1).toFixed(1) }}</span></p>        </footer>
       </template>
       </div>
@@ -69,6 +69,7 @@ import { compileSongChartDemonstration, createSongChartDemonstration } from '../
 import { createSongChartHitEffectPool } from '../../presentation/SongChartHitEffectSelection.js'
 import { createSongChartSoundPlayer } from '../../presentation/SongChartSoundPlayer.js'
 import { createSongComboPresentation, delayedChartSeconds, noteTimingSeconds } from '../../presentation/SongComboTiming.js'
+import { preloadSongChartTrackAssets } from '../../presentation/SongChartTrackAssets.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
@@ -223,6 +224,13 @@ watch(noteTiming, () => {
   sounds.seek(chartSeconds(seconds)); seekDemonstration(seconds); cadence.sync(seconds)
 })
 watch(volume, value => { if (audio.value) audio.value.volume = value * masterVolume })
+// Effect and Combo textures load as soon as a chart is ready; playback waits for them (see togglePlayback)
+// so nothing is fetched once the song is running.
+const assetsProgress = ref(null)
+let assetsReady = Promise.resolve()
+function loadTrackAssets() {
+  assetsReady = preloadSongChartTrackAssets((done, total) => { assetsProgress.value = done < total ? { done, total } : null }).then(() => { assetsProgress.value = null })
+}
 async function loadChart() {
   stopPlayback(); const current = ++generation; controller?.abort()
   editingTick.value = false
@@ -246,6 +254,7 @@ async function loadChart() {
       comboPresentation = createSongComboPresentation(timeline)
       sounds.setTimeline(timeline)
       effectPool = createSongChartHitEffectPool({ setIndex: 1 })
+      loadTrackAssets()
       loading.value = false; seekSeconds(0)
     }
   } catch (e) { if (current === generation && e.name !== 'AbortError') error.value = e.message || '谱面加载失败' }
@@ -316,6 +325,8 @@ async function togglePlayback() {
   // on resume would discard the frozen effects and restart their epoch.
   try {
     soundError.value = ''
+    await assetsReady
+    if (current !== playGeneration) return
     try { await sounds.prepare(soundSet.value) }
     catch { soundError.value = '打击音加载失败，歌曲仍可播放；请重新选择套装重试。' }
     if (current !== playGeneration) return
