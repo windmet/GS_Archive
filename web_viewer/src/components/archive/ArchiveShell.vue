@@ -166,6 +166,8 @@ const SIDEBAR_KEY = 'sidem:archive-sidebar'
 const storedSidebar = ref(['rail', 'full'].includes(readStored(SIDEBAR_KEY)) ? readStored(SIDEBAR_KEY) : '')
 const wideWindow = ref(true), forcedRail = ref(false), isPhone = ref(false)
 const railMode = computed(() => forcedRail.value || (storedSidebar.value ? storedSidebar.value === 'rail' : !wideWindow.value))
+// A route change or a fold of the sidebar moves the entry the menu hangs from, so the menu closes.
+watch([() => props.activeSection, railMode], () => { flyout.value = null })
 function toggleSidebar() {
   storedSidebar.value = railMode.value ? 'full' : 'rail'
   writeStored(SIDEBAR_KEY, storedSidebar.value)
