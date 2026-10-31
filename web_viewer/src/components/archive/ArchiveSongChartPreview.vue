@@ -476,7 +476,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport
 /* 沉浸查看: one fixed screen; the track takes the room left by the difficulty row and the transport
    and keeps its 16:9. touch-action: none stops pans and pinches from reaching the page. */
 .chart-immersive-exit { display: none; }
-section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; border: 0; background: #0b141c; overscroll-behavior: none; touch-action: none; }
+section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; border: 0; background: var(--gs-stage-bg); overscroll-behavior: none; touch-action: none; }
 /* chart-layout and chart-main sit between the section and the canvas; without flex here the canvas collapses to its min-height. */
 .is-immersive .chart-layout, .is-immersive .chart-main { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; }
 .is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; border: 0; container-type: size; }
@@ -484,7 +484,7 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
 .is-immersive .chart-toolbar, .is-immersive .chart-transport { position: absolute; z-index: 3; left: 0; right: 0; margin: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
 .is-immersive .chart-toolbar { top: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-4) max(12px, env(safe-area-inset-left)); background: linear-gradient(rgb(0 0 0 / 0.6), transparent); }
 .is-immersive .chart-transport { bottom: 0; padding: var(--gs-space-4) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: linear-gradient(transparent, rgb(0 0 0 / 0.6)); }
-.is-immersive .chart-transport { color: #eef6f6; }
+.is-immersive .chart-transport { color: var(--gs-stage-ink); }
 .is-immersive .chart-time, .is-immersive .chart-time small { color: inherit; }
 .is-immersive.controls-hidden .chart-toolbar, .is-immersive.controls-hidden .chart-transport { opacity: 0; pointer-events: none; }
 .is-immersive .chart-lead, .is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
