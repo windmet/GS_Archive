@@ -39,7 +39,7 @@
       <p v-if="!rows.length" class="chart-table-status">没有符合条件的谱面。<button type="button" @click="reset">清除筛选</button></p>
       <ul v-else class="chart-rows">
         <li v-for="row in rows" :key="row.key" class="song-row chart-grid chart-row" :style="{ '--diff': DIFF_COLORS[row.type] }">
-          <button type="button" class="chart-row-open" :aria-label="`打开谱面：${row.title} ${row.label} ${row.levelLabel}`" @click="emit('chart-song', row.code, row.type)"></button>
+          <button type="button" class="chart-row-open" :aria-label="`打开谱面：${row.title} ${row.label} ${row.levelLabel}`" :aria-expanded="expanded === row.key" @click="openRow(row, $event)"></button>
           <span class="col-song">
             <img v-if="row.jacket" :src="row.jacket" alt="" width="40" height="40" loading="lazy" decoding="async" />
             <span v-else class="chart-row-nojacket" aria-hidden="true"></span>
@@ -58,6 +58,11 @@
           <span class="col-mix chart-mix" :title="row.mixLabel" aria-hidden="true"><i v-for="kind in NOTE_KINDS" :key="kind.key" :class="`is-${kind.key}`" :style="{ flexGrow: row.mix[kind.key] }"></i></span>
           <span class="col-since"><span>{{ UNLOCKS[row.unlock] }}</span><small>{{ row.since }}</small></span>
           <span class="col-stage"><button type="button" class="chart-row-stage" :aria-label="`${row.title} 的 2D 舞台`" title="2D 舞台" @click="emit('stage-song', row.code)"><Clapperboard :size="18" aria-hidden="true" /></button></span>
+          <!-- Phones only (CSS shows it): the first tap opens these two choices instead of going straight to a chart. -->
+          <div class="chart-row-actions" :class="{ 'is-open': expanded === row.key }" :inert="expanded !== row.key"><div class="chart-row-actions-inner">
+            <button type="button" @click="emit('chart-song', row.code, row.type)">进入谱面</button>
+            <button type="button" @click="emit('stage-song', row.code)">进入 LIVE</button>
+          </div></div>
         </li>
       </ul>
     </template>
@@ -80,6 +85,14 @@ import table from '../../data/liveChartTable.json'
 // jackets from the catalogue rows the page already holds. No score multipliers: the archive has no such data.
 const props = defineProps({ songs: { type: Array, default: () => [] } })
 const emit = defineEmits(['chart-song', 'stage-song'])
+// One row open at a time. Whether the choices apply is the stylesheet's call (they are display:none above phone width),
+// so the handler asks the element rather than keeping a second breakpoint in script.
+const expanded = ref('')
+function openRow(row, event) {
+  const actions = event.currentTarget.parentElement.querySelector('.chart-row-actions')
+  if (actions && getComputedStyle(actions).display !== 'none') { expanded.value = expanded.value === row.key ? '' : row.key; return }
+  emit('chart-song', row.code, row.type)
+}
 
 const DIFFICULTIES = [{ value: 4, label: 'EXPERT' }, { value: 3, label: 'HARD' }, { value: 2, label: 'NORMAL' }, { value: 1, label: 'EASY · PASSION' }, { value: 0, label: '全部难度' }]
 const DIFF_COLORS = { 1: 'var(--gs-diff-easy)', 2: 'var(--gs-diff-normal)', 3: 'var(--gs-diff-hard)', 4: 'var(--gs-diff-expert)' }
@@ -191,6 +204,7 @@ const rows = computed(() => {
 .chart-rows { margin: 0; padding: 0; list-style: none; }
 .chart-row { position: relative; min-height: 60px; border-bottom: 1px solid var(--gs-line); }
 .chart-row > span { position: relative; min-width: 0; pointer-events: none; }
+.chart-row-actions { display: none; }
 .chart-row-open { position: absolute; inset: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
 @media (hover: hover) { .chart-row:hover { background: var(--gs-mint-wash); } }
 .chart-row:active { background: var(--gs-mint-wash); }
@@ -234,6 +248,13 @@ const rows = computed(() => {
   .chart-table-search { max-width: none; }
   .chart-grid { grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--gs-space-4); }
   .chart-row > .col-combo, .chart-row > .col-bpm, .chart-row > .col-time, .chart-row > .col-stage { display: none; }
+  .chart-row-actions { position: relative; z-index: 1; display: grid; grid-column: 1 / -1; grid-template-rows: 0fr; transition: grid-template-rows var(--gs-duration-base, 200ms) ease; }
+  .chart-row-actions.is-open { grid-template-rows: 1fr; }
+  .chart-row-actions-inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gs-space-3); min-height: 0; overflow: hidden; }
+  .chart-row-actions.is-open .chart-row-actions-inner { padding: var(--gs-space-3) 0 var(--gs-space-4); }
+  .chart-row-actions button { min-height: var(--gs-control-touch); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-weight: var(--gs-weight-semibold); }
+  .chart-row-actions button:first-child { border-color: var(--gs-mint-ink); background: var(--gs-mint-ink); color: var(--gs-surface); }
+  .chart-row-actions button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
   .col-song { grid-row: 1 / 3; gap: var(--gs-space-4); padding: var(--gs-space-4) 0; }
   .col-song img, .chart-row-nojacket { width: 56px; height: 56px; }
   .chart-row-copy strong { display: -webkit-box; white-space: normal; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: var(--gs-text-body); line-height: 1.4; }
