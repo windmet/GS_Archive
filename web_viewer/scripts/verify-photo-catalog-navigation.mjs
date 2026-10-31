@@ -104,14 +104,14 @@ const renderer = Vue.createRenderer({
 let mobile = true
 const expectedErrors = []
 const context = vm.createContext({ AbortController, setTimeout, clearTimeout,
-  window: { matchMedia: () => ({ matches: mobile }) },
+  window: { matchMedia: () => ({ matches: mobile }), addEventListener() {}, removeEventListener() {} },
   document: { get activeElement(){return activeRoot?.activeElement || null} },
   console: { ...console, error: (...args) => expectedErrors.push(args) },
 })
 const emptyComponent = { render: () => null }
 const modules = {
   vue: Vue,
-  '@lucide/vue': { Camera: emptyComponent, SlidersHorizontal: emptyComponent, ImageOff: emptyComponent, X: emptyComponent },
+  '@lucide/vue': { Camera: emptyComponent, SlidersHorizontal: emptyComponent, ImageOff: emptyComponent, RefreshCw: emptyComponent, X: emptyComponent },
   './useArchivePhotoText.js': { archiveText: (kind, value) => value || '', archiveSearchText: (kind, value) => value || '', loadArchivePhotoNames: () => {} },
   '../../presentation/studio-preset-labels.mjs': { studioPresetPresentation },
   '../../presentation/photoStickerGroups.js': { ...photoStickerGroups },

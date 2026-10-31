@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A0 negative controls</title></head><body style="min-height:100vh">
+<main id="fixture"></main><script type="module">
+if(!import.meta.env.DEV)throw Error('Dev only');
+const mode=new URL(location.href).searchParams.get('case')||'normal';
+const styles={normal:'width:200px;min-width:0',outside:'position:absolute;left:110vw;width:50px',clipped:'width:100px;height:40px;overflow:hidden',overlap:'position:relative;height:80px',scroll:'width:100px;overflow-x:auto',image:'',fixed:'',title:'width:80px;white-space:nowrap;overflow:hidden',input:'',broken:'',delayed:'',unreachable:'height:50px;overflow:hidden',mutation:'display:flex;width:150px;margin-left:200px'};
+let content='Readable normal content';
+if(mode==='outside')content='Outside';
+if(mode==='clipped'||mode==='scroll')content='<div id="wide" style="width:500px">Wide content</div>';
+if(mode==='overlap')content='<button id="first" style="position:absolute;left:0;top:0">First</button><button id="second" style="position:absolute;left:10px;top:5px">Second</button>';
+const svg='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100" fill="teal"/></svg>');
+if(mode==='image')content='<img id="distorted" src="'+svg+'" style="width:100px;height:100px">';
+if(mode==='fixed')content='<button id="covered" data-qa-target style="position:absolute;bottom:10px">Covered action</button><div style="position:fixed;bottom:0;left:0;width:100%;height:80px;background:gray">Fixed bar</div>';
+if(mode==='title')content='<h1 id="long" style="font-size:20px">Long meaningful archive heading</h1>';
+if(mode==='input')content='<input id="small" style="font-size:13px" value="Search">';
+if(mode==='broken')content='<img id="broken" src="/assets/a0-deliberately-missing.png">';
+if(mode==='unreachable')content='<div style="height:300px">End cannot be reached</div>';
+if(mode==='mutation')content='<span id="shrinking" style="min-width:0;overflow-wrap:anywhere">GROWING_SIGN@L_Archive_Responsive_Constraint</span><button>Next</button>';
+document.querySelector('#fixture').innerHTML='<section id="subject" data-qa-scroll style="'+styles[mode]+'">'+content+'</section>';
+if(mode==='mutation'&&new URL(location.href).searchParams.has('mutated')){const e=document.querySelector('#shrinking');e.style.minWidth='auto';e.style.overflowWrap='normal';}
+if(mode!=='delayed')document.body.dataset.qaReady='true';else setTimeout(()=>{document.querySelector('#subject').textContent='Delayed business content';document.body.dataset.qaReady='true'},1200);
+</script></body></html>

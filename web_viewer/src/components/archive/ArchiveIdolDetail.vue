@@ -122,7 +122,7 @@ import { computed, ref, shallowRef, watch } from 'vue'
 import { idolThemeProperties } from '../../presentation/idolStageLight.js'
 import { ChevronRight, Info, Medal, Music, Play } from '@lucide/vue'
 import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
-import { loadCharacterPortraitData } from '../../data/ArchiveDataRepository.js'
+import { validateArchivePayload } from '../../data/archiveDataContracts.js'
 import { portalIdolPortrait } from '../../presentation/ArchivePortalPresentation.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -159,7 +159,11 @@ const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song',
 // The figure is the same promoted character art the portal hero uses (portalIdolPortrait over the
 // promotion registry), placed by where the person stands in it (idolVisualFocus), not by the image edge.
 const portraitRegistry = shallowRef(null)
-loadCharacterPortraitData().then(registry => { portraitRegistry.value = registry }).catch(() => {})
+// Fetched directly: the global archive repository must stay out of the production graph.
+fetch('/data/assets/raw_character_image_promotions.json').then(response => {
+  if (!response.ok) throw Error('Portrait registry unavailable')
+  return response.json()
+}).then(registry => { validateArchivePayload('rawCharacterImagePromotions', registry); portraitRegistry.value = registry }).catch(() => {})
 const portrait = computed(() => props.idol ? portalIdolPortrait(portraitRegistry.value, props.idol.idol_code) : null)
 const portraitFailed = ref(false), unitLogoFailed = ref(false)
 watch(() => props.idol?.idol_code, () => { portraitFailed.value = false; unitLogoFailed.value = false })
