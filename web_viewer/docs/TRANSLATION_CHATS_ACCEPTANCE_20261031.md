@@ -2,7 +2,19 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat009 全量语义复验（2026-11-01）
+## 续验：chat010 全量语义复验（2026-11-01）
+
+输入 HEAD `070798db`。chat010 的 999 条全部逐句对照原文和当前 TM，追加修正 233 条，保持 draft。包含 75 条逐句语义或表达补正、21 条 Boss 称谓统一、128 条想乐舒缓拖音统一及 13 条多余空格清理（分类有重叠）。重点修复“一希和凉一起为制作人做冷冻布丁”误作“为凉和制作人做”、摄影师职业敬称误加先生、日阴限定成树荫，以及手表川柳漏掉手表、为凑字数添加意象等问题；川柳改为自然中文，不强凑音数。
+
+日语駄目／八百長／一目置く词源的中文表达，以及砚台部位“波止”的中文术语两条标 uncertain，说明保留在本地条目 notes。全 Chats 当前 uncertain 13（本批新增 2），missing/stale 0；11,534 条仍为 draft。chat002–010 已逐句语义复验；011–012 共 **1,669 条**待继续。チャンプ＝冠军的用户定译保留。
+
+[233 条原文与验收前后对照](../translation/studio/general/acceptance/chats-010-semantic-20261101/review.md) · [修改记录](../translation/studio/general/acceptance/chats-010-semantic-20261101/edits.json) · [凭据](../translation/studio/general/acceptance/chats-010-semantic-20261101/receipt.json)
+
+正式 import --replace 分两次完成：首轮写入 228 条、页面补验后再写入 9 条；相对输入 HEAD 净变更 233 条、766 条不变。验收链重放首轮 746 条及八次续验共 1,026 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan，审计 invalid/unpublished 0。HTTP chats.json 与本工作区字节一致（3,688,515 bytes）。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow 通过；页面补验修正占位符边界断句后，重新生成并复验原文绑定、严格 TM、聊天覆盖。Browser 复用 5251 / PID 26452，冷加载 `045sor_301_2_3_045_01_09_a.json`，推进到 5/11，正文显示“闭上双眼，／脑海中浮现的，／是星光。”及舒缓拖音“～”。1440×900、390×844 均完成截图，无空白或框架错误覆盖层，console error/warn 为空，返回想乐目录正常；再次冷加载目录，已显示“制作人，辛苦啦～”，不再留下占位符后的空格。视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/010-poem-desktop.png`、`010-poem-mobile.png`、`010-directory-spacing.png`。只证明本次旅程，未扩展为全聊天、全部菜单或实体手机验收。
+
+## chat009 全量语义复验（上一批，2026-11-01）
 
 输入 HEAD `4535f513`。chat009 的 999 条全部逐句对照原文和当前 TM，追加修正 131 条，保持 draft。タケル／タケルさん统一为武／武先生，补回一希先生与阁下，撤去制作人小姐；修复重复词、误加薪酬／自习／动作限定等问题，将ようしょく在鲷鱼烧语境中改为养殖，撤去“弱智”“吓尿”“弱者”等原文没有的侮辱或夸张。原始回传及此前验收凭据保持不变。
 
