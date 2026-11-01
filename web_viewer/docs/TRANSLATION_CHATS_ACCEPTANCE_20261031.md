@@ -2,7 +2,19 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat008 全量语义复验
+## 续验：chat009 全量语义复验（2026-11-01）
+
+输入 HEAD `4535f513`。chat009 的 999 条全部逐句对照原文和当前 TM，追加修正 131 条，保持 draft。タケル／タケルさん统一为武／武先生，补回一希先生与阁下，撤去制作人小姐；修复重复词、误加薪酬／自习／动作限定等问题，将ようしょく在鲷鱼烧语境中改为养殖，撤去“弱智”“吓尿”“弱者”等原文没有的侮辱或夸张。原始回传及此前验收凭据保持不变。
+
+チャンプ猫名两条按用户本轮明确确认统一定译为“冠军”，不标 uncertain；げりら／ごりら的突袭／大猩猩谐音一条按字面保留并标 uncertain，未宣称中文谐音已重现。全 Chats 当前 uncertain 11（本批新增 1），missing/stale 0；11,534 条仍为 draft。chat002–009 已逐句语义复验；010–012 共 **2,668 条**待继续。
+
+[131 条原文与验收前后对照](../translation/studio/general/acceptance/chats-009-semantic-20261101/review.md) · [修改记录](../translation/studio/general/acceptance/chats-009-semantic-20261101/edits.json) · [凭据](../translation/studio/general/acceptance/chats-009-semantic-20261101/receipt.json)
+
+正式 import --replace 写入 131 条、868 条不变。验收链重放首轮 746 条及七次续验共 793 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow 均通过；用户确认“冠军”后，重新生成并复验验收链、严格 TM 和聊天覆盖。审计 invalid/unpublished 0；HTTP chats.json 与本工作区字节一致（3,690,131 bytes）。Browser 复用 5251 / PID 26452，通信→大河武→`038tak_401_2_4_038_01_09_c.json`，冷加载后选中“武先生的话一定能做到的！”并推进到 5/7，回复气泡与后续正文正常。1440×900、390×844 均保存截图，无空白或框架错误覆盖层，console error/warn 为空，返回目录正常；随机话题池第 03 项显示“昨天看见冠军了。”。视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/009-corrected-name-desktop.png`、`009-corrected-name-mobile.png`、`009-champion-title.png`。未据此宣称全部聊天、菜单或实体手机验收通过。
+
+## chat008 全量语义复验（上一批）
 
 输入 HEAD `d6f6408adbe7d0d3e995d1664aaf97a9e7f353a3`。chat008 的 964 条全部逐句对照原文和当前 TM，追加修正 108 条，保持 draft。修复重复字、もふもふえん组合名、花音复数自称、舞田类英文与中文代词；纠正巡演、前辈、镜头重叠、自习时间、宅邸、预演等增译或误译。未新增 uncertain。全 Chats 当前 uncertain 仍为 10（本批未新增），missing/stale 0；11,534 条仍为 draft。chat002–008 已逐句语义复验；009–012 共 **3,667 条**待继续。
 
