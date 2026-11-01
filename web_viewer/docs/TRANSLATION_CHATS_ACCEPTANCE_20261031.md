@@ -2,7 +2,19 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat011 全量语义复验（2026-11-01）
+## 收口：chat012 全量语义复验（2026-11-01）
+
+输入 HEAD `409d78d6`，已包含主干 `62c5b27b`。chat012 的670条全部逐句核对，修正150条、520条不变，保持draft；另为chat011补回3处既定称谓“蝶蝶小姐”，为chat004移除1处表情标签后的残余空格。补正独立成链，不覆盖原始回传或此前凭据。チャンプ＝冠军的用户定译保留。
+
+本批纠正武／百百人姓名、番长与制作人酱称谓、もふもふえん组合名，以及“单手搞搞”“只要我不嫌拙劣”等误译；删除无依据的动作、身份、夸张和川柳意象。鱼名核对水族馆及鱼类数据库的学名映射，来源列于逐条对照。419的原文误输入仍标uncertain。Chat002–012的11批、10,535条现已完成本轮逐句语义复验。首轮746次、续验1,363次修订涉及重复键，不能相加宣称净修订条目数；相对各批最初编辑回传，译文或decision净变化2,008条。
+
+[chat012的150条对照](../translation/studio/general/acceptance/chats-012-semantic-20261101/review.md) · [凭据](../translation/studio/general/acceptance/chats-012-semantic-20261101/receipt.json) · [chat011称谓补正](../translation/studio/general/acceptance/chats-011-term-20261101/review.md) · [chat004空格补正](../translation/studio/general/acceptance/chats-004-spacing-20261101/review.md) · [全Chats 14条待审清单](TRANSLATION_CHATS_PENDING_REVIEW_20261101.md)
+
+全Chats仍为11,534条draft；uncertain 14（含chat001的2条既有疑点），missing/stale 0。待审清单保留字面译文、原文和疑义；本次完成的是回填语义验收，不自动晋升reviewed。原文身份、源哈希、宏／数字、TM与发布JSON及标题别名由验收链和回归继续核对。跨批定向检查确认武、百百人、蝶蝶小姐定译一致，中文之间及表情标签后的ASCII空格候选为0；该结果不代表任意中英文排版的空格均须删除。General严格验证19,497条有效、0 orphan，审计invalid/unpublished 0。HTTP chats.json与当前工作区字节一致（3,685,235 bytes）。纯翻译数据变更，本次不重复Vite构建、不复制public资源包；主干同步后的代码构建见上一批。未部署。
+
+验证：verify-chat-translation 与 verify:general-translation-workflow 在最终数据上通过；10,535条验收链重放通过，严格TM有效19,497、0 orphan；未触碰原始回传及历史凭据。Browser复用5251 / PID26452，冷加载 `8_2_x_015leg_8_2_1_015.json`，推进至4/31，原文“トップを目指す通過点”对应“迈向顶尖偶像，这里是中途一站。”，未再出现“回首过千关”等新增意象。1440×900与390×844均保存截图；正文非空、无框架覆盖层、console error/warn为空。返回北村想乐目录正常，视口恢复默认；未保存方向偏好或改变担当。截图位于 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/012-poem-desktop.png` 与 `012-poem-mobile.png`。仅证明本次页面旅程，不宣称全聊天、全菜单或实体手机验收通过。
+
+## chat011 全量语义复验（2026-11-01）
 
 输入 HEAD `a5ffbc86`。chat011 的 999 条全部逐句核对，修正 183 条，保持 draft。003–011 九条存在原文与译文内容错接，已依各条原文重译；另修正青蛙玩偶、吾辈／吾辈们、蝶小姐、主宾关系、无依据的动作与身份增译，以及中文空格、省略号和拖音。原始回传与既有凭据不变。チャンプ＝冠军的用户定译保留。
 
