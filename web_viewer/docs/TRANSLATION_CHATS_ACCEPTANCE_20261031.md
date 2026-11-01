@@ -2,7 +2,17 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
-## 续验：chat010 全量语义复验（2026-11-01）
+## 续验：chat011 全量语义复验（2026-11-01）
+
+输入 HEAD `a5ffbc86`。chat011 的 999 条全部逐句核对，修正 183 条，保持 draft。003–011 九条存在原文与译文内容错接，已依各条原文重译；另修正青蛙玩偶、吾辈／吾辈们、蝶小姐、主宾关系、无依据的动作与身份增译，以及中文空格、省略号和拖音。原始回传与既有凭据不变。チャンプ＝冠军的用户定译保留。
+
+[183 条原文与验收前后对照](../translation/studio/general/acceptance/chats-011-semantic-20261101/review.md) · [修改记录](../translation/studio/general/acceptance/chats-011-semantic-20261101/edits.json) · [凭据](../translation/studio/general/acceptance/chats-011-semantic-20261101/receipt.json)
+
+正式 import --replace 写入 183 条、816 条不变。验收链重放首轮 746 条及九次续验共 1,209 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan。chat002–011 已逐句语义复验，chat012 尚余 670 条。全 Chats 11,534 条仍为 draft，uncertain 13，missing/stale 0，不等于最终 reviewed。本次为翻译数据变更，不复制资源包，未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow 均通过，HTTP chats.json 与当前文件字节一致（3,686,743 bytes）。Browser 复用 5251 / PID 26452，冷加载 `046chr_402_2_4_046_02_09_c.json`，选择“顺利问到了吗？”并推进到 8/12；“对方回答得很细致”和“海豚之间也有不同的性格”均与日文逐条对应。1440×900、390×844 保存截图，无空白或框架错误覆盖层，console error/warn 为空，返回古论克里斯目录正常。视口已恢复默认，未保存屏幕方向或改变担当。截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/011-source-binding-desktop.png`、`011-source-binding-mobile.png`。仅代表本次旅程，未声称全聊天或实体手机通过。
+
+## chat010 全量语义复验（2026-11-01）
 
 输入 HEAD `070798db`。chat010 的 999 条全部逐句对照原文和当前 TM，追加修正 233 条，保持 draft。包含 75 条逐句语义或表达补正、21 条 Boss 称谓统一、128 条想乐舒缓拖音统一及 13 条多余空格清理（分类有重叠）。重点修复“一希和凉一起为制作人做冷冻布丁”误作“为凉和制作人做”、摄影师职业敬称误加先生、日阴限定成树荫，以及手表川柳漏掉手表、为凑字数添加意象等问题；川柳改为自然中文，不强凑音数。
 
