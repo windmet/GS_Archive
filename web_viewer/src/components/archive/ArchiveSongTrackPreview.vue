@@ -5,7 +5,6 @@
       <defs>
         <clipPath :id="`${uid}-lane`"><polygon :points="laneOutline" /></clipPath>
         <template v-if="holdCanvasUnavailable"><template v-for="hold in scene.holds" :key="hold.id"><clipPath v-for="(mesh, i) in hold.triangles" :id="`${uid}-${hold.id}-${i}`" :key="i"><polygon :points="mesh.points" /></clipPath></template></template>
-        <clipPath v-for="note in [...scene.glyphs, ...scene.middleNodes]" :id="`${uid}-note-${note.id}`" :key="`note-${note.id}`"><polygon :points="note.image.points" /></clipPath>
       </defs>
       <rect width="1280" height="720" fill="#162b36" />
       <image href="/assets/song-chart-track/live_lane_gradation.png" x="0" y="0" width="1280" height="720" preserveAspectRatio="none" :clip-path="`url(#${uid}-lane)`" />
@@ -21,10 +20,17 @@
         />
       </g>
       <line v-for="(lane, i) in scene.lanes" :key="i" :data-lane-boundary="i" :x1="lane.topX" :y1="scene.topY" :x2="lane.bottomX" :y2="scene.height" :stroke="i === 0 || i === 5 ? '#91e5e8' : '#a4bac6'" :stroke-width="i === 0 || i === 5 ? 5 : 1.2" :opacity="i === 0 || i === 5 ? .7 : .5" />
-      <foreignObject v-if="!holdCanvasUnavailable" width="1280" height="720"><ArchiveSongHoldMeshPreview :holds="scene.holds" :skin="skin" @unavailable="holdCanvasUnavailable = true" /></foreignObject>
-      <template v-else><g v-for="hold in scene.holds" :key="hold.id" :data-track-hold="hold.id">
+      <template v-if="holdCanvasUnavailable"><g v-for="hold in scene.holds" :key="hold.id" :data-track-hold="hold.id">
         <g v-for="(mesh, i) in hold.triangles" :key="i" :clip-path="`url(#${uid}-${hold.id}-${i})`"><image :href="holdSprite" width="200" height="200" :transform="mesh.matrix" preserveAspectRatio="none" /></g>
       </g></template>
+    </svg>
+    <!-- Every layer is a sibling box of the same size, not a foreignObject: WebKit does not scale a canvas inside one
+         with the svg's viewBox, which moved the long notes and effects off the lanes on iPad. -->
+    <ArchiveSongHoldMeshPreview v-if="!holdCanvasUnavailable" :holds="scene.holds" :skin="skin" @unavailable="holdCanvasUnavailable = true" />
+    <svg class="track-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" aria-hidden="true">
+      <defs>
+        <clipPath v-for="note in [...scene.glyphs, ...scene.middleNodes]" :id="`${uid}-note-${note.id}`" :key="`note-${note.id}`"><polygon :points="note.image.points" /></clipPath>
+      </defs>
       <line v-for="link in scene.links" :key="link.id" :data-simultaneous-tick="link.tick" :x1="link.a.x" :x2="link.b.x" :y1="link.a.y" :y2="link.b.y" stroke="#e9faf6" :stroke-width="Math.max(.5, 2 * link.a.scale)" opacity=".8" />
       <g v-for="n in scene.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick" data-native-role="middle" :clip-path="`url(#${uid}-note-${n.id})`"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
       <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" :y="scene.judgeY - 12" width="1280" height="24" preserveAspectRatio="none" />
@@ -39,22 +45,15 @@
         <g :clip-path="`url(#${uid}-note-${n.id})`"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
         <ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="n.width" :show-body="false" :hint="n.hint" />
       </g>
-      <!-- Native Particle & Hit Effects Layer (Steps 2-5) -->
-      <foreignObject
-        v-if="demonstrationEnabled && (hits.length || holds.length || autoEval.active)"
-        width="1280"
-        height="720"
-        pointer-events="none"
-        style="mix-blend-mode:plus-lighter"
-        data-additive-hit-layer
-      >
-        <ArchiveSongHitEffectPreview
-          :hits="hits"
-          :holds="holds"
-          :auto-eval="autoEval"
-          :judge-y="scene.judgeY"
-        />
-      </foreignObject>
+    </svg>
+    <ArchiveSongHitEffectPreview
+      v-if="demonstrationEnabled && (hits.length || holds.length || autoEval.active)"
+      :hits="hits"
+      :holds="holds"
+      :auto-eval="autoEval"
+      :judge-y="scene.judgeY"
+    />
+    <svg class="track-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" aria-hidden="true">
       <ArchiveSongAutoEvaluationPreview v-if="demonstrationEnabled" :state="autoEval" />
       <g v-if="demonstrationEnabled && holds.length" class="track-hold-effects" pointer-events="none" aria-hidden="true">
           <g v-for="h in holds" :key="'hold-fx-' + h.sourceIndex" :data-hold-fx="h.sourceIndex" />
@@ -119,7 +118,9 @@ const autoEval = computed(() => activeEffects.value?.autoEval || { active: false
 </script>
 
 <style scoped>
-.track-preview { display: block; width: 100%; }
-.track-svg { display: block; width: 100%; border: 1px solid #35485a; border-radius: 6px; }
+.track-preview { position: relative; display: block; width: 100%; overflow: hidden; border: 1px solid #35485a; border-radius: 6px; isolation: isolate; }
+.track-svg { display: block; width: 100%; }
+/* Upper layers share the base svg's box, and so its 16:9 letterboxing. */
+.track-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
 </style>

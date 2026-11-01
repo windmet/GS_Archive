@@ -34,14 +34,16 @@ const speakerInk = computed(() => props.item.avatar ? props.idolDirectory.find(i
 .reader-row { --reader-avatar-column:40px; --reader-column-gap:14px; position:relative; display:grid; grid-template-columns:var(--reader-avatar-column) minmax(0,1fr); column-gap:var(--reader-column-gap); margin:0; padding:12px 4px; border-bottom:1px solid color-mix(in oklab, var(--reader-border) 60%, transparent); scroll-margin-top:20px; outline:none; }
 /* One speaker block: the next line by the same speaker follows without face, name or rule. A thread
    in the speaker's colour runs down from the face, and a dot on it marks where each line begins. */
-.reader-row { --thread-x:calc(4px + var(--reader-avatar-column) / 2 - 1px); --thread-dot-y:26px; --thread:color-mix(in oklab, var(--speaker-ink, var(--reader-text-sub)) 55%, var(--reader-border)); }
+.reader-row { --thread-x:calc(4px + var(--reader-avatar-column) / 2 - 1px); --row-pad-b:12px; --thread:color-mix(in oklab, var(--speaker-ink, var(--reader-text-sub)) 55%, var(--reader-border)); }
 .reader-row:has(+ .reader-row.continued) { padding-bottom:6px; border-bottom-color:transparent; }
 .reader-row.continued { padding-top:6px; }
-.reader-row:has(+ .reader-row.continued)::after, .reader-row.continued::after { content:''; position:absolute; left:var(--thread-x); width:2px; border-radius:var(--gs-radius-pill); background:var(--thread); pointer-events:none; }
+.reader-row:has(+ .reader-row.continued)::after, .reader-row.continued::after { content:''; position:absolute; left:var(--thread-x); width:2px; background:var(--thread); pointer-events:none; }
 .reader-row:has(+ .reader-row.continued)::after { top:calc(15px + var(--reader-avatar-column) + 6px); bottom:-1px; } /* over the row's transparent rule, so the thread has no seam */
-.reader-row.continued::after { top:0; bottom:-1px; }
-.reader-row.continued:not(:has(+ .reader-row.continued))::after { bottom:auto; height:var(--thread-dot-y); }
-.reader-row.continued::before { content:''; position:absolute; left:calc(var(--thread-x) - 3px); top:calc(var(--thread-dot-y) - 4px); width:8px; height:8px; border-radius:50%; box-sizing:border-box; border:2px solid var(--reader-bg-page); background:color-mix(in oklab, var(--speaker-ink, var(--reader-text-sub)) 80%, var(--reader-text-sub)); pointer-events:none; }
+.reader-row.continued::after, .reader-row.continued:has(+ .reader-row.continued)::after { top:0; bottom:-1px; } /* a middle row's thread spans the whole row; the face offset above is only for the row that owns the face */
+.reader-row.continued:not(:has(+ .reader-row.continued))::after { bottom:calc(var(--row-pad-b) + 4px); -webkit-mask-image:linear-gradient(black calc(100% - 8px), transparent); mask-image:linear-gradient(black calc(100% - 8px), transparent); } /* one unbroken thread to the foot of the last line, softly ending */
+/* The dot rides on the line's own first text line (not the row, not the 通话 tag), so it sits at the same optical height whatever the row holds. */
+.reader-row.continued .reader-primary { position:relative; }
+.reader-row.continued .reader-primary::before { content:''; position:absolute; left:calc(-1 * (var(--reader-avatar-column) / 2 + var(--reader-column-gap)) - 4px); top:calc(0.9em - 4px); z-index:1; width:8px; height:8px; border-radius:50%; box-sizing:border-box; border:2px solid var(--reader-bg-page); background:color-mix(in oklab, var(--speaker-ink, var(--reader-text-sub)) 80%, var(--reader-text-sub)); pointer-events:none; }
 .reader-avatar-plain { display:grid; place-items:center; width:var(--reader-avatar-column); height:var(--reader-avatar-column); border-radius:50%; background:color-mix(in oklab, var(--reader-text-main) 7%, var(--reader-bg-page)); color:var(--reader-text-sub); font-size:var(--gs-text-ui); font-weight:var(--gs-weight-semibold); }
 .reader-content { grid-column:2; min-width:0; }
 .reader-anchor-alias { position:absolute; top:0; width:0; height:0; overflow:hidden; scroll-margin-top:20px; outline:none; }
@@ -62,6 +64,6 @@ const speakerInk = computed(() => props.item.avatar ? props.idolDirectory.find(i
 .kind-synopsis { display:block; padding:0; margin:12px 0 20px; border:0; }
 .kind-choice, .kind-choice_detail { display:block; margin:8px 0; padding:12px 18px; border:0; border-left:3px solid var(--reader-accent); background:var(--reader-bg-card); }
 .reader-kind { display: inline-block; margin-inline-end: 8px; font-size: 12px; color: var(--reader-text-sub); }
-@media (max-width:760px) { .reader-row { --reader-avatar-column:34px; --reader-column-gap:10px; --thread-dot-y:24px; padding-block:10px; } .reader-avatar { --idol-avatar-override-size:34px; } .reader-primary { font-size:15px; } .reader-secondary { font-size:14px; } .kind-title .reader-primary { font-size:19px; } }
+@media (max-width:760px) { .reader-row { --reader-avatar-column:34px; --reader-column-gap:10px; --row-pad-b:10px; padding-block:10px; } .reader-avatar { --idol-avatar-override-size:34px; } .reader-primary { font-size:15px; } .reader-secondary { font-size:14px; } .kind-title .reader-primary { font-size:19px; } }
 
 </style>

@@ -2,7 +2,7 @@
   <dialog ref="dialog" class="onboarding gs-dialog-motion" aria-labelledby="onboarding-title" @cancel.prevent="finish(false)">
     <form class="onboarding-sheet" method="dialog" @submit.prevent="next">
       <header class="onboarding-header">
-        <span class="onboarding-brand">GS <b>资料馆</b></span>
+        <ArchiveBrandLockup class="onboarding-brand" />
         <ol class="onboarding-steps" aria-label="设置步骤">
           <li v-for="(item, index) in STEPS" :key="item" :aria-current="index === step ? 'step' : undefined" :class="{ done: index < step }"><span>{{ index + 1 }}</span>{{ item }}</li>
         </ol>
@@ -44,6 +44,7 @@
 </template>
 
 <script setup>
+import ArchiveBrandLockup from './ArchiveBrandLockup.vue'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
@@ -79,8 +80,6 @@ onMounted(() => { dialog.value?.showModal(); heading.value?.focus({ preventScrol
 .onboarding::backdrop { background: rgb(14 26 46 / 48%); backdrop-filter: blur(3px); }
 .onboarding-sheet { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: inherit; }
 .onboarding-header { display: flex; align-items: center; gap: var(--gs-space-5); padding: var(--gs-space-5) var(--gs-space-7); border-bottom: 1px solid var(--gs-line); }
-.onboarding-brand { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-weight: var(--gs-weight-bold); white-space: nowrap; }
-.onboarding-brand b { margin-left: 4px; font-family: var(--gs-font-body); font-size: var(--gs-text-meta); font-style: normal; color: var(--gs-ink-3); }
 .onboarding-steps { display: flex; gap: var(--gs-space-5); flex: 1; justify-content: center; margin: 0; padding: 0; list-style: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .onboarding-steps li { display: flex; align-items: center; gap: 6px; }
 .onboarding-steps span { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid currentColor; border-radius: var(--gs-radius-pill); font-family: var(--gs-font-stage); font-size: var(--gs-text-caption); }
@@ -110,7 +109,8 @@ onMounted(() => { dialog.value?.showModal(); heading.value?.focus({ preventScrol
   .onboarding-skip { margin-left: auto; min-height: var(--gs-control-touch); }
   .onboarding-body { padding: var(--gs-space-6) var(--gs-space-5); }
   .onboarding-body h1 { font-size: var(--gs-text-section); }
-  .onboarding-actions { padding: var(--gs-space-4) var(--gs-space-5) calc(var(--gs-space-4) + env(safe-area-inset-bottom, 0px)); }
+  .onboarding-actions { flex-direction: column-reverse; align-items: stretch; padding: var(--gs-space-4) var(--gs-space-5) calc(var(--gs-space-4) + env(safe-area-inset-bottom, 0px)); }
+  .onboarding-actions .onboarding-back { margin-right: 0; }
   .onboarding-actions button { min-height: var(--gs-control-touch); flex: 1; }
   .onboarding-actions .onboarding-back { flex: 0 0 auto; }
 }

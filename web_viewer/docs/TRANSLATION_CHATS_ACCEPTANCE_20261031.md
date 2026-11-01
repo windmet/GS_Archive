@@ -12,6 +12,8 @@
 
 验证：verify-chat-translation、verify:general-translation-workflow 均通过，HTTP chats.json 与当前文件字节一致（3,686,743 bytes）。Browser 复用 5251 / PID 26452，冷加载 `046chr_402_2_4_046_02_09_c.json`，选择“顺利问到了吗？”并推进到 8/12；“对方回答得很细致”和“海豚之间也有不同的性格”均与日文逐条对应。1440×900、390×844 保存截图，无空白或框架错误覆盖层，console error/warn 为空，返回古论克里斯目录正常。视口已恢复默认，未保存屏幕方向或改变担当。截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/011-source-binding-desktop.png`、`011-source-binding-mobile.png`。仅代表本次旅程，未声称全聊天或实体手机通过。
 
+主干同步：在 `27f0e6bb` 后合并 `origin/master` 的 `62c5b27b`（2026-11-01）。唯一冲突为 `config/resource-audit.json` 的派生快照；重新生成后当前目录指纹仍与本线旧值相同，保留原快照及审计日期，资源审计回归通过。`npm run build:check` 完成（22.98s，仅 `.analysis/build-check`，不复制 public）；翻译验收链与严格 TM 合并后再次通过。Browser 同一服务冷加载目标聊天，2/12 正文正常、console error/warn 为空。8/12 的双视口修正文案证据是在合并前取得；同步后未重复全聊天或真机验收。主干自带 read-model 消费绑定更新随合并进入本线，不代表部署。
+
 ## chat010 全量语义复验（2026-11-01）
 
 输入 HEAD `070798db`。chat010 的 999 条全部逐句对照原文和当前 TM，追加修正 233 条，保持 draft。包含 75 条逐句语义或表达补正、21 条 Boss 称谓统一、128 条想乐舒缓拖音统一及 13 条多余空格清理（分类有重叠）。重点修复“一希和凉一起为制作人做冷冻布丁”误作“为凉和制作人做”、摄影师职业敬称误加先生、日阴限定成树荫，以及手表川柳漏掉手表、为凑字数添加意象等问题；川柳改为自然中文，不强凑音数。

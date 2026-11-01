@@ -268,6 +268,13 @@ assert.match(shellSource, /id: 'portal', label: sectionLabel\('portal'\), icon: 
 assert.doesNotMatch(shellSource + app, /siblingSections|archive-sibling-switch|root-section/, 'the title row no longer names the group beside the title: the sidebar holds every destination')
 assert.match(shellSource, /props\.breadcrumbs\.slice\(1, -1\)/, 'the title row lists only the parents between the archive and the page')
 assert.match(shellSource, /\['idols', 'units', 'cards'\]/, '偶像 / 组合 / 卡片 sit together in the sidebar')
+// 图鉴 is one sidebar entry that opens a menu of its categories; it never navigates by itself (no remembered target).
+assert.match(shellSource, /id: 'collection', label: group\.label, icon: Box, menu: true/, '图鉴 is a menu entry, not a link')
+assert.doesNotMatch(shellSource, /lastCollection|archive-collection-last|target: lastCollection/, '图鉴 has no remembered target to jump to')
+assert.match(shellSource, /@click="item\.menu \? flyout = flyout \? null : \$event\.currentTarget : emit\('navigate', item\.target\)"/, 'a menu entry toggles its menu instead of navigating')
+assert.match(shellSource, /:aria-haspopup="item\.menu && 'menu'"/, 'the menu entry says it opens a menu')
+assert.match(shellSource, /defineAsyncComponent\(\(\) => import\('\.\/ArchiveFlyoutMenu\.vue'\)\)/, 'the menu is a lazy chunk')
+assert.match(readFileSync(new URL('../src/components/archive/ArchiveFlyoutMenu.vue', import.meta.url), 'utf8'), /ARCHIVE_NAVIGATION_GROUPS\.find\(entry => entry\.id === 'collection'\)/, 'the menu lists the 图鉴 group from the one navigation dictionary')
 assert.match(app, /else if \(section === 'units'\) openUnitCatalog\(\)/, '组合 in the switch opens the unit directory')
 // Phone bar 2+1: the two homes, then one cell that opens the drawer and otherwise names the current section.
 const barItems = shellSource.match(/const mobileNavigation = computed\(\(\) => \[([\s\S]*?)\n\]\)/)?.[1] || ''

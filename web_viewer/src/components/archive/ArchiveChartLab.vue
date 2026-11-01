@@ -91,4 +91,9 @@ function choose(code) { pickerOpen.value = false; selectedCode.value = code; emi
   .chart-lab :deep(.chart-navigation) { margin-top: 0; }
   .chart-lab :deep(.chart-shortcuts), .chart-lab :deep(.chart-position-status) { grid-column: 1 / -1; margin: 0; }
 }
+/* Touch screens: the long track scrolls inside its own bounded box. An unbounded .chart-scroll is not a scroller,
+   and its overscroll-behavior: contain then swallows the drag instead of passing it to the page. */
+@media (max-width: 760px), (max-height: 500px) {
+  .chart-lab :deep(.chart-viewport.is-long .chart-scroll) { flex: none; height: min(70dvh, 620px); overflow-y: auto; }
+}
 </style>

@@ -109,5 +109,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-canvas { display: block; width: 1280px; height: 720px; pointer-events: none; }
+canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 </style>

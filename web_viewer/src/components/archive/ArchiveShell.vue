@@ -2,8 +2,7 @@
   <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-rail': railMode, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'has-subnav': hasSubnav, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
-        <img :src="getBrandMarkUrl()" alt="" />
-        <span class="archive-brand-text"><span class="archive-brand-name">{{ ARCHIVE_BRAND.mark }}</span><span class="archive-brand-sub">{{ ARCHIVE_BRAND.sub }}</span></span>
+        <ArchiveBrandLockup />
       </button>
       <!-- 担当 and the destinations scroll together: on a window too short for both, nothing slides under a fixed row. -->
       <div class="archive-sidebar-scroll">
@@ -14,7 +13,7 @@
           <template v-for="entry in sidebarEntries" :key="entry.id">
             <hr v-if="entry.divider" class="archive-nav-divider" />
             <div class="archive-nav-cluster" role="group" :aria-label="entry.label">
-              <button v-for="item in entry.items" :key="item.id" type="button" class="archive-nav-link" :class="{ active: item.active }" :title="railMode ? item.label : undefined" :aria-current="item.active ? 'page' : undefined" @click="emit('navigate', item.target)">
+              <button v-for="item in entry.items" :key="item.id" type="button" class="archive-nav-link" :class="{ active: item.active }" :title="railMode ? item.label : undefined" :aria-current="item.active ? 'page' : undefined" :aria-haspopup="item.menu && 'menu'" :aria-expanded="item.menu && !!flyout" @click="item.menu ? flyout = flyout ? null : $event.currentTarget : emit('navigate', item.target)">
                 <component :is="item.icon" :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ item.label }}</span>
               </button>
             </div>
@@ -59,6 +58,8 @@
         </div>
       </template>
     </ArchivePageChrome>
+
+    <ArchiveFlyoutMenu v-if="flyout" :anchor="flyout" :current="navigationSection" @select="flyout = null; emit('navigate', $event)" @close="flyout = null" />
 
     <div v-if="hasSubnav" class="archive-subnav"><slot name="subnav" /></div>
 
@@ -109,6 +110,7 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
+import ArchiveBrandLockup from './ArchiveBrandLockup.vue'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { ARCHIVE_BRAND, sectionLabel } from '../../core/archiveSections.js'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from 'vue'
@@ -146,21 +148,14 @@ const parentCrumbs = computed(() => props.breadcrumbs.slice(1, -1))
 const backVisible = computed(() => props.showBack && (isPhone.value || parentCrumbs.value.length > 0))
 const backLabel = computed(() => parentCrumbs.value.length ? `返回${parentCrumbs.value[parentCrumbs.value.length - 1].label}` : '返回')
 
-// The sidebar: one entry per destination. 图鉴 is one entry whatever the section (it opens where the reader last was);
-// 偶像 / 组合 / 卡片 sit together. Everything else is the shared group list.
-const COLLECTION_KEY = 'sidem:archive-collection-last'
-const collectionIds = navigationGroups.find(group => group.id === 'collection')?.ids || []
-const lastCollection = ref(collectionIds.includes(readStored(COLLECTION_KEY)) ? readStored(COLLECTION_KEY) : collectionIds[0] || 'collections')
-watch(navigationSection, section => {
-  if (!collectionIds.includes(section)) return
-  lastCollection.value = section
-  writeStored(COLLECTION_KEY, section)
-}, { immediate: true })
+// The sidebar: one entry per destination. 图鉴 is one entry that opens a menu of its categories instead of navigating
+// (the categories are also the page's own tabs); 偶像 / 组合 / 卡片 sit together. Everything else is the shared group list.
+const flyout = ref(null)
 const sidebarEntries = computed(() => [
   { id: 'top', label: '资料馆', items: [{ id: 'home', label: sectionLabel('home'), icon: Home, target: 'home', active: props.activeSection === 'home' }, { id: 'portal', label: sectionLabel('portal'), icon: LayoutGrid, target: 'portal', active: props.activeSection === 'portal' }] },
   ...navigationGroups.map(group => {
     const items = group.id === 'collection'
-      ? [{ id: 'collection', label: group.label, icon: Box, target: lastCollection.value, active: activeNavigationGroup.value === 'collection' }]
+      ? [{ id: 'collection', label: group.label, icon: Box, menu: true, active: activeNavigationGroup.value === 'collection' }]
       : (group.id === 'people' ? ['idols', 'units', 'cards'] : group.ids).map(id => ({ id, label: sectionLabel(id), icon: id === 'units' ? UsersRound : archiveNavigationIcons[id] || group.icon, target: id, active: navigationSection.value === id }))
     return { id: group.id, label: group.label, divider: group.id === 'live', items }
   }),
@@ -171,6 +166,8 @@ const SIDEBAR_KEY = 'sidem:archive-sidebar'
 const storedSidebar = ref(['rail', 'full'].includes(readStored(SIDEBAR_KEY)) ? readStored(SIDEBAR_KEY) : '')
 const wideWindow = ref(true), forcedRail = ref(false), isPhone = ref(false)
 const railMode = computed(() => forcedRail.value || (storedSidebar.value ? storedSidebar.value === 'rail' : !wideWindow.value))
+// A route change or a fold of the sidebar moves the entry the menu hangs from, so the menu closes.
+watch([() => props.activeSection, railMode], () => { flyout.value = null })
 function toggleSidebar() {
   storedSidebar.value = railMode.value ? 'full' : 'rail'
   writeStored(SIDEBAR_KEY, storedSidebar.value)
@@ -198,6 +195,8 @@ const mobileNavigation = computed(() => [
 ])
 // The drawer's code loads on first open; it holds the sidebar's destinations, nothing of its own.
 const ArchiveNavigationDrawer = defineAsyncComponent(() => import('./ArchiveNavigationDrawer.vue'))
+// The sidebar menu loads on first open, like the drawer.
+const ArchiveFlyoutMenu = defineAsyncComponent(() => import('./ArchiveFlyoutMenu.vue'))
 const drawerOpen = ref(false)
 const drawerToggle = ref(null)
 const drawerCell = computed(() => {
@@ -319,10 +318,6 @@ onBeforeUnmount(() => navObserver?.disconnect())
   text-align: left;
   cursor: pointer;
 }
-.archive-brand img { flex: none; width: 26px; height: 20px; object-fit: contain; filter: brightness(0); }
-.archive-brand-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.archive-brand-name { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-weight: var(--gs-weight-bold); letter-spacing: .02em; line-height: 1; white-space: nowrap; }
-.archive-brand-sub { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1; white-space: nowrap; }
 /* 担当 and the destinations share one scroller; it scrolls only if a short window cannot hold both. Its scrollbar is
    thin and in the chrome colours (Windows draws a wide light track otherwise). */
 .archive-sidebar-scroll { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gs-line) transparent; }
@@ -349,6 +344,10 @@ onBeforeUnmount(() => navObserver?.disconnect())
   cursor: pointer;
 }
 .archive-nav-link svg { flex: none; color: var(--gs-ink-3); }
+/* An entry that opens a menu says so with a caret on its right edge; the icon rail has no room for it. */
+.archive-nav-link[aria-haspopup]::after { content: ''; width: 7px; height: 7px; margin-left: auto; border: solid currentcolor; border-width: 2px 2px 0 0; opacity: .6; transform: rotate(45deg); }
+.archive-nav-link[aria-expanded='true']:not(.active) { background: var(--gs-hover); }
+.is-rail .archive-nav-link[aria-haspopup]::after { display: none; }
 /* Current = one level above the paper: ink text and icon, the slice behind it; weight and rules unchanged. */
 .archive-nav-link.active { color: var(--gs-ink); }
 .archive-nav-link.active svg { color: var(--gs-ink); }
@@ -373,7 +372,7 @@ onBeforeUnmount(() => navObserver?.disconnect())
   .archive-nav-divider { margin-block: var(--gs-space-1); }
 }
 /* Rail: the text leaves (kept for assistive tech); icons, avatar and mark stay where they were. */
-.is-rail .archive-brand-text, .is-rail .archive-nav-link span, .is-rail .archive-sidebar-about { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.is-rail .archive-brand :deep(.archive-brand-text), .is-rail .archive-nav-link span, .is-rail .archive-sidebar-about { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .is-rail .archive-sidebar :deep(.stage-idol-copy), .is-rail .archive-sidebar :deep(.stage-idol-caret) { display: none; }
 .is-rail .archive-nav-divider { margin-inline: var(--gs-space-3); }
 @media (hover: hover) {
