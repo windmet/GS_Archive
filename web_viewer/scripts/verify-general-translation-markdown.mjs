@@ -45,4 +45,15 @@ const moved=rows.map(r=>({...r,references:[{kind:'item',id:'changed',field:'desc
 assert.equal(validateGeneralReturn(batch,parsed,moved).length,rows.length)
 assert.throws(()=>planCompactBatches(units,{maxRows:1000}))
 assert.throws(()=>planCompactBatches(rows.map(r=>({...r,source:'文'.repeat(20000)})),{maxChars:2000}))
+// Approved terms must survive in-source line wrapping, but never join separate
+// messages into a fictitious term or turn generic German Hund into a dog name.
+const chatInput=sources=>{
+  const rows=sources.map((source,i)=>({kind:'chat-line',field:'text',key:`fixture:chat:${i}`,source,sourceHash:hash(source),references:[{kind:'chat-line',id:`fixture.json:${i+2}`,field:'text',speaker:'025suz',owner:'025suz'}]}))
+  return renderCompactInput({schema:'GS-GENERAL-BATCH-V1',locale:'zh-CN',batch_id:'G-chats-fixture',rows,source_digest:hash(JSON.stringify(rows))})
+}
+assert(chatInput(['くまっち','てんげん\nひょうじんは']).includes('- くまっち → 库玛奇'))
+assert(chatInput(['てんげん\nひょうじんは']).includes('- てんげんひょうじんは → 天玄冰刃波'))
+assert(!chatInput(['てんげん','ひょうじんは']).includes('- てんげんひょうじんは →'))
+assert(chatInput(['麗さんのいえのフントのしゃしん']).includes('- 麗さんのいえのフント → 丽先生家的阿尔托'))
+assert(!chatInput(['フント']).includes('阿尔托'))
 console.log(`PASS: compact ${units.length} fields / ${plan.batches.length} batches; complete input budgets, local identity reconstruction, multiline/CRLF/BOM, unknown/missing/duplicate IDs, wrong source/batch, uncertainty, protected tokens and reference-independent identity.`)

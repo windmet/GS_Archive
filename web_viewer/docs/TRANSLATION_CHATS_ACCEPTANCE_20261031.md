@@ -2,6 +2,18 @@
 
 输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
 
+## 用户提示回填：原14条待审处理（2026-11-01）
+
+输入HEAD `f0fd31f8`。用户要求神乐丽家犬名按旧译、其余按所附提示。旧译实证为“阿尔托”，B005/B006/B023及已审卡面一致；不采用记忆中的哈尔特，也不另建洪特／亨特。其余13条结合前后文处理，采用库玛奇、玉子屋、天玄冰刃波及附件的谐音／词源表达方案。砚台继续保留陆、海、波止。涟的误输入后无单手包袱，因此确认“麻烦死了，你们自己随便搞吧。”。14条全部解除uncertain，保留原文与哈希。
+
+[14条前后对照和依据](../translation/studio/general/acceptance/chats-user-decisions-20261101/review.md) · [用户原始提示](../translation/studio/general/acceptance/chats-user-decisions-20261101/instructions.original.md) · [凭据](../translation/studio/general/acceptance/chats-user-decisions-20261101/receipt.json) · [项目术语表](../translation/bible/verified/chat-terms-20261101.md) · [原待审处理记录](TRANSLATION_CHATS_PENDING_REVIEW_20261101.md)
+
+回填覆盖8批中的14个键，不宣称本次重新通读7,589条。Chat001原始回传及999条编辑凭据通过附加base纳入同一验证链，现可重放全Chats 11,534条原始回传→原编辑→此前验收→本轮用户决策；此前首轮746次及续验1,363次不变，本轮另14次（续验共1,377次）。原始回传、原policy及旧凭据未改。全部11,534条保持draft，missing/stale/uncertain均为0，不把单条确认扩大为整批reviewed。General严格TM有效19,497、0 orphan，审计invalid/unpublished 0。原14条清单保留为历史并在顶部注明已处理。
+
+新增用户批准术语补充由后续角色台词／聊天导出读取，分行的假名招式名也能匹配；不会把两个独立消息拼成术语，也不会把普通德语フント全局改成犬名。回归包含这三项边界。验收器增加附加base和多批用户决策凭据支持；5个只在进程内模拟的异常（原始凭据哈希、来源数量、重复批次、错误before、遗漏应用的批次）均被拒绝，未改动磁盘中的真实凭据。本次仅翻译数据与独立Node导出／验收工具，不改前端，不重复Vite构建或复制public资源包；未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow通过；新的分行术语、独立消息边界及普通フント回归均通过。HTTP chats.json与本工作区字节一致（3,685,414 bytes）。Browser在原5251进程退出后，确认端口空闲，在同工作区重启5251 / PID17228；自动消费候选 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261031`，未复制资产或部署。冷加载 `8_1_x_007kei_8_1_2_007.json`，2/39显示“丽先生给我看了他家阿尔托的照片。”，点击下一段后到3/39。1440×900和390×844均保存截图，页面非空、无框架覆盖层、console error/warn为空；返回都筑圭→随机话题池，组标题和01话题标题同步显示阿尔托。视口已恢复，未改变担当或保存方向偏好。截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/user-decisions-alto-desktop.png`、`user-decisions-alto-mobile.png`、`user-decisions-alto-directory.png`。本次只证明所测页面旅程，不代表全部聊天或实体手机验收。
+
 ## 收口：chat012 全量语义复验（2026-11-01）
 
 输入 HEAD `409d78d6`，已包含主干 `62c5b27b`。chat012 的670条全部逐句核对，修正150条、520条不变，保持draft；另为chat011补回3处既定称谓“蝶蝶小姐”，为chat004移除1处表情标签后的残余空格。补正独立成链，不覆盖原始回传或此前凭据。チャンプ＝冠军的用户定译保留。

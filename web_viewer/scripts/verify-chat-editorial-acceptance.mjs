@@ -23,7 +23,20 @@ assert.equal(amendments.length,receipt.edits)
 const byKey=new Map(amendments.map(row=>[row.key,row]))
 assert.equal(byKey.size,amendments.length,'acceptance keys cannot repeat')
 const stages=[]
-const acceptedBatches=new Set(Object.keys(receipt.bases))
+const bases={...receipt.bases}
+let additionalUnits=0
+for(const reference of registry.additional_bases||[]) {
+  assert(/^G-chats-\d{8}-\d{3}$/u.test(reference.batch),'invalid additional batch')
+  assert(!Object.hasOwn(bases,reference.batch),'duplicate additional batch')
+  const directory=`translation/studio/general/returns/${reference.batch}`
+  assert.equal(hash(fs.readFileSync(`${directory}/receipt.json`)),reference.receipt_sha256)
+  assert.equal(hash(fs.readFileSync(`${directory}/output.edited.json`)),reference.edited_sha256)
+  assert.equal(read(`${directory}/receipt.json`).units,reference.units)
+  assert(Number.isInteger(reference.units)&&reference.units>0)
+  bases[reference.batch]=reference
+  additionalUnits+=reference.units
+}
+const acceptedBatches=new Set(Object.keys(bases))
 let previousHash=registry.base.receipt_sha256
 const stageDirectories=new Set([registry.base.directory])
 for(const reference of registry.followups) {
@@ -32,25 +45,33 @@ for(const reference of registry.followups) {
   const directory=`translation/studio/general/acceptance/${reference.directory}`
   assert.equal(hash(fs.readFileSync(`${directory}/receipt.json`)),reference.receipt_sha256)
   const receipt=read(`${directory}/receipt.json`),edits=read(`${directory}/edits.json`)
-  assert.equal(receipt.schema,'GS-GENERAL-ACCEPTANCE-FOLLOWUP-V1')
+  assert(['GS-GENERAL-ACCEPTANCE-FOLLOWUP-V1','GS-GENERAL-ACCEPTANCE-DECISIONS-V1'].includes(receipt.schema))
   assert.equal(receipt.previous_receipt_sha256,previousHash)
   assert.equal(receipt.policy_sha256,hash(fs.readFileSync('translation/studio/policy/card-line-prompt.v1.json')))
   assert.equal(receipt.edits_sha256,hash(fs.readFileSync(`${directory}/edits.json`)))
   assert.equal(receipt.edits,edits.length)
   assert.equal(receipt.status,'draft');assert.equal(receipt.not_final,true)
   assert(Number.isInteger(receipt.semantic_units)&&receipt.semantic_units>0)
-  assert(acceptedBatches.has(receipt.batch),'follow-up batch outside original acceptance')
+  const batches=receipt.schema==='GS-GENERAL-ACCEPTANCE-DECISIONS-V1'?receipt.batches:[receipt.batch]
+  assert(Array.isArray(batches)&&batches.length>0)
+  assert.equal(new Set(batches).size,batches.length,'duplicate follow-up batch')
+  assert(batches.every(batch=>acceptedBatches.has(batch)),'follow-up batch outside verified acceptance bases')
+  if(receipt.schema==='GS-GENERAL-ACCEPTANCE-DECISIONS-V1') {
+    assert.equal(receipt.newly_rechecked_units,edits.length)
+    assert.equal(hash(fs.readFileSync(`${directory}/instructions.original.md`)),receipt.source_instruction_sha256)
+    assert.equal(hash(fs.readFileSync('translation/studio/policy/user-approved-terms.v1.json')),receipt.user_terms_sha256)
+  }
   const byKey=new Map(edits.map(row=>[row.key,row]))
   assert.equal(byKey.size,edits.length,'follow-up keys cannot repeat')
-  stages.push({receipt,byKey,seen:new Set(),count:0})
+  stages.push({receipt,batches:new Set(batches),byKey,seen:new Set(),count:0})
   previousHash=reference.receipt_sha256
 }
 const units=sourceUnits(process.cwd()),memory=readMemory(process.cwd())
 const published=read('public/translations/zh-CN/archive-general/chats.json')
 const seen=new Set()
-const semanticBatches=new Set([...receipt.scope.semantic_rechecked_batches,...stages.map(stage=>stage.receipt.batch)])
+const semanticBatches=new Set([...receipt.scope.semantic_rechecked_batches,...stages.flatMap(stage=>[...stage.batches])])
 let count=0
-for(const [id,base] of Object.entries(receipt.bases)) {
+for(const [id,base] of Object.entries(bases)) {
   const directory=`translation/studio/general/returns/${id}`
   const originalReceipt=read(`${directory}/receipt.json`)
   assert.equal(hash(fs.readFileSync(`${directory}/receipt.json`)),base.receipt_sha256)
@@ -90,7 +111,7 @@ for(const [id,base] of Object.entries(receipt.bases)) {
       seen.add(row.key)
     }
     for(const stage of stages) {
-      if(stage.receipt.batch!==id) continue
+      if(!stage.batches.has(id)) continue
       stage.count++
       const edit=stage.byKey.get(row.key)
       if(!edit) continue
@@ -112,7 +133,7 @@ for(const [id,base] of Object.entries(receipt.bases)) {
   }
   count+=entries.length
 }
-assert.equal(count,receipt.scope.identity_verified)
+assert.equal(count,receipt.scope.identity_verified+additionalUnits)
 assert.equal(seen.size,amendments.length)
 for(const stage of stages) {
   assert.equal(stage.seen.size,stage.byKey.size,'unapplied follow-up edits')
