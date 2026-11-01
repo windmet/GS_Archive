@@ -12,6 +12,8 @@
 
 服务复用 5251 / PID 26452；HTTP chats.json 与本工作区字节一致（3,691,305 bytes）。数据经 scripts/verify-chat-translation.mjs 完整跑通运行期覆盖测试与开头预览对齐校验。
 
+2026-11-01 补验：HEAD `27f7c987` 下重新生成结果无差异，原文绑定、严格 TM、verify-chat-translation 与 verify:general-translation-workflow 均通过。实际 Browser 经通信→姬野花音→个人聊天 `034kan_301_2_3_034_01_09_a.json` 推进到 4/11，日文かのんたち对应“大家配合着我们的歌声挥舞应援灯。”；1440×900、390×844 均完成截图，console error/warn 为空，无空白或框架错误覆盖层，返回花音目录正常。视口恢复默认，未保存屏幕方向或改变担当。截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/008-corrected-pronoun-desktop.png`、`008-corrected-pronoun-mobile.png`。只证明该旅程，未扩展为全部聊天或实体手机验收，未部署。
+
 ## chat007 全量语义复验（上一批）
 
 输入 HEAD `18bb86de`。chat007 的 969 条全部逐句对照原文和当前 TM，追加修正 100 条，保持 draft。统一阿斯兰的吾主、仆从，撤去“上苍”“绝世”等补写；补回卷绪先生、咲先生、直央君、薰先生等称谓；纠正美食节误作音乐节（同一张卡的前后段原文已明确ご当地グルメフェス）、糖艺限定成吹糖、双六棋误写成飞行棋／大富翁等问题，并统一《行星射手》与もふもふえん。
