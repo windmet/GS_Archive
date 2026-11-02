@@ -654,8 +654,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-story-hub { display:flex;flex-direction:column;gap:var(--gs-space-6); }
 .overview-main-index { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8);row-gap:var(--gs-space-4);align-content:start; }
 .overview-main-index button { display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left; }
-.overview-main-index article :deep(.domain-media-preview) { display:block;margin:0;padding:0; }
-.overview-main-index article :deep(img) { display:block;width:100%;height:auto;aspect-ratio:906 / 210;object-fit:cover;border-radius:var(--gs-radius-media); }
+.overview-main-index article :deep(.domain-media-preview) { display:block;margin:0;padding:0;aspect-ratio:906 / 210;overflow:hidden;border-radius:var(--gs-radius-media); }
+.overview-main-index article :deep(img) { display:block;width:100%;height:100%;object-fit:cover;border-radius:var(--gs-radius-media); }
 .overview-main-index article :deep(figcaption) { display:none; }
 .overview-main-index button > span { display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--gs-space-3);padding-top:var(--gs-space-3); }
 .overview-main-index strong { font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
