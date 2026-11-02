@@ -20,6 +20,13 @@ const env = { ARCHIVE_DATA_REVISION: revision, ARCHIVE_ASSETS: {
 let response = await serveR2Resource({ request: new Request(`https://test/${key}`), env, prefix: 'data' })
 assert.equal(requested, `versions/${revision}/${key}`)
 assert.equal(response.status, 200); assert.equal(await response.text(), '{}')
+// Data stays at the hour-long default; only media gets the longer edge copy.
+assert.equal(response.headers.get('cloudflare-cdn-cache-control'), null, 'data keeps the default edge lifetime')
+const image = await serveR2Resource({ request: new Request('https://test/assets/songs/jacket_brndnf.png'), prefix: 'assets', env: { ARCHIVE_ASSETS: {
+  async head(k) { assert.equal(k, 'assets/songs/jacket_brndnf.webp'); return { size: 2, httpMetadata: { contentType: 'image/webp' } } },
+  async get() { return { body: 'xx' } } } } })
+assert.equal(image.headers.get('cache-control'), 'public, max-age=3600', 'browsers keep media for an hour')
+assert.equal(image.headers.get('cloudflare-cdn-cache-control'), 'public, max-age=86400, stale-while-revalidate=604800', 'the edge keeps media for a day')
 // Missing versioned data must not silently mix in the shared old corpus.
 env.ARCHIVE_ASSETS.head = async k => { requested = k; return null }
 response = await serveR2Resource({ request: new Request(`https://test/${key}`), env, prefix: 'data' })

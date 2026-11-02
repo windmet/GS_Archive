@@ -90,6 +90,10 @@ export async function serveR2Resource({ request, env, prefix }) {
   const headers = new Headers()
   meta.writeHttpMetadata?.(headers)
   headers.set('Cache-Control', 'public, max-age=3600')
+  // A cold image costs a Function call and two R2 reads, and Preview traffic is too thin to keep an hour-long edge
+  // copy warm. Keep media at the edge for a day and revalidate it (ETag) in the background for a week after that;
+  // browsers keep the hour. A re-uploaded object therefore reaches the first viewer one stale response later.
+  if (requestKey.startsWith('assets/')) headers.set('Cloudflare-CDN-Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
   headers.set('Content-Length', String(meta.size))
   headers.set('Content-Type', contentType(objectKey, meta))
   if (gzip) {
