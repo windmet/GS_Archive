@@ -77,6 +77,11 @@
       <h2 id="about-thanks">{{ content.thanks.heading }}</h2>
       <p v-for="(text, index) in content.thanks.paragraphs" :key="index">{{ text }}</p>
     </section>
+
+    <section class="about-section" aria-labelledby="about-notices">
+      <h2 id="about-notices">{{ content.notices.heading }}</h2>
+      <p>{{ content.notices.paragraph }} <a :href="noticesUrl" target="_blank" rel="noopener">{{ content.notices.linkLabel }}</a>。</p>
+    </section>
   </article>
 </template>
 
@@ -90,6 +95,7 @@ import { isMaintainerMode } from '../../core/maintainerMode.js'
 import { getOwnerAvatarUrl, getQqGroupQrUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { readBootstrap } from '../../../readmodels/runtime/readBootstrap.mjs'
+import noticesUrl from '../../../THIRD_PARTY_NOTICES.txt?url'
 
 const CONTACT_ICONS = { issue: Bug, mail: Mail, video: Video }
 
@@ -156,6 +162,7 @@ const AboutLink = {
 .about-section h2 { margin: 0 0 var(--gs-space-4); padding-bottom: var(--gs-space-2); border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .about-section h3 { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .about-section p { margin: 0 0 var(--gs-space-3); color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.9; }
+.about-section p a { color: var(--gs-mint-ink); }
 
 /* Owner: avatar in the 担当's identity ring, name, 推し row, words, then every way to reach the owner. */
 .about-owner { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: var(--gs-space-4) var(--gs-space-5); align-items: start; }

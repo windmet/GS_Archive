@@ -91,4 +91,11 @@ export const ABOUT_CONTENT = {
       'Wiki 的维护者们：本站的卡池信息来自 Wiki 的记录。',
     ],
   },
+
+  // 链接指向 web_viewer/THIRD_PARTY_NOTICES.txt（构建时随页面发布）。网页打包了 Spine Runtimes，它的许可要求再分发时附上许可文本。
+  notices: {
+    heading: '开源组件',
+    paragraph: '本站网页使用了 Spine Runtimes、PixiJS、Vue、Lucide 图标和 Barlow 字体。各组件的许可文本见',
+    linkLabel: '第三方许可声明',
+  },
 }
