@@ -15,13 +15,13 @@ export const ABOUT_CONTENT = {
     name: '风期',
     handle: 'windmet',
     ringIdol: '040ren',
-    intro: '新人 P',
     oshi: [
       { label: '担当', idols: ['040ren'] },
       { label: '箱推', note: 'THE 虎牙道', idols: ['038tak', '039mcr', '040ren'] },
       { label: '好感', idols: ['045sor', '031sak', '024shk'] },
     ],
     paragraphs: [
+      '新人 P，还是个萌新。',
       '社交苦手，更喜欢在评论区和大家交流。',
       '发现 bug 可以直接在 GitHub Issues 或视频评论区提出，我会尽快修复！',
       '建站不易，欢迎来 GitHub 给项目点个 ⭐。',
@@ -50,12 +50,16 @@ export const ABOUT_CONTENT = {
       links: [
         { label: 'アイドルマスター SideM 公式', url: 'https://idolmaster-official.jp/sidem', description: '品牌页；「サイスタ アーカイブ」栏目是官方的剧情视频存档' },
         { label: 'ASOBISTORY', url: 'https://asobistory.asobistore.jp/', description: 'SideM 的新剧情在这里连载（315 Production Episode 等）' },
+        { label: '第 0 话 官方存档', url: 'https://www.youtube.com/watch?v=7fb4QP7g2Gw&list=PLsezBU1tkb0mMc_fp1W0awTU7m3t_BdHe', description: '官方 YouTube 合集：第 0 话剧情视频' },
+        { label: '个人故事 官方存档', url: 'https://www.youtube.com/watch?v=dWXBPUUetLc&list=PLsezBU1tkb0k9u7-wQmAWQlthnw0B-6aB', description: '官方 YouTube 合集：偶像个人故事视频' },
+        { label: '活动剧情 官方存档', url: 'https://www.youtube.com/watch?v=shHBO5VBfa4&list=PLsezBU1tkb0lTgtvGY-dIZvXg-HOl679x', description: '官方 YouTube 合集：活动剧情视频' },
       ],
     },
     {
       heading: '资料与社区',
       links: [
-        { label: '参考站点', url: '', description: '', note: '【待填写】' },
+        { label: 'SideM GS 攻略 Wiki（wikiwiki）', url: 'https://wikiwiki.jp/sidem-gstars/', description: '本站缺失资料的主要参考来源' },
+        { label: 'SideM GS 攻略 Wiki（Gamerch）', url: 'https://gamerch.com/sidem-gs/', description: '参考站点' },
       ],
     },
   ],

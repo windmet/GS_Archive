@@ -14,7 +14,6 @@
           :accent-color="idolColor(owner.ringIdol)" :alt="`${owner.name}的头像`" fallback-text="P" />
         <div class="about-owner-head">
           <p class="about-owner-name">{{ owner.name }}<span>{{ owner.handle }}</span></p>
-          <p class="about-owner-intro">{{ owner.intro }}</p>
         </div>
         <dl class="about-oshi">
           <div v-for="row in owner.oshi" :key="row.label">
@@ -170,7 +169,6 @@ const AboutLink = {
 .about-owner-head { display: grid; gap: var(--gs-space-1); align-self: end; }
 .about-section .about-owner-name { display: flex; align-items: baseline; gap: var(--gs-space-3); margin: 0; color: var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); line-height: 1.3; }
 .about-owner-name span { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); letter-spacing: .04em; }
-.about-section .about-owner-intro { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.5; }
 .about-oshi { display: flex; flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-6); margin: 0; }
 .about-oshi > div { display: flex; align-items: center; gap: var(--gs-space-3); }
 .about-oshi dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
