@@ -16,7 +16,7 @@
 
     <div class="studio-notices">
       <p v-if="immersive.notice.value" role="status">{{ immersive.notice.value === 'rotate' ? '可继续竖屏编辑，或自行旋转设备。' : '浏览器暂不支持全屏，可继续当前编辑。' }}</p>
-      <p v-if="busy" role="status">正在读取摄影资料…</p>
+      <GsLoadingIndicator v-if="busy" variant="text" message="正在读取摄影资料…" />
       <p v-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="materials ? retry() : load()">重试</button></p>
     </div>
 
@@ -247,7 +247,7 @@
               <a v-if="documentUrl" :href="documentUrl" download="sidem-composition.json">保存构图文件</a>
             </div>
           </details>
-          <p v-if="documentLoading" role="status" class="studio-status">正在读取构图文件及素材…</p>
+          <GsLoadingIndicator v-if="documentLoading" class="studio-status" variant="text" message="正在读取构图文件及素材…" />
           <p v-if="documentStatus" role="status" class="studio-status">{{ documentStatus }}</p>
           <p v-if="documentError" role="alert" class="domain-error">{{ documentError }}</p>
         </div>
@@ -261,6 +261,7 @@
   </div>
 </template>
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
 import GsSwitch from '../gs/GsSwitch.vue'

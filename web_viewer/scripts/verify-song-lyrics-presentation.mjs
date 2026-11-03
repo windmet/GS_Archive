@@ -80,8 +80,14 @@ const synthetic = (table, specifier) => {
   }, { context })
 }
 await note.link(specifier => synthetic(noteImports, specifier))
+// The real loading indicator supplies the status role while lyrics load.
+const indicatorFile = 'src/components/GsLoadingIndicator.vue'
+const indicator = new vm.SourceTextModule(compileScript(parse(read(indicatorFile), { filename: indicatorFile }).descriptor,
+  { id: 'lyrics-loading-indicator', inlineTemplate: true }).content, { context })
+await indicator.link(specifier => synthetic({ vue: Vue }, specifier))
 await module.link(specifier => {
   if (specifier === './ArchiveErrorNote.vue') return note
+  if (specifier === '../GsLoadingIndicator.vue') return indicator
   assert.ok(Object.hasOwn(imports, specifier), `Unexpected production dependency: ${specifier}`)
   const exports = imports[specifier]
   return new vm.SyntheticModule(Object.keys(exports), function () {

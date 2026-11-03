@@ -246,6 +246,15 @@ export function getBrandMarkUrl() {
   return `${ASSET_BASE}/brand/image_logo_imas_M_mark.png`
 }
 
+// 关于本站: the owner's GitHub avatar (a 128px snapshot; GitHub's image host is unreliable from mainland China) and the QQ group code.
+export function getOwnerAvatarUrl() {
+  return `${ASSET_BASE}/brand/owner-avatar.webp`
+}
+
+export function getQqGroupQrUrl() {
+  return `${ASSET_BASE}/brand/qq-group-qr.png`
+}
+
 export function getPortalBackgroundUrl() {
   return `${ASSET_BASE}/portal/image_mobile_background_common.png`
 }

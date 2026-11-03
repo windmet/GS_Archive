@@ -13,7 +13,7 @@
         {{ tab.label }}
       </button>
     </nav>
-    <p v-if="busy" role="status" class="domain-muted">正在读取{{ loadingActorName ? `${loadingActorName}的` : '' }}摄影资料…</p>
+    <GsLoadingIndicator v-if="busy" class="domain-muted" variant="text" :message="`正在读取${loadingActorName ? `${loadingActorName}的` : ''}摄影资料…`" />
     <p v-if="error" role="alert" class="domain-error">
       {{ error }}<button type="button" @click="load">重试</button>
     </p>
@@ -114,6 +114,7 @@
   </article>
 </template>
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import {
   computed,
   nextTick,

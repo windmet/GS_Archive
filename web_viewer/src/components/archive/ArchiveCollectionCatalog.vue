@@ -1,6 +1,6 @@
 <template>
   <article class="domain-page collection-page" :class="{'is-honors':kind==='honors'}" data-archive-scroll-container>
-    <p v-if="catalogBusy" role="status">正在读取藏品目录…</p>
+    <GsLoadingIndicator v-if="catalogBusy" variant="text" message="正在读取藏品目录…" />
     <p v-if="errorScope==='catalog'" role="alert">{{ error }}<button @click="load">重试</button></p>
     <section v-if="rows.length" class="collection-directory" aria-label="资料目录">
       <div class="collection-filters">
@@ -34,6 +34,7 @@
   </article>
 </template>
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import {computed,getCurrentInstance,nextTick,onBeforeUnmount,ref,shallowRef,watch} from 'vue'
 import {Box,Coins,Medal,Shirt} from '@lucide/vue'
 import {collectionItemVariant} from '../../presentation/CollectionItemVariant.mjs'

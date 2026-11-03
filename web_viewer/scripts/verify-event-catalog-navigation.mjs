@@ -97,6 +97,11 @@ const modules = {
   './ArchiveFilterSheet.vue': { default: passthrough }, './ArchiveCatalogScope.vue': { default: empty },
   '../gs/GsFilterMenu.vue': { default: choice }, '../gs/GsSegmented.vue': { default: choice },
 }
+// The real loading indicator (it imports only vue): the in-place status stays under test.
+const indicator = new vm.SourceTextModule(compileScript(parse(read('src/components/GsLoadingIndicator.vue')).descriptor, { id: 'event-catalog-indicator', inlineTemplate: true }).content, { context: componentContext })
+await indicator.link(() => new vm.SyntheticModule(Object.keys(Vue), function () { for (const [name, value] of Object.entries(Vue)) this.setExport(name, value) }, { context: componentContext }))
+await indicator.evaluate()
+modules['../GsLoadingIndicator.vue'] = { default: indicator.namespace.default }
 const { descriptor } = parse(read('src/components/archive/ArchiveEventCatalog.vue'))
 const module = new vm.SourceTextModule(compileScript(descriptor, { id: 'event-catalog-navigation', inlineTemplate: true }).content, { context: componentContext })
 await module.link(specifier => {

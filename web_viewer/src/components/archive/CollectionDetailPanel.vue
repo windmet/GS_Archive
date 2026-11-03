@@ -4,7 +4,7 @@
       <section ref="panel" class="collection-inspector" :class="{'is-sheet':modal,'gs-enter-panel':modal,'is-honors':kind==='honors'}" :role="modal?'dialog':'region'" :aria-modal="modal?'true':undefined" :aria-label="title" @keydown.esc.stop.prevent="emit('close')" @keydown.tab="cycleFocus">
         <header class="collection-inspector-header"><h2>{{ title }}</h2><button ref="closeButton" type="button" aria-label="关闭藏品详情" @click="emit('close')"><X :size="18"/>关闭</button></header>
         <div class="collection-inspector-body">
-          <p v-if="busy" role="status" class="domain-muted">正在读取所选藏品…</p>
+          <GsLoadingIndicator v-if="busy" class="domain-muted" variant="text" message="正在读取所选藏品…" />
           <p v-else-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="emit('retry')">重试</button></p>
           <template v-else-if="detail?.entry">
             <CollectionEntryDetails :detail="detail" :kind="kind" :display-idol-name="displayIdolName" link-idol @open-card="emit('open-card',$event)" @open-idol="emit('open-idol',$event)" />
@@ -19,6 +19,7 @@
   </Teleport>
 </template>
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import {computed,nextTick,onBeforeUnmount,ref,watch} from 'vue'
 import {ChevronRight,X} from '@lucide/vue'
 import CollectionEntryDetails from './CollectionEntryDetails.vue'

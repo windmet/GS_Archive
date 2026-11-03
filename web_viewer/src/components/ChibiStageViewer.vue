@@ -569,7 +569,6 @@ import {
   Minimize,
   Settings2,
   Shuffle,
-  LoaderCircle,
   Mic2,
   Music2,
   Pause,
@@ -4445,10 +4444,8 @@ function formatTime(milliseconds) {
 @media (prefers-reduced-motion: reduce) { .position-marker :deep(.idol-avatar-shell) { transition: none; } }
 
 .stage-state { position: absolute; z-index: 6; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #cbd9e7; background: rgba(5, 13, 23, 0.58); backdrop-filter: blur(5px); }
-.loading-icon { animation: spin 1s linear infinite; }
 .error-state { color: #ffc2c2; text-align: center; }
 .error-state span { max-width: 420px; color: #b3c1cf; }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .transport { flex: none; width: calc(100% - 24px); min-height: 68px; display: grid; grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); gap: 12px; align-items: center; margin: 0 12px 12px; padding: 8px 16px; box-sizing: border-box; border-radius: var(--gs-radius-panel); color: var(--gs-ink); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
 .transport.disabled { opacity: 0.62; }
@@ -4705,13 +4702,12 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
   select { font-size: 16px; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .loading-icon { animation: none; }
-}
-/* Loading only; the adjacent error branch intentionally keeps its own style. */
+/* Loading only; the adjacent error branch intentionally keeps its own style. A curtain over the stage:
+   the badge sits in its bottom-right corner like every other curtain. */
 .stage-state--loading {
-  box-sizing: border-box; padding: 18px; min-width: 0; min-height: 0;
-  overflow: auto; overscroll-behavior: contain; backdrop-filter: none;
+  box-sizing: border-box; align-items: flex-end; justify-content: flex-end;
+  padding: max(var(--gs-curtain-edge), env(safe-area-inset-top, 0px)) max(var(--gs-curtain-edge), env(safe-area-inset-right, 0px)) max(var(--gs-curtain-edge), env(safe-area-inset-bottom, 0px)) max(var(--gs-curtain-edge), env(safe-area-inset-left, 0px));
+  min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; backdrop-filter: none;
 }
 .stage-state--loading :deep(.gs-loading-indicator) { max-width: min(22rem, 100%); }
 </style>

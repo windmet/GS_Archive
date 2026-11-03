@@ -168,7 +168,7 @@
           <legend>背景来源</legend>
           <p>{{ backgroundSource === 'cue' ? '背景随台词所在的场景变化。' : '固定场景不会随换人、换装或切换台词改变。' }}</p>
           <GsSegmented class="background-source" :model-value="backgroundSource" :options="BACKGROUND_SOURCES" aria-label="背景来源" @update:model-value="chooseBackgroundSource" />
-          <p v-if="backgroundLoading" role="status">正在读取已收录场景…</p>
+          <GsLoadingIndicator v-if="backgroundLoading" variant="text" message="正在读取已收录场景…" />
           <p v-if="backgroundError" role="status">{{ backgroundError }} <button type="button" @click="loadBackgroundCatalogue(true)">重试</button></p>
           <p v-if="backgroundUnavailable" role="status">之前选择的背景当前不可用，暂用台词背景；请重新选择。</p>
           <template v-if="backgroundSource === 'fixed'"><label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
@@ -246,6 +246,7 @@
 </template>
 
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import ArchiveHomeConsole from './ArchiveHomeConsole.vue'
 import GsSegmented from '../gs/GsSegmented.vue'
 import GsSwitch from '../gs/GsSwitch.vue'

@@ -204,7 +204,6 @@ import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vu
 import * as PIXI from 'pixi.js'
 import {
   CircleAlert,
-  LoaderCircle,
   Mic2,
   Pause,
   Play,
@@ -788,10 +787,8 @@ function stopChoreography(reset = false) {
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
 
 .stage-state { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; color: var(--gs-chrome-ink); font-size: var(--gs-text-ui); background: rgb(11 20 36 / 88%); backdrop-filter: blur(4px); }
-.loading-icon { animation: spin 1s linear infinite; }
 .error-state { text-align: center; color: var(--gs-surface); }
 .error-state span { max-width: 420px; color: var(--gs-chrome-ink); line-height: 1.6; }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .transport { position: absolute; z-index: 3; left: 50%; bottom: 30px; width: min(620px, calc(100% - 48px)); min-height: 68px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; border: 0; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
 .transport.disabled { pointer-events: none; opacity: 0.55; }
@@ -873,13 +870,12 @@ h2 { margin: 0; color: var(--text); font-size: var(--gs-text-subtitle); font-wei
 @media (max-width: 620px) {
   .lab-header { gap: 4px; padding: 0 6px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .loading-icon { animation: none; }
-}
-/* Loading only; the adjacent error branch intentionally keeps its own style. */
+/* Loading only; the adjacent error branch intentionally keeps its own style. A curtain over the stage:
+   the badge sits in its bottom-right corner like every other curtain. */
 .stage-state--loading {
-  box-sizing: border-box; padding: 18px; min-width: 0; min-height: 0;
-  overflow: auto; overscroll-behavior: contain; backdrop-filter: none;
+  box-sizing: border-box; align-items: flex-end; justify-content: flex-end;
+  padding: max(var(--gs-curtain-edge), env(safe-area-inset-top, 0px)) max(var(--gs-curtain-edge), env(safe-area-inset-right, 0px)) max(var(--gs-curtain-edge), env(safe-area-inset-bottom, 0px)) max(var(--gs-curtain-edge), env(safe-area-inset-left, 0px));
+  min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; backdrop-filter: none;
 }
 .stage-state--loading :deep(.gs-loading-indicator) { max-width: min(22rem, 100%); }
 </style>
