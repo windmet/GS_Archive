@@ -36,6 +36,12 @@ for (const key of ['assets/spines/001tom/comu.png', 'assets/card-art/portrait/c.
   assert.equal(previewTransformKind(key), LOSSLESS_WEBP_TRANSFORM, `${key} is composited at runtime and stays lossless`)
 for (const key of ['assets/bg/room.png', 'assets/events/banners/b.png', 'assets/stories/birthday/x.png', 'assets/gasha/g.png', 'assets/songs/jacket_drvalv.png'])
   assert.equal(previewTransformKind(key), LOSSY_WEBP_TRANSFORM, `${key} is a bulk-loaded picture and ships lossy`)
+for (const key of ['assets/domain-images/event/collection/20013/temporary/image_event_kv_top_20013.png',
+  'assets/domain-images/event/theater/10015/temporary/image_event_kv_result_10015.png'])
+  assert.equal(previewTransformKind(key), LOSSY_WEBP_TRANSFORM, `${key} is an event key visual and ships lossy`)
+for (const key of ['assets/domain-images/event/collection/20013/permanent/image_event_banner_20013.png',
+  'assets/domain-images/event/theater/10015/permanent/image_event_logo_10015.png', 'assets/domain-images/item/kv_top_1.png'])
+  assert.equal(previewTransformKind(key), LOSSLESS_WEBP_TRANSFORM, `${key} is not an event key visual and stays lossless`)
 
 // The load-bearing coverage check: after this pass no PNG may remain untransformed
 // except the named exclusions. Without it a prefix added to the corpus later would

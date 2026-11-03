@@ -32,6 +32,9 @@ export const LOSSY_WEBP_TRANSFORM = 'webp-q90-alpha-lossless-exact'
 export const PREVIEW_LOSSY_WEBP_PREFIXES = Object.freeze([
   'assets/bg/', 'assets/events/banners/', 'assets/events/characters/', 'assets/stories/', 'assets/gasha/', 'assets/songs/',
 ])
+// Event key visuals (top and result, 1800x960 paintings) are the event page's hero: about 1.4 MB each as lossless WebP.
+// Their banners and logos sit in `permanent/` beside them and stay lossless with the other event lettering.
+export const PREVIEW_LOSSY_WEBP_PATTERN = /^assets\/domain-images\/event\/[a-z]+\/\d+\/temporary\/image_event_kv_(?:top|result)_\d+\.png$/
 export const GZIP_TRANSFORM = 'gzip-v1'
 export const PREVIEW_GZIP_PREFIXES = Object.freeze([
   'data/compiled/', 'assets/lipsync/', 'assets/live-chibi/motions/',
@@ -98,7 +101,7 @@ export function isPreviewLossyWebpCandidate(requestKey) {
   // The game's 300x160 picker thumbnails carry fine lines and small lettering.
   // Keep these compact originals lossless; full-sized painted backgrounds use q90.
   return isPreviewLosslessWebpCandidate(requestKey) && !requestKey.startsWith('assets/bg/thumbs/')
-    && PREVIEW_LOSSY_WEBP_PREFIXES.some(prefix => requestKey.startsWith(prefix))
+    && (PREVIEW_LOSSY_WEBP_PREFIXES.some(prefix => requestKey.startsWith(prefix)) || PREVIEW_LOSSY_WEBP_PATTERN.test(requestKey))
 }
 
 export function previewTransformKind(requestKey, { gzip = false } = {}) {
