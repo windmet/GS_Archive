@@ -17,7 +17,7 @@
       </button>
     </summary>
     <div v-if="expanded" class="song-lyrics-body">
-      <p v-if="loading" role="status">正在读取歌词…</p>
+      <GsLoadingIndicator v-if="loading" variant="text" message="正在读取歌词…" />
       <ArchiveErrorNote v-else-if="error" class="song-lyrics-error">{{ error }} <button type="button" @click="load">重试</button></ArchiveErrorNote>
       <p v-else-if="!lines.length">这首歌暂无可展示的演出脚本歌词。</p>
       <template v-else>
@@ -37,6 +37,7 @@
 </template>
 
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { ScrollText } from '@lucide/vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'

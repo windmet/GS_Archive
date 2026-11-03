@@ -21,9 +21,13 @@
 <script setup>
 // Presentation only: callers own visibility, readiness, cancellation and copy.
 // The English brand is decorative; the caller's actual message is announced.
+// Three sizes, one per scope (docs/GS_LOADING_SYSTEM_20261103.md):
+//   badge  48 ring + Now Loading: a curtain over a whole screen or stage, in its bottom-right corner.
+//   inline 22 ring in a floating chip: a page on its way, centred on the pane it will fill.
+//   text   16 ring beside the copy: one part of a page still reading, where that part will appear.
 defineProps({
   message: { type: String, required: true },
-  variant: { type: String, default: 'badge', validator: value => ['badge', 'inline'].includes(value) },
+  variant: { type: String, default: 'badge', validator: value => ['badge', 'inline', 'text'].includes(value) },
   tone: { type: String, default: 'light', validator: value => ['light', 'dark'].includes(value) },
 })
 </script>
@@ -40,10 +44,11 @@ defineProps({
   gap: 0.65rem;
   min-width: 0;
   max-width: 100%;
-  margin: 0;
   font-family: var(--gs-font-body);
   text-align: start;
 }
+/* Zero-specificity margins, so a caller's class can always place the indicator. */
+:where(.gs-loading-indicator) { margin: 0; }
 .gs-loading-indicator--dark { --gs-loading-copy: #e0ecef; }
 .gs-loading-indicator__badge {
   box-sizing: border-box;
@@ -88,7 +93,7 @@ defineProps({
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 1.12;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 .gs-loading-indicator__message {
   min-width: 0;
@@ -102,30 +107,47 @@ defineProps({
   overflow-wrap: anywhere;
   word-break: normal;
 }
+/* A curtain's badge hangs from the bottom-right corner: the copy keeps to that edge and to one line,
+   so a longer message never lifts or shifts the badge (the screen reader still gets the whole text). */
+.gs-loading-indicator--badge { justify-items: end; text-align: end; }
+.gs-loading-indicator--badge .gs-loading-indicator__message { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* The page chip is the only card of a pending page; ArchiveLoadNotice takes the same box when it fails. */
 .gs-loading-indicator--inline { display: inline-grid; }
 .gs-loading-indicator--inline .gs-loading-indicator__badge {
-  gap: 0.6rem;
-  padding: 0.5rem 0.75rem;
-  border-width: 1px;
-  background: #f7fafb;
-  border-color: #c9d7dc;
-  box-shadow: 0 3px 12px rgb(10 29 41 / 9%);
+  gap: var(--gs-space-3);
+  padding: var(--gs-space-4) var(--gs-space-5);
+  border: 0;
+  border-radius: var(--gs-radius-panel);
+  background: var(--gs-surface);
+  box-shadow: var(--gs-shadow-float);
 }
 .gs-loading-indicator--inline .gs-loading-indicator__ring {
   width: 1.375rem;
   height: 1.375rem;
   flex-basis: 1.375rem;
 }
-.gs-loading-indicator--inline .gs-loading-indicator__message { color: #294a59; }
-@keyframes gs-loading-orbit { to { transform: rotate(360deg); } }
-@media (max-width: 420px), (max-height: 420px) {
-  .gs-loading-indicator--badge .gs-loading-indicator__ring {
-    width: 2.5rem;
-    height: 2.5rem;
-    flex-basis: 2.5rem;
-  }
-  .gs-loading-indicator__brand { font-size: 1.25rem; }
+.gs-loading-indicator--inline .gs-loading-indicator__message { color: var(--gs-ink-2); line-height: 1.5; }
+/* In place: no card; the ring stands in front of the line that will become the content. It replaces a
+   status paragraph, so it keeps a paragraph's spacing unless the caller's class sets its own. */
+:where(.gs-loading-indicator--text) { margin-block: 1em; }
+.gs-loading-indicator--text .gs-loading-indicator__badge {
+  gap: var(--gs-space-3);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
+.gs-loading-indicator--text .gs-loading-indicator__ring {
+  width: 1rem;
+  height: 1rem;
+  flex-basis: 1rem;
+}
+.gs-loading-indicator--text .gs-loading-indicator__track,
+.gs-loading-indicator--text .gs-loading-indicator__arc { stroke-width: 7; }
+.gs-loading-indicator--text .gs-loading-indicator__message { color: var(--gs-ink-3); font-size: var(--gs-text-ui); font-weight: 400; line-height: 1.5; }
+.gs-loading-indicator--text.gs-loading-indicator--dark .gs-loading-indicator__message { color: var(--gs-loading-copy); }
+@keyframes gs-loading-orbit { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .gs-loading-indicator__arc { animation: none; transform: rotate(24deg); }
 }

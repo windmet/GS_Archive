@@ -2,7 +2,7 @@
   <ArchiveTerminalDialog class="wallpaper-picker" :open="open" title="SSR 卡面壁纸" title-id="wallpaper-title" @close="emit('close')">
     <div class="wallpaper-picker-content">
     <div class="wallpaper-picker-tools"><p class="wallpaper-help">选一张喜欢的卡面作为背景。</p><button type="button" class="wallpaper-text-button" :aria-pressed="!preferences.wallpaperKey" @click="choose('')">使用默认背景</button></div>
-    <p v-if="loading" role="status">正在读取壁纸目录…</p>
+    <GsLoadingIndicator v-if="loading" variant="text" message="正在读取壁纸目录…" />
     <div v-else-if="error" role="status">{{ error }} <button type="button" class="wallpaper-text-button" @click="load(true)">重试</button></div>
     <template v-else>
       <label class="wallpaper-search"><span>查找卡名或偶像</span><input v-model="query" type="search" placeholder="卡名 / 偶像姓名" enterkeyhint="search" /></label>
@@ -25,6 +25,7 @@
   </ArchiveTerminalDialog>
 </template>
 <script setup>
+import GsLoadingIndicator from '../../GsLoadingIndicator.vue'
 import { computed, ref, watch } from 'vue'
 import ArchiveTerminalDialog from './ArchiveTerminalDialog.vue'
 import { useTerminalWallpaper } from '../../../data/terminal/useTerminalWallpaper.js'

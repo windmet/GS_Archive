@@ -1563,10 +1563,12 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
 .menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 
+/* A curtain over the player: the same corner as LoadingScreen's player curtain it follows. */
 .story-data-loading {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: min(22rem, calc(100% - 32px)); max-height: calc(100% - 32px);
-  overflow: auto; z-index: 25;
+  position: absolute; z-index: 25;
+  right: max(var(--gs-curtain-edge), env(safe-area-inset-right, 0px));
+  bottom: max(var(--gs-curtain-edge), env(safe-area-inset-bottom, 0px));
+  max-width: min(22rem, calc(100% - 32px));
 }
 .complete-loading { margin-top: 8px; max-width: 100%; }
 </style>

@@ -138,6 +138,8 @@ async function component(file) {
 modules['./DomainMediaPreview.vue']={default:await component('src/components/archive/DomainMediaPreview.vue')}
 modules['./terminal/ArchiveTerminalDialog.vue']={default:await component('src/components/archive/terminal/ArchiveTerminalDialog.vue')}
 modules['./ArchivePhotoDetailDialog.vue']={default:await component('src/components/archive/ArchivePhotoDetailDialog.vue')}
+// The real loading indicator: the in-place status is part of the catalog's markup under test.
+modules['../GsLoadingIndicator.vue']={default:await component('src/components/GsLoadingIndicator.vue')}
 const Component=await component('src/components/archive/ArchivePhotoCatalog.vue')
 const flush = async () => { for (let i = 0; i < 20; i++) { await Promise.resolve(); await Vue.nextTick() } }
 function fixture(initial, {saved=null,leaveOnReady=false,disposeOnReady=false,queryOnReady=false}={}) {

@@ -548,11 +548,9 @@ onBeforeUnmount(() => navObserver?.disconnect())
   min-width: 0; min-height: 0; padding: 18px;
   pointer-events: none;
 }
-.archive-pending-layer :deep(.gs-loading-indicator) {
+/* The chip is its own card (GsLoadingIndicator inline); no second card around it. */
+.archive-pending-layer > * {
   max-width: 100%; pointer-events: none;
-  padding: 18px 24px; border-radius: 14px;
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 8px 32px rgb(22 47 56 / 12%);
   animation: gs-archive-pending-in 120ms ease-out 140ms both;
 }
 .archive-shell.is-home .archive-pending-layer,
@@ -565,7 +563,7 @@ onBeforeUnmount(() => navObserver?.disconnect())
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .archive-pending-layer :deep(.gs-loading-indicator) { animation: none; }
+  .archive-pending-layer > * { animation: none; }
 }
 /* Full-page modes: home focus, and the reader, which is its own page like LIVE and the photo studio
    (its header carries the way back, so the archive sidebar and topbar step aside at every width). */

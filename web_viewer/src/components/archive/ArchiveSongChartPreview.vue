@@ -16,7 +16,7 @@
       <p v-if="exportError" role="alert">{{ exportError }} <button type="button" :disabled="exporting" @click="download(exportFormat)">重试导出</button></p>
       <p v-if="audioError" role="alert">{{ audioError }}</p>
       <p v-if="soundError" role="alert">{{ soundError }}</p>
-      <p v-if="loading" role="status">正在加载谱面…</p>
+      <GsLoadingIndicator v-if="loading" variant="text" message="正在加载谱面…" />
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
         <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" :effects="trackEffects" :combo="trackCombo" :combo-enabled="comboEnabled" :demonstration-enabled="demonstrationEnabled" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
@@ -57,6 +57,7 @@
 </template>
 
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'

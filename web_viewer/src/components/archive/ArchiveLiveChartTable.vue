@@ -19,7 +19,7 @@
       </GsFilterPanel>
     </div>
 
-    <p v-if="!songs.length" class="chart-table-status" role="status">正在读取曲目…</p>
+    <GsLoadingIndicator v-if="!songs.length" class="chart-table-status" variant="text" message="正在读取曲目…" />
     <template v-else>
       <div class="chart-table-meta">
         <span>{{ rows.length }} 张谱面 · 按{{ sortLabel }}{{ direction > 0 ? '升序' : '降序' }}</span>
@@ -70,6 +70,7 @@
 </template>
 
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import { computed, ref } from 'vue'
 import { ArrowDown, ArrowUp, Clapperboard, Search } from '@lucide/vue'
 import GsFilterPanel from '../gs/GsFilterPanel.vue'

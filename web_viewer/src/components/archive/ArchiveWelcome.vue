@@ -9,7 +9,7 @@
       </header>
       <p class="idol-select-lede">{{ targetLabel === '事务所' ? '选择的偶像将用于事务所，可随时更改。' : '只用于本次打开，不改变已保存的启动方式。' }}</p>
       <p v-if="notice" class="idol-select-notice" role="status">{{ notice }}</p>
-      <p v-if="!dataReady" class="idol-select-notice" role="status">正在准备人物名单…</p>
+      <GsLoadingIndicator v-if="!dataReady" class="idol-select-notice" variant="text" message="正在准备人物名单…" />
       <ArchiveIdolPickerPanel v-model="selectedIdol" :idols="idols" :idol-name="idolName" :idol-search="idolSearch" />
     </div>
     <footer class="idol-select-actions" aria-label="确认偶像与打开页面">
@@ -23,6 +23,7 @@
   </section>
 </template>
 <script setup>
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import ArchiveProducerSettings from './ArchiveProducerSettings.vue'
 import GsSwitch from '../gs/GsSwitch.vue'
