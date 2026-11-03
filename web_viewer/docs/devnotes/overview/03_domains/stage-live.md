@@ -6,6 +6,7 @@
 
 ### 舞台
 
+- 2D 小人舞台的接线主力是 ChatGPT 6.1 Sol（经 Codex）。〔站长自述，C 级〕
 - 7-14 的 `DO_NOT_REOPEN.md` 写的是「纯前端不追求完美复刻 Unity 粒子」；10-13 起改为按客户端方法逐项接线。〔`DO_NOT_REOPEN.md` §3；`NATIVE_CHIBI_WIRING_AUDIT_20261013.md`（`a56e3242`）〕
 - RAW 舞台指令：60 个 bundle、118 份编排、58 类、261,812 行。其中 1 行不是时序指令；行数不等于执行数，也不是完成率。〔`STAGE_RAW_COMMAND_MATRIX_BATCH_20261015.md`；10-20 `STAGE_FOLLOWUP_20261020.md` 复核〕
 - 粒子：82 组模型、724 个系统、95 张纹理，其中 32 个系统还是 partial。〔`NATIVE_REHOBE_SMOKE_20261020.md`〕

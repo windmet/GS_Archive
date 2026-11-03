@@ -68,7 +68,8 @@
 
 - 10 月以前带 Claude 署名的提交：Claude Code 接 DeepSeek API。按署名统计模型时，10-05 以前的 Claude 署名一律算 DeepSeek。
 - 仓库转公开：日期不详，原因是想让 GPT 读仓库。
-- 「Astra」= ChatGPT 6.0 Astra；「Luna」= ChatGPT 5.6 Luna（前期为省额度用的轻量模型）。
+- 「Astra」= ChatGPT 6.0 Astra；「Luna」= ChatGPT 5.6 Luna（前期为省额度用的轻量模型）；「Sol」= ChatGPT 6.1 Sol。
+- 9-11 之后 Codex 一直和 Claude Code 并行；2D 小人舞台的接线主力是 Codex 上的 6.1 Sol。
 - 项目起点：站长偶然找到的两款停服游戏的 asset 包，不是 IPA。公开文档不写 asset 包的来源。
 - 两位朋友（都是女生，文档里用「她」）：
   - **柚子贝汁 P**（担当 円城寺道流）：从最初就一路陪伴，测试每个版本，提产品建议。
@@ -79,7 +80,7 @@
 | 时期 | 主力 | 证据 |
 |---|---|---|
 | 6 月 → 7 月中 | Claude Code + DeepSeek API | 首个提交起的 Claude Sonnet 4.6 / 5 署名；站长确认 |
-| 7 月中 → 9-11 | Codex / ChatGPT（5.6 Luna、6.0 Astra） | PR #1 起的 `codex/*` 分支；9-11 交接文档「来源：Codex 完整会话导出」 |
-| 9-11 → | Claude Code 接手交接 | `SIDEM_CLAUDE_CODE_HANDOFF_20260911.md`。⚠ `codex/` 分支一直合并到 10-15（含 9-25 读模型重构），是否并行待站长确认 |
+| 7 月中 → 10 月中（9-11 后与 Claude Code 并行） | Codex / ChatGPT（5.6 Luna、6.0 Astra、6.1 Sol） | PR #1 起的 `codex/*` 分支；9-11 交接文档「来源：Codex 完整会话导出」 |
+| 9-11 → | Claude Code 加入，Codex 继续并行 | `SIDEM_CLAUDE_CODE_HANDOFF_20260911.md`；`codex/` 分支一直合并到 10-15（含 9-25 读模型重构）。站长确认：9-11 之后一直同时用 Codex，2D 舞台接线的主力是 ChatGPT 6.1 Sol（经 Codex） |
 | 10-05 → | Claude Opus 5.5 / Sonnet 5.5 | 署名首日 10-05 |
 | 翻译 | Gemini（AI Studio）初翻 → GPT、后来 Claude 审查 | 站长自述；翻译批次文档 |

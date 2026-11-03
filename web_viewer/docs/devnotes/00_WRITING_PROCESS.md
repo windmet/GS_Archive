@@ -40,7 +40,7 @@
 ## 4. 文体规则
 
 - 写事实，不写评价：「舞台默认曲的固定读取从 43.58 MB 降到 1.79 MB（原始 JSON 字节）」，不写「教科书级」「像素级」「极其硬核」。数字带上口径。
-- 模型和工具统一写法：DeepSeek（经 Claude Code 调用）、Codex、ChatGPT 5.6 Luna、ChatGPT 6.0 Astra、Claude Opus 5.5 / Sonnet 5.5、Gemini（AI Studio）。10-05 以前提交里的 Claude 署名是工具写的，不代表用了 Claude 模型。
+- 模型和工具统一写法：DeepSeek（经 Claude Code 调用）、Codex（ChatGPT 5.6 Luna、6.0 Astra、6.1 Sol）、Claude Opus 5.5 / Sonnet 5.5、Gemini（AI Studio）。10-05 以前提交里的 Claude 署名是工具写的，不代表用了 Claude 模型。
 - 站长自述保留口语和自嘲，只改错字，不替站长加感慨。
 - 「果蔬」第一次出现时写「果蔬（GROWING STARS 的昵称）」。
 - 两位朋友写「柚子贝汁 P」「shiogi P」，用「她」。称呼按本人意见，改动前先问本人。
