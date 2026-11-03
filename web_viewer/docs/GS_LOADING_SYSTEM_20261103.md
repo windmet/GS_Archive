@@ -9,6 +9,7 @@
 - 两者是同一张画面，改一个必须同时改另一个：
   - 纸色底 `--gs-paper`。
   - 正中偏上 4%（`inset: 0 0 8vh`）是品牌锁定写法：M 标 52×40（`brightness(0)`）、GROWING STARS 舞台字斜体 700 28px（`--gs-text-title`）、第二行「SideM 资料馆」14px、ink-3、字距 .08em。手机同尺寸。
+  - 品牌下方是站点说明「《偶像大师 SideM GROWING STARS》非官方资料馆」（13px ink-3）、28px 细线、游戏服务期「2021.10.06 — 2023.07.31」（舞台字 600、字距 .12em）。文字来源是 `content/aboutContent.js` 的 `SITE_LINE` / `SERVICE_PERIOD`，关于本站页头用同一份；`index.html` 无脚本，里面是静态副本。
   - 右下角是 Now Loading 徽章，边距 `--gs-curtain-edge`。
 - 首屏用 `<link rel="preload">` 加内联 `@font-face` 载入 `barlow-semi-condensed-700-italic-latin.woff2`。Vite 会把它改写成和应用 CSS 相同的哈希地址，所以挂载前后是同一个字体文件。
 

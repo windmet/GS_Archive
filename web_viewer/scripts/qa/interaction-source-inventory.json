@@ -3002,7 +3002,7 @@
   {
     "component": "LoadingScreen",
     "file": "src/components/LoadingScreen.vue",
-    "line": 16,
+    "line": 21,
     "event": "@click.stop",
     "handler": "$emit('cancel')",
     "template": "<button v-if=\"canCancel\" type=\"button\" class=\"load-cancel\" @click.stop=\"$emit('cancel')\">取消并返回</button>",
@@ -3926,6 +3926,16 @@
     "event": "@click",
     "handler": "viewingShortcutDismissed = true; immersive.dismiss()",
     "template": "<button @click=\"viewingShortcutDismissed = true; immersive.dismiss()\">{{ uiText('player.immersive.dismiss') }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveAbout",
+    "file": "src/components/archive/ArchiveAbout.vue",
+    "line": 50,
+    "event": "@click",
+    "handler": "copyGroupNumber",
+    "template": "<button type=\"button\" class=\"about-copy\" @click=\"copyGroupNumber\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },

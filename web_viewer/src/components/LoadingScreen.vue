@@ -3,8 +3,13 @@
     <div v-if="visible" class="loading-screen" :class="`loading-screen--${surface}`">
       <!-- The archive curtain only shows before the first page (view __boot__): it continues index.html's boot screen exactly. -->
       <div v-if="surface === 'archive'" class="loading-brand" aria-hidden="true">
-        <img :src="getBrandMarkUrl()" alt="" width="52" height="40" />
-        <span class="loading-brand-text"><span class="loading-brand-name">{{ ARCHIVE_BRAND.mark }}</span><span class="loading-brand-sub">{{ ARCHIVE_BRAND.sub }}</span></span>
+        <span class="loading-brand-lockup">
+          <img :src="getBrandMarkUrl()" alt="" width="52" height="40" />
+          <span class="loading-brand-text"><span class="loading-brand-name">{{ ARCHIVE_BRAND.mark }}</span><span class="loading-brand-sub">{{ ARCHIVE_BRAND.sub }}</span></span>
+        </span>
+        <span class="loading-site-line">{{ SITE_LINE }}</span>
+        <span class="loading-site-rule"></span>
+        <span class="loading-site-period">{{ SERVICE_PERIOD.start }} â€” {{ SERVICE_PERIOD.end }}</span>
       </div>
       <div class="loading-box">
         <GsLoadingIndicator :message="displayMessage" :tone="surface === 'archive' ? 'light' : 'dark'" />
@@ -25,6 +30,7 @@ import { criticalPreloadProgress } from '../presentation/LoadingPresentation.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { getBrandMarkUrl } from '../utils/AssetResolver.js'
 import { ARCHIVE_BRAND } from '../core/archiveSections.js'
+import { SITE_LINE, SERVICE_PERIOD } from '../content/aboutContent.js'
 
 defineEmits(['cancel'])
 const props = defineProps({
@@ -78,12 +84,19 @@ const displayMessage = computed(() => props.readiness?.status === 'waiting' ? 'æ
   position: absolute;
   inset: 0 0 8vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 6px;
+  padding: 0 var(--gs-space-5);
   pointer-events: none;
   color: var(--gs-ink);
+  text-align: center;
 }
+.loading-brand-lockup { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; text-align: start; }
+.loading-site-line { color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.5; }
+.loading-site-rule { width: 28px; height: 1px; background: var(--gs-line); }
+.loading-site-period { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: 600; letter-spacing: .12em; line-height: 1; font-variant-numeric: tabular-nums; }
 .loading-brand img { flex: none; width: 52px; height: 40px; object-fit: contain; filter: brightness(0); }
 .loading-brand-text { display: flex; flex-direction: column; gap: 7px; }
 .loading-brand-name { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-style: italic; font-weight: var(--gs-weight-bold); letter-spacing: .02em; line-height: 1; white-space: nowrap; }
