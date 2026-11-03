@@ -443,8 +443,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-brand h1:focus { outline:none; }
 .overview-icon-button { display:grid;place-items:center;flex:none;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
 .overview-lens { min-width:0; max-width:100%; }
-.overview-lens :deep(.gs-segmented-option) { gap:var(--gs-space-3); }
-.overview-lens-name { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.overview-lens-name { display:block; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .overview-toolbar-actions { display:flex;align-items:center;justify-content:flex-end;gap:var(--gs-space-1); }
 .overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
 
@@ -737,6 +736,14 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-story-hub { gap:var(--gs-space-6); }
   .overview-main-index, .overview-story-gateways { grid-template-columns:minmax(0,1fr); }
   .overview-story-gateways button:last-child:nth-child(odd) { grid-column:auto; }
+}
+/* One column but not a phone: a full-width banner per chapter would fill the screen, so each chapter becomes a row,
+   the uncropped banner capped at a thumbnail width and the label beside it. */
+@container portal (min-width:481px) and (max-width:980px) {
+  .overview-main-index button { display:flex;align-items:center;gap:var(--gs-space-6); }
+  .overview-main-index article :deep(.domain-media-preview) { flex:none;width:clamp(220px,50%,380px); }
+  .overview-main-index button > span { flex:1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;row-gap:var(--gs-space-1);min-width:0;padding-top:0; }
+  .overview-main-index button > span > svg { grid-column:2;grid-row:1 / span 2; }
 }
 /* The 担当 banner with its 2×2 figures: from a 720px page (an iPad content area is 966–972px, short of the 981px
    the event columns need). It follows the narrow-page block above so its single column does not win. */
