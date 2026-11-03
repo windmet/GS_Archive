@@ -51,6 +51,7 @@ node scripts/general-translation-workflow.mjs review G-chats-20261015-001 --revi
 - `generate-archive-general-translations.mjs` 和审计**不会因语料或记忆变化失败**：无效条目跳过并警告（回落原文），orphan 不发布，记忆里有但没发布的条目计入审计 `general.unpublished`。
 - `npm run build:check` / `prebuild` 仍会刷新审计，因为资源页的「翻译与校对进度」读的是 `config/translation-audit/`；但它只汇报状态，不做翻译的严格检查。
 - 严格检查放在翻译相关的提交里跑：`general-translation-workflow.mjs verify` 和 `npm run verify:general-translation-workflow`。
+- 页面按 `?rev=<translation release>` 取译文包，改了 `public/translations` 却没重生成 release，旧缓存会一直生效。CI 的 `verify-translation-release` 在 manifest / `config/translation-release.json` 与包字节不符时失败；生成器遇到 CR 字节直接报错（`.gitattributes` 已让翻译源与发布包按 LF 检出，旧 CRLF 检出要重新 checkout 这些文件）。部署后用 `node scripts/verify-deployed-translations.mjs <https 源>` 核对线上 manifest 与全部包逐字节一致。
 
 ## 制作人称呼占位
 

@@ -1,6 +1,7 @@
 {
   "about": "Every scripts/verify-* file is either reached by the Web Viewer Source Gate or listed under localOnly with its reason. 'batch' runs in CI through npm run verify:source-batch; checked by scripts/verify-verifier-coverage.mjs.",
   "batch": [
+    "verify-deferred-media-src.mjs",
     "verify-costume-category-filters.mjs",
     "verify-live-chart-table.mjs",
     "verify-stage-costume-families.mjs",
@@ -44,6 +45,7 @@
     "verify-character-line-text.mjs",
     "verify-chat-translation.mjs",
     "verify-chat-editorial-acceptance.mjs",
+    "verify-translation-release.mjs",
     "verify-event-navigation.mjs",
     "verify-mobile-navigation.mjs",
     "verify-reader-navigation.mjs",
@@ -280,6 +282,7 @@
         "verify-preview-http.mjs",
         "verify-preview-incremental-http.mjs",
         "verify-preview-incremental-images.py",
+        "verify-deployed-translations.mjs",
         "verify-raw-selection-flow.py",
         "verify-song-chart-png-browser.mjs",
         "verify-song-experimental-http.mjs",
