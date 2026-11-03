@@ -80,7 +80,7 @@
 | 时期 | 主力 | 证据 |
 |---|---|---|
 | 6 月 → 7 月中 | Claude Code + DeepSeek API | 首个提交起的 Claude Sonnet 4.6 / 5 署名；站长确认 |
-| 7 月中 → 10 月中（9-11 后与 Claude Code 并行） | Codex / ChatGPT（5.6 Luna、6.0 Astra、6.1 Sol） | PR #1 起的 `codex/*` 分支；9-11 交接文档「来源：Codex 完整会话导出」 |
+| 7 月中 →（9-11 后与 Claude Code 并行；最后一个 `codex/` 分支 10-15 合并，之后分支按领域命名，看不出工具） | Codex / ChatGPT（5.6 Luna、6.0 Astra、6.1 Sol） | PR #1 起的 `codex/*` 分支；9-11 交接文档「来源：Codex 完整会话导出」 |
 | 9-11 → | Claude Code 加入，Codex 继续并行 | `SIDEM_CLAUDE_CODE_HANDOFF_20260911.md`；`codex/` 分支一直合并到 10-15（含 9-25 读模型重构）。站长确认：9-11 之后一直同时用 Codex，2D 舞台接线的主力是 ChatGPT 6.1 Sol（经 Codex） |
 | 10-05 → | Claude Opus 5.5 / Sonnet 5.5 | 署名首日 10-05 |
 | 翻译 | Gemini（AI Studio）初翻 → GPT、后来 Claude 审查 | 站长自述；翻译批次文档 |
