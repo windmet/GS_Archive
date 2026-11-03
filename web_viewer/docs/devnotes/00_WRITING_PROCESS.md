@@ -42,6 +42,7 @@
 - 模型和工具统一写法：DeepSeek（经 Claude Code 调用）、Codex、ChatGPT 5.6 Luna、ChatGPT 6.0 Astra、Claude Opus 5.5 / Sonnet 5.5、Gemini（AI Studio）。10-05 以前提交里的 Claude 署名是工具写的，不代表用了 Claude 模型。
 - 站长自述保留口语和自嘲，只改错字，不替站长加感慨。
 - 「果蔬」第一次出现时写「果蔬（GROWING STARS 的昵称）」。
+- 两位朋友写「柚子贝汁 P」「shiogi P」，用「她」。称呼按本人意见，改动前先问本人。
 - 不确定的就写不确定：「约」「据回忆」「未复测」。
 
 ## 5. 不公开的内容
