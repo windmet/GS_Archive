@@ -1,14 +1,13 @@
 // Browser plugin not available in the authoring session; run with Playwright.
 // Set GS_PLAYWRIGHT_MODULE / GS_CHROMIUM_EXECUTABLE when using an external QA runtime.
 import { fileURLToPath } from 'node:url'
-import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 const { chromium } = await import(process.env.GS_PLAYWRIGHT_MODULE || 'playwright')
 import fs from 'node:fs/promises'
 import assert from 'node:assert/strict'
 import sharp from 'sharp'
 const root=fileURLToPath(new URL('../', import.meta.url)).replace(/\/$/, '')
-const outputDir=resolve(process.env.GS_PNG_QA_DIR || tmpdir()+'/gs-song-chart-png-qa'); await fs.mkdir(outputDir,{recursive:true})
+const outputDir=resolve(process.env.GS_PNG_QA_DIR || root+'/.analysis/song-chart-png-qa'); await fs.mkdir(outputDir,{recursive:true})
 const port=Number(process.env.GS_PNG_QA_PORT || 5198)
 assert.ok(Number.isInteger(port)&&port>0&&port<=65535,'Invalid PNG QA port')
 const {createServer}=await import(new URL('../node_modules/vite/dist/node/index.js',import.meta.url)); const server=await createServer({root,configLoader:'native',server:{host:'127.0.0.1',port,strictPort:true,hmr:false}}); await server.listen();

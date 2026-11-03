@@ -6,7 +6,8 @@
 //   node scripts/verify-portal-preferred-alignment-browser.mjs [base] [outDir]
 // Needs a running server (dev or a preview URL) and a cached Playwright Chromium.
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -22,7 +23,7 @@ const check = (name, ok, detail) => { results.push({ name, ok, detail }); consol
 const near = (a, b) => typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= 1
 
 async function page(viewport, route, measure) {
-  const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-align-'))
+  const profile = createBrowserProfile('align')
   const port = 9700 + Math.floor(Math.random() * 90)
   const chrome = spawn(path.join(cache, dir, 'chrome-win64/chrome.exe'), [`--remote-debugging-port=${port}`, '--no-sandbox', '--headless=new', `--user-data-dir=${profile}`, '--no-first-run', '--hide-scrollbars', 'about:blank'], { stdio: 'ignore' })
   try {
@@ -45,7 +46,7 @@ async function page(viewport, route, measure) {
     socket.close()
     return measure(data)
   } finally {
-    chrome.kill(); await sleep(300); try { rmSync(profile, { recursive: true, force: true }) } catch {}
+    await closeBrowser(chrome, profile)
   }
 }
 

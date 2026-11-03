@@ -5,7 +5,8 @@
 //   node scripts/verify-box-on-line-browser.mjs [--base=http://127.0.0.1:5173] [--update] [--only=m-card,d-card]
 // Needs a running dev server and a cached Playwright Chromium or chrome-headless-shell (no npm package required).
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -103,7 +104,7 @@ function findChrome() {
   return found
 }
 
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-box-on-line-'))
+const profile = createBrowserProfile('box-on-line')
 const port = 9500 + Math.floor(Math.random() * 400)
 const chrome = spawn(findChrome(), [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-first-run', 'about:blank'], { stdio: 'ignore' })
 let socket
@@ -162,7 +163,5 @@ try {
   }
 } finally {
   socket?.close()
-  chrome.kill()
-  await sleep(300)
-  try { rmSync(profile, { recursive: true, force: true }) } catch { /* the browser may still hold it */ }
+  await closeBrowser(chrome, profile)
 }
