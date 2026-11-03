@@ -32,6 +32,8 @@ function onKey(event) {
 .gs-segmented { --gs-seg-pad: var(--gs-space-2); position: relative; display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: var(--gs-seg-pad); border-radius: var(--gs-radius-control); background: var(--gs-mode-track); }
 .gs-segmented-thumb { position: absolute; top: var(--gs-seg-pad); bottom: var(--gs-seg-pad); left: var(--gs-seg-pad); width: calc((100% - 2 * var(--gs-seg-pad)) / var(--segments)); border-radius: var(--gs-radius-segment); background: var(--gs-mode-thumb); box-shadow: var(--gs-shadow-1); transform: translateX(calc(var(--selected) * 100%)); transition: transform var(--gs-current-motion); }
 .gs-segmented-option { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-segment); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
+/* The label is the slot's box: an avatar beside a name needs its own gap here, not on the button. */
+.gs-segmented-label { display: inline-flex; align-items: center; gap: var(--gs-space-3); min-width: 0; }
 .gs-segmented-option[aria-checked=true] { color: var(--gs-mode-ink); }
 .gs-segmented-option:disabled { color: var(--gs-ink-3); cursor: default; opacity: .6; }
 .gs-segmented-option:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
