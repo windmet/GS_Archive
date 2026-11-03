@@ -1,3 +1,10 @@
+# Translation sources and published packs feed receipt and release-manifest sha256 hashes,
+# so a Windows CRLF checkout must not change their bytes. Later per-batch -text lines still
+# win for verbatim returns.
+translation/**/*.json text eol=lf
+translation/**/*.md text eol=lf
+public/translations/**/*.json text eol=lf
+config/translation-release.json text eol=lf
 # Source-bound B002 receipts retain exact bytes, including the supplied CRLF output.
 translation/studio/reviews/B002-main-r31-edited-20261001/* -text
 translation/studio/reviews/B002-main-r31-edited-20261001/output.original.md whitespace=cr-at-eol
