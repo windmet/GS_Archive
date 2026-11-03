@@ -1,0 +1,73 @@
+# 开发时间线考证（2026-11-03）
+
+开发手记里的每个时间点，都按证据核对一遍。证据只认三类：Git 提交与 PR（`gh`）、仓库内当天落地的文档、外部公开报道。
+站长的回忆和 AI 整理稿（Gemini「SideM 门户开发手记」三轮对话）都只当线索，不当证据。
+
+状态：✓ 有证据 · ⚠ 证据与回忆或 AI 稿不一致 · ？ 还没找到证据，需要站长补充
+
+> 提交日期取作者日期（`git log --all --date=short`）。PR 提交数用 `git rev-list --count <merge>^1..<merge>^2`；
+> `gh pr view --json commits` 最多只返回 100，三位数的 PR 不能用它数。
+
+## 外部时间点
+
+| 日期 | 事件 | 证据 | 状态 |
+|---|---|---|---|
+| 2021-10-06 | 《偶像大师 SideM GROWING STARS》开服 | 电击 Online / KAI-YOU 停服报道 | ✓ |
+| 2023-04-04 | 官方公布停服，4 月起缩小运营，5 月起停止活动与剧情更新 | 同上 | ✓ |
+| 2023-07-31 | 停服（13:59） | 同上 | ✓ |
+| 2023-09 | 官方在 SideM 品牌页「315 PASSION CONTENTS」公开 GS 剧情存档（视频） | Famitsu 2023-09 报道；现为品牌页「サイスタ アーカイブ」栏目 | ✓ |
+| 2026-09-13 | SideM 11th STAGE ~EVER EVER@FTER~ DAY2（TOYOTA ARENA TOKYO）公布 Switch 2 / Switch 新作 | Famitsu、inside-games 2026-09-14 报道 | ✓ 站长更正正确；AI 稿初版写错过 |
+
+## 项目时间线
+
+| 日期 | 事件 | 证据 | 状态 |
+|---|---|---|---|
+| 2026 年初 | 站长入坑 SideM | 站长自述 | ？个人经历，不需要证据 |
+| 2026-06（之前） | 用 DeepSeek 搓出第一版剧情播放器骨架，还没有 Git | 首个提交的说明写着已排除 `public/assets/`（5 GB），说明提交前代码和语料已经在本地 | ✓ 间接证据 |
+| 2026-06-22 | 首个提交 `ca3a28e1`「Initial commit — SideM Story Viewer」 | Git | ✓ |
+| 2026-06-22 | 首个提交是谁建的 | 提交带 `Co-Authored-By: Claude Sonnet 4.6` | ⚠ 站长回忆「在 Codex 帮助下建立第一个提交」。trailer 说明是 Claude Code 这个工具提交的；它可以接 DeepSeek 等第三方 API，所以和「靠 DeepSeek 跑」不矛盾。需要站长确认当时是不是 Claude Code + DeepSeek API |
+| 2026-07-01 | 口型（lipsync）、子模型嘴型修复，拆分 viewer 逻辑 | `23dbba83`、`1800c7bd` 等 10 个提交 | ✓ |
+| 2026-07-03 | Masterdata 进入导航（「7 月初解开数据」） | `e43ebecb` Add masterdata-backed archive navigation | ✓ |
+| 2026-07-13 | 定方向：做资料库与回放器，不复刻客户端和抽卡 | `notes/04_refactor/SEKAI_VIEWER_DIRECTION_GUIDANCE_20260713.md`（7-14 提交） | ✓ |
+| 2026-07-14 | GitHub 仓库 `windmet/GS_Archive` 建立；当天 36 个提交 | `gh repo view` createdAt 2026-07-14 | ✓ 什么时候转公开：？ |
+| 2026-07-18 → 07-23 | PR #1 剧情运行时重构 + 本地化契约，88 个提交 | `gh pr view 1`；分支 `codex/story-localization-contract` | ✓ Codex 时期的直接证据 |
+| 2026-07-23 → 07-29 | PR #2 资源来源迁移到 RAW 与 masterdata，83 个提交 | `gh pr view 2` | ✓ |
+| 2026-07-29 → 08-12 | PR #3–#42：关系目录、发布治理、P1/P2 批次（门禁、账本、strict-v2 集中在这段） | `gh pr list` | ✓ |
+| 2026-08-13 → 09-07 | 停工：所有分支 26 天没有提交 | 每日提交数：8-13 有 9 个，下一个是 9-08 | ✓ 站长说「半个多月」，实际近四周 |
+| 2026-09-08 | 架构重构审计：`App.vue` 2,986 行 | `docs/ARCHITECTURE_REFACTOR_20260908.md`（`611a5efb`）；当天 67 个提交 | ✓ |
+| 2026-09-08 → 09-14 | 大重构（「连跑八九个小时」） | 9-08 有 67 个提交，9-09 有 49 个，9-12 有 44 个，9-13 有 60 个 | ✓ 单次时长无法从 Git 证明 |
+| 2026-09-11 | Codex 交接给 Claude Code | `docs/SIDEM_CLAUDE_CODE_HANDOFF_20260911.md`：「来源：Codex 完整会话导出整理」 | ✓ |
+| 2026-07-01 → 09-14 | `Claude Sonnet 5` trailer 共 37 个提交 | Git trailer | ？这段用的是哪个后端，需要站长回忆 |
+| 2026-09-13 | 11th LIVE DAY2 当天仍有 60 个提交 | Git | ✓ |
+| 2026-09-20 | 电话界面回到原版竖屏手机框；手机横屏沉浸模式 | `6f67d211` restore phone visuals、`7a3ce176`、`38f8c4b4` | ✓ |
+| 2026-09-23 | PR #43「收口资料馆、剧情运行时与移动端交互」合并，264 个提交 | rev-list | ✓ |
+| 2026-10-03 | 设计令牌第一次进入代码：`GS_UI_TOKENS.css` | `9431ab99` | ⚠ 比 Claude Opus 5.5 trailer 早两天 |
+| 2026-10-05 | 节目册设计基础；`Claude Opus 5.5` 与 `Sonnet 5.5` trailer 从这天开始 | `0c974adf`；trailer 首日 | ✓ 对应「10 月初开通 Claude」；令牌推到全站是 10-05 以后的事 |
+| 2026-10-09 | 绑定读模型 release，测试部署前置 | `c00599e4`、`b2372398` | ✓ |
+| 2026-10-10 | 测试版发给热心制作人内测 | `309ca736` docs: 2026-10-10 test deploy handoff | ✓ |
+| 2026-10-11 | 记录内测反馈并部署 | `47d76acc` record test feedback deployment | ✓ |
+| 2026-10-14 | PR #48 最后一个大分支合并（108 个提交），此后改成短分支 | rev-list | ⚠ AI 稿写 105，按 rev-list 是 108 |
+| 2026-10-20 | PR #56 视觉收敛、#61 导航命名、#63 worktree 共用语料，当天合并 10 个 PR | `gh pr list` | ✓ |
+| 2026-10-27 → | 节目册 2.0 门户改造（P0–P7） | `docs/PORTAL_REDESIGN_PROGRESS_20261027.md` | ✓ |
+
+## AI 稿里的技术数字
+
+能在仓库文档里找到出处的，写进文档时注明出处；找不到的要先复测，不能照抄。
+
+| 数字 | 出处 | 状态 |
+|---|---|---|
+| 单曲读取瘦身 95.9% | `docs/GS_ARCHIVE_R2_RELEASE_20261021.md` | ✓ 有出处 |
+| 725 个骨骼模型 | `docs/GS_NATIVE_ADV_PLACEMENT_20261015.md` | ✓ 有出处 |
+| 724 个粒子系统 | `docs/NATIVE_*_20261020.md` | ✓ 有出处，写之前再核对口径 |
+| 48,268 个 wait cut | 未找到 | ？要复测 |
+| 261,812 行 RAW 指令 | 未找到 | ？要复测 |
+| 10,326 份场景 / 31.5 万快照 | 未找到 | ？要复测 |
+| 826 张卡、49 位偶像、16 个组合 | 门户首页统计、Masterdata | ✓ |
+
+## 需要站长补充
+
+1. 6 月到 7 月初用的是什么工具组合：Claude Code + DeepSeek API？首个提交带 Sonnet 4.6 trailer。
+2. `Claude Sonnet 5` trailer（7-01 至 9-14）对应的是哪段工作。
+3. 仓库从私有转公开的日期。
+4. 「Astra」「Luna」分别指哪个模型或工具，文档里统一写法。
+5. 「两位朋友」是否署名、怎么称呼。
