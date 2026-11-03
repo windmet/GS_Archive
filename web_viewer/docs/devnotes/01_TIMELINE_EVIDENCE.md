@@ -59,9 +59,9 @@
 | 单曲读取瘦身 95.9% | `docs/GS_ARCHIVE_R2_RELEASE_20261021.md` | ✓ 有出处 |
 | 725 个骨骼模型 | `docs/GS_NATIVE_ADV_PLACEMENT_20261015.md` | ✓ 有出处 |
 | 724 个粒子系统 | `docs/NATIVE_*_20261020.md` | ✓ 有出处，写之前再核对口径 |
-| 48,268 个 wait cut | 未找到 | ？要复测 |
-| 261,812 行 RAW 指令 | 未找到 | ？要复测 |
-| 10,326 份场景 / 31.5 万快照 | 未找到 | ？要复测 |
+| 48,268 个只含 wait 的 cut（RAW 共 126,633 个 cut，约 42,000 s） | `docs/STORY_RECOMPILE_CANDIDATE_20261020.md` | ✓ 有出处；口径是「旧编译器丢掉的纯等待 cut」，不是全部 wait |
+| 261,812 行 RAW 舞台指令（118 份编排、58 类） | `docs/STAGE_RAW_COMMAND_MATRIX_BATCH_20261015.md`，10-20 `STAGE_FOLLOWUP` 复核 | ✓ 有出处；含 1 行非时序说明，行数不等于执行数，也不是视觉完成率 |
+| 10,326 份场景 / 315,124 个快照（另有 175,600 个 cue、48,073 条口型记录） | `docs/SCENARIO_PIPELINE_BOUNDARIES.md` | ✓ 有出处；AI 稿写「31.5 万」是取整 |
 | 826 张卡、49 位偶像、16 个组合 | 门户首页统计、Masterdata | ✓ |
 
 ## 站长补充（11-03 已答）
