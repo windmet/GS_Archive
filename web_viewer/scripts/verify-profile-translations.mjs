@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { archiveGeneralTextCorpus } from './lib/archive-general-text-corpus.mjs'
+import { KINDS } from './lib/translation-domains.mjs'
 import { archiveGeneralText } from '../src/presentation/ArchiveGeneralTextCore.mjs'
 
 // Profile fields (idol profile, unit introduction, 通信 status, work labels) are translated in
@@ -9,7 +10,10 @@ import { archiveGeneralText } from '../src/presentation/ArchiveGeneralTextCore.m
 const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 const shard = JSON.parse(readFileSync(new URL('../public/translations/zh-CN/archive-general/profiles.json', import.meta.url), 'utf8'))
 const kinds = ['idol-profile', 'unit-profile', 'mobile-status', 'work']
-assert.deepEqual(Object.keys(shard.entries).sort(), [...kinds].sort(), 'the profiles shard holds exactly the profile kinds')
+// The shard also carries other registered kinds (seasonal titles); the profile rules below cover only the four profile kinds.
+const shardKinds = Object.keys(KINDS).filter(kind => KINDS[kind].shard === 'profiles')
+assert.ok(kinds.every(kind => shardKinds.includes(kind)), 'every profile kind is registered to the profiles shard')
+assert.deepEqual(Object.keys(shard.entries).sort(), [...shardKinds].sort(), 'the profiles shard holds exactly the kinds registered to it')
 const rows = archiveGeneralTextCorpus(root).filter(row => kinds.includes(row.kind))
 assert.ok(rows.length > 450, `expected the profile corpus, found ${rows.length}`)
 const markup = text => (text.match(/<[^>]+>/g) || []).join('')
