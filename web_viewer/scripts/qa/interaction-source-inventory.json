@@ -5010,6 +5010,36 @@
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
+    "component": "ArchiveFlyoutMenu",
+    "file": "src/components/archive/ArchiveFlyoutMenu.vue",
+    "line": 3,
+    "event": "@pointerdown.self",
+    "handler": "emit('close')",
+    "template": "<div class=\"archive-flyout-layer\" @pointerdown.self=\"emit('close')\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveFlyoutMenu",
+    "file": "src/components/archive/ArchiveFlyoutMenu.vue",
+    "line": 4,
+    "event": "@keydown",
+    "handler": "onKey",
+    "template": "<ul ref=\"list\" class=\"archive-flyout\" role=\"menu\" :aria-label=\"group.label\" :style=\"position\" @keydown=\"onKey\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveFlyoutMenu",
+    "file": "src/components/archive/ArchiveFlyoutMenu.vue",
+    "line": 6,
+    "event": "@click",
+    "handler": "emit('select', item.id)",
+    "template": "<button type=\"button\" role=\"menuitem\" class=\"archive-flyout-item\" :aria-current=\"item.id === current ? 'page' : undefined\" @click=\"emit('select', item.id)\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
     "component": "ArchiveGashaCatalog",
     "file": "src/components/archive/ArchiveGashaCatalog.vue",
     "line": 9,
@@ -6083,9 +6113,9 @@
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
     "line": 170,
-    "event": "@click",
-    "handler": "preferences.background = 'cue'",
-    "template": "<button type=\"button\" class=\"background-auto\" :aria-pressed=\"preferences.background === 'cue'\" @click=\"preferences.background = 'cue'\">跟随台词背景</button>",
+    "event": "@update:model-value",
+    "handler": "chooseBackgroundSource",
+    "template": "<GsSegmented class=\"background-source\" :model-value=\"backgroundSource\" :options=\"BACKGROUND_SOURCES\" aria-label=\"背景来源\" @update:model-value=\"chooseBackgroundSource\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6236,6 +6266,86 @@
     "event": "@input",
     "handler": "emit('update:modelValue', $event.target.value)",
     "template": "@input=\"emit('update:modelValue', $event.target.value)\"",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 13,
+    "event": "@click",
+    "handler": "direction = -direction",
+    "template": "<div class=\"chart-table-sort-head\"><h3>排序</h3><button type=\"button\" class=\"chart-table-dir\" @click=\"direction = -direction\">{{ direction > 0 ? '升序' : '降序' }}<component :is=\"direction > 0 ? ArrowUp : ArrowDown\" :size=\"15\" aria-hidden=\"true\" /></button></div>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 15,
+    "event": "@click",
+    "handler": "sortBy(column.key, false)",
+    "template": "<button v-for=\"column in SORTS\" :key=\"column.key\" type=\"button\" :aria-pressed=\"sort === column.key\" @click=\"sortBy(column.key, false)\">{{ column.label }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 34,
+    "event": "@click",
+    "handler": "sortBy(column.sort, true)",
+    "template": "<button v-if=\"column.sort\" type=\"button\" :aria-pressed=\"sort === column.sort\" :aria-label=\"`按${column.label}排序`\" @click=\"sortBy(column.sort, true)\">{{ column.label }}<component :is=\"direction > 0 ? ArrowUp : ArrowDown\" v-if=\"sort === column.sort\" :size=\"13\" aria-hidden=\"true\" /></button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 39,
+    "event": "@click",
+    "handler": "reset",
+    "template": "<p v-if=\"!rows.length\" class=\"chart-table-status\">没有符合条件的谱面。<button type=\"button\" @click=\"reset\">清除筛选</button></p>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 42,
+    "event": "@click",
+    "handler": "openRow(row, $event)",
+    "template": "<button type=\"button\" class=\"chart-row-open\" :aria-label=\"`打开谱面：${row.title} ${row.label} ${row.levelLabel}`\" :aria-expanded=\"expanded === row.key\" @click=\"openRow(row, $event)\"></button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 60,
+    "event": "@click",
+    "handler": "emit('stage-song', row.code)",
+    "template": "<span class=\"col-stage\"><button type=\"button\" class=\"chart-row-stage\" :aria-label=\"`${row.title} 的 2D 舞台`\" title=\"2D 舞台\" @click=\"emit('stage-song', row.code)\"><Clapperboard :size=\"18\" aria-hidden=\"true\" /></button></span>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 63,
+    "event": "@click",
+    "handler": "emit('chart-song', row.code, row.type)",
+    "template": "<button type=\"button\" @click=\"emit('chart-song', row.code, row.type)\">进入谱面</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveLiveChartTable",
+    "file": "src/components/archive/ArchiveLiveChartTable.vue",
+    "line": 64,
+    "event": "@click",
+    "handler": "emit('stage-song', row.code)",
+    "template": "<button type=\"button\" @click=\"emit('stage-song', row.code)\">进入 LIVE</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6752,17 +6862,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 3,
-    "event": "@error",
-    "handler": "backdropFailed = true",
-    "template": "<ArchiveTerminalBackdrop v-if=\"wallpaper.selected.value && !backdropFailed\" :key=\"wallpaper.revision.value\" class=\"archive-portal-backdrop\" :wallpaper=\"wallpaper.selected.value\" landscape-only @error=\"backdropFailed = true\" />",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchivePortalLauncher",
-    "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 7,
+    "line": 6,
     "event": "@back",
     "handler": "emit('back')",
     "template": "@back=\"emit('back')\" @open-home=\"emit('open-home', $event)\" @navigate=\"emit('navigate', $event)\" @edit-personal=\"emit('settings')\"",
@@ -6772,7 +6872,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 7,
+    "line": 6,
     "event": "@open-home",
     "handler": "emit('open-home', $event)",
     "template": "@back=\"emit('back')\" @open-home=\"emit('open-home', $event)\" @navigate=\"emit('navigate', $event)\" @edit-personal=\"emit('settings')\"",
@@ -6782,7 +6882,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 7,
+    "line": 6,
     "event": "@navigate",
     "handler": "emit('navigate', $event)",
     "template": "@back=\"emit('back')\" @open-home=\"emit('open-home', $event)\" @navigate=\"emit('navigate', $event)\" @edit-personal=\"emit('settings')\"",
@@ -6792,7 +6892,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 7,
+    "line": 6,
     "event": "@edit-personal",
     "handler": "emit('settings')",
     "template": "@back=\"emit('back')\" @open-home=\"emit('open-home', $event)\" @navigate=\"emit('navigate', $event)\" @edit-personal=\"emit('settings')\"",
@@ -6802,7 +6902,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 8,
+    "line": 7,
     "event": "@open-preferred",
     "handler": "emit('open-preferred', $event)",
     "template": "@open-preferred=\"emit('open-preferred', $event)\" @search=\"emit('search', $event)\" @open-directory=\"emit('open-directory', $event)\"",
@@ -6812,7 +6912,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 8,
+    "line": 7,
     "event": "@search",
     "handler": "emit('search', $event)",
     "template": "@open-preferred=\"emit('open-preferred', $event)\" @search=\"emit('search', $event)\" @open-directory=\"emit('open-directory', $event)\"",
@@ -6822,7 +6922,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 8,
+    "line": 7,
     "event": "@open-directory",
     "handler": "emit('open-directory', $event)",
     "template": "@open-preferred=\"emit('open-preferred', $event)\" @search=\"emit('search', $event)\" @open-directory=\"emit('open-directory', $event)\"",
@@ -6832,7 +6932,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 9,
+    "line": 8,
     "event": "@open-result",
     "handler": "emit('open-result', $event)",
     "template": "@open-result=\"emit('open-result', $event)\" @open-stage=\"emit('open-stage', $event)\" @retry-overview=\"emit('retry-overview')\"",
@@ -6842,7 +6942,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 9,
+    "line": 8,
     "event": "@open-stage",
     "handler": "emit('open-stage', $event)",
     "template": "@open-result=\"emit('open-result', $event)\" @open-stage=\"emit('open-stage', $event)\" @retry-overview=\"emit('retry-overview')\"",
@@ -6852,7 +6952,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 9,
+    "line": 8,
     "event": "@retry-overview",
     "handler": "emit('retry-overview')",
     "template": "@open-result=\"emit('open-result', $event)\" @open-stage=\"emit('open-stage', $event)\" @retry-overview=\"emit('retry-overview')\"",
@@ -6862,7 +6962,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 10,
+    "line": 9,
     "event": "@select-scope",
     "handler": "emit('select-scope', $event)",
     "template": "@select-scope=\"emit('select-scope', $event)\" @save-preferred=\"emit('save-preferred', $event)\" @expand-cards=\"emit('expand-cards')\">",
@@ -6872,7 +6972,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 10,
+    "line": 9,
     "event": "@save-preferred",
     "handler": "emit('save-preferred', $event)",
     "template": "@select-scope=\"emit('select-scope', $event)\" @save-preferred=\"emit('save-preferred', $event)\" @expand-cards=\"emit('expand-cards')\">",
@@ -6882,7 +6982,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 10,
+    "line": 9,
     "event": "@expand-cards",
     "handler": "emit('expand-cards')",
     "template": "@select-scope=\"emit('select-scope', $event)\" @save-preferred=\"emit('save-preferred', $event)\" @expand-cards=\"emit('expand-cards')\">",
@@ -6892,17 +6992,7 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 13,
-    "event": "@click",
-    "handler": "wallpaperOpen = true",
-    "template": "<button class=\"portal-control\" type=\"button\" aria-label=\"更换 SSR 卡面壁纸\" title=\"SSR 卡面壁纸\" data-archive-focus-id=\"portal-wallpaper\" @click=\"wallpaperOpen = true\"><Images :size=\"18\" aria-hidden=\"true\" /></button>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchivePortalLauncher",
-    "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 14,
+    "line": 12,
     "event": "@click",
     "handler": "emit('settings')",
     "template": "<button class=\"portal-control\" type=\"button\" aria-label=\"制作人设置\" title=\"制作人设置\" data-archive-focus-id=\"portal-settings\" @click=\"emit('settings')\"><Settings2 :size=\"18\" aria-hidden=\"true\" /></button>",
@@ -6912,30 +7002,10 @@
   {
     "component": "ArchivePortalLauncher",
     "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 17,
+    "line": 15,
     "event": "@click",
     "handler": "emit('navigate', retrySection)",
     "template": "<p v-if=\"loadingSection\" class=\"portal-notice\" role=\"status\">{{ loadingSection }}<button v-if=\"retrySection\" type=\"button\" @click=\"emit('navigate', retrySection)\">重试</button></p>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchivePortalLauncher",
-    "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 19,
-    "event": "@click",
-    "handler": "wallpaperOpen = true",
-    "template": "<p v-if=\"backdropFailed || wallpaper.unavailable.value || wallpaper.error.value\" class=\"portal-notice\" role=\"status\">壁纸暂时无法显示，已使用默认背景。<button type=\"button\" @click=\"wallpaperOpen = true\">重新选择</button></p>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchivePortalLauncher",
-    "file": "src/components/archive/ArchivePortalLauncher.vue",
-    "line": 22,
-    "event": "@close",
-    "handler": "wallpaperOpen = false",
-    "template": "<ArchiveWallpaperPicker :open=\"wallpaperOpen\" :idols=\"idols\" :idol-name=\"idolName\" :idol-search=\"idolSearch\" @close=\"wallpaperOpen = false\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -7135,7 +7205,7 @@
     "line": 75,
     "event": "@error",
     "handler": "portraitFailed = true",
-    "template": "<div class=\"overview-portrait-slot\"><span class=\"overview-signature\" aria-hidden=\"true\"></span><img v-if=\"activePortrait && !portraitFailed\" class=\"overview-idol-art\" :src=\"activePortrait.url\" alt=\"\" decoding=\"async\" @error=\"portraitFailed = true\" />",
+    "template": "<div class=\"overview-portrait-slot\"><img v-if=\"activePortrait && !portraitFailed\" class=\"overview-idol-art\" :src=\"activePortrait.url\" alt=\"\" decoding=\"async\" @error=\"portraitFailed = true\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -7412,7 +7482,7 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 166,
+    "line": 167,
     "event": "@click",
     "handler": "emit('open-result',{target:birthdayCollectionTarget(birthday.idolCode)})",
     "template": "<ul v-if=\"almanacMonth.birthdays.length\" class=\"overview-birthdays\"><li v-for=\"birthday in almanacMonth.birthdays\" :key=\"birthday.idolCode\"><button type=\"button\" :data-archive-focus-id=\"`portal-birthday:${birthday.idolCode}`\" @click=\"emit('open-result',{target:birthdayCollectionTarget(birthday.idolCode)})\"><ArchiveIdolAvatar :idol-code=\"birthday.idolCode\" :accent-color=\"idols.find(row => row.id === birthday.idolCode)?.color\" :size=\"40\" :ring-width=\"2\" decorative /><span class=\"overview-birthday-copy\"><strong>{{ almanacIdolName(birthday.idolCode) }}</strong><small>{{ birthday.month }}月{{ birthday.day }}日</small></span><span class=\"overview-birthday-action\">生日剧情<ChevronRight :size=\"14\" aria-hidden=\"true\" /></span></button></li></ul>",
@@ -7422,7 +7492,7 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 170,
+    "line": 171,
     "event": "@click",
     "handler": "emit('open-result',{target:almanacEventTarget(event.id)})",
     "template": "<div v-if=\"almanacMonth.events.length\" class=\"overview-event-grid\"><article v-for=\"event in almanacMonth.events\" :key=\"event.id\" class=\"overview-event\"><DomainMediaPreview class=\"overview-event-image\" :binding=\"event.image\" :name=\"event.title\" deferred /><button type=\"button\" :data-archive-focus-id=\"`portal-almanac-event:${event.id}`\" @click=\"emit('open-result',{target:almanacEventTarget(event.id)})\"><span><strong>{{ event.title }}</strong><small>{{ [event.kind, almanacEventDate(event.releaseAt), event.isReprint ? '复刻' : ''].filter(Boolean).join(' · ') }}</small></span><ArrowUpRight :size=\"16\" aria-hidden=\"true\" /></button></article></div>",
@@ -7432,7 +7502,17 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 174,
+    "line": 175,
+    "event": "@click",
+    "handler": "emit('open-result',{target:almanacGashaTarget(gasha.id)})",
+    "template": "<div v-if=\"almanacMonth.gashas.length\" class=\"overview-event-grid\"><article v-for=\"gasha in almanacMonth.gashas\" :key=\"`${gasha.id}:${gasha.startAt}`\" class=\"overview-event\"><DomainMediaPreview class=\"overview-event-image\" :binding=\"gasha.image\" :name=\"gasha.title\" deferred /><button type=\"button\" :data-archive-focus-id=\"`portal-almanac-gasha:${gasha.id}:${gasha.startAt}`\" @click=\"emit('open-result',{target:almanacGashaTarget(gasha.id)})\"><span><strong>{{ gasha.title }}</strong><small>{{ [gasha.kind, almanacEventDate(gasha.startAt), gasha.isReprint ? '复刻' : ''].filter(Boolean).join(' · ') }}</small></span><ArrowUpRight :size=\"16\" aria-hidden=\"true\" /></button></article></div>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchivePortalOverview",
+    "file": "src/components/archive/ArchivePortalOverview.vue",
+    "line": 179,
     "event": "@click",
     "handler": "emit('open-result', event)",
     "template": "<div v-else-if=\"preferredReference?.actionable && events.length\" class=\"overview-event-grid\"><article v-for=\"event in events\" :key=\"event.id\" class=\"overview-event\"><DomainMediaPreview v-if=\"event.image?.url\" class=\"overview-event-image\" :binding=\"event.image\" :name=\"event.title\" deferred /><button type=\"button\" :disabled=\"!event.target\" :data-archive-focus-id=\"`portal-event:${event.id}`\" @click=\"emit('open-result', event)\"><span><strong>{{ event.title }}</strong><small v-if=\"event.subtitle\">{{ event.subtitle }}</small><small v-if=\"event.relationLabel\" class=\"overview-relation\">{{ event.relationLabel }}</small></span><ArrowUpRight :size=\"16\" aria-hidden=\"true\" /></button></article></div>",
@@ -7442,7 +7522,7 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 178,
+    "line": 183,
     "event": "@close",
     "handler": "scopeOpen = false",
     "template": "<ArchiveTerminalDialog class=\"portal-scope-dialog\" :open=\"scopeOpen\" title=\"切换资料馆视角\" title-id=\"portal-scope-title\" @close=\"scopeOpen = false\">",
@@ -7452,7 +7532,7 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 180,
+    "line": 185,
     "event": "@click",
     "handler": "chooseScope('')",
     "template": "<div class=\"overview-scope-actions\"><button type=\"button\" :aria-pressed=\"!preferredReference?.actionable\" @click=\"chooseScope('')\"><Users :size=\"18\" />全站档案大厅</button><button v-if=\"savedIdolCode\" type=\"button\" @click=\"chooseScope(savedIdolCode)\"><ArchiveIdolAvatar :idol-code=\"savedIdolCode\" :size=\"28\" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>",
@@ -7462,7 +7542,7 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 180,
+    "line": 185,
     "event": "@click",
     "handler": "chooseScope(savedIdolCode)",
     "template": "<div class=\"overview-scope-actions\"><button type=\"button\" :aria-pressed=\"!preferredReference?.actionable\" @click=\"chooseScope('')\"><Users :size=\"18\" />全站档案大厅</button><button v-if=\"savedIdolCode\" type=\"button\" @click=\"chooseScope(savedIdolCode)\"><ArchiveIdolAvatar :idol-code=\"savedIdolCode\" :size=\"28\" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>",
@@ -7472,7 +7552,7 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 181,
+    "line": 186,
     "event": "@update:model-value",
     "handler": "chooseScope",
     "template": "<ArchiveIdolPickerPanel compact :idols=\"idols\" :idol-name=\"idolName\" :idol-search=\"idolSearch\" :model-value=\"preferredReference?.idolCode || ''\" @update:model-value=\"chooseScope\" />",
@@ -7482,7 +7562,7 @@
   {
     "component": "ArchivePortalOverview",
     "file": "src/components/archive/ArchivePortalOverview.vue",
-    "line": 183,
+    "line": 188,
     "event": "@click",
     "handler": "emit('navigate', 'about')",
     "template": "<footer class=\"overview-footer\">{{ ARCHIVE_BRAND.english }} · 非官方资料存档 · <button type=\"button\" class=\"overview-footer-link\" @click=\"emit('navigate', 'about')\">关于本站</button></footer>",
@@ -8042,17 +8122,17 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 17,
+    "line": 16,
     "event": "@click",
-    "handler": "emit('navigate', item.target)",
-    "template": "<button v-for=\"item in entry.items\" :key=\"item.id\" type=\"button\" class=\"archive-nav-link\" :class=\"{ active: item.active }\" :title=\"railMode ? item.label : undefined\" :aria-current=\"item.active ? 'page' : undefined\" @click=\"emit('navigate', item.target)\">",
+    "handler": "item.menu ? flyout = flyout ? null : $event.currentTarget : emit('navigate', item.target)",
+    "template": "<button v-for=\"item in entry.items\" :key=\"item.id\" type=\"button\" class=\"archive-nav-link\" :class=\"{ active: item.active }\" :title=\"railMode ? item.label : undefined\" :aria-current=\"item.active ? 'page' : undefined\" :aria-haspopup=\"item.menu && 'menu'\" :aria-expanded=\"item.menu && !!flyout\" @click=\"item.menu ? flyout = flyout ? null : $event.currentTarget : emit('navigate', item.target)\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 25,
+    "line": 24,
     "event": "@click",
     "handler": "toggleSidebar",
     "template": "<button v-if=\"!forcedRail\" type=\"button\" class=\"archive-sidebar-toggle\" :aria-label=\"railMode ? '展开侧栏' : '收起侧栏'\" :title=\"railMode ? '展开侧栏' : '收起侧栏'\" :aria-expanded=\"!railMode\" @click=\"toggleSidebar\">",
@@ -8062,7 +8142,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 28,
+    "line": 27,
     "event": "@click",
     "handler": "emit('navigate', 'about')",
     "template": "<button type=\"button\" class=\"archive-sidebar-about\" :aria-current=\"activeSection === 'about' ? 'page' : undefined\" @click=\"emit('navigate', 'about')\">关于本站</button>",
@@ -8072,7 +8152,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 32,
+    "line": 31,
     "event": "@back",
     "handler": "emit('back')",
     "template": "<ArchivePageChrome v-if=\"!['portal', 'reader'].includes(activeSection)\" class=\"archive-topbar\" :can-go-back=\"backVisible\" :back-label=\"backLabel\" back-icon-only back-class=\"archive-back\" @back=\"emit('back')\">",
@@ -8082,7 +8162,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 41,
+    "line": 40,
     "event": "@follow",
     "handler": "emit('follow', $event)",
     "template": "<ArchiveBreadcrumb :items=\"breadcrumbs\" @follow=\"emit('follow', $event)\" />",
@@ -8092,7 +8172,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 47,
+    "line": 46,
     "event": "@click",
     "handler": "mobileSearchOpen = !mobileSearchOpen",
     "template": "<button v-if=\"searchable\" class=\"archive-search-toggle\" type=\"button\" aria-label=\"搜索目录\" :aria-expanded=\"mobileSearchOpen\" @click=\"mobileSearchOpen = !mobileSearchOpen\"><Search :size=\"19\" /></button>",
@@ -8102,7 +8182,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 54,
+    "line": 53,
     "event": "@input",
     "handler": "emit('update:modelValue', $event.target.value)",
     "template": "@input=\"emit('update:modelValue', $event.target.value)\"",
@@ -8112,7 +8192,27 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 76,
+    "line": 62,
+    "event": "@select",
+    "handler": "flyout = null; emit('navigate', $event)",
+    "template": "<ArchiveFlyoutMenu v-if=\"flyout\" :anchor=\"flyout\" :current=\"navigationSection\" @select=\"flyout = null; emit('navigate', $event)\" @close=\"flyout = null\" />",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveShell",
+    "file": "src/components/archive/ArchiveShell.vue",
+    "line": 62,
+    "event": "@close",
+    "handler": "flyout = null",
+    "template": "<ArchiveFlyoutMenu v-if=\"flyout\" :anchor=\"flyout\" :current=\"navigationSection\" @select=\"flyout = null; emit('navigate', $event)\" @close=\"flyout = null\" />",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveShell",
+    "file": "src/components/archive/ArchiveShell.vue",
+    "line": 77,
     "event": "@navigate",
     "handler": "navigateFromDrawer",
     "template": "<ArchiveNavigationDrawer v-if=\"drawerOpen\" id=\"archive-navigation-drawer\" :groups=\"navigationGroups\" :active-section=\"navigationSection\" :keyboard=\"drawerByKeyboard\" @navigate=\"navigateFromDrawer\" @close=\"closeDrawer(true)\" />",
@@ -8122,7 +8222,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 76,
+    "line": 77,
     "event": "@close",
     "handler": "closeDrawer(true)",
     "template": "<ArchiveNavigationDrawer v-if=\"drawerOpen\" id=\"archive-navigation-drawer\" :groups=\"navigationGroups\" :active-section=\"navigationSection\" :keyboard=\"drawerByKeyboard\" @navigate=\"navigateFromDrawer\" @close=\"closeDrawer(true)\" />",
@@ -8132,7 +8232,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 84,
+    "line": 85,
     "event": "@click",
     "handler": "emit('navigate', item.id)",
     "template": "@click=\"emit('navigate', item.id)\"",
@@ -8142,7 +8242,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 96,
+    "line": 97,
     "event": "@click",
     "handler": "drawerOpen ? closeDrawer(false) : openNavigationDrawer($event)",
     "template": "@click=\"drawerOpen ? closeDrawer(false) : openNavigationDrawer($event)\"",
@@ -8295,7 +8395,17 @@
     "line": 2,
     "event": "@keydown.esc",
     "handler": "immersive && leaveImmersive()",
-    "template": "<section ref=\"previewRoot\" class=\"chart-preview\" :class=\"{ 'is-long': mode === 'long', 'is-immersive': immersive }\" aria-label=\"谱面查看器\" @keydown.esc=\"immersive && leaveImmersive()\">",
+    "template": "<section ref=\"previewRoot\" class=\"chart-preview\" :class=\"{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && !controlsShown }\" aria-label=\"谱面查看器\" @keydown.esc=\"immersive && leaveImmersive()\" @pointerdown=\"immersive && revealControls()\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 2,
+    "event": "@pointerdown",
+    "handler": "immersive && revealControls()",
+    "template": "<section ref=\"previewRoot\" class=\"chart-preview\" :class=\"{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && !controlsShown }\" aria-label=\"谱面查看器\" @keydown.esc=\"immersive && leaveImmersive()\" @pointerdown=\"immersive && revealControls()\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8972,10 +9082,10 @@
   {
     "component": "ArchiveSongTrackPreview",
     "file": "src/components/archive/ArchiveSongTrackPreview.vue",
-    "line": 24,
+    "line": 29,
     "event": "@unavailable",
     "handler": "holdCanvasUnavailable = true",
-    "template": "<foreignObject v-if=\"!holdCanvasUnavailable\" width=\"1280\" height=\"720\"><ArchiveSongHoldMeshPreview :holds=\"scene.holds\" :skin=\"skin\" @unavailable=\"holdCanvasUnavailable = true\" /></foreignObject>",
+    "template": "<ArchiveSongHoldMeshPreview v-if=\"!holdCanvasUnavailable\" :holds=\"scene.holds\" :skin=\"skin\" @unavailable=\"holdCanvasUnavailable = true\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -9782,7 +9892,7 @@
   {
     "component": "ArchiveStoryReader",
     "file": "src/components/archive/ArchiveStoryReader.vue",
-    "line": 18,
+    "line": 17,
     "event": "@keydown",
     "handler": "controls?.onReaderKey($event)",
     "template": "<section ref=\"readerRoot\" class=\"story-reader\" :aria-busy=\"busy\" aria-label=\"剧情阅读\" @keydown=\"controls?.onReaderKey($event)\">",
@@ -9792,17 +9902,7 @@
   {
     "component": "ArchiveStoryReader",
     "file": "src/components/archive/ArchiveStoryReader.vue",
-    "line": 25,
-    "event": "@click",
-    "handler": "localization.retryTranslation()",
-    "template": "<button v-if=\"localization.retryAvailable.value\" :disabled=\"localization.loading.value\" @click=\"localization.retryTranslation()\">重试译文</button>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveStoryReader",
-    "file": "src/components/archive/ArchiveStoryReader.vue",
-    "line": 27,
+    "line": 22,
     "event": "@click",
     "handler": "emit('play-document')",
     "template": "<button v-if=\"state.status === 'ready'\" class=\"reader-full-play\" :disabled=\"busy\" @click=\"emit('play-document')\">{{ busy ? '正在准备演出…' : '播放完整剧情' }}</button>",
@@ -9814,6 +9914,16 @@
     "file": "src/components/archive/ArchiveStoryReader.vue",
     "line": 28,
     "event": "@click",
+    "handler": "localization.retryTranslation()",
+    "template": "<button v-if=\"localization.retryAvailable.value\" :disabled=\"localization.loading.value\" @click=\"localization.retryTranslation()\">重试译文</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveStoryReader",
+    "file": "src/components/archive/ArchiveStoryReader.vue",
+    "line": 30,
+    "event": "@click",
     "handler": "emit('refresh')",
     "template": "<p v-if=\"notice\" ref=\"playbackNotice\" tabindex=\"-1\" class=\"reader-notice\" role=\"alert\">{{ notice }} <button class=\"reader-play\" :disabled=\"busy\" @click=\"emit('refresh')\">重新载入正文</button></p>",
     "status": "PENDING",
@@ -9822,7 +9932,7 @@
   {
     "component": "ArchiveStoryReader",
     "file": "src/components/archive/ArchiveStoryReader.vue",
-    "line": 30,
+    "line": 32,
     "event": "@click",
     "handler": "emit('retry')",
     "template": "<div v-else-if=\"state.status === 'error'\" class=\"reader-feedback\" role=\"alert\"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click=\"emit('retry')\">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>",
@@ -9832,7 +9942,7 @@
   {
     "component": "ArchiveStoryReader",
     "file": "src/components/archive/ArchiveStoryReader.vue",
-    "line": 43,
+    "line": 45,
     "event": "@chapter",
     "handler": "emit('chapter', $event)",
     "template": "@chapter=\"emit('chapter', $event)\" @segment=\"emit('select', $event)\" />",
@@ -9842,7 +9952,7 @@
   {
     "component": "ArchiveStoryReader",
     "file": "src/components/archive/ArchiveStoryReader.vue",
-    "line": 43,
+    "line": 45,
     "event": "@segment",
     "handler": "emit('select', $event)",
     "template": "@chapter=\"emit('chapter', $event)\" @segment=\"emit('select', $event)\" />",
@@ -9892,20 +10002,20 @@
   {
     "component": "ArchiveToolLanding",
     "file": "src/components/archive/ArchiveToolLanding.vue",
-    "line": 64,
-    "event": "@click",
-    "handler": "emit('chart-song', song.song_code)",
-    "template": "<button v-if=\"difficulties(song)\" type=\"button\" class=\"song-go is-chart\" :aria-label=\"`${song.title} 的谱面`\" @click=\"emit('chart-song', song.song_code)\"><AudioLines :size=\"16\" aria-hidden=\"true\" />谱面</button>",
+    "line": 46,
+    "event": "@chart-song",
+    "handler": "(code, difficulty) => emit('chart-song', code, difficulty)",
+    "template": "<ArchiveLiveChartTable :songs=\"songs\" @chart-song=\"(code, difficulty) => emit('chart-song', code, difficulty)\" @stage-song=\"emit('stage-song', $event)\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ArchiveToolLanding",
     "file": "src/components/archive/ArchiveToolLanding.vue",
-    "line": 66,
-    "event": "@click",
-    "handler": "emit('stage-song', song.song_code)",
-    "template": "<button type=\"button\" class=\"song-go is-stage\" :aria-label=\"`${song.title} 的舞台`\" @click=\"emit('stage-song', song.song_code)\"><Clapperboard :size=\"16\" aria-hidden=\"true\" />舞台</button>",
+    "line": 46,
+    "event": "@stage-song",
+    "handler": "emit('stage-song', $event)",
+    "template": "<ArchiveLiveChartTable :songs=\"songs\" @chart-song=\"(code, difficulty) => emit('chart-song', code, difficulty)\" @stage-song=\"emit('stage-song', $event)\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -10682,17 +10792,17 @@
   {
     "component": "ChapterReadingSegment",
     "file": "src/components/archive/ChapterReadingSegment.vue",
-    "line": 5,
+    "line": 6,
     "event": "@click",
     "handler": "localization.retryTranslation()",
-    "template": "<p v-if=\"mode !== 'original' && !translationPending\" role=\"status\" class=\"segment-notice\">{{ translationNotice }} <span v-if=\"localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')\">部分姓名译文暂时无法载入，保留原名。</span> <button v-if=\"localization.retryAvailable.value\" :disabled=\"localization.loading.value\" @click=\"localization.retryTranslation()\">重试译文</button></p>",
+    "template": "<p v-if=\"mode !== 'original' && !translationPending && (translationNotice || entityTrouble || localization.retryAvailable.value)\" role=\"status\" class=\"segment-notice\">{{ translationNotice }} <span v-if=\"entityTrouble\">部分姓名译文暂时无法载入，保留原名。</span> <button v-if=\"localization.retryAvailable.value\" :disabled=\"localization.loading.value\" @click=\"localization.retryTranslation()\">重试译文</button></p>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ChapterReadingSegment",
     "file": "src/components/archive/ChapterReadingSegment.vue",
-    "line": 11,
+    "line": 12,
     "event": "@click",
     "handler": "emit('retry', segment.documentId)",
     "template": "<template v-else-if=\"segment.status === 'error'\"><p role=\"alert\">本段正文暂时无法载入，其他分段仍可阅读。</p><button @click=\"emit('retry', segment.documentId)\">重试本段</button><details><summary>加载详情</summary>{{ segment.error }}</details></template>",
@@ -10782,7 +10892,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 13,
+    "line": 12,
     "event": "@scroll.passive",
     "handler": "trackVisibleSegment",
     "template": "<section ref=\"root\" class=\"story-reader\" @scroll.passive=\"trackVisibleSegment\" aria-label=\"整话阅读\" data-testid=\"chapter-reader\" :data-anchor-follow=\"anchoring\" :data-scroll-input=\"scrollInput\" :data-scroll-input-count=\"scrollInputCount\" @wheel.passive=\"stopAnchoring('wheel')\" @touchstart.passive=\"stopAnchoring('touch')\" @keydown=\"onUserKey\">",
@@ -10792,7 +10902,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 13,
+    "line": 12,
     "event": "@wheel.passive",
     "handler": "stopAnchoring('wheel')",
     "template": "<section ref=\"root\" class=\"story-reader\" @scroll.passive=\"trackVisibleSegment\" aria-label=\"整话阅读\" data-testid=\"chapter-reader\" :data-anchor-follow=\"anchoring\" :data-scroll-input=\"scrollInput\" :data-scroll-input-count=\"scrollInputCount\" @wheel.passive=\"stopAnchoring('wheel')\" @touchstart.passive=\"stopAnchoring('touch')\" @keydown=\"onUserKey\">",
@@ -10802,7 +10912,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 13,
+    "line": 12,
     "event": "@touchstart.passive",
     "handler": "stopAnchoring('touch')",
     "template": "<section ref=\"root\" class=\"story-reader\" @scroll.passive=\"trackVisibleSegment\" aria-label=\"整话阅读\" data-testid=\"chapter-reader\" :data-anchor-follow=\"anchoring\" :data-scroll-input=\"scrollInput\" :data-scroll-input-count=\"scrollInputCount\" @wheel.passive=\"stopAnchoring('wheel')\" @touchstart.passive=\"stopAnchoring('touch')\" @keydown=\"onUserKey\">",
@@ -10812,7 +10922,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 13,
+    "line": 12,
     "event": "@keydown",
     "handler": "onUserKey",
     "template": "<section ref=\"root\" class=\"story-reader\" @scroll.passive=\"trackVisibleSegment\" aria-label=\"整话阅读\" data-testid=\"chapter-reader\" :data-anchor-follow=\"anchoring\" :data-scroll-input=\"scrollInput\" :data-scroll-input-count=\"scrollInputCount\" @wheel.passive=\"stopAnchoring('wheel')\" @touchstart.passive=\"stopAnchoring('touch')\" @keydown=\"onUserKey\">",
@@ -10822,7 +10932,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 15,
+    "line": 14,
     "event": "@click",
     "handler": "emit('refresh')",
     "template": "<p v-if=\"notice\" role=\"alert\">{{ notice }} <button @click=\"emit('refresh')\">重新载入正文</button></p>",
@@ -10832,7 +10942,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 18,
+    "line": 17,
     "event": "@play",
     "handler": "emit('play', $event)",
     "template": "<ChapterReadingSegment v-for=\"(segment, index) in chapter.segments\" :key=\"segment.episodeKey\" :ref=\"el => sections[index] = el\" :segment=\"segment\" :mode=\"mode\" :anchor=\"segment.documentId === documentId ? anchor : ''\" :query=\"query\" :busy=\"busy\" :idol-directory=\"idolDirectory\" @play=\"emit('play', $event)\" @retry=\"emit('retry', $event)\" @before-layout=\"beforeSegmentLayout\" @after-layout=\"afterSegmentLayout\" />",
@@ -10842,7 +10952,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 18,
+    "line": 17,
     "event": "@retry",
     "handler": "emit('retry', $event)",
     "template": "<ChapterReadingSegment v-for=\"(segment, index) in chapter.segments\" :key=\"segment.episodeKey\" :ref=\"el => sections[index] = el\" :segment=\"segment\" :mode=\"mode\" :anchor=\"segment.documentId === documentId ? anchor : ''\" :query=\"query\" :busy=\"busy\" :idol-directory=\"idolDirectory\" @play=\"emit('play', $event)\" @retry=\"emit('retry', $event)\" @before-layout=\"beforeSegmentLayout\" @after-layout=\"afterSegmentLayout\" />",
@@ -10852,7 +10962,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 18,
+    "line": 17,
     "event": "@before-layout",
     "handler": "beforeSegmentLayout",
     "template": "<ChapterReadingSegment v-for=\"(segment, index) in chapter.segments\" :key=\"segment.episodeKey\" :ref=\"el => sections[index] = el\" :segment=\"segment\" :mode=\"mode\" :anchor=\"segment.documentId === documentId ? anchor : ''\" :query=\"query\" :busy=\"busy\" :idol-directory=\"idolDirectory\" @play=\"emit('play', $event)\" @retry=\"emit('retry', $event)\" @before-layout=\"beforeSegmentLayout\" @after-layout=\"afterSegmentLayout\" />",
@@ -10862,7 +10972,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 18,
+    "line": 17,
     "event": "@after-layout",
     "handler": "afterSegmentLayout",
     "template": "<ChapterReadingSegment v-for=\"(segment, index) in chapter.segments\" :key=\"segment.episodeKey\" :ref=\"el => sections[index] = el\" :segment=\"segment\" :mode=\"mode\" :anchor=\"segment.documentId === documentId ? anchor : ''\" :query=\"query\" :busy=\"busy\" :idol-directory=\"idolDirectory\" @play=\"emit('play', $event)\" @retry=\"emit('retry', $event)\" @before-layout=\"beforeSegmentLayout\" @after-layout=\"afterSegmentLayout\" />",
@@ -10872,7 +10982,7 @@
   {
     "component": "ChapterStoryReader",
     "file": "src/components/archive/ChapterStoryReader.vue",
-    "line": 19,
+    "line": 18,
     "event": "@chapter",
     "handler": "emit('chapter', $event)",
     "template": "<ReaderChapterEnd :chapter-navigation=\"chapterNavigation\" @chapter=\"emit('chapter', $event)\" />",
@@ -11142,30 +11252,30 @@
   {
     "component": "DomainMediaPreview",
     "file": "src/components/archive/DomainMediaPreview.vue",
-    "line": 3,
+    "line": 5,
     "event": "@load",
     "handler": "loaded=true",
-    "template": "<img v-if=\"binding?.url && !failed\" :key=\"attempt\" :src=\"near ? binding.url : undefined\" :alt=\"name\" @load=\"loaded=true\" @error=\"failed=true;loaded=false\"/>",
+    "template": "<img v-if=\"binding?.url && !failed && near\" :key=\"attempt\" :src=\"binding.url\" :alt=\"name\" @load=\"loaded=true\" @error=\"onError\"/>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "DomainMediaPreview",
     "file": "src/components/archive/DomainMediaPreview.vue",
-    "line": 3,
+    "line": 5,
     "event": "@error",
-    "handler": "failed=true;loaded=false",
-    "template": "<img v-if=\"binding?.url && !failed\" :key=\"attempt\" :src=\"near ? binding.url : undefined\" :alt=\"name\" @load=\"loaded=true\" @error=\"failed=true;loaded=false\"/>",
+    "handler": "onError",
+    "template": "<img v-if=\"binding?.url && !failed && near\" :key=\"attempt\" :src=\"binding.url\" :alt=\"name\" @load=\"loaded=true\" @error=\"onError\"/>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "DomainMediaPreview",
     "file": "src/components/archive/DomainMediaPreview.vue",
-    "line": 4,
+    "line": 6,
     "event": "@click",
     "handler": "retry",
-    "template": "<div v-else class=\"domain-resource-empty\" :title=\"binding?.url ? '图片暂时无法读取' : '图片尚未绑定'\"><ImageOff v-if=\"!compact || !binding?.url\" :size=\"compact?18:28\"/><span v-if=\"!compact\">{{ binding?.url ? '图片暂时无法读取' : '图片尚未绑定' }}</span><button v-if=\"binding?.url\" type=\"button\" :aria-label=\"`重试图片 ${name}`\" @click=\"retry\">{{ compact?'重试':'重试图片' }}</button></div>",
+    "template": "<div v-else-if=\"!binding?.url || failed\" class=\"domain-resource-empty\" :title=\"binding?.url ? '图片暂时无法读取' : '图片尚未绑定'\"><ImageOff v-if=\"!compact || !binding?.url\" :size=\"compact?18:28\"/><span v-if=\"!compact\">{{ binding?.url ? '图片暂时无法读取' : '图片尚未绑定' }}</span><button v-if=\"binding?.url\" type=\"button\" :aria-label=\"`重试图片 ${name}`\" @click=\"retry\">{{ compact?'':'重试图片' }}<RefreshCw v-if=\"compact\" :size=\"16\" aria-hidden=\"true\"/></button></div>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -11940,6 +12050,26 @@
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
+    "component": "ReaderTocRail",
+    "file": "src/components/archive/ReaderTocRail.vue",
+    "line": 8,
+    "event": "@click",
+    "handler": "emit('select', segment)",
+    "template": "<button v-for=\"segment in segments\" :key=\"segment.episodeKey || segment.documentId\" :data-toc-key=\"segment.documentId || segment.episodeKey\" :aria-current=\"(segment.documentId || segment.episodeKey) === activeDocumentId ? 'location' : undefined\" :disabled=\"!segment.documentId && !allowUnlinked\" :aria-label=\"`${segmentLabel(segment)}${statusLabel(segment.status) ? ` · ${statusLabel(segment.status)}` : ''}`\" @click=\"emit('select', segment)\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ReaderTocRail",
+    "file": "src/components/archive/ReaderTocRail.vue",
+    "line": 13,
+    "event": "@click",
+    "handler": "emit('chapter', chapter.id)",
+    "template": "<button v-for=\"chapter in chapterNavigation.chapters\" :key=\"chapter.id\" :aria-current=\"chapter.id === chapterNavigation.chapterId ? 'page' : undefined\" :disabled=\"!chapter.documentId || !chapter.storyFile\" @click=\"emit('chapter', chapter.id)\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
     "line": 6,
@@ -11962,40 +12092,30 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 8,
-    "event": "@click",
-    "handler": "openPanel('search', $event)",
-    "template": "<button class=\"desktop-search icon-button\" :disabled=\"!searchable\" aria-label=\"篇内查找\" title=\"篇内查找\" @click=\"openPanel('search', $event)\"><Search :size=\"19\" aria-hidden=\"true\" /></button>",
+    "line": 12,
+    "event": "@select",
+    "handler": "emit('select', $event)",
+    "template": "<ReaderTocRail v-if=\"hasDirectory || hasChapters\" class=\"reader-rail\" :title=\"title\" :title-pending=\"titlePending\" :chapter-label=\"chapterLabel\" :segments=\"segments\" :active-document-id=\"activeDocumentId\" :chapter-navigation=\"chapterNavigation\" :allow-unlinked=\"allowUnlinked\" @select=\"emit('select', $event)\" @chapter=\"emit('chapter', $event)\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 9,
-    "event": "@click",
-    "handler": "openPanel('producer', $event)",
-    "template": "<button class=\"desktop-settings icon-button\" aria-label=\"P 名字\" title=\"P 名字\" @click=\"openPanel('producer', $event)\"><UserRound :size=\"19\" aria-hidden=\"true\" /></button>",
+    "line": 12,
+    "event": "@chapter",
+    "handler": "emit('chapter', $event)",
+    "template": "<ReaderTocRail v-if=\"hasDirectory || hasChapters\" class=\"reader-rail\" :title=\"title\" :title-pending=\"titlePending\" :chapter-label=\"chapterLabel\" :segments=\"segments\" :active-document-id=\"activeDocumentId\" :chapter-navigation=\"chapterNavigation\" :allow-unlinked=\"allowUnlinked\" @select=\"emit('select', $event)\" @chapter=\"emit('chapter', $event)\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 14,
-    "event": "@click",
-    "handler": "emit('select', segment)",
-    "template": "<button v-for=\"segment in segments\" :key=\"segment.episodeKey || segment.documentId\" :aria-current=\"(segment.documentId || segment.episodeKey) === activeDocumentId ? 'location' : undefined\" :disabled=\"!segment.documentId && !allowUnlinked\" :title=\"segmentLabel(segment)\" @click=\"emit('select', segment)\">{{ segmentLabel(segment) }}</button>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ReaderWorkspaceControls",
-    "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 16,
-    "event": "@click",
-    "handler": "emit('mode', item.id)",
-    "template": "<div class=\"compact-languages\" role=\"group\" aria-label=\"正文语言\"><button v-for=\"item in modes\" :key=\"item.id\" :aria-pressed=\"mode === item.id\" @click=\"emit('mode', item.id)\">{{ item.label }}</button></div>",
+    "line": 13,
+    "event": "@scroll.capture.passive",
+    "handler": "onReadingScroll",
+    "template": "<div class=\"reader-main\" @scroll.capture.passive=\"onReadingScroll\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12003,6 +12123,26 @@
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
     "line": 17,
+    "event": "@click",
+    "handler": "openPanel('directory', $event)",
+    "template": "<button v-if=\"hasDirectory\" class=\"toolbar-directory icon-button\" aria-label=\"本话 EP 目录\" title=\"本话 EP 目录\" aria-haspopup=\"dialog\" :aria-expanded=\"panel === 'directory'\" @click=\"openPanel('directory', $event)\"><ListOrdered :size=\"19\" aria-hidden=\"true\" /></button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ReaderWorkspaceControls",
+    "file": "src/components/archive/ReaderWorkspaceControls.vue",
+    "line": 18,
+    "event": "@click",
+    "handler": "emit('mode', item.id)",
+    "template": "<div class=\"compact-languages\" role=\"group\" aria-label=\"正文语言\" :style=\"{'--modes':modes.length,'--mode-index':Math.max(0, modes.findIndex(item => item.id === mode))}\"><span v-if=\"modes.some(item => item.id === mode)\" class=\"mode-thumb\" aria-hidden=\"true\"></span><button v-for=\"item in modes\" :key=\"item.id\" :aria-pressed=\"mode === item.id\" @click=\"emit('mode', item.id)\">{{ item.label }}</button></div>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ReaderWorkspaceControls",
+    "file": "src/components/archive/ReaderWorkspaceControls.vue",
+    "line": 19,
     "event": "@click",
     "handler": "setReaderTheme(theme.id)",
     "template": "<div class=\"compact-themes\" role=\"group\" aria-label=\"阅读主题\"><button v-for=\"theme in READER_THEMES\" :key=\"theme.id\" :title=\"theme.label\" :aria-label=\"theme.label\" :aria-pressed=\"readerTheme === theme.id\" @click=\"setReaderTheme(theme.id)\"><span :style=\"{background:theme.swatch}\" /></button></div>",
@@ -12012,7 +12152,27 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 20,
+    "line": 21,
+    "event": "@click",
+    "handler": "openPanel('search', $event)",
+    "template": "<button class=\"icon-button\" :disabled=\"!searchable\" aria-label=\"篇内查找\" title=\"篇内查找\" @click=\"openPanel('search', $event)\"><Search :size=\"19\" aria-hidden=\"true\" /></button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ReaderWorkspaceControls",
+    "file": "src/components/archive/ReaderWorkspaceControls.vue",
+    "line": 22,
+    "event": "@click",
+    "handler": "openPanel('producer', $event)",
+    "template": "<button class=\"icon-button\" aria-label=\"P 名字\" title=\"P 名字\" @click=\"openPanel('producer', $event)\"><UserRound :size=\"19\" aria-hidden=\"true\" /></button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ReaderWorkspaceControls",
+    "file": "src/components/archive/ReaderWorkspaceControls.vue",
+    "line": 28,
     "event": "@click",
     "handler": "emit('select', previousSegment)",
     "template": "<button class=\"icon-button\" :disabled=\"!previousSegment\" aria-label=\"上一 EP\" :title=\"previousSegment ? `上一 EP · ${segmentLabel(previousSegment)}` : '已到本话首个 EP'\" @click=\"emit('select', previousSegment)\"><ChevronLeft :size=\"21\" aria-hidden=\"true\" /></button>",
@@ -12022,17 +12182,17 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 21,
+    "line": 29,
     "event": "@click",
     "handler": "openPanel('directory', $event)",
-    "template": "<button class=\"dock-directory\" :disabled=\"!hasDirectory\" aria-haspopup=\"dialog\" :aria-expanded=\"panel === 'directory'\" @click=\"openPanel('directory', $event)\"><span class=\"dock-story\">{{ chapterLabel ? `${chapterLabel} · ` : '' }}<span :class=\"{ 'is-title-pending': titlePending }\">{{ title || '剧情阅读' }}</span></span><span class=\"dock-episode\">{{ activeLabel }} <ChevronDown :size=\"12\" aria-hidden=\"true\" /></span></button>",
+    "template": "<button class=\"dock-directory\" :disabled=\"!hasDirectory\" aria-haspopup=\"dialog\" :aria-expanded=\"panel === 'directory'\" @click=\"openPanel('directory', $event)\"><span class=\"dock-episode\">{{ activeLabel }}</span><span class=\"dock-position\">{{ activePosition ? `${activePosition} · ` : '' }}目录</span></button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 22,
+    "line": 30,
     "event": "@click",
     "handler": "emit('select', nextSegment)",
     "template": "<button class=\"icon-button\" :disabled=\"!nextSegment\" aria-label=\"下一 EP\" :title=\"nextSegment ? `下一 EP · ${segmentLabel(nextSegment)}` : '本话末个 EP；下一话入口在正文末尾'\" @click=\"emit('select', nextSegment)\"><ChevronRight :size=\"21\" aria-hidden=\"true\" /></button>",
@@ -12042,7 +12202,7 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 24,
+    "line": 32,
     "event": "@click",
     "handler": "openPanel('settings', $event)",
     "template": "<button class=\"icon-button\" aria-label=\"阅读设置\" title=\"阅读设置\" aria-haspopup=\"dialog\" :aria-expanded=\"panel === 'settings' || panel === 'search'\" @click=\"openPanel('settings', $event)\"><Settings2 :size=\"19\" aria-hidden=\"true\" /></button>",
@@ -12052,7 +12212,7 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 26,
+    "line": 34,
     "event": "@cancel.prevent",
     "handler": "closePanel",
     "template": "<dialog ref=\"dialog\" class=\"reader-sheet gs-dialog-motion\" :aria-label=\"panelTitle\" @cancel.prevent=\"closePanel\" @click=\"onBackdrop\">",
@@ -12062,7 +12222,7 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 26,
+    "line": 34,
     "event": "@click",
     "handler": "onBackdrop",
     "template": "<dialog ref=\"dialog\" class=\"reader-sheet gs-dialog-motion\" :aria-label=\"panelTitle\" @cancel.prevent=\"closePanel\" @click=\"onBackdrop\">",
@@ -12072,17 +12232,17 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 28,
+    "line": 36,
     "event": "@click",
     "handler": "closePanel",
-    "template": "<header class=\"sheet-header\"><h2>{{ panelTitle }}</h2><button class=\"icon-button\" aria-label=\"关闭面板\" @click=\"closePanel\"><X :size=\"20\" aria-hidden=\"true\" /></button></header>",
+    "template": "<header class=\"sheet-header\"><h2>{{ panelTitle }}<GsInfo v-if=\"panelNote\" class=\"sheet-info\" :label=\"`${panelTitle}说明`\">{{ panelNote }}</GsInfo></h2><button class=\"icon-button\" aria-label=\"关闭面板\" @click=\"closePanel\"><X :size=\"20\" aria-hidden=\"true\" /></button></header>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 31,
+    "line": 39,
     "event": "@select",
     "handler": "selectSegment",
     "template": "<ReaderStoryNavigation :segments=\"shownPanel === 'directory' ? segments : []\" :document-id=\"activeDocumentId\" :chapter-navigation=\"shownPanel === 'chapters' ? chapterNavigation : null\" :expand-chapters=\"shownPanel === 'chapters'\" :allow-unlinked=\"allowUnlinked\" @select=\"selectSegment\" @chapter=\"selectChapter\" />",
@@ -12092,7 +12252,7 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 31,
+    "line": 39,
     "event": "@chapter",
     "handler": "selectChapter",
     "template": "<ReaderStoryNavigation :segments=\"shownPanel === 'directory' ? segments : []\" :document-id=\"activeDocumentId\" :chapter-navigation=\"shownPanel === 'chapters' ? chapterNavigation : null\" :expand-chapters=\"shownPanel === 'chapters'\" :allow-unlinked=\"allowUnlinked\" @select=\"selectSegment\" @chapter=\"selectChapter\" />",
@@ -12102,7 +12262,7 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 34,
+    "line": 42,
     "event": "@mode",
     "handler": "emit('mode', $event)",
     "template": "<ReaderControlBar v-if=\"shownPanel === 'settings' || shownPanel === 'producer'\" :producer-only=\"shownPanel === 'producer'\" :mode=\"mode\" :searchable=\"searchable\" @mode=\"emit('mode', $event)\" @search=\"openPanel('search')\" />",
@@ -12112,7 +12272,7 @@
   {
     "component": "ReaderWorkspaceControls",
     "file": "src/components/archive/ReaderWorkspaceControls.vue",
-    "line": 34,
+    "line": 42,
     "event": "@search",
     "handler": "openPanel('search')",
     "template": "<ReaderControlBar v-if=\"shownPanel === 'settings' || shownPanel === 'producer'\" :producer-only=\"shownPanel === 'producer'\" :mode=\"mode\" :searchable=\"searchable\" @mode=\"emit('mode', $event)\" @search=\"openPanel('search')\" />",
@@ -12364,6 +12524,16 @@
     "file": "src/components/archive/StorySynopsisCard.vue",
     "line": 7,
     "event": "@click",
+    "handler": "open = !open",
+    "template": "<button v-if=\"folds\" type=\"button\" class=\"synopsis-toggle\" :aria-expanded=\"open\" @click=\"open = !open\">{{ open ? '收起简介' : '展开简介' }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "StorySynopsisCard",
+    "file": "src/components/archive/StorySynopsisCard.vue",
+    "line": 8,
+    "event": "@click",
     "handler": "emit('retry')",
     "template": "<p v-if=\"notice\" class=\"synopsis-notice\" role=\"status\">{{ notice }} <button v-if=\"retryable\" @click=\"emit('retry')\">重试简介</button></p>",
     "status": "PENDING",
@@ -12440,12 +12610,92 @@
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 3,
+    "event": "@click",
+    "handler": "open ? close(true) : show()",
+    "template": "<button ref=\"trigger\" type=\"button\" class=\"gs-filter-panel-trigger\" aria-haspopup=\"dialog\" :aria-expanded=\"open\" @click=\"open ? close(true) : show()\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 6,
+    "event": "@click",
+    "handler": "set(item.key, neutral)",
+    "template": "<button v-for=\"item in active\" :key=\"item.key\" type=\"button\" class=\"gs-filter-panel-token\" :aria-label=\"`移除筛选：${item.label}`\" @click=\"set(item.key, neutral)\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 10,
+    "event": "@pointerdown.self",
+    "handler": "close(false)",
+    "template": "<div v-if=\"open\" class=\"gs-filter-panel-layer\" :class=\"{ 'is-sheet': sheet }\" @pointerdown.self=\"close(false)\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 11,
+    "event": "@keydown",
+    "handler": "onKey",
+    "template": "<div ref=\"panel\" class=\"gs-filter-panel-surface\" role=\"dialog\" aria-modal=\"true\" :aria-label=\"label\" :style=\"position\" @keydown=\"onKey\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 14,
+    "event": "@click",
+    "handler": "close(true)",
+    "template": "<button type=\"button\" class=\"gs-filter-panel-close\" aria-label=\"关闭\" @click=\"close(true)\"><X :size=\"20\" aria-hidden=\"true\" /></button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 22,
+    "event": "@click",
+    "handler": "set(section.key, option.value)",
+    "template": ":aria-pressed=\"(modelValue[section.key] ?? neutral) === option.value\" @click=\"set(section.key, option.value)\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 29,
+    "event": "@click",
+    "handler": "clear",
+    "template": "<button type=\"button\" class=\"gs-filter-panel-clear\" :disabled=\"!active.length\" @click=\"clear\">清除</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "GsFilterPanel",
+    "file": "src/components/gs/GsFilterPanel.vue",
+    "line": 30,
+    "event": "@click",
+    "handler": "close(true)",
+    "template": "<button type=\"button\" class=\"gs-filter-panel-done\" @click=\"close(true)\">{{ resultLabel || '完成' }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
     "component": "GsInfo",
     "file": "src/components/gs/GsInfo.vue",
     "line": 2,
     "event": "@mouseenter",
     "handler": "hover = true",
-    "template": "<span class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
+    "template": "<span ref=\"root\" class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12455,7 +12705,7 @@
     "line": 2,
     "event": "@mouseleave",
     "handler": "hover = false",
-    "template": "<span class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
+    "template": "<span ref=\"root\" class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12465,7 +12715,7 @@
     "line": 2,
     "event": "@keydown.esc",
     "handler": "close",
-    "template": "<span class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
+    "template": "<span ref=\"root\" class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
