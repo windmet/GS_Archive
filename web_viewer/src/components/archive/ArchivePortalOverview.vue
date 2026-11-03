@@ -72,7 +72,7 @@
       <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :style="preferredReference?.actionable ? heroStyle : undefined" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
           <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}" :style="heroStyle">
             <header class="overview-identity">
-              <div class="overview-portrait-slot"><span class="overview-signature" aria-hidden="true"></span><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
+              <div class="overview-portrait-slot"><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
               <ArchiveIdolAvatar v-else-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="88" :accent-color="preferredReference.accentColor" decorative />
               <Users v-else class="overview-all-mark" :size="76" aria-hidden="true" />
               </div><div class="overview-identity-copy">
@@ -210,7 +210,7 @@ import {ALMANAC_MONTHS,almanacEventDate,almanacEventTarget,almanacGashaTarget,bi
 import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import {portalCardFilters,portalHubGroups,portalPreferredStatTiles} from '../../presentation/PortalOverviewPanels.js'
-import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { classifySongLineup } from '../../presentation/SongPresentation.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
@@ -393,7 +393,6 @@ const heroStyle = computed(() => {
   const width = portrait?.width && portrait?.height ? HERO_FIGURE_HEIGHT * portrait.width / portrait.height : HERO_FIGURE_HEIGHT * 0.66
   return {
     '--hero-wash': light?.wash, '--hero-ink': light?.ink, '--hero-light': light?.light,
-    '--hero-sign': `url(${getCharaSignUrl(props.preferredReference.idolCode)})`,
     '--hero-figure-left': `calc(76% - ${Math.round(focus * width)}px)`,
   }
 })
@@ -544,7 +543,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-identity { position:relative;height:228px;overflow:hidden;border-radius:var(--gs-radius-media);background:radial-gradient(circle at 76% 62%,var(--gs-surface) 0,var(--hero-wash,var(--gs-paper)) 58%); }
 .overview-portrait-slot { position:absolute;inset:0; }
 .overview-idol-art { position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;max-width:none;height:300px;object-fit:contain;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent);filter:drop-shadow(6px 4px 0 color-mix(in oklab,var(--hero-ink,var(--gs-ink)) 24%,transparent)); }
-.overview-signature { position:absolute;top:86px;left:148px;z-index:3;display:block;width:130px;height:52px;opacity:.8;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance; }
 .overview-identity-copy { position:relative;z-index:3;display:flex;flex-direction:column;width:170px;padding:var(--gs-space-6) var(--gs-space-5); }
 .overview-eyebrow { order:0;margin:0;color:var(--hero-ink,var(--gs-ink-3));font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
 .overview-unit-name { order:1;display:flex;align-items:center;margin:var(--gs-space-3) 0 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
@@ -753,7 +751,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-featured:not(.is-all-view) .overview-personal { display:flex;flex-direction:column;align-items:stretch;gap:var(--gs-space-3); } /* the narrow block's grid centring must not shrink the hero */
 }
 @container portal (max-width:640px) {
-  .overview-signature { display:none; }
   .overview-personal { display:flex;align-items:stretch; }
   .overview-unit-matrix { grid-template-columns:repeat(4,minmax(0,1fr)); }
   .overview-unit-tile { height:84px; }
