@@ -1,0 +1,175 @@
+# Chats 002 起的回填验收补正（2026-10-31）
+
+输入 HEAD `e391de58`，验收期间另有同工作区提交 `8f64c02e`（发布清单更新）；沿用 `i18n/20261031-coverage-audit`。用户已提交 chat002–012 的编辑回填，本次基于这些已导入版本验收，未覆盖其原始回传、校订输出或 receipt。
+
+## 用户提示回填：原14条待审处理（2026-11-01）
+
+输入HEAD `f0fd31f8`。用户要求神乐丽家犬名按旧译、其余按所附提示。旧译实证为“阿尔托”，B005/B006/B023及已审卡面一致；不采用记忆中的哈尔特，也不另建洪特／亨特。其余13条结合前后文处理，采用库玛奇、玉子屋、天玄冰刃波及附件的谐音／词源表达方案。砚台继续保留陆、海、波止。涟的误输入后无单手包袱，因此确认“麻烦死了，你们自己随便搞吧。”。14条全部解除uncertain，保留原文与哈希。
+
+[14条前后对照和依据](../translation/studio/general/acceptance/chats-user-decisions-20261101/review.md) · [用户原始提示](../translation/studio/general/acceptance/chats-user-decisions-20261101/instructions.original.md) · [凭据](../translation/studio/general/acceptance/chats-user-decisions-20261101/receipt.json) · [项目术语表](../translation/bible/verified/chat-terms-20261101.md) · [原待审处理记录](TRANSLATION_CHATS_PENDING_REVIEW_20261101.md)
+
+回填覆盖8批中的14个键，不宣称本次重新通读7,589条。Chat001原始回传及999条编辑凭据通过附加base纳入同一验证链，现可重放全Chats 11,534条原始回传→原编辑→此前验收→本轮用户决策；此前首轮746次及续验1,363次不变，本轮另14次（续验共1,377次）。原始回传、原policy及旧凭据未改。全部11,534条保持draft，missing/stale/uncertain均为0，不把单条确认扩大为整批reviewed。General严格TM有效19,497、0 orphan，审计invalid/unpublished 0。原14条清单保留为历史并在顶部注明已处理。
+
+新增用户批准术语补充由后续角色台词／聊天导出读取，分行的假名招式名也能匹配；不会把两个独立消息拼成术语，也不会把普通德语フント全局改成犬名。回归包含这三项边界。验收器增加附加base和多批用户决策凭据支持；5个只在进程内模拟的异常（原始凭据哈希、来源数量、重复批次、错误before、遗漏应用的批次）均被拒绝，未改动磁盘中的真实凭据。本次仅翻译数据与独立Node导出／验收工具，不改前端，不重复Vite构建或复制public资源包；未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow通过；新的分行术语、独立消息边界及普通フント回归均通过。HTTP chats.json与本工作区字节一致（3,685,414 bytes）。Browser在原5251进程退出后，确认端口空闲，在同工作区重启5251 / PID17228；自动消费候选 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261031`，未复制资产或部署。冷加载 `8_1_x_007kei_8_1_2_007.json`，2/39显示“丽先生给我看了他家阿尔托的照片。”，点击下一段后到3/39。1440×900和390×844均保存截图，页面非空、无框架覆盖层、console error/warn为空；返回都筑圭→随机话题池，组标题和01话题标题同步显示阿尔托。视口已恢复，未改变担当或保存方向偏好。截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/user-decisions-alto-desktop.png`、`user-decisions-alto-mobile.png`、`user-decisions-alto-directory.png`。本次只证明所测页面旅程，不代表全部聊天或实体手机验收。
+
+## 收口：chat012 全量语义复验（2026-11-01）
+
+输入 HEAD `409d78d6`，已包含主干 `62c5b27b`。chat012 的670条全部逐句核对，修正150条、520条不变，保持draft；另为chat011补回3处既定称谓“蝶蝶小姐”，为chat004移除1处表情标签后的残余空格。补正独立成链，不覆盖原始回传或此前凭据。チャンプ＝冠军的用户定译保留。
+
+本批纠正武／百百人姓名、番长与制作人酱称谓、もふもふえん组合名，以及“单手搞搞”“只要我不嫌拙劣”等误译；删除无依据的动作、身份、夸张和川柳意象。鱼名核对水族馆及鱼类数据库的学名映射，来源列于逐条对照。419的原文误输入仍标uncertain。Chat002–012的11批、10,535条现已完成本轮逐句语义复验。首轮746次、续验1,363次修订涉及重复键，不能相加宣称净修订条目数；相对各批最初编辑回传，译文或decision净变化2,008条。
+
+[chat012的150条对照](../translation/studio/general/acceptance/chats-012-semantic-20261101/review.md) · [凭据](../translation/studio/general/acceptance/chats-012-semantic-20261101/receipt.json) · [chat011称谓补正](../translation/studio/general/acceptance/chats-011-term-20261101/review.md) · [chat004空格补正](../translation/studio/general/acceptance/chats-004-spacing-20261101/review.md) · [全Chats 14条待审清单](TRANSLATION_CHATS_PENDING_REVIEW_20261101.md)
+
+全Chats仍为11,534条draft；uncertain 14（含chat001的2条既有疑点），missing/stale 0。待审清单保留字面译文、原文和疑义；本次完成的是回填语义验收，不自动晋升reviewed。原文身份、源哈希、宏／数字、TM与发布JSON及标题别名由验收链和回归继续核对。跨批定向检查确认武、百百人、蝶蝶小姐定译一致，中文之间及表情标签后的ASCII空格候选为0；该结果不代表任意中英文排版的空格均须删除。General严格验证19,497条有效、0 orphan，审计invalid/unpublished 0。HTTP chats.json与当前工作区字节一致（3,685,235 bytes）。纯翻译数据变更，本次不重复Vite构建、不复制public资源包；主干同步后的代码构建见上一批。未部署。
+
+验证：verify-chat-translation 与 verify:general-translation-workflow 在最终数据上通过；10,535条验收链重放通过，严格TM有效19,497、0 orphan；未触碰原始回传及历史凭据。Browser复用5251 / PID26452，冷加载 `8_2_x_015leg_8_2_1_015.json`，推进至4/31，原文“トップを目指す通過点”对应“迈向顶尖偶像，这里是中途一站。”，未再出现“回首过千关”等新增意象。1440×900与390×844均保存截图；正文非空、无框架覆盖层、console error/warn为空。返回北村想乐目录正常，视口恢复默认；未保存方向偏好或改变担当。截图位于 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/012-poem-desktop.png` 与 `012-poem-mobile.png`。仅证明本次页面旅程，不宣称全聊天、全菜单或实体手机验收通过。
+
+## chat011 全量语义复验（2026-11-01）
+
+输入 HEAD `a5ffbc86`。chat011 的 999 条全部逐句核对，修正 183 条，保持 draft。003–011 九条存在原文与译文内容错接，已依各条原文重译；另修正青蛙玩偶、吾辈／吾辈们、蝶小姐、主宾关系、无依据的动作与身份增译，以及中文空格、省略号和拖音。原始回传与既有凭据不变。チャンプ＝冠军的用户定译保留。
+
+[183 条原文与验收前后对照](../translation/studio/general/acceptance/chats-011-semantic-20261101/review.md) · [修改记录](../translation/studio/general/acceptance/chats-011-semantic-20261101/edits.json) · [凭据](../translation/studio/general/acceptance/chats-011-semantic-20261101/receipt.json)
+
+正式 import --replace 写入 183 条、816 条不变。验收链重放首轮 746 条及九次续验共 1,209 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan。chat002–011 已逐句语义复验，chat012 尚余 670 条。全 Chats 11,534 条仍为 draft，uncertain 13，missing/stale 0，不等于最终 reviewed。本次为翻译数据变更，不复制资源包，未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow 均通过，HTTP chats.json 与当前文件字节一致（3,686,743 bytes）。Browser 复用 5251 / PID 26452，冷加载 `046chr_402_2_4_046_02_09_c.json`，选择“顺利问到了吗？”并推进到 8/12；“对方回答得很细致”和“海豚之间也有不同的性格”均与日文逐条对应。1440×900、390×844 保存截图，无空白或框架错误覆盖层，console error/warn 为空，返回古论克里斯目录正常。视口已恢复默认，未保存屏幕方向或改变担当。截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/011-source-binding-desktop.png`、`011-source-binding-mobile.png`。仅代表本次旅程，未声称全聊天或实体手机通过。
+
+主干同步：在 `27f0e6bb` 后合并 `origin/master` 的 `62c5b27b`（2026-11-01）。唯一冲突为 `config/resource-audit.json` 的派生快照；重新生成后当前目录指纹仍与本线旧值相同，保留原快照及审计日期，资源审计回归通过。`npm run build:check` 完成（22.98s，仅 `.analysis/build-check`，不复制 public）；翻译验收链与严格 TM 合并后再次通过。Browser 同一服务冷加载目标聊天，2/12 正文正常、console error/warn 为空。8/12 的双视口修正文案证据是在合并前取得；同步后未重复全聊天或真机验收。主干自带 read-model 消费绑定更新随合并进入本线，不代表部署。
+
+## chat010 全量语义复验（2026-11-01）
+
+输入 HEAD `070798db`。chat010 的 999 条全部逐句对照原文和当前 TM，追加修正 233 条，保持 draft。包含 75 条逐句语义或表达补正、21 条 Boss 称谓统一、128 条想乐舒缓拖音统一及 13 条多余空格清理（分类有重叠）。重点修复“一希和凉一起为制作人做冷冻布丁”误作“为凉和制作人做”、摄影师职业敬称误加先生、日阴限定成树荫，以及手表川柳漏掉手表、为凑字数添加意象等问题；川柳改为自然中文，不强凑音数。
+
+日语駄目／八百長／一目置く词源的中文表达，以及砚台部位“波止”的中文术语两条标 uncertain，说明保留在本地条目 notes。全 Chats 当前 uncertain 13（本批新增 2），missing/stale 0；11,534 条仍为 draft。chat002–010 已逐句语义复验；011–012 共 **1,669 条**待继续。チャンプ＝冠军的用户定译保留。
+
+[233 条原文与验收前后对照](../translation/studio/general/acceptance/chats-010-semantic-20261101/review.md) · [修改记录](../translation/studio/general/acceptance/chats-010-semantic-20261101/edits.json) · [凭据](../translation/studio/general/acceptance/chats-010-semantic-20261101/receipt.json)
+
+正式 import --replace 分两次完成：首轮写入 228 条、页面补验后再写入 9 条；相对输入 HEAD 净变更 233 条、766 条不变。验收链重放首轮 746 条及八次续验共 1,026 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan，审计 invalid/unpublished 0。HTTP chats.json 与本工作区字节一致（3,688,515 bytes）。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow 通过；页面补验修正占位符边界断句后，重新生成并复验原文绑定、严格 TM、聊天覆盖。Browser 复用 5251 / PID 26452，冷加载 `045sor_301_2_3_045_01_09_a.json`，推进到 5/11，正文显示“闭上双眼，／脑海中浮现的，／是星光。”及舒缓拖音“～”。1440×900、390×844 均完成截图，无空白或框架错误覆盖层，console error/warn 为空，返回想乐目录正常；再次冷加载目录，已显示“制作人，辛苦啦～”，不再留下占位符后的空格。视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/010-poem-desktop.png`、`010-poem-mobile.png`、`010-directory-spacing.png`。只证明本次旅程，未扩展为全聊天、全部菜单或实体手机验收。
+
+## chat009 全量语义复验（上一批，2026-11-01）
+
+输入 HEAD `4535f513`。chat009 的 999 条全部逐句对照原文和当前 TM，追加修正 131 条，保持 draft。タケル／タケルさん统一为武／武先生，补回一希先生与阁下，撤去制作人小姐；修复重复词、误加薪酬／自习／动作限定等问题，将ようしょく在鲷鱼烧语境中改为养殖，撤去“弱智”“吓尿”“弱者”等原文没有的侮辱或夸张。原始回传及此前验收凭据保持不变。
+
+チャンプ猫名两条按用户本轮明确确认统一定译为“冠军”，不标 uncertain；げりら／ごりら的突袭／大猩猩谐音一条按字面保留并标 uncertain，未宣称中文谐音已重现。全 Chats 当前 uncertain 11（本批新增 1），missing/stale 0；11,534 条仍为 draft。chat002–009 已逐句语义复验；010–012 共 **2,668 条**待继续。
+
+[131 条原文与验收前后对照](../translation/studio/general/acceptance/chats-009-semantic-20261101/review.md) · [修改记录](../translation/studio/general/acceptance/chats-009-semantic-20261101/edits.json) · [凭据](../translation/studio/general/acceptance/chats-009-semantic-20261101/receipt.json)
+
+正式 import --replace 写入 131 条、868 条不变。验收链重放首轮 746 条及七次续验共 793 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+验证：verify-chat-translation、verify:general-translation-workflow 均通过；用户确认“冠军”后，重新生成并复验验收链、严格 TM 和聊天覆盖。审计 invalid/unpublished 0；HTTP chats.json 与本工作区字节一致（3,690,131 bytes）。Browser 复用 5251 / PID 26452，通信→大河武→`038tak_401_2_4_038_01_09_c.json`，冷加载后选中“武先生的话一定能做到的！”并推进到 5/7，回复气泡与后续正文正常。1440×900、390×844 均保存截图，无空白或框架错误覆盖层，console error/warn 为空，返回目录正常；随机话题池第 03 项显示“昨天看见冠军了。”。视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/009-corrected-name-desktop.png`、`009-corrected-name-mobile.png`、`009-champion-title.png`。未据此宣称全部聊天、菜单或实体手机验收通过。
+
+## chat008 全量语义复验（上一批）
+
+输入 HEAD `d6f6408adbe7d0d3e995d1664aaf97a9e7f353a3`。chat008 的 964 条全部逐句对照原文和当前 TM，追加修正 108 条，保持 draft。修复重复字、もふもふえん组合名、花音复数自称、舞田类英文与中文代词；纠正巡演、前辈、镜头重叠、自习时间、宅邸、预演等增译或误译。未新增 uncertain。全 Chats 当前 uncertain 仍为 10（本批未新增），missing/stale 0；11,534 条仍为 draft。chat002–008 已逐句语义复验；009–012 共 **3,667 条**待继续。
+
+[108 条原文与验收前后对照](../translation/studio/general/acceptance/chats-008-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-008-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-008-semantic-20261031/receipt.json)
+
+正式 import --replace 写入 108 条、856 条不变。验收链重放首轮 746 条及六次续验共 662 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan，审计 invalid/unpublished 0。verify-chat-translation、verify:general-translation-workflow 均通过。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+服务复用 5251 / PID 26452；HTTP chats.json 与本工作区字节一致（3,691,305 bytes）。数据经 scripts/verify-chat-translation.mjs 完整跑通运行期覆盖测试与开头预览对齐校验。
+
+2026-11-01 补验：HEAD `27f7c987` 下重新生成结果无差异，原文绑定、严格 TM、verify-chat-translation 与 verify:general-translation-workflow 均通过。实际 Browser 经通信→姬野花音→个人聊天 `034kan_301_2_3_034_01_09_a.json` 推进到 4/11，日文かのんたち对应“大家配合着我们的歌声挥舞应援灯。”；1440×900、390×844 均完成截图，console error/warn 为空，无空白或框架错误覆盖层，返回花音目录正常。视口恢复默认，未保存屏幕方向或改变担当。截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/008-corrected-pronoun-desktop.png`、`008-corrected-pronoun-mobile.png`。只证明该旅程，未扩展为全部聊天或实体手机验收，未部署。
+
+## chat007 全量语义复验（上一批）
+
+输入 HEAD `18bb86de`。chat007 的 969 条全部逐句对照原文和当前 TM，追加修正 100 条，保持 draft。统一阿斯兰的吾主、仆从，撤去“上苍”“绝世”等补写；补回卷绪先生、咲先生、直央君、薰先生等称谓；纠正美食节误作音乐节（同一张卡的前后段原文已明确ご当地グルメフェス）、糖艺限定成吹糖、双六棋误写成飞行棋／大富翁等问题，并统一《行星射手》与もふもふえん。
+
+辉的法被／ハッピー、調子／超幸せ两处谐音，保留字面意思并标 uncertain，未硬造中文笑点或新增“高级笑话”。全 Chats 当前 uncertain 为 10（本批新增 2），missing/stale 0；11,534 条仍为 draft。chat002–007 已逐句语义复验；008–012 共 **4,631 条**待继续。
+
+[100 条原文与验收前后对照](../translation/studio/general/acceptance/chats-007-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-007-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-007-semantic-20261031/receipt.json)
+
+正式 import --replace 写入 100 条、869 条不变。验收链重放首轮 746 条及五次续验共 554 条修正，10,535 条来源绑定通过；General 严格验证 19,497 条有效、0 orphan，审计 invalid/unpublished 0。verify-chat-translation、verify:general-translation-workflow 均通过。本次数据变更不重复 Vite 构建或复制资源包，未部署。
+
+Browser 复用 5251 / PID 26452；HTTP chats.json 与本工作区字节一致（3,692,234 bytes）。通信→阿斯兰·别西卜II世→个人聊天 `029ass_302_2_3_029_02_09_b.json`，目录与开场显示“吾主，回应吾之言语吧。”；选择“怎么了吗？”后推进到 4/12，正文显示“吾与仆从集结魔力，精炼出了暗黑的食粮。”。1440×900、390×844 均截图，页面非空、无框架错误覆盖层，console error/warn 为空，返回目录正常。视口已恢复，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/007-corrected-address-desktop.png` 与 `007-corrected-address-mobile.png`。此项仅覆盖本次通信旅程，不代表全聊天或实体手机验收；既有菜单提示本次未重新检查。
+
+## chat006 全量语义复验（上一批）
+
+输入 HEAD `e9d6b079`。chat006 的 999 条全部逐句对照原文和当前 TM，追加修正 176 条，保持 draft。发现并修复 70 条字面 `\n`（反斜线加 n）误代换行；全 Chats 扫描未发现其他批次有同类条目。补回さん称谓，按项目规则保留四季的 Mega、统一にゃこ为“喵子”，修正“花”误作“话语”、“茶叶品名”误作“茶树品种”及其他增译。
+
+くまっち 3 条和仅用假名书写的招式名てんげんひょうじんは 1 条，未找到本轮足以核准中文定名的证据，撤去擅定译名、保留原文并标 uncertain。没有据旧回填“招式名平假名直译”的说明认定汉字译名已核准。全 Chats 当前 uncertain 为 8（本批新增 4）；missing/stale 仍为 0。chat002–006 已逐句语义复验；007–012 共 **5,600 条**待继续，不能据此提升为 reviewed/final。
+
+[176 条原文与验收前后对照](../translation/studio/general/acceptance/chats-006-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-006-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-006-semantic-20261031/receipt.json)
+
+验证：正式 import --replace 写入 176 条、823 条不变；验收链重放首轮 746 条及四次续验共 454 条修正，10,535 条来源绑定通过。General 严格验证 19,497 条有效、0 orphan；审计 invalid/unpublished 均为 0。验收 verifier 对已逐句验收的批次新增字面换行检查；注入异常 after、同步更新 receipt 与索引哈希后，仍被该检查拒绝，测试未改工作区凭据。verify-chat-translation、verify:general-translation-workflow 均通过；本次数据与独立校验工具变更未重复 Vite 构建或复制资源包。
+
+Browser 复用 5251 / PID 26452；HTTP chats.json 与本工作区一致（3,692,717 bytes）。通信→若里春名→信赖度聊天 `8_1_x_023har_8_1_1_023.json`，完成两次回复交互并推进到 15/49，正文“今天的演出／辛苦啦！”及后续对白正常换行，页面文本无字面 `\n`。1440×900 和 390×844 均截图，页面非空、无框架错误覆盖层，console error/warn 为空，返回目录正常。快进范围已还原“仅已读”、视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/006-newline-repair-desktop.png` 与 `006-newline-repair-mobile.png`。未将此旅程扩展为全聊天、全部 detail 气泡或实体手机验收；菜单既有“译文暂时无法载入”提示仍保留。没有部署。
+
+## chat005 全量语义复验（上一批）
+
+输入 HEAD `5f65ac98`。chat005 的 999 条全部逐句对照原文和当前 TM，追加修正 86 条，保持 draft。补齐原文“隼人さん／旬さん／夏来さん／春名さん”的先生称谓；九郎不擅用“我等”；撤去“热血笨蛋”“即兴改编”“瓷砖反射”“穿给大家看”等原文没有的贬义、演奏方式、材质和动作限定，纠正“今”误写“刚才”、重复字“2人人”及不自然的句尾断句。
+
+[86 条原文与验收前后对照](../translation/studio/general/acceptance/chats-005-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-005-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-005-semantic-20261031/receipt.json)
+
+chat002–005 已逐句语义复验；006–012 共 **6,599 条**仍待继续。全部 Chats 11,534 条仍为 draft，missing/stale 0、uncertain 4；本批没有新增 uncertain。正式 import --replace 只写入 86 条，913 条保持不变。验收链核验 10,535 条来源绑定，重放首轮 746 条与三次续验共 278 条修正；General 严格验证 19,497 条有效、0 orphan。verify-chat-translation、verify:general-translation-workflow 均通过；无前端代码改动，未重复 Vite 构建或复制资源包。
+
+Browser 复用 5251 / PID 26452，HTTP chats.json 与本工作区字节一致（3,692,931 bytes）。通信→天濑冬马→组合聊天→Jupiter 信赖度聊天 `8_2_x_001jup_8_2_1_001.json`，经过制作人回复后，18/32 的已显示正文含“冬马君真是热血啊”，与日文原文相对照；1440×900、390×844 截图均可见此条，console error/warn 为空，页面非空、无框架错误覆盖层，返回组合目录正常。快进范围已还原“仅已读”，视口恢复默认，未保存屏幕方向或改变担当。截图在 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/005-corrected-tone-desktop.png` 和 `005-corrected-tone-mobile.png`。未据此宣称全部 UI、所有 detail 气泡或实体手机通过；原菜单“译文暂时无法载入”提示仍保留。没有部署。
+
+## chat004 全量语义复验（上一批）
+
+输入 HEAD `871a429d`。chat004 的 983 条全部逐句对照原文和当前 TM，追加修正 111 条，保持 draft。主要修正キリオ误称“清澄”、あまね误译“雨音”、そーいちろー误译“想一郎”，以及蝶蝶小姐、制作人君和吾辈们的项目称谓。撤去“幸运女神”“小擦伤”“中暑”“倾尽全军之力”等原文未限定的性别、伤势或夸大内容。
+
+[111 条原文与验收前后对照](../translation/studio/general/acceptance/chats-004-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-004-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-004-semantic-20261031/receipt.json)
+
+chat002–004 已逐句语义复验；005–012 共 **7,598 条**仍待继续。全部 Chats 11,534 条仍为 draft，missing/stale 0、uncertain 4；本批没有新增 uncertain。此次 import --replace 仅写入 111 条，872 条保持不变；原始回填和既有验收凭据未改。验收链核验 10,535 条来源绑定，重放首轮 746 条与两次续验共 192 条修正；General 严格验证 19,497 条有效、0 orphan。verify-chat-translation 和 verify:general-translation-workflow 均通过。数据变更未重复 Vite 构建或生成资源包，未部署。
+
+Browser 继续复用 5251 / PID 26452；HTTP 发布分片与本工作区一致（3,693,431 bytes）。通信→猫柳桐生，个人聊天 `017kir_301_2_3_017_01_09_a.json` 验证“制作人君”及两次回复交互；播放器回复气泡显示短文，没有将未显示的完整 detail「桐生先生」记作页面通过。随后返回随机话题池，第 01 话题入口显示“蝶蝶小姐”；第 02 话题 `8_1_x_017kir_8_1_2_017.json` 的正文显示“九郎君带来的茶点，还有庄一郎君的蛋糕”，1440×900 与 390×844 均完成截图，console error/warn 为空，页面非空、无框架错误覆盖层。截图位于 `E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/004-corrected-name-desktop.png` 与 `004-corrected-name-mobile.png`。返回目录后视口已恢复，临时快进范围已还原“仅已读”；未改变担当或保存屏幕方向。菜单仍显示既有“译文暂时无法载入”提示，未将所有菜单、完整 detail 气泡或实体手机验收记作通过。
+
+## chat003 全量语义复验（上一批）
+
+输入 HEAD `cd70c39a`。chat003 的 955 条已逐句对照原文与当前 TM，追加修正 81 条。修正覆盖「カエール／かえーる」的项目术语“青蛙玩偶”、实先生的称谓、サポーター不擅定为“后援会”、ファンサービス的互动含义，以及原文没有的邮件发送、快闪店、具体痣位置等补写。知恵の輪改为“益智解环”，不指定为九连环；タキシード改为无尾礼服。
+
+店名たまこや缺乏已核准中文定译，撤去“玉小屋”，保留原名并标 uncertain。全部 Chats 仍为 11,534 条 draft，missing/stale 0；uncertain 从 3 增至 4。chat002、003 已完成逐句语义复验；004–012 共 **8,581 条**仍待继续，不能据此宣称全部审校完成。
+
+[81 条原文与验收前后对照](../translation/studio/general/acceptance/chats-003-semantic-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-003-semantic-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-003-semantic-20261031/receipt.json) · [验收链索引](../translation/studio/general/acceptance/index.json)
+
+验证：
+
+- 正式 import --replace：955 条中写入 81 条、874 条不变。General 严格验证 19,497 条有效，0 orphan；审计 invalid/unpublished 均为 0。
+- 验收 verifier 从原 receipt、原始回传、旧编辑重放、首轮 746 条补正，继续重放本轮 81 条修正，再逐条比较 TM 与发布内容。10,535 条绑定通过；索引记录前一 receipt 哈希。新增凭据原始字节由 .gitattributes 固定。对哈希、before、语义条数的三种内存篡改均被拒绝，未修改工作区证据。
+- verify-chat-translation、verify:general-translation-workflow 均通过；后者模拟坏数据的 invalid 提示属于预期回归。无前端代码改动，本轮为数据及独立校验工具变更，未重复 Vite 构建或生成资源包。
+- 5251 / PID 26452 继续使用现有 dev 服务，HTTP chats.json 与本工作区发布分片字节一致（3,694,103 bytes）。没有部署。
+- Browser：通信→苍井享介→随机话题池→第 03 个话题；目录已显示“益智解环”。实际播放 `8_1_x_013kys_8_1_2_013.json` 的 12–16 段；1440×900 验证修正正文及“你解开了啊”回复选项，选择后 390×844 验证回复气泡与后续对白，再返回目录。页面身份、非空内容、无错误覆盖层、交互和截图均通过，console error/warn 为空。视口已恢复默认，没有改变担当设置或快进范围。未扩展为全部聊天、所有菜单或实体手机验收，首轮记录的菜单问题仍保留。
+- 截图：`E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031/003-corrected-choice-desktop.png`、`003-corrected-reply-mobile.png`。
+
+## 首轮结果与范围（历史记录）
+
+- 002–012 共 10,535 条：原回传、批次身份、原文哈希、修改重放、TM 和发布内容均逐条核验。旧编辑日志的 before 有时仍是 GS_ADDRESS 保护标记；按该原文的严格保护槽恢复后再比较，没有放松哈希或文本检查。
+- chat002 的 999 条做了原文/译文逐条复核，追加修正 105 条。最关键的是 RID 710–730 共 21 条错接：编号和 source_hash 正确，但译文是另一段对话，与当前原文不符；已逐条重译。
+- 003–012 为全量身份校验、规则筛查和异常行定向复核，追加修正 641 条，**没有宣称这 9,536 条全量语义验收完成**。后续从 chat003 继续逐句复验。
+- 总计 746 条补正，保持 draft，不提升 reviewed/final。chat002/534 宠物名フント缺乏已核准中文定译，撤去擅定的“亨特”、保留原名并标 uncertain。全 Chats 当前 11,534 条均有 draft、missing/stale 为 0，uncertain 为 3（含第一批原有 2 个双关）。
+
+[746 条原文／验收前后对照](../translation/studio/general/acceptance/chats-002-012-20261031/review.md) · [修改记录](../translation/studio/general/acceptance/chats-002-012-20261031/edits.json) · [凭据](../translation/studio/general/acceptance/chats-002-012-20261031/receipt.json)
+
+| 批次 | 补正数 | 本轮语义复验范围 |
+|---|---:|---|
+| 002 | 105 | 全部 999 条 |
+| 003 | 51 | 规则与异常行 |
+| 004 | 154 | 规则与异常行 |
+| 005 | 71 | 规则与异常行 |
+| 006 | 75 | 规则与异常行 |
+| 007 | 30 | 规则与异常行 |
+| 008 | 57 | 规则与异常行 |
+| 009 | 34 | 规则与异常行 |
+| 010 | 64 | 规则与异常行 |
+| 011 | 63 | 规则与异常行 |
+| 012 | 42 | 规则与异常行 |
+
+修正依据为项目 R3.3 与 card-line-prompt.v1.json：制作人さん不加先生；ちゃん→酱、クン→君；番長さん→番长、ボス→Boss；四季不在中文里保留っす，人名っち→亲；实的名字与称呼、辉先生/丽先生等一对一对应；桐生ワガハイ→吾辈，翔真アタシ→我，志狼オレ→我；涟只有源文明确オレ様/おれさま时保留本大爷（支持跨换行的词，不误改为普通自称）；百百人ぴぃちゃん按既有决议用P酱。原始制作人宏、数字、表情一律保留。
+
+chat002 还撤去原文没有的“天空之城”、宠物/动物身份、额外收件人、纪念品、准备室、王子角色等补写，并保留原文称谓层级（例如兜不改成大吾）。这些修正不代表逐项外部考据完成。
+
+## 验证
+
+- 新增 node scripts/verify-chat-editorial-acceptance.mjs：验证 11 批原 receipt 字节哈希、原机器输出→旧编辑记录→旧校订输出→本次补正→draft TM→发布分片的完整链。10535 来源绑定和 746 补正通过。
+- 正式 General import --replace 仅写入这 746 条，其余 9,789 条不变。严格 TM：19,497 条有效、0 orphan；审计 invalid/unpublished 为 0。既有剧情与 reviewed 数据未改。
+- verify-chat-translation 与 verify:general-translation-workflow 通过（模拟坏数据/503 的测试提示不代表实际数据失败）。
+- build:check 通过（31.36s），只复用 .analysis/build-check，不复制 public 资产。resource-audit 的环境差异还原。生成发布清单并核对本端口 HTTP 返回与当前 chats.json 字节一致（3,694,386 bytes）。
+- Browser 复用本工作区 dev 服务 127.0.0.1:5251 / PID 26452，经通信选神乐丽，进入信赖度聊天 `8_1_x_008rei_8_1_1_008.json`。1440×900 验证第 15 段的「サポートします！」对应「我会支持您的！」，点击后到第 17 段，「今日のライブの出来はどうだった」正确显示「今天的演唱会，表现怎么样？」。390×844 验证同一段对白、回复气泡及返回神乐丽目录。console error 为空；QA 使用的快进范围已恢复“仅已读”，视口恢复默认。
+- 截图在 E:/Web_build/GS_Archive_Domain_Work/chats-acceptance-qa-20261031：002-corrected-choice-desktop.png、002-corrected-dialogue-desktop.png、002-corrected-dialogue-mobile.png。dev 验收不代表生产发布或物理手机验收。
+- 另观察到既有播放菜单“本话选集”一直提示读取下一话信息，以及正文已显示译文时菜单仍有“译文暂时无法载入”重试提示。未将这些菜单状态记为通过，本轮未修改菜单逻辑。
+
+原[回填记录](TRANSLATION_CHATS_REVIEW_20261031.md)属于提交历史。其中“全部译完与审校”“本地化就绪”不能替代本次验收结论；当前质量覆盖以上表为准。没有部署。

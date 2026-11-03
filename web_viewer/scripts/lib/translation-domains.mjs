@@ -22,6 +22,7 @@ export const KINDS = {
   'unit-profile':       {label:'组合简介',            model:'组合简介',     shard:'profiles',   prompt:'general'},
   'mobile-status':      {label:'通信签名',            model:'通信签名',     shard:'profiles',   prompt:'general'},
   work:                 {label:'工作剧情名称',        model:'工作剧情',     shard:'profiles',   prompt:'general'},
+  'seasonal-title':      {label:'季节企划各话标题',    model:'企划标题',     shard:'profiles',   prompt:'general'},
   'card-line':          {label:'卡面文本·台词',       model:'卡面台词',     shard:'card-lines', prompt:'character'},
   'card-touch':         {label:'卡面文本·触摸语音',   model:'首页触摸语音', shard:'card-lines', prompt:'character'},
   'card-voice':         {label:'卡面文本·演出语音',   model:'卡面演出语音', shard:'card-lines', prompt:'character'},

@@ -88,6 +88,11 @@ export function archiveGeneralTextCorpus(root) {
     add('work', idol.work_type_id, 'type', idol.work_type_name);
     for (const story of idol.short_stories) add('work', story.id, 'title', story.title);
   }
+  // Seasonal episode headings are catalogue metadata, not dialogue/title commands.
+  // Keep their exact source bytes (including any legacy trailing CR) as TM identity.
+  const reading = JSON.parse(fs.readFileSync(path.join(root, 'public/data/reading/manifest.json'), 'utf8'));
+  for (const entry of reading.entries.filter(entry => entry.domain === 'seasonal'))
+    add('seasonal-title', entry.document_id, 'title', entry.title);
   const backgrounds = load('background_catalog.json').backgrounds;
   for (const [key, row] of Object.entries(backgrounds)) {
     for (const name of row.names || []) add('background', row.resource_id || row.resourceId || key, 'name', name);

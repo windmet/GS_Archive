@@ -30,9 +30,25 @@ function ownerLabel(code) {
 // Project-wide constraints (R3.3 policy, term decisions, per-speaker voice notes) injected into character-line and chat inputs.
 let promptPolicy
 const promptRules = () => promptPolicy ||= JSON.parse(fs.readFileSync(new URL('../../translation/studio/policy/card-line-prompt.v1.json', import.meta.url), 'utf8'))
+let userTermPolicy
+const userTerms = () => {
+  if (!userTermPolicy) {
+    userTermPolicy = JSON.parse(fs.readFileSync(new URL('../../translation/studio/policy/user-approved-terms.v1.json', import.meta.url), 'utf8'))
+    assert.equal(userTermPolicy.schema, 'GS-USER-APPROVED-TERMS-V1')
+    assert.equal(userTermPolicy.status, 'project-user-approved')
+    assert(Array.isArray(userTermPolicy.terms))
+    assert.equal(new Set(userTermPolicy.terms.map(term=>term.src)).size,userTermPolicy.terms.length)
+  }
+  return userTermPolicy.terms
+}
 const relevantTerms = rows => {
   const text = rows.map(row => row.source).join('\n')
-  return promptRules().terms.filter(term => text.includes(term.src)).map(term => `- ${term.src} → ${term.zh}${term.note ? `（${term.note}）` : ''}`)
+  // Only the explicitly approved supplement tolerates line breaks within a term.
+  // Keep the original R3.3 policy bytes frozen for historical receipt verification.
+  const compactText = rows.map(row=>row.source.replace(/\s+/gu,'')).join('\n')
+  const selected = [...promptRules().terms.filter(term => text.includes(term.src)),
+    ...userTerms().filter(term=>compactText.includes(term.src.replace(/\s+/gu,'')))]
+  return [...new Map(selected.map(term=>[term.src,term])).values()].map(term => `- ${term.src} → ${term.zh}${term.note ? `（${term.note}）` : ''}`)
 }
 // Producer macros reach the model only as story-style markers and come back to the source macro
 // (restoreAddress), so an overlay never holds a translated slot such as ●●●●制作人.

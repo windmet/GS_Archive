@@ -1,6 +1,6 @@
 # 称呼证据 Bible
 
-本目录将已批准的显示与翻译槽规则、第三方参考资料、待人工核实的剧情证据分开。翻译提示词只能把 [`verified/producer-addressing.md`](verified/producer-addressing.md) 当作规则；`review/` 中的机器抽样和将来的 `reference/` 资料不能自动升级为角色固定译法。
+本目录将已批准的显示与翻译槽规则、第三方参考资料、待人工核实的剧情证据分开。已批准的规则包括 [`verified/producer-addressing.md`](verified/producer-addressing.md) 和 [2026-11-01用户确认的聊天术语](verified/chat-terms-20261101.md)；`review/` 中的机器抽样和将来的 `reference/` 资料不能自动升级为角色固定译法。
 
 2026-09-29 的运行时合同批准了两类姓名宏：恰好十个连续 `●` 表示玩家姓名，恰好四个连续 `●` 紧接 `プロデューサー` 表示玩家姓名加 `P`。这项批准针对共享文本显示和翻译槽，并不证明已复原原游戏内部显示算法。固定字面称呼仍按原句处理。来源与验收见[共享文本入口记录](../../docs/PRODUCER_ADDRESSING_RUNTIME_20260929.md)。
 

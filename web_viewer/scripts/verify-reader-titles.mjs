@@ -21,17 +21,35 @@ for (const [key, descriptor] of Object.entries(index.shards || {})) {
   }
 }
 const manifest = JSON.parse(fs.readFileSync(new URL('../public/data/reading/manifest.json',import.meta.url)))
+const seasonal = manifest.entries.filter(entry=>entry.domain==='seasonal')
+assert.equal(seasonal.length,306)
+assert(seasonal.every(entry=>index.documents[entry.document_id]?.record?.unit_id.startsWith('metadata:v1:seasonal-title:title:')),'all seasonal metadata headings have explicit source-bound translations')
+for(const entry of seasonal)assert.equal(readerTitle(index,{...entry,domain:'main'},entry.title),entry.title,'seasonal metadata never leaks to another domain')
+for(const entry of seasonal) {
+  assert.equal(readerTitle(index,{document_id:entry.document_id,sha256:entry.sha256},entry.title),index.documents[entry.document_id].record.text,'seasonal directory and chapter-picker projections use the same source-bound translation')
+  const changed=`${entry.title}（改）`
+  assert.equal(readerTitle(index,{...entry,title:changed},changed),changed,'a changed manifest title cannot reuse the old metadata translation even at the same Reader revision')
+}
+const seasonalRecord=index.documents[seasonal[0].document_id].record
+assert.throws(()=>validateReaderTitles({...index,documents:{[seasonal[0].document_id]:{revision:seasonal[0].sha256,record:{...seasonalRecord,source_hash:'sha256:'+'0'.repeat(64)}}}}),'metadata identity must match its source hash')
 for (const id of Object.keys(index.documents)) {
   const entry = manifest.entries.find(item=>item.document_id===id)
   const binding = index.documents[id], translated = binding.record || index.titles[binding.title]
   assert.equal(readerTitle(index,entry,entry.title),translated.text)
   if (binding.record) {
+    if (binding.record.unit_id.startsWith('metadata:v1:seasonal-title:title:')) {
+      assert.equal(entry.domain,'seasonal')
+      assert.equal(binding.record.source,entry.title)
+      assert.equal(binding.record.source_hash,`sha256:${createHash('sha256').update(entry.title).digest('hex')}`)
+      assert.equal(Object.hasOwn(binding,'title'),false)
+    } else {
     // A document named by its opening title row: the chapter title the page passes binds too.
     const row = JSON.parse(fs.readFileSync(new URL(`../public/data/reading/${entry.file}`,import.meta.url))).rows.find(item=>item.text_ref?.unit_id===binding.record.unit_id)
     assert.equal(row?.kind,'title',`${id}: inline title is the document's own title row`)
     assert.equal(row.source_text,binding.record.source)
     assert.equal(readerTitle(index,entry,binding.record.source),binding.record.text)
     assert.equal(Object.hasOwn(binding,'title'),false,'an inline title does not also point into the shared list')
+    }
   }
   assert.equal(readerTitle(index,entry,entry.title,'ja-JP'),entry.title,'Japanese metadata uses the source heading without changing story reading mode')
   assert.equal(readerTitle(index,{...entry,sha256:'sha256:'+'0'.repeat(64)},entry.title),entry.title,'new document revision does not reuse stale metadata')

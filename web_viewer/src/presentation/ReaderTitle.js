@@ -20,7 +20,10 @@ export function validateReaderTitles(value) {
   // A binding names a shared title (index into titles) or carries a title that names only its own
   // document (record), kept in the document's shard so the root index stays small.
   for (const [id, record] of Object.entries(value.documents)) {
-    const shared = Number.isInteger(record?.title) && value.titles[record.title], own = record?.record !== undefined && validTitle(record.record)
+    const metadata = record?.record, seasonal = metadata && typeof metadata.source === 'string' && metadata.source
+      && typeof metadata.text === 'string' && metadata.text && HASH.test(metadata.source_hash)
+      && metadata.unit_id === `metadata:v1:seasonal-title:title:${metadata.source_hash.slice(7)}`
+    const shared = Number.isInteger(record?.title) && value.titles[record.title], own = metadata !== undefined && (validTitle(metadata) || seasonal)
     if (!/^[A-Za-z0-9_-]+$/.test(id) || !HASH.test(record?.revision) || Boolean(shared) === Boolean(own)) throw Error('Invalid Reader document title binding')
   }
   return value
@@ -43,6 +46,12 @@ export function readerTitle(index, entry, source, locale = 'zh-CN') {
   if (locale === 'ja-JP') return source
   const binding = index?.documents?.[entry?.document_id]
   const title = binding && (binding.record || index.titles[binding.title])
+  if (title?.unit_id?.startsWith('metadata:v1:seasonal-title:title:')) {
+    // Directory and chapter-picker projections carry only document_id + sha256.
+    // Exact source + revision still bind them; full manifest callers also check title/domain.
+    return (!entry?.domain || entry.domain === 'seasonal') && binding.revision === entry?.sha256
+      && (!entry.title || title.source === entry.title) && title.source === source ? title.text : source
+  }
   // The bound title row names the document; a caller passing the document's own manifest title (some
   // documents carry a synopsis line there) gets that title too.
   return binding?.revision === entry?.sha256 && title && (title.source === source || (entry?.title && source === entry.title)) ? title.text : source
