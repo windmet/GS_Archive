@@ -56,12 +56,12 @@
 
 | 数字 | 出处 | 状态 |
 |---|---|---|
-| 单曲读取瘦身 95.9% | `docs/GS_ARCHIVE_R2_RELEASE_20261021.md` | ✓ 有出处 |
+| 「单曲读取瘦身 95.9%」 | `docs/STAGE_LOAD_STRATEGY_20261020.md`、`STAGE_STATUS_AUDIT_20261020.md` | ⚠ 原表写错了出处。实为舞台默认曲 DRIVE 固定读取序列 43.58 → 1.79 MB 的原始 JSON 字节（1 − 1.79/43.58 = 95.9%），不是网络传输量，也不是开播时间 |
 | 725 个骨骼模型 | `docs/GS_NATIVE_ADV_PLACEMENT_20261015.md` | ✓ 有出处 |
-| 724 个粒子系统 | `docs/NATIVE_*_20261020.md` | ✓ 有出处，写之前再核对口径 |
+| 724 个粒子系统 | `docs/NATIVE_REHOBE_SMOKE_20261020.md`：82 组模型、724 个系统、95 张纹理，32 个 partial | ✓ 有出处 |
 | 48,268 个只含 wait 的 cut（RAW 共 126,633 个 cut，约 42,000 s） | `docs/STORY_RECOMPILE_CANDIDATE_20261020.md` | ✓ 有出处；口径是「旧编译器丢掉的纯等待 cut」，不是全部 wait |
 | 261,812 行 RAW 舞台指令（118 份编排、58 类） | `docs/STAGE_RAW_COMMAND_MATRIX_BATCH_20261015.md`，10-20 `STAGE_FOLLOWUP` 复核 | ✓ 有出处；含 1 行非时序说明，行数不等于执行数，也不是视觉完成率 |
-| 10,326 份场景 / 315,124 个快照（另有 175,600 个 cue、48,073 条口型记录） | `docs/SCENARIO_PIPELINE_BOUNDARIES.md` | ✓ 有出处；AI 稿写「31.5 万」是取整 |
+| 10,326 份场景 / 315,124 个快照（另有 175,600 个 cue、48,073 条口型记录） | `docs/SCENARIO_PIPELINE_BOUNDARIES.md`（最后修改 9-09） | ✓ 有出处；AI 稿写「31.5 万」是取整；是 9-09 的口径 |
 | 826 张卡、49 位偶像、16 个组合 | 门户首页统计、Masterdata | ✓ |
 
 ## 站长补充（11-03 已答）
@@ -80,6 +80,6 @@
 |---|---|---|
 | 6 月 → 7 月中 | Claude Code + DeepSeek API | 首个提交起的 Claude Sonnet 4.6 / 5 署名；站长确认 |
 | 7 月中 → 9-11 | Codex / ChatGPT（5.6 Luna、6.0 Astra） | PR #1 起的 `codex/*` 分支；9-11 交接文档「来源：Codex 完整会话导出」 |
-| 9-11 → | Claude Code 接手交接 | `SIDEM_CLAUDE_CODE_HANDOFF_20260911.md` |
+| 9-11 → | Claude Code 接手交接 | `SIDEM_CLAUDE_CODE_HANDOFF_20260911.md`。⚠ `codex/` 分支一直合并到 10-15（含 9-25 读模型重构），是否并行待站长确认 |
 | 10-05 → | Claude Opus 5.5 / Sonnet 5.5 | 署名首日 10-05 |
 | 翻译 | Gemini（AI Studio）初翻 → GPT、后来 Claude 审查 | 站长自述；翻译批次文档 |

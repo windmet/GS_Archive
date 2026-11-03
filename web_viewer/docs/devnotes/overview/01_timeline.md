@@ -1,6 +1,6 @@
 # 总论 · 第一部分：六个阶段（草稿 2026-11-03）
 
-> 草稿。这里的日期和数字都来自 [01_TIMELINE_EVIDENCE.md](01_TIMELINE_EVIDENCE.md) 里标 ✓ 的条目，每段末尾的方括号是证据。
+> 草稿。这里的日期和数字都来自 [01_TIMELINE_EVIDENCE.md](../01_TIMELINE_EVIDENCE.md) 里标 ✓ 的条目，每段末尾的方括号是证据。
 > 站长审阅前不发布。口吻、要不要写朋友的部分，由站长定。
 
 《偶像大师 SideM GROWING STARS》（下称 GS，昵称「果蔬」）2021-10-06 开服，2023-07-31 停服。
@@ -32,7 +32,7 @@ PR #3–#42 补上关系目录、发布账本和门禁。
 ## 4. 重构（9-08 → 9-23）
 
 9-08 的架构审计记录 `App.vue` 已经有 2,986 行。之后一周每天几十个提交（9-08 有 67 个，9-13 有 60 个，那天是 SideM 11th LIVE DAY2）。
-9-11 从 Codex 交接给 Claude Code，交接文档是从 Codex 会话导出整理的。9-20 电话界面回到原版的竖屏手机框。
+9-11 写了 Codex → Claude Code 的交接文档（从 Codex 会话导出整理）。9-20 电话界面回到原版的竖屏手机框。
 9-23 PR #43 合并，264 个提交，资料馆、剧情运行时和移动端交互在这里收口。
 
 [`ARCHITECTURE_REFACTOR_20260908.md`（`611a5efb`）；`SIDEM_CLAUDE_CODE_HANDOFF_20260911.md`；`6f67d211`；PR #43]
@@ -57,8 +57,13 @@ PR #3–#42 补上关系目录、发布账本和门禁。
 
 [PR #56、#61、#63；`PORTAL_REDESIGN_PROGRESS_20261027.md`；`SCENARIO_PIPELINE_BOUNDARIES.md`；`STAGE_RAW_COMMAND_MATRIX_BATCH_20261015.md`；`STORY_RECOMPILE_CANDIDATE_20261020.md`；PR #78]
 
-## 待站长确认
+## 已定
 
-- 第 1 阶段要不要写两位朋友（柚子贝汁 P 从最初陪着测试；shiogi P 在 6 月末 7 月初帮了关键的忙）。致谢页已经写了，这里可以只放链接。
-- 停工 26 天的原因要不要写。
+- 朋友不在这里写，致谢见 [06_thanks.md](06_thanks.md)。
+- 停工原因不写，只写日期。
+
+## 待核
+
 - 「纯等待 cut 已补回」依据 PR #78（10-22 合并的重编译晋升）；发布前确认线上 release 已包含它。
+- 第 4 阶段写的是「9-11 交接给 Claude Code」，但 `codex/` 前缀的分支一直合并到 10-15（9-23 PR #43、9-25 读模型重构 `codex/gs-architecture-rebuild`、9-29、10-12、10-15）。
+  分支名不能证明用了什么工具：要请站长确认 9-11 到 10 月中是 Codex 和 Claude Code 并行，还是只是沿用了分支前缀。
