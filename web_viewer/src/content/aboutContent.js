@@ -2,9 +2,7 @@
 // components/archive/ArchiveAbout.vue。段落是纯文本，空行分段。以【待填写开头的段落和 url 留空的链接只在维护者模式（?maintainer=1）
 // 显示（链接显示「待补充」）；读者看不到，整节都没内容时整节隐藏。
 
-// 首屏、资料馆幕布和本页页头共用的一句站点说明与游戏服务期。index.html 的首屏没有脚本，里面是同一句的静态副本，改这里时一起改。
-export const SITE_LINE = '《偶像大师 SideM GROWING STARS》非官方资料馆'
-export const SERVICE_PERIOD = Object.freeze({ start: '2021.10.06', end: '2023.07.31' })
+// 页头的站点说明与游戏服务期在 siteLine.js（首屏也用，所以单独放）。
 
 export const ABOUT_CONTENT = {
   title: '关于本站',

@@ -30,7 +30,7 @@ import { criticalPreloadProgress } from '../presentation/LoadingPresentation.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { getBrandMarkUrl } from '../utils/AssetResolver.js'
 import { ARCHIVE_BRAND } from '../core/archiveSections.js'
-import { SITE_LINE, SERVICE_PERIOD } from '../content/aboutContent.js'
+import { SITE_LINE, SERVICE_PERIOD } from '../content/siteLine.js'
 
 defineEmits(['cancel'])
 const props = defineProps({
