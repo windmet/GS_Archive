@@ -1,155 +1,100 @@
 # GS Archive
 
-`GS Archive` is a local-first archive viewer and reconstruction project for *THE IDOLM@STER SideM GROWING STARS*. It turns extracted scenario data, masterdata evidence, and locally available media into a searchable web archive with a playable story viewer.
+《偶像大师 SideM GROWING STARS》非官方资料馆。游戏服务期 2021.10.06 – 2023.07.31。
 
-The repository is the source of truth for code, schemas, relationship rules, verification reports, and development notes. It is not a mirror of the original game assets.
+[English](README.en.md)
 
-## Current Scope
+本站整理游戏中已经公开的剧情、通信、卡片、歌曲、活动与卡池等内容，提供中文译文、剧情阅读与回看，以及谱面、2D 舞台和摄影工作台。
 
-- Vue archive shell with stable, shareable URL state.
-- Idol, unit, card, gasha, event, story, song, interaction, and resource views.
-- Compiled scenario player with local voice, lip-sync, background, and Spine support.
-- Evidence-based card/event/gasha/unit relations derived from masterdata and confirmed research.
-- Reproducible data pipelines and archive verification reports.
+## 能看到什么
 
-Current verified archive snapshot:
+- **剧情**：主线、活动、卡片、偶像、组合、季节企划等剧情，既能当文字读，也能按原作演出回放（立绘、语音、口型、背景、BGM、特效）。
+- **通信**：电话与聊天。
+- **偶像与组合**：资料、所属卡片、相关剧情和歌曲。
+- **卡片、卡池、活动**：关系从游戏的 masterdata 推出，不靠人工猜。
+- **歌曲**：封面、试听、演唱者。
+- **谱面、2D 舞台、摄影工作台**：在网页里复原游戏的谱面、Live 小人舞台和摄影功能。
 
-- 3,398 / 3,398 RAW logical story groups have a unique public match.
-- 4,939 / 4,939 valid RAW scenario parts are represented in public output.
-- 26,890 / 26,902 RAW story voice references resolve; the remaining 12 are
-  authored dangling references.
-- Published authoritative Story Runtime v2 currently contains four
-  collections and one standalone RAW-published scene, for 30 JSON artifacts.
-  Collections `1_4_001_00` and `1_3_10001_01` are ledger-governed; the other
-  two collections and the standalone scene predate the publication ledger.
-<!-- authoritative-v2-summary collections=4 standalone=1170 artifacts=1199 -->
-<!-- publication-ledger-summary releases=216 stable_logical_ids=1400 -->
-- Masterdata contains 836 card rows and 826 unique card resource IDs; RAW
-  covers 826 / 826 resources, while the portal independently normalizes 826
-  card entities.
-- 61 logical gasha entities and 36 classified event entities are available in
-  the archive indexes.
-- 61 routable song entities have bounded RAW-derived jackets and exact main-audio
-  relations; experimental layered playback remains explicitly separate from the
-  archive catalog contract.
-- Birthday Story currently resolves 4 chapters, 181 sections and 181 episodes;
-  179 episodes have an explicit subject and 2 producer-birthday common episodes
-  remain intentionally unassigned.
+剧情默认显示中文译文，还没翻译的段落显示日文原文；阅读器和播放器里可以随时切换原文或双语。译文由爱好者完成，一切以游戏原文为准。
 
-The 10,329 JSON files recursively present under `public/data/compiled` are
-compiled artifacts, not 10,329 distinct stories. Aggregate, episode, manifest,
-fixture, and per-source files are counted separately on disk.
+## 声明
 
-The current repository state and next authorized sequence are maintained in
-[CURRENT_ARCHIVE_BASELINE.md](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE.md).
-The 2026-07-28 metric baseline and 2026-08-10 workflow closeout remain dated
-historical evidence.
+本项目是个人运营的非官方粉丝项目，与 BANDAI NAMCO Entertainment Inc. 及其他权利方没有任何关联，也没有获得授权或认可。
+游戏中的文字、图片、音频、视频等素材的权利归原权利方所有。本项目不以营利为目的，不提供游戏资源下载。
 
-## Architecture
+权利方如认为内容有不妥，请发邮件至 windmet@outlook.com，我会尽快处理。
 
-The project keeps four evidence layers separate:
+## 仓库里有什么
 
-1. `raw/masterdata`: source evidence and decoded tables.
-2. Unity object and CRI cue identity: subresources inside authoritative payloads.
-3. `data_pipeline`: normalization, relationship derivation, and asset catalog generation.
-4. `web_viewer`: static indexes, Vue archive UI, and the scenario player.
+仓库只放代码、数据规则、验证报告和开发文档。**不放**游戏客户端文件、RAW 与 masterdata 原文件、语音、卡面、Spine 模型等大体积媒体；
+少量例外（门户用的小图、测试夹具）由 [二进制与发布策略](web_viewer/notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md) 逐项登记。
 
-`masterdata` defines entities and relationships. Compiled scenarios define story presentation. The UI asset catalog records visual evidence. One layer must not invent missing facts for another.
+| 路径 | 内容 |
+|---|---|
+| `data_pipeline/` | Python：剧情编译、索引生成、资源目录 |
+| `web_viewer/src/` | Vue 3 + PixiJS 7 + Spine 3.8 的网页与剧情播放器 |
+| `web_viewer/readmodels/` | 读模型生成器、客户端与装配验证 |
+| `web_viewer/scripts/` | 生成、审计、发布用的 Node 脚本和各项 verifier |
+| `web_viewer/translation/` | 译文工程（术语、校对、批次） |
+| `web_viewer/docs/`、`web_viewer/notes/` | 开发文档、决策记录、审计报告 |
 
-Organizer-created photo, audio, and scenario exports are compatibility and
-parity references. They are not default identity authorities after the
-RAW/masterdata migration.
+数据流向：RAW（剧情脚本、图片、音频、模型）+ masterdata（谁是哪张卡、哪个活动）→ 离线管道 → 生成的索引、compiled 剧情、读模型 → 浏览器只读这些生成产物。
 
-Important paths:
+## 本地开发
 
-| Path | Purpose |
-| --- | --- |
-| `data_pipeline/` | Scenario compilation and archive index generators |
-| `web_viewer/src/` | Vue application and player source |
-| `web_viewer/public/data/` | Versioned generated indexes and verification reports |
-| `web_viewer/notes/` | Architecture decisions, audits, and regression records |
-| `web_viewer/config/` | Machine-local archive source contract and tracked example |
-| `web_viewer/.analysis/` | Ignored inventory, candidate, derived, and rollback workspace |
-| `web_viewer/public/assets/` | Runtime media; ignored by default with documented small-asset exceptions |
-
-## Local Development
+需要 Node.js 24 和 Python 3。
 
 ```powershell
 git clone https://github.com/windmet/GS_Archive.git
 cd GS_Archive\web_viewer
-npm install
-npm run dev -- --host 127.0.0.1 --port 5174
+npm ci
+npm run dev
 ```
 
-The project verification URL used by the current migration is
-`http://127.0.0.1:5174/`.
+只有代码的检出能跑源码检查，但页面基本没有数据。要看到完整内容，需要自己准备从客户端提取的数据：
+把 `web_viewer/config/archive_sources.example.json` 复制成 `archive_sources.local.json`（已被 gitignore），在里面填本机的 RAW、masterdata 和工作目录路径。
 
-Large media remains outside the repository. Copy
-`web_viewer/config/archive_sources.example.json` to the ignored
-`archive_sources.local.json` and configure the local RAW, masterdata, legacy
-reference, workspace, derived, publish, and optional tool paths there.
+## 检查
 
-Legacy environment variables remain explicit compatibility overrides for
-older tools. They are not the preferred source contract.
-
-Asset synchronization scripts copy only the locally required subset into ignored runtime directories. For example, `data_pipeline/build_ui_asset_catalog.py` can synchronize confirmed unit logos, the brand mark, and manifest-listed event banners from an extracted `assets/resources` root.
-
-## Verification
-
-From `web_viewer/`:
+在 `web_viewer/` 下：
 
 ```powershell
-node scripts/verify-archive-routes.mjs
-npm run verify:archive
-npm run build
+npm run gate:source   # 源码门禁，CI 跑的是同一套
+npm run build:check   # 只编译源码，不复制本地媒体
 ```
 
-`npm run build` copies the current `public/` tree. When a full local media set is mounted and only the Vue source needs checking, use the source-only build used by this project:
+不要直接运行 `vite build` 或 `npm run build` 来检查代码：它会把整个 `public/`（本地语料可达数 GB）复制进输出目录。
+前端改动还要在真实浏览器里看桌面、平板和 390 px 手机宽度。
 
-```powershell
-node --input-type=module -e "import { build } from 'vite'; await build({ configFile: './vite.config.js', configLoader: 'native', publicDir: false })"
-```
+## 文档入口
 
-Frontend changes should also be checked in a real browser at desktop, tablet, and 390 px mobile widths. A DOM image element is not sufficient evidence of a valid asset; verify its natural dimensions and inspect the browser console.
+- [项目地图](web_viewer/docs/PROJECT_MAP.md)：模块分工和数据层次
+- [当前状态](web_viewer/docs/CURRENT_STATE.md)：已完成、未验收、下一步
+- [数据基线](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE.md)：剧情、卡片等数量的核对口径
+<!-- 下面两行由 web_viewer/scripts/verify-current-archive-baseline.mjs 核对，数据变了随基线一起改 -->
+<!-- authoritative-v2-summary collections=4 standalone=1170 artifacts=1199 -->
+<!-- publication-ledger-summary releases=216 stable_logical_ids=1400 -->
+- [开发者 / Agent 起步](web_viewer/docs/AGENT_START_HERE.md)、[Git 工作流](web_viewer/docs/GIT_WORKFLOW.md)
+- [笔记索引](web_viewer/notes/INDEX.md)
 
-## Repository Boundary
+## 反馈
 
-Tracked:
+- 发现 bug、翻译问题或页面故障：[GitHub Issues](https://github.com/windmet/GS_Archive/issues)
+- 邮件：windmet@outlook.com
+- QQ 测试群：1130533021
 
-- Application and pipeline source code.
-- Schemas, normalized relationship rules, and lightweight manifests.
-- Verification output and development documentation.
+## 致谢
 
-Not tracked:
+- 柚子贝汁 P：从最初就一直陪着我，测试每一个版本，也提了很多产品上的建议。
+- shiogi P：六月末七月初项目刚起步时，给了关键的帮助。
+- 参加 10 月内测的各位制作人。
+- Wiki 的维护者们：卡池信息来自 Wiki 的记录。
 
-- IPA files, AssetBundles, ACB archives, or extraction directories.
-- Original RAW and masterdata files.
-- Bulk voice, card art, event media, Spine files, decoded audio, and other
-  reproducible large binary trees.
-- Machine-specific paths, temporary analysis output, and reproducible runtime copies.
+## 许可
 
-Documented exceptions:
+- 本项目自己写的代码和文档：[MIT](LICENSE)。
+- 游戏内容及由它生成的数据：不在许可范围内，不授予任何权利。
+- 同人译文：不适用开源许可；转载请注明出处。
+- 第三方组件按各自许可，全文见 [THIRD_PARTY_NOTICES.txt](web_viewer/THIRD_PARTY_NOTICES.txt)。其中 Spine Runtimes 要求每个把它集成进自己项目的开发者持有 Spine 许可；fork 后自行部署的话需要自己购买。
 
-- approved small portal assets;
-- explicit test fixtures;
-- documentation evidence;
-- small stable promoted assets with source identity, hashes, consumers,
-  rollback evidence, and a governing manifest.
-
-The 2026-07-28 baseline tracked 108 PNG files totalling 26,384,189 bytes. After
-the bounded Extra Story and Song portal batches, the current repository boundary
-is 183 tracked PNG files totalling 49,123,497 bytes. The exact boundary and
-`git add -f` rules are defined in
-[BINARY_AND_PUBLICATION_POLICY_20260728.md](web_viewer/notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md).
-
-The original game, characters, names, artwork, audio, and trademarks belong to their respective rights holders. This repository does not grant permission to redistribute extracted game assets.
-
-## Development Guidance
-
-Start with the stable
-[current archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE.md),
-then the [project map](web_viewer/docs/PROJECT_MAP.md) and
-[notes index](web_viewer/notes/INDEX.md). Historical migration logs remain
-useful evidence, but they do not override the stable current-state entry.
-
-The GitHub repository can be connected to ChatGPT for code and documentation search. That view only reflects committed files; local assets, generated-but-uncommitted data, and the live browser state still require the local development environment.
+详细说明见 [许可评议](web_viewer/docs/LICENSING_20261103.md)。
