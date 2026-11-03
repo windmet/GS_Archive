@@ -25,11 +25,11 @@
 | 2026 年初 | 站长入坑 SideM | 站长自述 | ？个人经历，不需要证据 |
 | 2026-06（之前） | 用 DeepSeek 搓出第一版剧情播放器骨架，还没有 Git | 首个提交的说明写着已排除 `public/assets/`（5 GB），说明提交前代码和语料已经在本地 | ✓ 间接证据 |
 | 2026-06-22 | 首个提交 `ca3a28e1`「Initial commit — SideM Story Viewer」 | Git | ✓ |
-| 2026-06-22 | 首个提交是谁建的 | 提交带 `Co-Authored-By: Claude Sonnet 4.6` | ⚠ 站长回忆「在 Codex 帮助下建立第一个提交」。trailer 说明是 Claude Code 这个工具提交的；它可以接 DeepSeek 等第三方 API，所以和「靠 DeepSeek 跑」不矛盾。需要站长确认当时是不是 Claude Code + DeepSeek API |
+| 2026-06-22 | 首个提交是谁建的 | 提交带 `Co-Authored-By: Claude Sonnet 4.6` | ✓ 站长确认：当时用 Claude Code 接 DeepSeek API，trailer 是工具写的，模型实为 DeepSeek。回忆中的「Codex 帮忙建第一个提交」不成立 |
 | 2026-07-01 | 口型（lipsync）、子模型嘴型修复，拆分 viewer 逻辑 | `23dbba83`、`1800c7bd` 等 10 个提交 | ✓ |
 | 2026-07-03 | Masterdata 进入导航（「7 月初解开数据」） | `e43ebecb` Add masterdata-backed archive navigation | ✓ |
 | 2026-07-13 | 定方向：做资料库与回放器，不复刻客户端和抽卡 | `notes/04_refactor/SEKAI_VIEWER_DIRECTION_GUIDANCE_20260713.md`（7-14 提交） | ✓ |
-| 2026-07-14 | GitHub 仓库 `windmet/GS_Archive` 建立；当天 36 个提交 | `gh repo view` createdAt 2026-07-14 | ✓ 什么时候转公开：？ |
+| 2026-07-14 | GitHub 仓库 `windmet/GS_Archive` 建立；当天 36 个提交 | `gh repo view` createdAt 2026-07-14 | ✓ 转公开日期查不到（事件接口只保留最近 300 条，最早 10-27）。站长说明：当初公开是为了让 GPT 读仓库，后来才知道私有仓库也能读 |
 | 2026-07-18 → 07-23 | PR #1 剧情运行时重构 + 本地化契约，88 个提交 | `gh pr view 1`；分支 `codex/story-localization-contract` | ✓ Codex 时期的直接证据 |
 | 2026-07-23 → 07-29 | PR #2 资源来源迁移到 RAW 与 masterdata，83 个提交 | `gh pr view 2` | ✓ |
 | 2026-07-29 → 08-12 | PR #3–#42：关系目录、发布治理、P1/P2 批次（门禁、账本、strict-v2 集中在这段） | `gh pr list` | ✓ |
@@ -37,7 +37,7 @@
 | 2026-09-08 | 架构重构审计：`App.vue` 2,986 行 | `docs/ARCHITECTURE_REFACTOR_20260908.md`（`611a5efb`）；当天 67 个提交 | ✓ |
 | 2026-09-08 → 09-14 | 大重构（「连跑八九个小时」） | 9-08 有 67 个提交，9-09 有 49 个，9-12 有 44 个，9-13 有 60 个 | ✓ 单次时长无法从 Git 证明 |
 | 2026-09-11 | Codex 交接给 Claude Code | `docs/SIDEM_CLAUDE_CODE_HANDOFF_20260911.md`：「来源：Codex 完整会话导出整理」 | ✓ |
-| 2026-07-01 → 09-14 | `Claude Sonnet 5` trailer 共 37 个提交 | Git trailer | ？这段用的是哪个后端，需要站长回忆 |
+| 2026-07-01 → 09-14 | `Claude Sonnet 5` trailer 共 37 个提交 | Git trailer | ✓ 站长确认：10 月以前带 Claude 署名的提交都是 Claude Code + DeepSeek API。真正用 Claude 模型从 10-05 开始 |
 | 2026-09-13 | 11th LIVE DAY2 当天仍有 60 个提交 | Git | ✓ |
 | 2026-09-20 | 电话界面回到原版竖屏手机框；手机横屏沉浸模式 | `6f67d211` restore phone visuals、`7a3ce176`、`38f8c4b4` | ✓ |
 | 2026-09-23 | PR #43「收口资料馆、剧情运行时与移动端交互」合并，264 个提交 | rev-list | ✓ |
@@ -64,10 +64,21 @@
 | 10,326 份场景 / 31.5 万快照 | 未找到 | ？要复测 |
 | 826 张卡、49 位偶像、16 个组合 | 门户首页统计、Masterdata | ✓ |
 
-## 需要站长补充
+## 站长补充（11-03 已答）
 
-1. 6 月到 7 月初用的是什么工具组合：Claude Code + DeepSeek API？首个提交带 Sonnet 4.6 trailer。
-2. `Claude Sonnet 5` trailer（7-01 至 9-14）对应的是哪段工作。
-3. 仓库从私有转公开的日期。
-4. 「Astra」「Luna」分别指哪个模型或工具，文档里统一写法。
-5. 「两位朋友」是否署名、怎么称呼。
+- 10 月以前带 Claude 署名的提交：Claude Code 接 DeepSeek API。按署名统计模型时，10-05 以前的 Claude 署名一律算 DeepSeek。
+- 仓库转公开：日期不详，原因是想让 GPT 读仓库。
+- 「Astra」= ChatGPT 6.0 Astra；「Luna」= ChatGPT 5.6 Luna（前期为省额度用的轻量模型）。
+- 两位朋友：
+  - **shiogi P**（担当 大河タケル / 都築圭）：最初的数据来源由他提供（公开文档不写具体是什么）。
+  - **楂楂 P**（担当 円城寺道流）：一路陪伴测试，提产品建议。
+
+## 工具时期（按署名和交接文档）
+
+| 时期 | 主力 | 证据 |
+|---|---|---|
+| 6 月 → 7 月中 | Claude Code + DeepSeek API | 首个提交起的 Claude Sonnet 4.6 / 5 署名；站长确认 |
+| 7 月中 → 9-11 | Codex / ChatGPT（5.6 Luna、6.0 Astra） | PR #1 起的 `codex/*` 分支；9-11 交接文档「来源：Codex 完整会话导出」 |
+| 9-11 → | Claude Code 接手交接 | `SIDEM_CLAUDE_CODE_HANDOFF_20260911.md` |
+| 10-05 → | Claude Opus 5.5 / Sonnet 5.5 | 署名首日 10-05 |
+| 翻译 | Gemini（AI Studio）初翻 → GPT、后来 Claude 审查 | 站长自述；翻译批次文档 |
