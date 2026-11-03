@@ -7205,7 +7205,7 @@
     "line": 75,
     "event": "@error",
     "handler": "portraitFailed = true",
-    "template": "<div class=\"overview-portrait-slot\"><span class=\"overview-signature\" aria-hidden=\"true\"></span><img v-if=\"activePortrait && !portraitFailed\" class=\"overview-idol-art\" :src=\"activePortrait.url\" alt=\"\" decoding=\"async\" @error=\"portraitFailed = true\" />",
+    "template": "<div class=\"overview-portrait-slot\"><img v-if=\"activePortrait && !portraitFailed\" class=\"overview-idol-art\" :src=\"activePortrait.url\" alt=\"\" decoding=\"async\" @error=\"portraitFailed = true\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
