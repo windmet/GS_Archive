@@ -100,4 +100,31 @@ for(let number=1;number<=6;number++) {
   if(row.decision==='uncertain') pending++
  }
 }
+const researchFolder=`${root}/voice-research-20261104`
+if(fs.existsSync(`${researchFolder}/receipt.json`)) {
+ const receipt=read(`${researchFolder}/receipt.json`)
+ assert.equal(receipt.schema,'GS-VOICE-EXTERNAL-RESEARCH-V1')
+ assert.equal(receipt.status,'draft');assert.equal(receipt.not_final,true)
+ for(const [name,record] of Object.entries(receipt.files)) {
+  const bytes=fs.readFileSync(`${researchFolder}/${name}`)
+  assert.equal(hash(bytes),record.sha256);assert.equal(bytes.length,record.bytes)
+ }
+ const decisions=read(`${researchFolder}/decisions.json`),legacy=read(`${researchFolder}/legacy-edits.json`)
+ assert.equal(decisions.length,receipt.voice_units);assert.equal(legacy.length,receipt.legacy_units)
+ for(const edit of decisions) {
+  const entry=memory.get(edit.key)
+  assert.equal(hash(edit.source),edit.source_hash)
+  assert.equal(entry.source,edit.source);assert.equal(entry.translation,edit.after)
+  assert.equal(entry.status,'draft');assert.equal(entry.decision,edit.decision)
+  assert.deepEqual(entry.notes,edit.notes)
+ }
+ for(const edit of legacy) {
+  assert.equal(hash(edit.before.source),edit.source_hash)
+  assert.equal(edit.before.source,edit.after.source)
+  assert.equal(edit.before.status,'reviewed');assert.equal(edit.after.status,'draft')
+  assert.deepEqual(memory.get(edit.key),edit.after)
+  assert.equal(published[edit.after.kind][edit.after.field][edit.after.source],edit.after.translation)
+ }
+ console.log(`PASS: external research receipt; ${decisions.length} decisions; ${legacy.length} legacy name corrections preserved and returned to draft`)
+}
 console.log(`PASS: ${imported} source-bound imports; ${reviewed} semantically compared; ${changes} base edits + ${followupChanges} follow-up edits replayed; ${effectiveChanges} current differences; ${pending} uncertain; all remain draft; remaining ${imported-reviewed} import-only`)
