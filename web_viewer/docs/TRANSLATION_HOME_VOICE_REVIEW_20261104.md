@@ -15,11 +15,11 @@
 | 001 | 300 | 全部逐句对照；23 处修订；5 条双关 uncertain；全部 draft |
 | 002 | 300 | 全部逐句对照；初次35处修订中4处自称删减已撤回，现31处差异；无新增 uncertain；全部 draft |
 | 003 | 300 | 全部逐句对照；26处修订；无新增 uncertain；全部 draft |
-| 004 | 300 | 已核对导入一致性，尚未语义校对 |
+| 004 | 300 | 全部逐句对照；24处修订；4条 uncertain；全部 draft |
 | 005 | 300 | 已核对导入一致性，尚未语义校对 |
 | 006 | 19 | 已核对导入一致性，尚未语义校对 |
 
-第 001 批含 card-voice 89 条、home-voice 211 条，覆盖冬马至皮埃尔（皮埃尔跨批，不代表该角色全部校对完毕）。第 002 批含 card-voice 83 条、home-voice 217 条，覆盖皮埃尔后续至隼人开头。第003批含card-voice 78条、home-voice 222条，覆盖隼人后续至卷绪开头。目前累计900条已逐句校对，619条待语义校对。
+第001–004批分别覆盖冬马至皮埃尔、皮埃尔后续至隼人开头、隼人后续至卷绪开头、卷绪后续至涟开头；跨批角色不由单批宣称完成。各批card-voice／home-voice分别为89／211、83／217、78／222、90／210。目前累计1,200条已逐句校对，319条待语义校对。
 
 ## 第 001 批结果
 
@@ -68,6 +68,16 @@
 - 来源回放：1,519条导入，900条语义对照，84处初次编辑及4处追补，当前80处有效差异、5条累计uncertain；TM严格检查21,016条有效、0 orphan；release `672363bc891d571c176dd9e874f785e88c5a6c1ae87f84479d34b41a644710eb`的1,665包校验通过；`git diff --check`通过。
 - Browser：5264春名事务所 → 台词目录搜索“捉人” → 第10句 → 关闭目录，确认“刚才和四季他们玩了捉人游戏。可激烈了！”显示；地址 `/office/023har/?home_cue=3_1_023_09&home_costume=023har_001_00`；截图 `.analysis/home-voice-review/batch003-home-092.png`。
 
+## 第004批结果
+
+- 输入HEAD `b7fc5944`；300条全部对照，24处修订，4条新增uncertain，全部draft。
+- 修正“我也差点被他全吃光”的主客体、阿斯兰喜欢设计的指代、直央对过去晚霞的希望、道流对食欲之秋的表达、涟照明对象的无据补出等问题。
+- 水岛咲的パピッ／パピカワ在本地有17条reviewed先例，包含“啪噼一下”“啪噼可爱”等，本批保留口癖，未按一般语法残留删除。花音、次郎、涟的既定自称保留。
+- 待确认4条：第006条宠物ブブ、第243／244条宠物チャンプ，以及第175条剑玉招式もしかめ。宠物及招式暂保留原名，原稿“布布”“冠军”“莫西卡美”留在before记录中，等待项目定译。数字、英语及制作人宏不变。
+- 完整结果：[edits.json](../translation/studio/general/returns/G-card-lines-20261104-004/edits.json)、[output.edited.json](../translation/studio/general/returns/G-card-lines-20261104-004/output.edited.json)、[editorial-receipt.json](../translation/studio/general/returns/G-card-lines-20261104-004/editorial-receipt.json)。
+- 来源回放：1,200条语义对照，108处初次编辑及4处追补，当前104处差异、9条累计uncertain；TM严格检查21,016条有效、0 orphan；release `87e6bedc45b8ea53fc324cbfbd373eec8cbc0899129c48bc27cc73fbe1215211`的1,665包校验通过；`git diff --check`通过。
+- Browser：5264大河武事务所 → 台词目录搜索“栗子饭” → 第19句 → 关闭目录，确认“我的那份圆城寺先生做的栗子饭，也差点被他全吃光。”正确显示；地址 `/office/038tak/?home_cue=3_1_038_18&home_costume=038tak_002_00`；截图 `.analysis/home-voice-review/batch004-home-250.png`。
+
 ## 验证与边界
 
 - `node scripts/verify-home-voice-editorial.mjs`：逐字节验证 6 批导入回执；原始回传回放 23 处修订；核对现行来源、TM、发布正文；1,519 条均 draft，300 条语义对照，5 条 uncertain。
@@ -80,4 +90,4 @@
 - 页面截图：本工作区 `.analysis/home-voice-review/batch001-home-234.png`。无框架错误覆盖层；观察到两条 Pixi Spine 调用栈警告（Spine.update、set tint）。本轮不把页面日志称为零警告，不认定其是否为既有问题；未做整站、真机或全语音播放验收。
 - 只改翻译数据、记录与独立校验脚本，没有前端代码依赖变化，未运行应用构建、未复制 public 全库、未部署。
 
-复核各批：`node scripts/verify-home-voice-editorial.mjs`。后续按 004 → 006 继续，保留独立回执和批次提交；用户未确认前维持 draft。上方“验证与边界”为第 001 批记录，各后续批次另记实际 release 与页面旅程。
+复核各批：`node scripts/verify-home-voice-editorial.mjs`。后续按005 → 006继续，保留独立回执和批次提交；用户未确认前维持draft。上方“验证与边界”为第001批记录，各后续批次另记实际release与页面旅程。
