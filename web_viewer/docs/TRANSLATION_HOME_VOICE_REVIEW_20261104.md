@@ -14,12 +14,12 @@
 | --- | ---: | --- |
 | 001 | 300 | 全部逐句对照；23 处修订；5 条双关 uncertain；全部 draft |
 | 002 | 300 | 全部逐句对照；初次35处修订中4处自称删减已撤回，现31处差异；无新增 uncertain；全部 draft |
-| 003 | 300 | 已核对导入一致性，尚未语义校对 |
+| 003 | 300 | 全部逐句对照；26处修订；无新增 uncertain；全部 draft |
 | 004 | 300 | 已核对导入一致性，尚未语义校对 |
 | 005 | 300 | 已核对导入一致性，尚未语义校对 |
 | 006 | 19 | 已核对导入一致性，尚未语义校对 |
 
-第 001 批含 card-voice 89 条、home-voice 211 条，覆盖冬马至皮埃尔（皮埃尔跨批，不代表该角色全部校对完毕）。第 002 批含 card-voice 83 条、home-voice 217 条，覆盖皮埃尔后续至隼人开头。目前累计 600 条已逐句校对，919 条待语义校对。
+第 001 批含 card-voice 89 条、home-voice 211 条，覆盖冬马至皮埃尔（皮埃尔跨批，不代表该角色全部校对完毕）。第 002 批含 card-voice 83 条、home-voice 217 条，覆盖皮埃尔后续至隼人开头。第003批含card-voice 78条、home-voice 222条，覆盖隼人后续至卷绪开头。目前累计900条已逐句校对，619条待语义校对。
 
 ## 第 001 批结果
 
@@ -58,6 +58,16 @@
 - 增加follow-up回放校验：原回执 → 追补回执哈希链 → 精确before/after → 当前TM和发布正文。严格TM、来源回放、1,665包release校验通过；追补release为 `581d6bc32729f3254ff3bde13a09fa459005576b72409b3f7ccc2e72252ce7c2`。
 - Browser：5264猫柳事务所 → 台词目录查找“吾辈是在纠结” → 第8句 → 关闭目录，确认回填译文实际显示；地址 `/office/017kir/?home_cue=3_1_017_07&home_costume=017kir_001_00`，截图 `.analysis/home-voice-review/kirio-self-reference-restored.png`。
 
+## 第003批结果
+
+- 输入HEAD `c4bd614e`；300条全部对照，26处修订，无新增疑义，全部draft。
+- 鬼ごっこ改为“捉人游戏”；覇道改为“称霸之路”；日语手首、足首、首筋的共同字为“首”，纠正把中文手腕、脚踝归为带“颈”字的错误；修正敷衍工作、过往努力、替母亲做发型等关系与时态。
+- 阿斯兰的“吾”、四季的Mega／Hyper及旬亲等既定口吻保留，不采用显式代词数量门禁。
+- 第028条“榊女士”保留：旧审B014 [batch-map](../translation/studio/reviews/B014-idol-story-r33-edited-20261008/batch-map.json) T000045原文明示她是夏来的祖母，T000046说明其养育旬的关系；[既有修订记录](../translation/studio/reviews/B014-idol-story-r33-edited-20261008/edits.json)已由“榊先生”修正为“榊女士”，本批不重新猜定性别或称呼。
+- 完整结果：[edits.json](../translation/studio/general/returns/G-card-lines-20261104-003/edits.json)、[output.edited.json](../translation/studio/general/returns/G-card-lines-20261104-003/output.edited.json)、[editorial-receipt.json](../translation/studio/general/returns/G-card-lines-20261104-003/editorial-receipt.json)。
+- 来源回放：1,519条导入，900条语义对照，84处初次编辑及4处追补，当前80处有效差异、5条累计uncertain；TM严格检查21,016条有效、0 orphan；release `672363bc891d571c176dd9e874f785e88c5a6c1ae87f84479d34b41a644710eb`的1,665包校验通过；`git diff --check`通过。
+- Browser：5264春名事务所 → 台词目录搜索“捉人” → 第10句 → 关闭目录，确认“刚才和四季他们玩了捉人游戏。可激烈了！”显示；地址 `/office/023har/?home_cue=3_1_023_09&home_costume=023har_001_00`；截图 `.analysis/home-voice-review/batch003-home-092.png`。
+
 ## 验证与边界
 
 - `node scripts/verify-home-voice-editorial.mjs`：逐字节验证 6 批导入回执；原始回传回放 23 处修订；核对现行来源、TM、发布正文；1,519 条均 draft，300 条语义对照，5 条 uncertain。
@@ -70,4 +80,4 @@
 - 页面截图：本工作区 `.analysis/home-voice-review/batch001-home-234.png`。无框架错误覆盖层；观察到两条 Pixi Spine 调用栈警告（Spine.update、set tint）。本轮不把页面日志称为零警告，不认定其是否为既有问题；未做整站、真机或全语音播放验收。
 - 只改翻译数据、记录与独立校验脚本，没有前端代码依赖变化，未运行应用构建、未复制 public 全库、未部署。
 
-复核各批：`node scripts/verify-home-voice-editorial.mjs`。后续按 003 → 006 继续，保留独立回执和批次提交；用户未确认前维持 draft。上方“验证与边界”为第 001 批记录，各后续批次另记实际 release 与页面旅程。
+复核各批：`node scripts/verify-home-voice-editorial.mjs`。后续按 004 → 006 继续，保留独立回执和批次提交；用户未确认前维持 draft。上方“验证与边界”为第 001 批记录，各后续批次另记实际 release 与页面旅程。
