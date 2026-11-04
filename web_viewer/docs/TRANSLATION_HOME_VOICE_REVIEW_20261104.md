@@ -16,10 +16,10 @@
 | 002 | 300 | 全部逐句对照；初次35处修订中4处自称删减已撤回，现31处差异；无新增 uncertain；全部 draft |
 | 003 | 300 | 全部逐句对照；26处修订；无新增 uncertain；全部 draft |
 | 004 | 300 | 全部逐句对照；24处修订；4条 uncertain；全部 draft |
-| 005 | 300 | 已核对导入一致性，尚未语义校对 |
+| 005 | 300 | 全部逐句对照；57处修订；1条地点定译 uncertain；全部 draft |
 | 006 | 19 | 已核对导入一致性，尚未语义校对 |
 
-第001–004批分别覆盖冬马至皮埃尔、皮埃尔后续至隼人开头、隼人后续至卷绪开头、卷绪后续至涟开头；跨批角色不由单批宣称完成。各批card-voice／home-voice分别为89／211、83／217、78／222、90／210。目前累计1,200条已逐句校对，319条待语义校对。
+第001–005批分别覆盖冬马至皮埃尔、皮埃尔后续至隼人开头、隼人后续至卷绪开头、卷绪后续至涟开头、涟后续至贤的部分事务所语音；跨批角色不由单批宣称完成。前四批card-voice／home-voice分别为89／211、83／217、78／222、90／210；005为card-voice 75、home-voice 218、office-voice 7。目前累计1,500条已逐句校对，19条待语义校对。
 
 ## 第 001 批结果
 
@@ -78,6 +78,18 @@
 - 来源回放：1,200条语义对照，108处初次编辑及4处追补，当前104处差异、9条累计uncertain；TM严格检查21,016条有效、0 orphan；release `87e6bedc45b8ea53fc324cbfbd373eec8cbc0899129c48bc27cc73fbe1215211`的1,665包校验通过；`git diff --check`通过。
 - Browser：5264大河武事务所 → 台词目录搜索“栗子饭” → 第19句 → 关闭目录，确认“我的那份圆城寺先生做的栗子饭，也差点被他全吃光。”正确显示；地址 `/office/038tak/?home_cue=3_1_038_18&home_costume=038tak_002_00`；截图 `.analysis/home-voice-review/batch004-home-250.png`。
 
+## 第005批结果
+
+- 输入HEAD `c6be24b2`；300条全部对照，57处修订，其中33处仅规范九十九一希句首省略号；1条新增uncertain；全部draft。
+- 修正涟把“卖拉面的”人物绰号机械套作店铺、九十九的お化け像误作雕像、雨彦お前さん被额外译成贬义的“你这家伙”、想乐的商品POP被无据限定成手写牌等问题。
+- 第030条秋月凉的“嘎哦哦哦嗯”在B010 T000262、B016 T000373有先例，保留；第028条原文连续两次秋月涼的自我纠正也保留，不因文字相同而改写笑点。大吾的俺、Boss以及百百人的P酱等保持现行译法。
+- 第202条鱼名：以[新潟市水族馆](https://www.marinepia.or.jp/picturebook/fish/entry-11243.html)的日名→学名，再用[台湾鱼类数据库](https://fishdb.sinica.edu.tw/taxon/381978-fishdb)的同一学名→中文名，核定キュウセン为“花鳍副海猪鱼”，替换初稿“九线隆头鱼”。未把鱼类事实之外的信息添加进台词。
+- 第188条戻りガツオ按“南返的鲣鱼”译，参照[农林水产省和食资料](https://www.maff.go.jp/j/keikaku/syokubunka/culture/attach/pdf/index-183.pdf)的秋季南下说明。该PDF整页打开失败，本轮使用搜索索引中的官方片段，不声称完整读过PDF。
+- 第207条ドッキンガム広場保留当前“多金汉广场”候选并标uncertain：旧reviewed译文另有“道金汉姆广场”，需用户统一；不覆盖旧reviewed条目。
+- 完整结果：[edits.json](../translation/studio/general/returns/G-card-lines-20261104-005/edits.json)、[output.edited.json](../translation/studio/general/returns/G-card-lines-20261104-005/output.edited.json)、[editorial-receipt.json](../translation/studio/general/returns/G-card-lines-20261104-005/editorial-receipt.json)及[外部来源核对记录](../translation/studio/general/returns/G-card-lines-20261104-005/reference-checks.json)。
+- 来源回放：1,500条语义对照，165处初次编辑及4处追补，当前161处差异、10条累计uncertain；TM严格检查21,016条有效、0 orphan；release `7b73b4640f19c69a79651bdbdb71c2eb32c4479b663ad02f007ab1ef48a0659b`的1,665包校验通过；`git diff --check`通过。
+- Browser：5264克里斯事务所 → 台词目录查找“花鳍” → 第7句 → 关闭目录，确认“像花鳍副海猪鱼那样”正确显示；地址 `/office/046chr/?home_cue=3_1_046_06&home_costume=046chr_001_00`；截图 `.analysis/home-voice-review/batch005-home-202.png`。
+
 ## 验证与边界
 
 - `node scripts/verify-home-voice-editorial.mjs`：逐字节验证 6 批导入回执；原始回传回放 23 处修订；核对现行来源、TM、发布正文；1,519 条均 draft，300 条语义对照，5 条 uncertain。
@@ -90,4 +102,4 @@
 - 页面截图：本工作区 `.analysis/home-voice-review/batch001-home-234.png`。无框架错误覆盖层；观察到两条 Pixi Spine 调用栈警告（Spine.update、set tint）。本轮不把页面日志称为零警告，不认定其是否为既有问题；未做整站、真机或全语音播放验收。
 - 只改翻译数据、记录与独立校验脚本，没有前端代码依赖变化，未运行应用构建、未复制 public 全库、未部署。
 
-复核各批：`node scripts/verify-home-voice-editorial.mjs`。后续按005 → 006继续，保留独立回执和批次提交；用户未确认前维持draft。上方“验证与边界”为第001批记录，各后续批次另记实际release与页面旅程。
+复核各批：`node scripts/verify-home-voice-editorial.mjs`。后续完成006及跨批地名疑义登记，保留独立回执和批次提交；用户未确认前维持draft。上方“验证与边界”为第001批记录，各后续批次另记实际release与页面旅程。
