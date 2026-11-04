@@ -1,5 +1,7 @@
 # 首页及演出语音校对 · 2026-11-04
 
+本轮6批共1,519条已全部逐句校对。相对初译，163条译文有改动，另7条仅登记疑义，共170条有文字或决定差异；其中15条等待定译／中文双关决策。全部保持draft，未执行整批review晋升，也未部署。逐项清单见[最终复核清单](../translation/studio/general/returns/voice-review-inventory-20261104.json)。
+
 ## 输入与范围
 
 - 工作区：`E:/Web_build/GS_Archive_Domain_Work/i18n-20261104-home-voice/web_viewer`。
@@ -13,13 +15,13 @@
 | 批次 G-card-lines-20261104- | 条数 | 当前工作 |
 | --- | ---: | --- |
 | 001 | 300 | 全部逐句对照；23 处修订；5 条双关 uncertain；全部 draft |
-| 002 | 300 | 全部逐句对照；初次35处修订中4处自称删减已撤回，现31处差异；无新增 uncertain；全部 draft |
-| 003 | 300 | 全部逐句对照；26处修订；无新增 uncertain；全部 draft |
+| 002 | 300 | 全部逐句对照；31条译文修订＋1条地名疑义，共32处差异；全部 draft |
+| 003 | 300 | 全部逐句对照；26条译文修订＋4条地名疑义，共30处差异；全部 draft |
 | 004 | 300 | 全部逐句对照；24处修订；4条 uncertain；全部 draft |
 | 005 | 300 | 全部逐句对照；57处修订；1条地点定译 uncertain；全部 draft |
-| 006 | 19 | 已核对导入一致性，尚未语义校对 |
+| 006 | 19 | 全部逐句对照；4条译文修订；无新增 uncertain；全部 draft |
 
-第001–005批分别覆盖冬马至皮埃尔、皮埃尔后续至隼人开头、隼人后续至卷绪开头、卷绪后续至涟开头、涟后续至贤的部分事务所语音；跨批角色不由单批宣称完成。前四批card-voice／home-voice分别为89／211、83／217、78／222、90／210；005为card-voice 75、home-voice 218、office-voice 7。目前累计1,500条已逐句校对，19条待语义校对。
+第001–005批分别覆盖冬马至皮埃尔、皮埃尔后续至隼人开头、隼人后续至卷绪开头、卷绪后续至涟开头、涟后续至贤的部分事务所语音；006为贤的剩余4条office-voice及社长15条unused-voice。前四批card-voice／home-voice分别为89／211、83／217、78／222、90／210；005为card-voice 75、home-voice 218、office-voice 7。六批累计1,519条全部完成语义对照。
 
 ## 第 001 批结果
 
@@ -90,7 +92,42 @@
 - 来源回放：1,500条语义对照，165处初次编辑及4处追补，当前161处差异、10条累计uncertain；TM严格检查21,016条有效、0 orphan；release `7b73b4640f19c69a79651bdbdb71c2eb32c4479b663ad02f007ab1ef48a0659b`的1,665包校验通过；`git diff --check`通过。
 - Browser：5264克里斯事务所 → 台词目录查找“花鳍” → 第7句 → 关闭目录，确认“像花鳍副海猪鱼那样”正确显示；地址 `/office/046chr/?home_cue=3_1_046_06&home_costume=046chr_001_00`；截图 `.analysis/home-voice-review/batch005-home-202.png`。
 
-## 验证与边界
+## 第006批及跨批收口
+
+- 输入HEAD `2fea06b7`；第006批19条全部对照，4处中文句法与搭配修订，无新增疑义，全部draft。
+- 完整结果：[edits.json](../translation/studio/general/returns/G-card-lines-20261104-006/edits.json)、[output.edited.json](../translation/studio/general/returns/G-card-lines-20261104-006/output.edited.json)、[editorial-receipt.json](../translation/studio/general/returns/G-card-lines-20261104-006/editorial-receipt.json)。
+- 两组地名冲突追加至[002追补](../translation/studio/general/returns/G-card-lines-20261104-002/followups/place-name-conflicts-20261104/receipt.json)、[003追补](../translation/studio/general/returns/G-card-lines-20261104-003/followups/place-name-conflicts-20261104/receipt.json)，各附原有reviewed候选的来源、哈希和上下文；没有反向改写旧reviewed条目，也没有改变本轮地点候选正文。
+- Browser：5264事务所 → “事务所语音” → 事务所 → 齋藤，确认“精神饱满地打声招呼再开始工作”“感谢你在工作中的付出”“尽情畅谈一番偶像论”“浑身都充满活力”4处均显示。地址 `/unused/?voices=saito`，截图 `.analysis/home-voice-review/batch006-other-voices-013.png`；本次页面error级日志为空，不把此前Spine警告称为已修复。
+
+## 待确认清单
+
+下表共10个决策项，涉及15条TM记录。完整日文、当前候选、疑义说明、说话人和使用位置都在[最终复核清单](../translation/studio/general/returns/voice-review-inventory-20261104.json)的pending数组中。
+
+| 决策项 | 批次／编号 | 当前处理 |
+| --- | --- | --- |
+| 冬／for you双关 | 001／108 | 保留冬日送礼字面，不生造“冬给you” |
+| 春／しゅんしゅん双关 | 001／109 | 保留水壶声与春天场景 |
+| かっこいい／コーヒー双关 | 001／117 | 保留喝咖啡与自夸，不生造“帅咖啡” |
+| ショコラ／そこら双关 | 001／126 | 保留巧克力与那边的字面，不补“随手拿” |
+| 秋冬／周到双关 | 001／127 | 保留秋季准备过冬与有备无患的字面 |
+| ドッキンガム広場 | 002／046；003／132、163；005／207 | 当前候选“多金汉广场”；旧reviewed另有“道金汉姆广场” |
+| アソビーロード | 003／194、223 | 当前候选“游乐之路”；旧reviewed另有“阿索比路” |
+| 宠物ブブ | 004／006 | 暂保留ブブ；初稿“布布”待确认 |
+| 宠物チャンプ | 004／243、244 | 暂保留チャンプ；初稿“冠军”待确认 |
+| 剑玉招式もしかめ | 004／175 | 暂保留もしかめ；未采纳无项目依据的“莫西卡美” |
+
+## 最终验证
+
+- `node scripts/verify-home-voice-editorial.mjs`：1,519条导入与1,519条语义对照均覆盖；169处初次编辑＋9处追补可精确回放；170条当前差异、15条uncertain、0条仅导入未校对。6份原始回传及导入回执、6份编辑回执、3份追补回执及其哈希链均通过，原始证据保留。
+- `node scripts/general-translation-workflow.mjs verify`：21,016条真实TM有效、0 orphan。
+- `npm run verify:general-translation-workflow`：通用流程、Markdown、资源审计三组回归均通过，覆盖23,619字段／92批；夹具中的1条无效TM跳过警告为预期注入，不能据此认定真实TM无效。
+- `node scripts/verify-card-line-translation.mjs`、`node scripts/verify-character-line-text.mjs`通过：5,750条来源绑定台词及发布分片、保护槽还原、语言选择、命名／未命名制作人、查询失败重试等合同。HTTP 503为测试主动注入的失败，不是Browser实际请求失败。
+- `node scripts/verify-translation-release.mjs`：最终源侧译文release `afcd9faaf961bbf4e47d57e0ddfd8712ee91cb04018ddd782ebb74c84bbc0472`，1,665个发布包逐字节匹配。这是本地发布包指纹，不是生产部署证据。
+- Browser按批抽查实际页面，路径和截图已逐批记录；未声称1,519条全部逐条播放、真机验收或完整舞台无警告。
+- 本轮源码基线最终fetch仍未落后origin/master；没有前端代码依赖变化，未机械运行应用构建、未拷贝public全库。独立回放校验脚本与翻译相关回归通过。
+- `git diff --check`及文档本地链接检查通过；按明确路径提交，保留工作区无关内容。未创建PR、未合并master、未部署。
+
+## 第001批验证与边界（历史记录）
 
 - `node scripts/verify-home-voice-editorial.mjs`：逐字节验证 6 批导入回执；原始回传回放 23 处修订；核对现行来源、TM、发布正文；1,519 条均 draft，300 条语义对照，5 条 uncertain。
 - `node scripts/general-translation-workflow.mjs verify`：21,016 条 TM 有效，0 orphan。
@@ -102,4 +139,4 @@
 - 页面截图：本工作区 `.analysis/home-voice-review/batch001-home-234.png`。无框架错误覆盖层；观察到两条 Pixi Spine 调用栈警告（Spine.update、set tint）。本轮不把页面日志称为零警告，不认定其是否为既有问题；未做整站、真机或全语音播放验收。
 - 只改翻译数据、记录与独立校验脚本，没有前端代码依赖变化，未运行应用构建、未复制 public 全库、未部署。
 
-复核各批：`node scripts/verify-home-voice-editorial.mjs`。后续完成006及跨批地名疑义登记，保留独立回执和批次提交；用户未确认前维持draft。上方“验证与边界”为第001批记录，各后续批次另记实际release与页面旅程。
+复核各批：`node scripts/verify-home-voice-editorial.mjs`。本轮逐句校对及证据收口完成；后续按上方10个决策项处理用户定译，不把模型校对或个别名词决定晋升为整批人工reviewed。
