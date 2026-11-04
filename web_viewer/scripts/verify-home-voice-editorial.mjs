@@ -13,7 +13,7 @@ const root='translation/studio/general/returns'
 const memory=readMemory(process.cwd()),units=sourceUnits(process.cwd())
 const published=read('public/translations/zh-CN/archive-general/card-lines.json').entries
 const seen=new Set()
-let imported=0,reviewed=0,changes=0,pending=0
+let imported=0,reviewed=0,changes=0,pending=0,followupChanges=0,effectiveChanges=0
 for(let number=1;number<=6;number++) {
  const id=`G-card-lines-20261104-${String(number).padStart(3,'0')}`,directory=`${root}/${id}`
  const receipt=read(`${directory}/import-receipt.json`)
@@ -54,6 +54,40 @@ for(let number=1;number<=6;number++) {
   assert.deepEqual(editorial.uncertain,replay.entries.flatMap((r,i)=>r.decision==='uncertain'?[String(i+1).padStart(3,'0')]:[]))
   reviewed+=editorial.semantic_units;changes+=edits.length
  }
+ const followupIndex=`${directory}/followups/index.json`
+ if(fs.existsSync(followupIndex)) {
+  assert(fs.existsSync(`${directory}/editorial-receipt.json`),'Follow-up requires an editorial base')
+  let previousHash=hash(fs.readFileSync(`${directory}/editorial-receipt.json`))
+  const stages=read(followupIndex),names=new Set()
+  assert.equal(stages.schema,'GS-VOICE-FOLLOWUP-INDEX-V1');assert.equal(stages.batch_id,id)
+  for(const reference of stages.stages) {
+   assert(/^[a-z0-9-]+$/.test(reference.directory));assert(!names.has(reference.directory));names.add(reference.directory)
+   const folder=`${directory}/followups/${reference.directory}`
+   const receiptBytes=fs.readFileSync(`${folder}/receipt.json`),stage=read(`${folder}/receipt.json`)
+   assert.equal(hash(receiptBytes),reference.receipt_sha256)
+   assert.equal(stage.schema,'GS-VOICE-EDITORIAL-FOLLOWUP-V1');assert.equal(stage.batch_id,id)
+   assert.equal(stage.previous_receipt_sha256,previousHash)
+   assert.equal(stage.status,'draft');assert.equal(stage.not_final,true)
+   for(const [name,record] of Object.entries(stage.files)) {
+    const bytes=fs.readFileSync(`${folder}/${name}`)
+    assert.equal(hash(bytes),record.sha256);assert.equal(bytes.length,record.bytes)
+   }
+   const edits=read(`${folder}/edits.json`),touched=new Set()
+   assert.equal(edits.length,stage.edits)
+   for(const edit of edits) {
+    assert(/^\d{3}$/.test(edit.rid));assert(!touched.has(edit.rid));touched.add(edit.rid)
+    const row=replay.entries[Number(edit.rid)-1]
+    assert.equal(row.key,edit.key);assert.equal(row.source,edit.source);assert.equal(row.source_hash,edit.source_hash)
+    assert.equal(row.translation,edit.before);assert.equal(row.decision,edit.before_decision);assert.deepEqual(row.notes,edit.before_notes)
+    assert(edit.reasons.length>0&&edit.reasons.every(reason=>reason.trim()))
+    Object.assign(row,{translation:edit.after,decision:edit.decision,notes:edit.notes})
+   }
+   assert.deepEqual(replay,read(`${folder}/output.edited.json`))
+   followupChanges+=edits.length;previousHash=reference.receipt_sha256
+  }
+ }
+ const baseEntries=read(`${directory}/output.imported.json`).entries
+ effectiveChanges+=replay.entries.filter((row,i)=>row.translation!==baseEntries[i].translation||row.decision!==baseEntries[i].decision||JSON.stringify(row.notes)!==JSON.stringify(baseEntries[i].notes)).length
  validateGeneralReturn(batch,replay,units)
  for(let i=0;i<replay.entries.length;i++) {
   const row=replay.entries[i],source=batch.rows[i],entry=memory.get(row.key)
@@ -66,4 +100,4 @@ for(let number=1;number<=6;number++) {
   if(row.decision==='uncertain') pending++
  }
 }
-console.log(`PASS: ${imported} source-bound imports; ${reviewed} semantically compared; ${changes} replayed edits; ${pending} uncertain; all remain draft; remaining ${imported-reviewed} import-only`)
+console.log(`PASS: ${imported} source-bound imports; ${reviewed} semantically compared; ${changes} base edits + ${followupChanges} follow-up edits replayed; ${effectiveChanges} current differences; ${pending} uncertain; all remain draft; remaining ${imported-reviewed} import-only`)

@@ -13,7 +13,7 @@
 | 批次 G-card-lines-20261104- | 条数 | 当前工作 |
 | --- | ---: | --- |
 | 001 | 300 | 全部逐句对照；23 处修订；5 条双关 uncertain；全部 draft |
-| 002 | 300 | 全部逐句对照；35 处修订；无新增 uncertain；全部 draft |
+| 002 | 300 | 全部逐句对照；初次35处修订中4处自称删减已撤回，现31处差异；无新增 uncertain；全部 draft |
 | 003 | 300 | 已核对导入一致性，尚未语义校对 |
 | 004 | 300 | 已核对导入一致性，尚未语义校对 |
 | 005 | 300 | 已核对导入一致性，尚未语义校对 |
@@ -43,11 +43,20 @@
 
 - 300 条全部对照，35 处修订，没有新增疑义；维持 draft。
 - 修正同款围巾误作“一对”、知恵の輪无据限定“九连环”、跑足时间误作“跑满全场”、单板滑雪误作器材、屋台误限定为小吃摊等问题。
-- 桐生仅在原文ワガハイ的对应处保留“吾辈”，撤去额外添加或重复的特殊自称；鸟鸣使用中文拟声，吃冷食的きーん按突发刺痛处理。
+- 鸟鸣使用中文拟声，吃冷食的きーん按突发刺痛处理。初次对“吾辈”的4处删减已在下方追补阶段撤回，不再作为有效纠错。
 - 九郎不使用未经政策许可的“在下”；野点译为露天茶会；保留先生、君、酱和制作人保护槽。
 - 完整结果及理由：[edits.json](../translation/studio/general/returns/G-card-lines-20261104-002/edits.json)、[output.edited.json](../translation/studio/general/returns/G-card-lines-20261104-002/output.edited.json)、[editorial-receipt.json](../translation/studio/general/returns/G-card-lines-20261104-002/editorial-receipt.json)。
 - 验证：editorial 回放为 1,519 条导入、600 条语义对照、58 处累计修改、5 条累计 uncertain；TM 严格检查 21,016 条有效、0 orphan；release `d397b19cda1c8532ee60b3a4e953ddb0cde63653e205bd0c9e8001f1b9cb794b` 的 1,665 包验证通过；`git diff --check` 通过。
 - Browser：复用进程命令行已确认归属本工作区的 5264 服务，进入苍井享介事务所 → 台词目录搜索“解环” → 第 5 句 → 关闭目录，确认对白显示“解环玩具很有意思哦。没那么容易解开，反而会燃起斗志，不知不觉就玩上瘾了。”；实际地址 `/office/013kys/?home_cue=3_1_013_04&home_costume=013kys_002_00`。截图 `.analysis/home-voice-review/batch002-home-096.png`，页面仍观察到 Spine.update、set tint 两条警告；无框架错误覆盖层。
+
+### 猫柳自称追补
+
+用户提醒猫柳的设定自称为“吾辈”后，在 HEAD `0e4d3949` 重新核查：本批猫柳34条，日文10处明示ワガハイ均保留；初稿14处吾辈被机械缩减为10处。194、216属于省略主语的自然补译，209、217属于中文重复程度的选择，不能据显式代词词数认定错误。现有来源绑定的 reviewed 旧译也有9条省略主语但补出吾辈的先例。
+
+- 恢复194、209、216、217的原稿自称；初次35处修改及原回执不改写，追加 [follow-up回执](../translation/studio/general/returns/G-card-lines-20261104-002/followups/kirio-self-reference-20261104/receipt.json) 和逐项回填记录。002现有31处差异，001–002累计54处差异、5条疑义，仍为draft。
+- 将“省略主语时是否自然需要补出”与“自称是否符合角色”分开判断，不把每个ワガハイ对应一个吾辈当作词数门禁；不修改被旧回执哈希绑定的政策文件。
+- 增加follow-up回放校验：原回执 → 追补回执哈希链 → 精确before/after → 当前TM和发布正文。严格TM、来源回放、1,665包release校验通过；追补release为 `581d6bc32729f3254ff3bde13a09fa459005576b72409b3f7ccc2e72252ce7c2`。
+- Browser：5264猫柳事务所 → 台词目录查找“吾辈是在纠结” → 第8句 → 关闭目录，确认回填译文实际显示；地址 `/office/017kir/?home_cue=3_1_017_07&home_costume=017kir_001_00`，截图 `.analysis/home-voice-review/kirio-self-reference-restored.png`。
 
 ## 验证与边界
 
