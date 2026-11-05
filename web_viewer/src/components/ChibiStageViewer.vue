@@ -139,8 +139,9 @@
       <div class="header-divider" aria-hidden="true"></div>
       <div class="stage-header-title">
         <h1>{{ isSpecialSingle ? '社长特别演出' : '2D 舞台' }}</h1>
-        <!-- The title row names the page; the line under it names what is on stage: the song, then on wide screens its arrangement. -->
-        <p v-if="selectedSong"><span>{{ selectedSong.title }}</span><span v-if="headerArrangement" class="stage-header-arrangement"> · {{ headerArrangement }}</span></p>
+        <!-- The title row names the page; the line under it names what is on stage: the song, then its arrangement.
+             A song with several arrangements makes that a pill, so 组合版 / 单人中心 are found from the stage itself. -->
+        <p v-if="selectedSong"><span class="stage-header-song">{{ selectedSong.title }}</span><button v-if="headerArrangement" class="stage-header-arrangement" type="button" aria-haspopup="dialog" :aria-label="`切换编排，当前 ${headerArrangement.label}，共 ${headerArrangement.count} 种`" :disabled="booting" @click="openArrangement"><span>{{ headerArrangement.label }}</span><small>{{ headerArrangement.count }} 种</small><ChevronDown :size="14" aria-hidden="true" /></button></p>
       </div>
       <button class="stage-icon-action stage-header-help" type="button" aria-label="快捷键与操作帮助" @click="helpOpen = true"><CircleHelp :size="19" /></button>
       <!-- 更多: settings that are set once (高级设置); on phones also help and the archive language, so the bar keeps back, title, 更多. -->
@@ -237,7 +238,7 @@
         </nav>
         <div class="inspector-scroll" :class="{ 'is-song-panel': panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup') }">
           <section v-show="panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup')" :id="`${inspectorTitleId}-song`" class="control-section panel-section song-section">
-            <ChibiSongPicker :songs="songs" :song-directory="songDirectory" :selected-song-id="selectedSongId" :disabled="booting" @select-song="selectStageScript">
+            <ChibiSongPicker ref="songPickerRef" :songs="songs" :song-directory="songDirectory" :selected-song-id="selectedSongId" :disabled="booting" @select-song="selectStageScript">
               <template #current-actions><button v-if="stageVocalAvailable" class="stage-audio-action" type="button" :class="{ enabled: stageVocalEnabled }" aria-label="演唱音源设置" :title="stageVocalEnabled ? stageVocalToggleLabel : '原曲音源 · 可切换编成声部'" @click="vocalSettingsOpen = true"><Music2 :size="18" /></button></template>
             </ChibiSongPicker>
           </section>
@@ -560,6 +561,7 @@ import GsTabs from './gs/GsTabs.vue'
 import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
+  ChevronDown,
   CircleAlert,
   CircleHelp,
   Ellipsis,
@@ -1158,9 +1160,17 @@ function closeMoreOnLeave(event) { if (!event.currentTarget.contains(event.relat
 // The arrangement is named as the 曲目 page names it; a song with one arrangement shows only its title.
 const stageSongLibrary = computed(() => buildStageSongLibrary(songs.value, props.songDirectory))
 const headerArrangement = computed(() => {
-  const group = findStageSongGroup(stageSongLibrary.value, selectedSongId.value)
-  return group?.versions.length > 1 ? group.versions.find(version => version.id === selectedSongId.value)?.label || '' : ''
+  const group = findStageSongGroup(stageSongLibrary.value, selectedSongId.value),
+    label = group?.versions.length > 1 ? group.versions.find(version => version.id === selectedSongId.value)?.label : ''
+  return label ? { label, count: group.versions.length } : null
 })
+const songPickerRef = ref(null)
+// The picker lives on the 曲目 tab; show it first so its sheet or inline list can open.
+async function openArrangement() {
+  panelTab.value = 'song'
+  await nextTick()
+  songPickerRef.value?.openArrangement()
+}
 // The rail marks this position with C; it is the same 1st performer slot the Center line follows.
 const centerStagePosition = computed(() => stagePositionForPerformerSlot(1))
 const oneshotCenterIdolCode = computed(() => {
@@ -4373,7 +4383,16 @@ function formatTime(milliseconds) {
   background: var(--gs-chrome);
 }
 .stage-header h1 { margin: 0; color: var(--gs-surface); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.stage-header p { margin: 2px 0 0; overflow: hidden; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
+.stage-header p { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; margin: 2px 0 0; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); white-space: nowrap; }
+.stage-header-song { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* 编排 pill: outlined on the dark bar; the hit area reaches past its 24px outline to a touch target. */
+.stage-header-arrangement { position: relative; display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-1); max-width: 60%; height: 24px; padding: 0 var(--gs-space-2) 0 var(--gs-space-3); border: 1px solid color-mix(in srgb, var(--gs-chrome-ink) 45%, transparent); border-radius: var(--gs-radius-pill); background: transparent; color: var(--gs-surface); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); cursor: pointer; }
+.stage-header-arrangement::after { content: ''; position: absolute; inset: -10px -4px; }
+.stage-header-arrangement > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.stage-header-arrangement > small { color: var(--gs-chrome-ink); font-size: inherit; font-weight: var(--gs-weight-regular); }
+.stage-header-arrangement:hover:not(:disabled) { border-color: var(--gs-chrome-ink); }
+.stage-header-arrangement:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.stage-header-arrangement:disabled { opacity: .6; cursor: default; }
 .stage-more { position: relative; flex: none; }
 .stage-more-menu { position: absolute; z-index: 30; top: calc(100% + 4px); right: 0; display: grid; min-width: 200px; padding: 6px; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); color: var(--gs-ink); }
 .stage-more-menu > button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
@@ -4639,7 +4658,6 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
   .stage-header { padding-right: max(12px, var(--stage-safe-right)); padding-left: max(12px, var(--stage-safe-left)); gap: 8px; }
   .stage-header h1 { font-size: 15px; }
   .stage-header p { font-size: var(--gs-text-meta); }
-  .stage-header-arrangement { display: none; }
   .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 0; padding: 0 var(--stage-safe-right) var(--stage-safe-bottom) var(--stage-safe-left); }
   .stage-inspector { border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); box-shadow: var(--gs-shadow-float); }
   .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 150px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
