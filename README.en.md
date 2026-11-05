@@ -6,6 +6,7 @@ An unofficial archive of *THE IDOLM@STER SideM GROWING STARS* (in service 2021-1
 
 The site collects the stories, phone calls and chats, cards, songs, events and gashas that were published in the game,
 with Chinese translations, a text reader and a replay player for the stories, and web rebuilds of the charts, the 2D live stage and the photo studio.
+The Chinese translations are machine translations: mainly Gemini 3.8 Flash, with GPT 6.1 Sol, Claude Sonnet 5.5 and Claude Opus 5.5 reviewing the whole text and checking proper nouns.
 The site itself is in Chinese; untranslated passages fall back to the Japanese original, and the reader can switch to original or bilingual text at any time.
 
 ## Disclaimer
@@ -60,6 +61,6 @@ Bugs, translation issues and broken pages: [GitHub Issues](https://github.com/wi
 
 - Code and documentation written for this project: [MIT](LICENSE).
 - Game content and data derived from it: excluded; no rights are granted.
-- Fan translations: not under an open license; credit the source when quoting them.
+- The site's translations: not under an open license; credit the source when quoting them.
 - Third-party components keep their own licenses; see [THIRD_PARTY_NOTICES.txt](web_viewer/THIRD_PARTY_NOTICES.txt).
   The Spine Runtimes require every developer who integrates them to hold a Spine license, so a fork that deploys its own copy needs its own.
