@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { matchable, registryTrialPolicy, supersededText } from './lib/term-registry.mjs'
 
 const root = new URL('../', import.meta.url)
 const registryPath = process.argv[2] ? pathToFileURL(path.resolve(process.argv[2])) : new URL('translation/terms/registry.v1.json', root)
@@ -68,8 +69,22 @@ function resolve(ref) {
   return value
 }
 
-const migrated = new Set()
-for (const entry of entries) for (const ref of entry.migrated_from || []) { resolve(ref); migrated.add(ref) }
+// A migrated term keeps the old exact source form and, unless superseded, the old rendering.
+const supersededSources = new Set(registry.supersedes.map(item => item.source))
+const forms = entry => [entry, ...(entry.family || [])]
+// The template never held renderings, so only applied policies are compared.
+const migrated = new Set(), drift = []
+for (const entry of entries) for (const ref of entry.migrated_from || []) {
+  const old = resolve(ref)
+  migrated.add(ref)
+  const src = old.source_form ?? old.src
+  const zh = old.chosen_rendering ?? old.zh
+  if (typeof src !== 'string' || ref.startsWith('template#')) continue
+  const carrier = forms(entry).find(form => form.src.includes(src))
+  if (!carrier) drift.push(`${entry.id}: lost exact source form ${src} from ${ref}`)
+  else if (!supersededSources.has(ref) && !(carrier.keep_source ? zh === src : (carrier.zh || '').includes(zh))) drift.push(`${entry.id}: ${ref} renders ${zh}, registry has ${carrier.zh}`)
+}
+assert.deepEqual(drift, [], `Migrated terms drifted:\n${drift.join('\n')}`)
 for (const item of supersedes.values()) {
   const value = resolve(item.source)
   assert((typeof value === 'string' ? value : JSON.stringify(value)).includes(item.fragment), `${item.id}: fragment no longer in ${item.source}`)
@@ -87,5 +102,20 @@ const required = [
 assert(required.length > 80, `Expected the frozen policies to hold their terms, found ${required.length}`)
 const missing = required.filter(ref => !migrated.has(ref))
 assert.deepEqual(missing, [], `Terms neither migrated nor superseded:\n${missing.join('\n')}`)
+
+// Prompt projections: frozen prose loses each superseded fragment, and the story trial policy
+// carries every approved matchable form with its exact rendering.
+for (const item of supersedes.values()) {
+  assert(typeof item.replacement === 'string' && item.replacement, `${item.id}: missing replacement`)
+  const value = resolve(item.source)
+  if (typeof value !== 'string' || item.replacement.includes(item.fragment)) continue
+  assert(!supersededText(item.source, value, registry).includes(item.fragment), `${item.id}: fragment survives projection`)
+}
+const trial = registryTrialPolicy(sources.trial, registry)
+for (const entry of registry.terms.filter(entry => entry.status === 'approved' && !entry.keep_source && entry.kind !== 'orthography-rule'))
+  for (const form of forms(entry)) for (const src of form.src.filter(matchable)) {
+    const item = trial.items.find(candidate => candidate.key === `${entry.id}:${src}`)
+    assert(item?.chosen_rendering === form.zh, `${entry.id}: ${src} missing from the story projection`)
+  }
 const approved = entries.filter(entry => entry.status === 'approved').length
 console.log(`term registry ok: ${entries.length} entries (${approved} approved), ${required.length} frozen terms covered, ${supersedes.size} supersedes`)

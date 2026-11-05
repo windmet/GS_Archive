@@ -43,82 +43,131 @@
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["男性人名＋さん"],
+      "src": [
+        "男性人名＋さん"
+      ],
       "zh": "原文那一级姓名＋先生",
       "note": "任何说话人、不分年龄；不改姓名层级。",
-      "migrated_from": ["story_prompt#3.1", "card_line#global_rules/2", "card_line#chat_rules/0", "template#items/key=honorific-san"],
-      "supersedes": ["sup-trial-san-not-sensei"]
+      "migrated_from": [
+        "story_prompt#3.1",
+        "card_line#global_rules/2",
+        "card_line#chat_rules/0",
+        "template#items/key=honorific-san"
+      ],
+      "supersedes": [
+        "sup-trial-san-not-sensei",
+        "sup-trial-honorific-mechanical"
+      ]
     },
     {
       "id": "honorific-san-female",
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["女性人名＋さん"],
+      "src": [
+        "女性人名＋さん"
+      ],
       "zh": "姓名＋小姐，或礼貌句式直接称呼",
-      "migrated_from": ["story_prompt#3.1", "card_line#global_rules/2"]
+      "migrated_from": [
+        "story_prompt#3.1",
+        "card_line#global_rules/2"
+      ]
     },
     {
       "id": "honorific-san-role",
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["职业／身份＋さん", "お客さん", "皆さん／みなさん", "お母さん等亲属"],
+      "src": [
+        "职业／身份＋さん",
+        "お客さん",
+        "皆さん／みなさん",
+        "お母さん等亲属"
+      ],
       "zh": "职业名称配礼貌句式；客人；大家／各位；对应亲属称谓",
-      "migrated_from": ["story_prompt#3.1"]
+      "migrated_from": [
+        "story_prompt#3.1"
+      ]
     },
     {
       "id": "honorific-san-nickname",
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-20261105-audit",
-      "src": ["固定绰号／物件名＋さん"],
-      "zh": "整体作为专名登记在 terms 中；不套用“先生／小姐”",
-      "note": "唯一允许出现“桑”的途径是 terms 中的整词登记（如 蝶蝶桑）；人名＋さん 仍不用“桑”。路人对物件的泛称（カエルさん）不是绰号，按语境处理。",
-      "supersedes": ["sup-card-line-no-san-global", "sup-card-line-no-san-chat"]
+      "src": [
+        "固定绰号／物件名＋さん"
+      ],
+      "zh": "整体按术语表译（如 ちょうちょさん→蝶蝶桑），不套用“先生／小姐”",
+      "note": "人名＋さん 仍不用“桑”。路人对物件的泛称（カエルさん）不是绰号，按语境处理。",
+      "supersedes": [
+        "sup-card-line-no-san-global",
+        "sup-card-line-no-san-chat"
+      ]
     },
     {
       "id": "honorific-kun",
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["くん／君／クン"],
+      "src": [
+        "くん／君／クン"
+      ],
       "zh": "君",
-      "migrated_from": ["story_prompt#3.1", "card_line#global_rules/2", "template#items/key=honorific-kun"]
+      "migrated_from": [
+        "story_prompt#3.1",
+        "card_line#global_rules/2",
+        "template#items/key=honorific-kun"
+      ]
     },
     {
       "id": "honorific-chan",
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["ちゃん"],
+      "src": [
+        "ちゃん"
+      ],
       "zh": "酱；制作人的ちゃん按 terms",
-      "migrated_from": ["story_prompt#3.1", "card_line#global_rules/2"]
+      "migrated_from": [
+        "story_prompt#3.1",
+        "card_line#global_rules/2"
+      ]
     },
     {
       "id": "honorific-sensei",
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["先生（せんせい）"],
+      "src": [
+        "先生（せんせい）"
+      ],
       "zh": "老师（医生语境用医生），不写“先生”",
-      "migrated_from": ["story_prompt#3.1", "card_line#global_rules/2"]
+      "migrated_from": [
+        "story_prompt#3.1",
+        "card_line#global_rules/2"
+      ]
     },
     {
       "id": "honorific-slot-san",
       "kind": "honorific-rule",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["producer_name_with_p 槽＋さん"],
+      "src": [
+        "producer_name_with_p 槽＋さん"
+      ],
       "zh": "只保留槽，不加先生或P",
-      "migrated_from": ["story_prompt#3.1"]
+      "migrated_from": [
+        "story_prompt#3.1"
+      ]
     },
     {
       "id": "nickname-scoped",
       "kind": "nickname-rule",
       "status": "approved",
       "decision": "D-20261105-audit",
-      "src": ["说话人专属绰号"],
+      "src": [
+        "说话人专属绰号"
+      ],
       "zh": "按“说话人→被称呼人”登记，不做全局词替换",
       "note": "同一个日文词被其他人用于其他对象时（玄武说孩子是チビ）不受该绰号约束。"
     },
@@ -127,9 +176,11 @@
       "kind": "orthography-rule",
       "status": "approved",
       "decision": "D-20261105-passion",
-      "src": ["角色口癖化的片假名外来语"],
+      "src": [
+        "角色口癖化的片假名外来语"
+      ],
       "zh": "已登记的口癖外来语保留拉丁词形；同义汉字词照常意译",
-      "note": "例：パッション→PASSION，情熱→热情。只适用于 terms 中登记的词，不推广到所有片假名。"
+      "note": "例：パッション→PASSION，情熱→热情。只适用于术语表中列出的词，不推广到所有片假名。"
     }
   ],
   "terms": [
@@ -139,12 +190,26 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T01",
-      "src": ["ちょうちょさん"],
+      "src": [
+        "ちょうちょさん"
+      ],
       "zh": "蝶蝶桑",
-      "forbidden_zh": ["蝶蝶小姐", "蝴蝶先生"],
-      "scope": { "speakers": ["017kir"], "addressee": "018shm" },
-      "not_this_term": ["蝶々みたいにひらりひらり 等比喻用法"],
-      "supersedes": ["sup-card-line-kirio-chouchou"]
+      "forbidden_zh": [
+        "蝶蝶小姐",
+        "蝴蝶先生"
+      ],
+      "scope": {
+        "speakers": [
+          "017kir"
+        ],
+        "addressee": "018shm"
+      },
+      "not_this_term": [
+        "蝶々みたいにひらりひらり 等比喻用法"
+      ],
+      "supersedes": [
+        "sup-card-line-kirio-chouchou"
+      ]
     },
     {
       "id": "ren-chibi",
@@ -152,12 +217,28 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T02",
-      "src": ["チビ", "ちび"],
+      "src": [
+        "チビ",
+        "ちび"
+      ],
       "zh": "矮子",
-      "forbidden_zh": ["小不点"],
-      "scope": { "speakers": ["040ren"], "addressee": "038tak", "includes": "当面、独白、聊天、通信签名" },
-      "not_this_term": ["玄武：施設にはチビもいるし", "志狼：かのんだってチビだけど"],
-      "supersedes": ["sup-card-line-ren-chibi"]
+      "forbidden_zh": [
+        "小不点"
+      ],
+      "scope": {
+        "speakers": [
+          "040ren"
+        ],
+        "addressee": "038tak",
+        "includes": "当面、独白、聊天、通信签名"
+      },
+      "not_this_term": [
+        "玄武：施設にはチビもいるし",
+        "志狼：かのんだってチビだけど"
+      ],
+      "supersedes": [
+        "sup-card-line-ren-chibi"
+      ]
     },
     {
       "id": "ren-ramenya",
@@ -165,10 +246,22 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T07",
-      "src": ["らーめん屋", "ラーメン屋"],
+      "src": [
+        "らーめん屋",
+        "ラーメン屋"
+      ],
       "zh": "拉面店的",
-      "forbidden_zh": ["卖拉面的", "拉面店老板", "拉面屋"],
-      "scope": { "speakers": ["040ren"], "addressee": "039mcr" },
+      "forbidden_zh": [
+        "卖拉面的",
+        "拉面店老板",
+        "拉面屋"
+      ],
+      "scope": {
+        "speakers": [
+          "040ren"
+        ],
+        "addressee": "039mcr"
+      },
       "note": "指人，不能写成店铺；らーめん屋ん家→拉面店的家。真正指店铺的句子按原意。"
     },
     {
@@ -177,11 +270,26 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T03",
-      "src": ["カエール", "かえーる"],
+      "src": [
+        "カエール",
+        "かえーる"
+      ],
       "zh": "蛙埃尔",
-      "forbidden_zh": ["青蛙玩偶", "青蛙君", "青蛙酱"],
-      "not_this_term": ["普通青蛙／カエル", "カエルの国→青蛙王国", "路人称 カエルさん", "花毛茛词源"],
-      "supersedes": ["sup-card-line-kaeru-term", "sup-card-line-pierre-kaeru"]
+      "forbidden_zh": [
+        "青蛙玩偶",
+        "青蛙君",
+        "青蛙酱"
+      ],
+      "not_this_term": [
+        "普通青蛙／カエル",
+        "カエルの国→青蛙王国",
+        "路人称 カエルさん",
+        "花毛茛词源"
+      ],
+      "supersedes": [
+        "sup-card-line-kaeru-term",
+        "sup-card-line-pierre-kaeru"
+      ]
     },
     {
       "id": "saki-papi",
@@ -189,18 +297,72 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T04",
-      "src": ["パピ", "パピッ", "パピっと"],
+      "src": [
+        "パピ",
+        "パピッ",
+        "パピっと"
+      ],
       "zh": "Papi",
-      "forbidden_zh": ["啪噼", "帕皮", "帕比"],
+      "forbidden_zh": [
+        "啪噼",
+        "帕皮",
+        "帕比"
+      ],
       "note": "词根必须保留，不意译为元气满满、超绝可爱等；助词按中文句子调整。",
       "family": [
-        { "src": ["パピパピ", "パピパピッ"], "zh": "Papi Papi" },
-        { "src": ["パピプペッ"], "zh": "PapiPuPe" },
-        { "src": ["ハピパピ"], "zh": "HapiPapi", "forbidden_zh": ["Happy Pappy", "幸福咲"] },
-        { "src": ["パピカワ", "パピかわ"], "zh": "Papi可爱" },
-        { "src": ["パピクール"], "zh": "Papi酷炫" },
-        { "src": ["パピキラ"], "zh": "Papi闪亮" },
-        { "src": ["パピ族"], "zh": "Papi族", "forbidden_zh": ["帕皮族", "帕比族", "啪噼族"] }
+        {
+          "src": [
+            "パピパピ",
+            "パピパピッ"
+          ],
+          "zh": "Papi Papi"
+        },
+        {
+          "src": [
+            "パピプペッ"
+          ],
+          "zh": "PapiPuPe"
+        },
+        {
+          "src": [
+            "ハピパピ"
+          ],
+          "zh": "HapiPapi",
+          "forbidden_zh": [
+            "Happy Pappy",
+            "幸福咲"
+          ]
+        },
+        {
+          "src": [
+            "パピカワ",
+            "パピかわ"
+          ],
+          "zh": "Papi可爱"
+        },
+        {
+          "src": [
+            "パピクール"
+          ],
+          "zh": "Papi酷炫"
+        },
+        {
+          "src": [
+            "パピキラ"
+          ],
+          "zh": "Papi闪亮"
+        },
+        {
+          "src": [
+            "パピ族"
+          ],
+          "zh": "Papi族",
+          "forbidden_zh": [
+            "帕皮族",
+            "帕比族",
+            "啪噼族"
+          ]
+        }
       ]
     },
     {
@@ -209,21 +371,36 @@
       "status": "approved",
       "decision": "D-20261101-chats",
       "audit": "T05",
-      "src": ["アルト"],
+      "src": [
+        "アルト"
+      ],
       "zh": "阿尔托",
-      "forbidden_zh": ["中提琴", "哈尔特"],
-      "scope": { "context": "神乐丽家犬名；不用于音乐中音等普通名词" },
-      "migrated_from": ["user_terms#terms/src=アルト"]
+      "forbidden_zh": [
+        "中提琴",
+        "哈尔特"
+      ],
+      "scope": {
+        "context": "神乐丽家犬名；不用于音乐中音等普通名词"
+      },
+      "migrated_from": [
+        "user_terms#terms/src=アルト"
+      ]
     },
     {
       "id": "rei-dog-hund",
       "kind": "proper-name",
       "status": "approved",
       "decision": "D-20261101-chats",
-      "src": ["麗さんのいえのフント"],
+      "src": [
+        "麗さんのいえのフント"
+      ],
       "zh": "丽先生家的阿尔托",
-      "scope": { "context": "仅都筑圭指代丽家犬的这一句；不将フント全局视为犬名" },
-      "migrated_from": ["user_terms#terms/src=麗さんのいえのフント"]
+      "scope": {
+        "context": "仅都筑圭指代丽家犬的这一句；不将フント全局视为犬名"
+      },
+      "migrated_from": [
+        "user_terms#terms/src=麗さんのいえのフント"
+      ]
     },
     {
       "id": "maki-roll",
@@ -231,11 +408,23 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T06",
-      "src": ["ロール"],
+      "src": [
+        "ロール"
+      ],
       "zh": "卷卷",
-      "forbidden_zh": ["蛋糕卷"],
-      "scope": { "speakers": ["031sak"], "addressee": "030mak" },
-      "not_this_term": ["ロールケーキ／蛋糕卷", "コントロール／控制"]
+      "forbidden_zh": [
+        "蛋糕卷"
+      ],
+      "scope": {
+        "speakers": [
+          "031sak"
+        ],
+        "addressee": "030mak"
+      },
+      "not_this_term": [
+        "ロールケーキ／蛋糕卷",
+        "コントロール／控制"
+      ]
     },
     {
       "id": "unit-mofumofuen",
@@ -243,11 +432,22 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T08",
-      "src": ["もふもふえん"],
+      "src": [
+        "もふもふえん"
+      ],
       "zh": "もふもふえん",
-      "forbidden_zh": ["毛茸茸园", "萌萌组合", "萌绒绒"],
-      "scope": { "domains": "全部，包括元数据" },
-      "migrated_from": ["trial#items/key=unit-mofumofuen", "card_line#terms/src=もふもふえん"]
+      "forbidden_zh": [
+        "毛茸茸园",
+        "萌萌组合",
+        "萌绒绒"
+      ],
+      "scope": {
+        "domains": "全部，包括元数据"
+      },
+      "migrated_from": [
+        "trial#items/key=unit-mofumofuen",
+        "card_line#terms/src=もふもふえん"
+      ]
     },
     {
       "id": "daigo-boss",
@@ -255,10 +455,20 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T09",
-      "src": ["ボス"],
+      "src": [
+        "ボス"
+      ],
       "zh": "Boss",
-      "forbidden_zh": ["老大", "老板"],
-      "scope": { "speakers": ["042dai"], "addressee": "producer" },
+      "forbidden_zh": [
+        "老大",
+        "老板"
+      ],
+      "scope": {
+        "speakers": [
+          "042dai"
+        ],
+        "addressee": "producer"
+      },
       "note": "带制作人姓名宏时走 GS_ADDRESS 槽，不改宏内部字符。"
     },
     {
@@ -267,536 +477,1156 @@
       "status": "approved",
       "decision": "D-20261105-audit",
       "audit": "T10",
-      "src": ["ワガハイ", "我輩", "吾輩"],
+      "src": [
+        "ワガハイ",
+        "我輩",
+        "吾輩"
+      ],
       "zh": "吾辈",
-      "forbidden_zh": ["在下"],
-      "family": [{ "src": ["ワガハイたち"], "zh": "吾辈们", "forbidden_zh": ["吾辈等人"] }],
-      "scope": { "speakers": ["017kir"] },
+      "forbidden_zh": [
+        "在下"
+      ],
+      "family": [
+        {
+          "src": [
+            "ワガハイたち"
+          ],
+          "zh": "吾辈们",
+          "forbidden_zh": [
+            "吾辈等人"
+          ]
+        }
+      ],
+      "scope": {
+        "speakers": [
+          "017kir"
+        ]
+      },
       "note": "原文无自称时不补；原文有 ワガハイ 而译作我们／省略的，逐句判断，不机械对齐。",
-      "migrated_from": ["card_line#terms/src=ワガハイ", "template#items/key=kirio-self-reference"],
-      "supersedes": ["sup-voice-kirio-wagahai"]
+      "migrated_from": [
+        "card_line#terms/src=ワガハイ",
+        "template#items/key=kirio-self-reference"
+      ],
+      "supersedes": [
+        "sup-voice-kirio-wagahai"
+      ]
     },
     {
       "id": "shiki-tchi",
       "kind": "nickname",
       "status": "approved",
       "decision": "D-20261105-audit",
-      "src": ["人名＋っち"],
+      "src": [
+        "人名＋っち"
+      ],
       "zh": "人名＋亲",
-      "forbidden_zh": ["人名＋仔"],
-      "scope": { "speakers": ["024shk"] },
+      "forbidden_zh": [
+        "人名＋仔"
+      ],
+      "scope": {
+        "speakers": [
+          "024shk"
+        ]
+      },
       "note": "现译全部为亲（旬亲、夏来亲、隼人亲、春名亲）；不用于所有ちゃん或其他说话人。",
-      "migrated_from": ["trial#items/key=shiki-tchi", "template#items/key=nickname-shiki-tchi"],
-      "supersedes": ["sup-trial-shiki-tchi"]
+      "migrated_from": [
+        "trial#items/key=shiki-tchi",
+        "template#items/key=nickname-shiki-tchi"
+      ],
+      "supersedes": [
+        "sup-trial-shiki-tchi"
+      ]
     },
     {
       "id": "passion",
       "kind": "catchphrase-family",
       "status": "approved",
       "decision": "D-20261105-passion",
-      "src": ["パッション", "ぱっしょん"],
+      "src": [
+        "パッション",
+        "ぱっしょん"
+      ],
       "zh": "PASSION",
-      "forbidden_zh": ["热情", "激情", "Passion"],
+      "forbidden_zh": [
+        "热情",
+        "激情",
+        "Passion"
+      ],
       "note": "齋藤社長的口头禅，并被制作人、偶像在情人节等场合复述；与 PASSION FESTIVAL 同形。原文已是拉丁字母的 passion（舞田类）照原文大小写保留。汉字 情熱 仍译热情。",
       "family": [
-        { "src": ["パッションの像"], "zh": "PASSION之像", "forbidden_zh": ["激情之像", "热情的雪雕", "热情雕像", "Passion雕像"] },
-        { "src": ["パッションチョコ"], "zh": "PASSION巧克力", "forbidden_zh": ["激情巧克力", "Passion巧克力"] },
-        { "src": ["パッションチョコDX"], "zh": "PASSION巧克力DX" },
-        { "src": ["パッションシール"], "zh": "PASSION贴纸", "forbidden_zh": ["激情贴纸"] },
-        { "src": ["パ、パ、パ、パッション"], "zh": "PA、PA、PA、PASSION", "forbidden_zh": ["激、激、激、激情四射"] }
+        {
+          "src": [
+            "パッションの像"
+          ],
+          "zh": "PASSION之像",
+          "forbidden_zh": [
+            "激情之像",
+            "热情的雪雕",
+            "热情雕像",
+            "Passion雕像"
+          ]
+        },
+        {
+          "src": [
+            "パッションチョコ"
+          ],
+          "zh": "PASSION巧克力",
+          "forbidden_zh": [
+            "激情巧克力",
+            "Passion巧克力"
+          ]
+        },
+        {
+          "src": [
+            "パッションチョコDX"
+          ],
+          "zh": "PASSION巧克力DX"
+        },
+        {
+          "src": [
+            "パッションシール"
+          ],
+          "zh": "PASSION贴纸",
+          "forbidden_zh": [
+            "激情贴纸"
+          ]
+        },
+        {
+          "src": [
+            "パ、パ、パ、パッション"
+          ],
+          "zh": "PA、PA、PA、PASSION",
+          "forbidden_zh": [
+            "激、激、激、激情四射"
+          ]
+        }
       ],
-      "supersedes": ["sup-card-line-passion-statue"]
+      "supersedes": [
+        "sup-card-line-passion-statue"
+      ]
     },
     {
       "id": "producer-chan",
       "kind": "producer-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["制作人＋ちゃん（宏外）"],
+      "src": [
+        "制作人＋ちゃん（宏外）"
+      ],
       "zh": "酱",
-      "migrated_from": ["trial#items/key=producer-chan"]
+      "migrated_from": [
+        "trial#items/key=producer-chan"
+      ]
     },
     {
       "id": "producer-pii",
       "kind": "producer-address",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["ぴぃちゃん"],
+      "src": [
+        "ぴぃちゃん"
+      ],
       "zh": "P酱",
-      "scope": { "speakers": ["048mom"] },
+      "scope": {
+        "speakers": [
+          "048mom"
+        ]
+      },
       "note": "2026-11-05 审计 165/165 一致。",
-      "migrated_from": ["trial#items/key=producer-pii", "template#items/key=producer-pii"]
+      "migrated_from": [
+        "trial#items/key=producer-pii",
+        "template#items/key=producer-pii"
+      ]
     },
     {
       "id": "w-kantoku",
       "kind": "producer-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["監督"],
+      "src": [
+        "監督"
+      ],
       "zh": "监督",
-      "scope": { "speakers": ["012yus", "013kys"], "addressee": "producer" },
-      "not_this_term": ["球队的監督→教练"],
-      "migrated_from": ["trial#items/key=w-kantoku", "card_line#terms/src=監督"]
+      "scope": {
+        "speakers": [
+          "012yus",
+          "013kys"
+        ],
+        "addressee": "producer"
+      },
+      "not_this_term": [
+        "球队的監督→教练"
+      ],
+      "migrated_from": [
+        "trial#items/key=w-kantoku",
+        "card_line#terms/src=監督"
+      ]
     },
     {
       "id": "michiru-shisho",
       "kind": "producer-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["師匠"],
+      "src": [
+        "師匠"
+      ],
       "zh": "师父",
-      "scope": { "speakers": ["039mcr"], "addressee": "producer" },
-      "migrated_from": ["trial#items/key=producer-shisho"]
+      "scope": {
+        "speakers": [
+          "039mcr"
+        ],
+        "addressee": "producer"
+      },
+      "migrated_from": [
+        "trial#items/key=producer-shisho"
+      ]
     },
     {
       "id": "genbu-bancho",
       "kind": "producer-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["番長さん"],
+      "src": [
+        "番長さん"
+      ],
       "zh": "番长",
-      "scope": { "speakers": ["026gen"], "addressee": "producer" },
-      "migrated_from": ["trial#items/key=genbu-bancho"]
+      "scope": {
+        "speakers": [
+          "026gen"
+        ],
+        "addressee": "producer"
+      },
+      "migrated_from": [
+        "trial#items/key=genbu-bancho"
+      ]
     },
     {
       "id": "hokuto-angel",
       "kind": "nickname",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["エンジェルちゃん"],
+      "src": [
+        "エンジェルちゃん"
+      ],
       "zh": "天使酱",
-      "scope": { "speakers": ["003hok"] },
-      "migrated_from": ["trial#items/key=hokuto-angel", "card_line#terms/src=エンジェルちゃん"]
+      "scope": {
+        "speakers": [
+          "003hok"
+        ]
+      },
+      "migrated_from": [
+        "trial#items/key=hokuto-angel",
+        "card_line#terms/src=エンジェルちゃん"
+      ]
     },
     {
       "id": "aslan-master",
       "kind": "producer-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["主", "主よ"],
+      "src": [
+        "主",
+        "主よ"
+      ],
       "zh": "吾主",
-      "scope": { "speakers": ["029ass"], "addressee": "producer" },
-      "migrated_from": ["trial#items/key=aslan-master"]
+      "scope": {
+        "speakers": [
+          "029ass"
+        ],
+        "addressee": "producer"
+      },
+      "migrated_from": [
+        "trial#items/key=aslan-master"
+      ]
     },
     {
       "id": "aslan-servants",
       "kind": "character-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["シモベ"],
+      "src": [
+        "シモベ"
+      ],
       "zh": "仆从",
-      "scope": { "speakers": ["029ass"] },
-      "migrated_from": ["trial#items/key=aslan-servants"]
+      "scope": {
+        "speakers": [
+          "029ass"
+        ]
+      },
+      "migrated_from": [
+        "trial#items/key=aslan-servants"
+      ]
     },
     {
       "id": "aslan-dark-one",
       "kind": "character-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["闇の者"],
+      "src": [
+        "闇の者"
+      ],
       "zh": "暗之使者",
-      "scope": { "speakers": ["029ass"] },
-      "migrated_from": ["trial#items/key=aslan-dark-one"]
+      "scope": {
+        "speakers": [
+          "029ass"
+        ]
+      },
+      "migrated_from": [
+        "trial#items/key=aslan-dark-one"
+      ]
     },
     {
       "id": "aslan-satan",
       "kind": "character-term",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["サタン"],
+      "src": [
+        "サタン"
+      ],
       "zh": "撒旦",
       "note": "2026-11-05 审计 107/107 一致。",
-      "migrated_from": ["trial#items/key=aslan-satan"]
+      "migrated_from": [
+        "trial#items/key=aslan-satan"
+      ]
     },
     {
       "id": "ren-oresama",
       "kind": "self-reference",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["オレ様"],
+      "src": [
+        "オレ様"
+      ],
       "zh": "本大爷",
-      "scope": { "speakers": ["040ren"] },
+      "scope": {
+        "speakers": [
+          "040ren"
+        ]
+      },
       "note": "只对应原文 オレ様；普通 オレ／俺→我。",
-      "migrated_from": ["card_line#terms/src=オレ様"]
+      "migrated_from": [
+        "card_line#terms/src=オレ様"
+      ]
     },
     {
       "id": "oresama-adjective",
       "kind": "character-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["俺様（形容词）"],
+      "src": [
+        "俺様"
+      ],
       "zh": "霸道",
-      "migrated_from": ["card_line#terms/src=俺様"]
+      "migrated_from": [
+        "card_line#terms/src=俺様"
+      ],
+      "note": "只用于形容词用法。"
     },
     {
       "id": "name-mayumi",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["マユミくん"],
+      "src": [
+        "マユミくん"
+      ],
       "zh": "眉见君",
-      "migrated_from": ["trial#items/key=name-mayumi"]
+      "migrated_from": [
+        "trial#items/key=name-mayumi"
+      ]
     },
     {
       "id": "name-nao",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["なおくん"],
+      "src": [
+        "なおくん"
+      ],
       "zh": "直央君",
-      "migrated_from": ["trial#items/key=name-nao"]
+      "migrated_from": [
+        "trial#items/key=name-nao"
+      ]
     },
     {
       "id": "name-shiro",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["しろうくん"],
+      "src": [
+        "しろうくん"
+      ],
       "zh": "志狼君",
-      "migrated_from": ["trial#items/key=name-shiro"]
+      "migrated_from": [
+        "trial#items/key=name-shiro"
+      ]
     },
     {
       "id": "name-michiru",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["道流さん"],
+      "src": [
+        "道流さん"
+      ],
       "zh": "道流先生",
-      "migrated_from": ["trial#items/key=name-michiru"]
+      "migrated_from": [
+        "trial#items/key=name-michiru"
+      ]
     },
     {
       "id": "name-michio",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["道夫さん"],
+      "src": [
+        "道夫さん"
+      ],
       "zh": "道夫先生",
-      "migrated_from": ["trial#items/key=name-michio"]
+      "migrated_from": [
+        "trial#items/key=name-michio"
+      ]
     },
     {
       "id": "name-takeru",
       "kind": "person-address",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["タケル", "タケルさん"],
-      "zh": "武／武先生",
-      "forbidden_zh": ["大河猛", "猛同款"],
+      "src": [
+        "タケル"
+      ],
+      "zh": "武",
+      "forbidden_zh": [
+        "大河猛",
+        "猛同款"
+      ],
       "note": "不改称姓氏大河。item-idol-name-policy.mjs 的硬编码检查应改读本条。",
-      "migrated_from": ["trial#items/key=name-takeru", "template#items/key=proper-name-takeru"]
+      "migrated_from": [
+        "trial#items/key=name-takeru",
+        "template#items/key=proper-name-takeru"
+      ],
+      "family": [
+        {
+          "src": [
+            "タケルさん"
+          ],
+          "zh": "武先生"
+        }
+      ]
     },
     {
       "id": "name-momohito",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["百々人"],
+      "src": [
+        "百々人"
+      ],
       "zh": "百百人",
-      "migrated_from": ["trial#items/key=name-momohito"]
+      "migrated_from": [
+        "trial#items/key=name-momohito"
+      ]
     },
     {
       "id": "name-soichiro",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["ソーイチロー"],
+      "src": [
+        "ソーイチロー"
+      ],
       "zh": "庄一郎",
-      "migrated_from": ["trial#items/key=name-soichiro"]
+      "migrated_from": [
+        "trial#items/key=name-soichiro"
+      ]
     },
     {
       "id": "name-minori",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["みのり"],
+      "src": [
+        "みのり"
+      ],
       "zh": "实",
-      "migrated_from": ["trial#items/key=name-minori"]
+      "migrated_from": [
+        "trial#items/key=name-minori"
+      ]
     },
     {
       "id": "name-pierre",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["ピエール"],
+      "src": [
+        "ピエール"
+      ],
       "zh": "皮埃尔",
-      "migrated_from": ["trial#items/key=name-010pie"]
+      "migrated_from": [
+        "trial#items/key=name-010pie"
+      ]
     },
     {
       "id": "name-kirio",
       "kind": "person-address",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["キリオ"],
+      "src": [
+        "キリオ"
+      ],
       "zh": "桐生",
-      "forbidden_zh": ["桐绪"],
-      "migrated_from": ["trial#items/key=name-017kir"]
+      "forbidden_zh": [
+        "桐绪"
+      ],
+      "migrated_from": [
+        "trial#items/key=name-017kir"
+      ]
     },
     {
       "id": "name-aslan",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["アスラン"],
+      "src": [
+        "アスラン"
+      ],
       "zh": "阿斯兰",
-      "migrated_from": ["trial#items/key=name-029ass"]
+      "migrated_from": [
+        "trial#items/key=name-029ass"
+      ]
     },
     {
       "id": "name-chris",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["クリス"],
+      "src": [
+        "クリス"
+      ],
       "zh": "克里斯",
-      "migrated_from": ["trial#items/key=name-046chr"]
+      "migrated_from": [
+        "trial#items/key=name-046chr"
+      ]
     },
     {
       "id": "kyoji-stutter",
       "kind": "character-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["鷹…（未说完的姓氏）"],
+      "src": [
+        "Beitのたきゃっ"
+      ],
       "zh": "鹰",
-      "migrated_from": ["trial#items/key=kyoji-stutter"]
+      "migrated_from": [
+        "trial#items/key=kyoji-stutter"
+      ],
+      "scope": {
+        "speakers": [
+          "009kyj"
+        ]
+      },
+      "note": "恭二自我介绍中未说完的姓氏口误，保留未说完。"
     },
     {
       "id": "rui-mister-yamashita",
       "kind": "person-address",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["ミスターやました"],
+      "src": [
+        "ミスターやました"
+      ],
       "zh": "Mr. 山下",
-      "scope": { "speakers": ["036rui"] },
-      "migrated_from": ["trial#items/key=mister-yamashita"]
+      "scope": {
+        "speakers": [
+          "036rui"
+        ]
+      },
+      "migrated_from": [
+        "trial#items/key=mister-yamashita"
+      ]
     },
     {
       "id": "shiki-giga-mega",
       "kind": "catchphrase-family",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["メガ", "メガメガ", "ギガサンキュー"],
-      "zh": "Mega／Mega Mega／Giga Thank You",
-      "scope": { "speakers": ["024shk"] },
-      "migrated_from": ["trial#items/key=giga-thankyou", "template#items/key=mega-giga"]
+      "src": [
+        "メガ"
+      ],
+      "zh": "Mega",
+      "scope": {
+        "speakers": [
+          "024shk"
+        ]
+      },
+      "migrated_from": [
+        "trial#items/key=giga-thankyou",
+        "template#items/key=mega-giga"
+      ],
+      "family": [
+        {
+          "src": [
+            "メガメガ"
+          ],
+          "zh": "Mega Mega"
+        },
+        {
+          "src": [
+            "ギガサンキュー"
+          ],
+          "zh": "Giga Thank You"
+        }
+      ]
     },
     {
       "id": "cat-nyankee",
       "kind": "proper-name",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["にゃん喜威"],
+      "src": [
+        "にゃん喜威"
+      ],
       "zh": "喵喜威",
-      "migrated_from": ["trial#items/key=cat-nyankee"]
+      "migrated_from": [
+        "trial#items/key=cat-nyankee"
+      ]
     },
     {
       "id": "cat-nyako",
       "kind": "proper-name",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["にゃこ", "にゃこさん"],
+      "src": [
+        "にゃこ"
+      ],
       "zh": "喵子",
-      "migrated_from": ["trial#items/key=cat-nyako"]
+      "migrated_from": [
+        "trial#items/key=cat-nyako"
+      ],
+      "family": [
+        {
+          "src": [
+            "にゃこさん"
+          ],
+          "zh": "喵子"
+        }
+      ]
     },
     {
       "id": "agency-315",
       "kind": "proper-name",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["315プロダクション", "315プロ"],
-      "zh": "315 Production／315 Pro",
-      "migrated_from": ["trial#items/key=agency-315", "card_line#terms/src=315プロダクション", "card_line#terms/src=315プロ"]
+      "src": [
+        "315プロダクション"
+      ],
+      "zh": "315 Production",
+      "migrated_from": [
+        "trial#items/key=agency-315",
+        "card_line#terms/src=315プロダクション",
+        "card_line#terms/src=315プロ"
+      ],
+      "family": [
+        {
+          "src": [
+            "315プロ"
+          ],
+          "zh": "315 Pro"
+        }
+      ]
     },
     {
       "id": "unit-names-literal",
       "kind": "unit-name",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["ARROW・B", "Cafe Parade", "Altessimo", "Beit", "W", "FRAME", "彩", "High×Joker", "神速一魂", "S.E.M", "THE 虎牙道", "F-LAGS", "Legenders", "C.FIRST", "DRAMATIC STARS", "Jupiter"],
-      "zh": "原样保留",
+      "src": [
+        "ARROW・B",
+        "Cafe Parade",
+        "Altessimo",
+        "Beit",
+        "W",
+        "FRAME",
+        "彩",
+        "High×Joker",
+        "神速一魂",
+        "S.E.M",
+        "THE 虎牙道",
+        "F-LAGS",
+        "Legenders",
+        "C.FIRST",
+        "DRAMATIC STARS",
+        "Jupiter"
+      ],
+      "zh": "保留原文",
       "note": "只针对组合专名，不据此保留普通日语。",
-      "migrated_from": ["trial#items/key=arrow-band", "trial#proper_name_exceptions", "card_line#terms/src=Beit", "card_line#terms/src=FRAME", "card_line#terms/src=High×Joker", "card_line#terms/src=DRAMATIC STARS", "card_line#terms/src=Jupiter"]
+      "migrated_from": [
+        "trial#items/key=arrow-band",
+        "trial#proper_name_exceptions",
+        "card_line#terms/src=Beit",
+        "card_line#terms/src=FRAME",
+        "card_line#terms/src=High×Joker",
+        "card_line#terms/src=DRAMATIC STARS",
+        "card_line#terms/src=Jupiter"
+      ],
+      "keep_source": true
     },
     {
       "id": "menkyoku",
       "kind": "event-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["男極"],
+      "src": [
+        "男極"
+      ],
       "zh": "男极",
       "family": [
-        { "src": ["男極！アイドルリーグ"], "zh": "男极！偶像联赛" },
-        { "src": ["男極リーグ"], "zh": "男极联赛" },
-        { "src": ["男極KING"], "zh": "男极KING" },
-        { "src": ["男極FIVE"], "zh": "男极FIVE" },
-        { "src": ["男極賞"], "zh": "男极奖" },
-        { "src": ["モテ部門"], "zh": "受欢迎部门" },
-        { "src": ["ライブパフォーマンス部門"], "zh": "现场表现力部门" },
-        { "src": ["パフォーマンス部門"], "zh": "表现力部门" },
-        { "src": ["スタミナ部門"], "zh": "体能部门" },
-        { "src": ["ドッキリ部門"], "zh": "整蛊部门" },
-        { "src": ["シンクロ部門"], "zh": "同步部门" },
-        { "src": ["プロデュース部門"], "zh": "制作部门" },
-        { "src": ["スピード部門"], "zh": "速度部门" },
-        { "src": ["演技部門"], "zh": "演技部门" },
-        { "src": ["パワー部門"], "zh": "力量部门" },
-        { "src": ["知識部門"], "zh": "知识部门" }
+        {
+          "src": [
+            "男極ッ！アイドルリーグ"
+          ],
+          "zh": "男极！偶像联赛"
+        },
+        {
+          "src": [
+            "男極リーグ"
+          ],
+          "zh": "男极联赛"
+        },
+        {
+          "src": [
+            "男極KING"
+          ],
+          "zh": "男极KING"
+        },
+        {
+          "src": [
+            "男極FIVE"
+          ],
+          "zh": "男极FIVE"
+        },
+        {
+          "src": [
+            "男極賞"
+          ],
+          "zh": "男极奖"
+        },
+        {
+          "src": [
+            "モテ部門"
+          ],
+          "zh": "受欢迎部门"
+        },
+        {
+          "src": [
+            "ライブパフォーマンス部門"
+          ],
+          "zh": "现场表现力部门"
+        },
+        {
+          "src": [
+            "パフォーマンス部門"
+          ],
+          "zh": "表现力部门"
+        },
+        {
+          "src": [
+            "体力部門"
+          ],
+          "zh": "体能部门"
+        },
+        {
+          "src": [
+            "ドッキリ部門"
+          ],
+          "zh": "整蛊部门"
+        },
+        {
+          "src": [
+            "シンクロ部門"
+          ],
+          "zh": "同步部门"
+        },
+        {
+          "src": [
+            "プロデュース部門"
+          ],
+          "zh": "制作部门"
+        },
+        {
+          "src": [
+            "スピード部門"
+          ],
+          "zh": "速度部门"
+        },
+        {
+          "src": [
+            "演技部門"
+          ],
+          "zh": "演技部门"
+        },
+        {
+          "src": [
+            "パワー部門"
+          ],
+          "zh": "力量部门"
+        },
+        {
+          "src": [
+            "知識部門"
+          ],
+          "zh": "知识部门"
+        }
       ],
-      "migrated_from": ["trial#items/key=menkyoku-league-full", "trial#items/key=menkyoku-league", "trial#items/key=menkyoku-king", "trial#items/key=menkyoku-five", "trial#items/key=menkyoku-prize", "trial#items/key=div-mote", "trial#items/key=div-live-performance", "trial#items/key=div-performance", "trial#items/key=div-stamina", "trial#items/key=div-dokkiri", "trial#items/key=div-synchro", "trial#items/key=div-produce", "trial#items/key=div-speed", "trial#items/key=div-acting", "trial#items/key=div-power", "trial#items/key=div-knowledge", "card_line#terms/src=男極"]
+      "migrated_from": [
+        "trial#items/key=menkyoku-league-full",
+        "trial#items/key=menkyoku-league",
+        "trial#items/key=menkyoku-king",
+        "trial#items/key=menkyoku-five",
+        "trial#items/key=menkyoku-prize",
+        "trial#items/key=div-mote",
+        "trial#items/key=div-live-performance",
+        "trial#items/key=div-performance",
+        "trial#items/key=div-stamina",
+        "trial#items/key=div-dokkiri",
+        "trial#items/key=div-synchro",
+        "trial#items/key=div-produce",
+        "trial#items/key=div-speed",
+        "trial#items/key=div-acting",
+        "trial#items/key=div-power",
+        "trial#items/key=div-knowledge",
+        "card_line#terms/src=男極"
+      ]
     },
     {
       "id": "general-audition",
       "kind": "common-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["オーディション"],
+      "src": [
+        "オーディション"
+      ],
       "zh": "试镜",
-      "migrated_from": ["card_line#terms/src=オーディション"]
+      "migrated_from": [
+        "card_line#terms/src=オーディション"
+      ]
     },
     {
       "id": "general-produce",
       "kind": "common-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["プロデュース"],
+      "src": [
+        "プロデュース"
+      ],
       "zh": "制作／担任制作人",
       "note": "不说“制作各位”。",
-      "migrated_from": ["card_line#terms/src=プロデュース"]
+      "migrated_from": [
+        "card_line#terms/src=プロデュース"
+      ]
     },
     {
       "id": "general-scout",
       "kind": "common-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["スカウト"],
+      "src": [
+        "スカウト"
+      ],
       "zh": "发掘／邀请／招募",
-      "migrated_from": ["card_line#terms/src=スカウト"]
+      "migrated_from": [
+        "card_line#terms/src=スカウト"
+      ]
     },
     {
       "id": "place-namja",
       "kind": "proper-name",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["ナンジャタウン", "ナンジャ餃子スタジアム"],
-      "zh": "南佳城／南佳饺子竞技场",
+      "src": [
+        "ナンジャタウン"
+      ],
+      "zh": "南佳城",
       "note": "暂定，沿用第1批。",
-      "migrated_from": ["card_line#terms/src=ナンジャタウン", "card_line#terms/src=ナンジャ餃子スタジアム"]
+      "migrated_from": [
+        "card_line#terms/src=ナンジャタウン",
+        "card_line#terms/src=ナンジャ餃子スタジアム"
+      ],
+      "family": [
+        {
+          "src": [
+            "ナンジャ餃子スタジアム"
+          ],
+          "zh": "南佳饺子竞技场"
+        }
+      ]
     },
     {
       "id": "name-amane",
       "kind": "person-name",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["あまね"],
+      "src": [
+        "あまね"
+      ],
       "zh": "天音",
       "note": "信玄诚司的妹妹。",
-      "migrated_from": ["card_line#terms/src=あまね"]
+      "migrated_from": [
+        "card_line#terms/src=あまね"
+      ]
     },
     {
       "id": "work-mononoke",
       "kind": "work-title",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["もののけ番外地", "もののけハンターズ"],
-      "zh": "妖怪番外地／妖怪猎人",
-      "migrated_from": ["card_line#terms/src=もののけ番外地", "card_line#terms/src=もののけハンターズ"]
+      "src": [
+        "もののけ番外地"
+      ],
+      "zh": "妖怪番外地",
+      "migrated_from": [
+        "card_line#terms/src=もののけ番外地",
+        "card_line#terms/src=もののけハンターズ"
+      ],
+      "family": [
+        {
+          "src": [
+            "もののけハンターズ"
+          ],
+          "zh": "妖怪猎人"
+        }
+      ]
     },
     {
       "id": "flower-sternbergia",
       "kind": "common-term",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["ステルンベルギア"],
+      "src": [
+        "ステルンベルギア"
+      ],
       "zh": "黄花石蒜",
-      "migrated_from": ["card_line#terms/src=ステルンベルギア"]
+      "migrated_from": [
+        "card_line#terms/src=ステルンベルギア"
+      ]
     },
     {
       "id": "song-mugendai",
       "kind": "work-title",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["ムゲンダイドリーム"],
+      "src": [
+        "ムゲンダイドリーム"
+      ],
       "zh": "无限梦想",
-      "migrated_from": ["card_line#terms/src=ムゲンダイドリーム"]
+      "migrated_from": [
+        "card_line#terms/src=ムゲンダイドリーム"
+      ]
     },
     {
       "id": "shop-tamakoya",
       "kind": "proper-name",
       "status": "approved",
       "decision": "D-20261101-chats",
-      "src": ["たまこや"],
+      "src": [
+        "たまこや"
+      ],
       "zh": "玉子屋",
-      "migrated_from": ["user_terms#terms/src=たまこや"]
+      "migrated_from": [
+        "user_terms#terms/src=たまこや"
+      ]
     },
     {
       "id": "mascot-kumacchi",
       "kind": "proper-name",
       "status": "approved",
       "decision": "D-20261101-chats",
-      "src": ["くまっち"],
+      "src": [
+        "くまっち"
+      ],
       "zh": "库玛奇",
-      "migrated_from": ["user_terms#terms/src=くまっち"]
+      "migrated_from": [
+        "user_terms#terms/src=くまっち"
+      ]
     },
     {
       "id": "genbu-tengen",
       "kind": "character-term",
       "status": "approved",
       "decision": "D-20261101-chats",
-      "src": ["てんげんひょうじんは", "天玄氷刃波"],
+      "src": [
+        "てんげんひょうじんは",
+        "天玄氷刃波"
+      ],
       "zh": "天玄冰刃波",
-      "migrated_from": ["user_terms#terms/src=てんげんひょうじんは", "user_terms#terms/src=天玄氷刃波"]
+      "migrated_from": [
+        "user_terms#terms/src=てんげんひょうじんは",
+        "user_terms#terms/src=天玄氷刃波"
+      ]
     },
     {
       "id": "meaningful-kana",
       "kind": "orthography-rule",
       "status": "project",
       "decision": "D-trial-r33",
-      "src": ["『こうひょう』", "『しゅうにん』"],
+      "src": [
+        "『こうひょう』",
+        "『しゅうにん』"
+      ],
       "zh": "保留假名读音，如 好评（こうひょう）",
-      "migrated_from": ["trial#meaningful_kana"]
+      "migrated_from": [
+        "trial#meaningful_kana"
+      ]
     },
     {
       "id": "name-variant-kanji",
       "kind": "person-name",
       "status": "approved",
       "decision": "D-trial-r33",
-      "src": ["天ヶ瀬", "都築", "花園百々人"],
-      "zh": "按 name_table（天濑、都筑、花园百百人）",
-      "migrated_from": ["template#items/key=proper-name-variant-kanji"]
+      "src": [
+        "天ヶ瀬"
+      ],
+      "zh": "天濑",
+      "migrated_from": [
+        "template#items/key=proper-name-variant-kanji"
+      ],
+      "family": [
+        {
+          "src": [
+            "都築"
+          ],
+          "zh": "都筑"
+        },
+        {
+          "src": [
+            "花園百々人"
+          ],
+          "zh": "花园百百人"
+        }
+      ]
     },
     {
       "id": "pending-beigoma",
       "kind": "common-term",
       "status": "pending",
-      "src": ["ベーゴマ"],
+      "src": [
+        "ベーゴマ"
+      ],
       "zh": null,
-      "migrated_from": ["trial#pending_terms/0"]
+      "migrated_from": [
+        "trial#pending_terms/0"
+      ]
     },
     {
       "id": "pending-ayakashi",
       "kind": "proper-name",
       "status": "pending",
-      "src": ["アヤカシ清掃社"],
+      "src": [
+        "アヤカシ清掃社"
+      ],
       "zh": null,
-      "migrated_from": ["trial#pending_terms/1"]
+      "migrated_from": [
+        "trial#pending_terms/1"
+      ]
     },
     {
       "id": "pending-clouds",
       "kind": "common-term",
       "status": "pending",
-      "src": ["ひつじ雲", "おぼろ雲"],
+      "src": [
+        "ひつじ雲",
+        "おぼろ雲"
+      ],
       "zh": null,
       "note": "需独立核验专业术语。",
-      "migrated_from": ["trial#pending_terms/2", "template#items/key=specialist-cloud-names"]
+      "migrated_from": [
+        "trial#pending_terms/2",
+        "template#items/key=specialist-cloud-names"
+      ]
     }
   ],
   "supersedes": [
-    { "id": "sup-card-line-kirio-chouchou", "source": "card_line#speakers/017kir", "fragment": "ちょうちょさん→蝶蝶小姐", "by": "kirio-chouchou" },
-    { "id": "sup-card-line-ren-chibi", "source": "card_line#speakers/040ren", "fragment": "チビ→小不点", "by": "ren-chibi" },
-    { "id": "sup-card-line-pierre-kaeru", "source": "card_line#speakers/010pie", "fragment": "カエール→青蛙玩偶", "by": "pierre-kaeru" },
-    { "id": "sup-card-line-kaeru-term", "source": "card_line#terms/src=カエール", "fragment": "青蛙玩偶", "by": "pierre-kaeru" },
-    { "id": "sup-card-line-passion-statue", "source": "card_line#terms/src=パッションの像", "fragment": "PASSION之像", "by": "passion", "note": "译法不变，并入 passion 词族。" },
-    { "id": "sup-card-line-no-san-global", "source": "card_line#global_rules/2", "fragment": "不用“桑”", "by": "honorific-san-nickname", "note": "收窄为人名＋さん不用桑。" },
-    { "id": "sup-card-line-no-san-chat", "source": "card_line#chat_rules/0", "fragment": "不用“桑”", "by": "honorific-san-nickname", "note": "收窄为人名＋さん不用桑。" },
-    { "id": "sup-trial-shiki-tchi", "source": "trial#items/key=shiki-tchi", "fragment": "人名＋仔", "by": "shiki-tchi" },
-    { "id": "sup-trial-san-not-sensei", "source": "trial#global_required/8", "fragment": "さん默认不等于先生", "by": "honorific-san-male", "note": "R3.2 遗留规则，R3.3 已撤回。" },
-    { "id": "sup-voice-kirio-wagahai", "source": "voice#profiles/canonical_ja=猫柳キリオ", "fragment": "吾辈／在下仍是逐句译风决策", "by": "kirio-wagahai" }
+    {
+      "id": "sup-card-line-kirio-chouchou",
+      "source": "card_line#speakers/017kir",
+      "fragment": "ちょうちょさん→蝶蝶小姐",
+      "by": "kirio-chouchou",
+      "replacement": "ちょうちょさん→蝶蝶桑"
+    },
+    {
+      "id": "sup-card-line-ren-chibi",
+      "source": "card_line#speakers/040ren",
+      "fragment": "チビ→小不点",
+      "by": "ren-chibi",
+      "replacement": "称武的チビ→矮子（其他人说的チビ按语境）"
+    },
+    {
+      "id": "sup-card-line-pierre-kaeru",
+      "source": "card_line#speakers/010pie",
+      "fragment": "カエール→青蛙玩偶",
+      "by": "pierre-kaeru",
+      "replacement": "カエール→蛙埃尔（专名；普通青蛙照常译）"
+    },
+    {
+      "id": "sup-card-line-kaeru-term",
+      "source": "card_line#terms/src=カエール",
+      "fragment": "青蛙玩偶",
+      "by": "pierre-kaeru",
+      "replacement": "蛙埃尔"
+    },
+    {
+      "id": "sup-card-line-passion-statue",
+      "source": "card_line#terms/src=パッションの像",
+      "fragment": "PASSION之像",
+      "by": "passion",
+      "note": "译法不变，并入 passion 词族。",
+      "replacement": "PASSION之像"
+    },
+    {
+      "id": "sup-card-line-no-san-global",
+      "source": "card_line#global_rules/2",
+      "fragment": "不用“桑”",
+      "by": "honorific-san-nickname",
+      "note": "收窄为人名＋さん不用桑。",
+      "replacement": "人名＋さん不用“桑”（登记表中的固定绰号除外）"
+    },
+    {
+      "id": "sup-card-line-no-san-chat",
+      "source": "card_line#chat_rules/0",
+      "fragment": "不用“桑”",
+      "by": "honorific-san-nickname",
+      "note": "收窄为人名＋さん不用桑。",
+      "replacement": "人名＋さん不用“桑”（登记表中的固定绰号除外）"
+    },
+    {
+      "id": "sup-trial-shiki-tchi",
+      "source": "trial#items/key=shiki-tchi",
+      "fragment": "人名＋仔",
+      "by": "shiki-tchi",
+      "replacement": "人名＋亲"
+    },
+    {
+      "id": "sup-trial-san-not-sensei",
+      "source": "trial#global_required/8",
+      "fragment": "さん默认不等于先生；除道流先生、道夫先生等精确冻结词条外，优先自然姓名称呼。",
+      "by": "honorific-san-male",
+      "note": "R3.2 遗留规则，R3.3 已撤回。",
+      "replacement": "男性人名＋さん译原文那一级姓名＋先生，女性用小姐；职业＋さん不加先生。"
+    },
+    {
+      "id": "sup-trial-honorific-mechanical",
+      "source": "trial#global_required/5",
+      "fragment": "不机械统一为先生",
+      "by": "honorific-san-male",
+      "note": "R3.3 起男性人名＋さん一律为先生。",
+      "replacement": "男性人名＋さん一律译先生，职业＋さん与固定绰号除外"
+    },
+    {
+      "id": "sup-voice-kirio-wagahai",
+      "source": "voice#profiles/canonical_ja=猫柳キリオ/forbidden",
+      "fragment": "吾辈／在下仍是逐句译风决策",
+      "by": "kirio-wagahai",
+      "replacement": "ワガハイ→吾辈，ワガハイたち→吾辈们；不用在下"
+    }
   ]
 }

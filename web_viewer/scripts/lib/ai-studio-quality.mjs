@@ -17,7 +17,7 @@ export function qualityTargets(batch, ids) {
 }
 
 export function makeQualityRequest(batch, parentOutput, ids) {
-  assert.equal(batch.projection_version, 3, 'Quality repair requires V3 trial policy')
+  assert(batch.projection_version >= 3, 'Quality repair requires a V3+ trial policy')
   const parsed = parseStudioResult(parentOutput, batch.rows.map(row => row.rid))
   assert.deepEqual(parsed.errors, [], 'Parent output must be structurally complete')
   const targets = qualityTargets(batch, ids)

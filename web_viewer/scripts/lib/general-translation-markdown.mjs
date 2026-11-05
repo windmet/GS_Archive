@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import { hash, shards, CARD_LINE_KINDS, CHAT_KINDS } from './general-translation-batches.mjs'
 import { KINDS } from './translation-domains.mjs'
 import { protectProducerAddressingForTranslation, restoreProducerAddressingAfterTranslation } from '../../src/localization/story/ProducerAddressing.js'
+import { addedRuleLines, supersededText, termsForRows } from './term-registry.mjs'
 
 const kinds = Object.fromEntries(Object.entries(KINDS).map(([kind, info]) => [kind, info.model]))
 const fields = { name:'名称',title:'标题',description:'说明',normal:'普通',awakened:'特训',extra:'额外',text:'台词','self-intro':'自我介绍' }
@@ -27,29 +28,16 @@ function ownerLabel(code) {
   unitNames ||= new Map(JSON.parse(fs.readFileSync(new URL('../../public/data/masterdata/idol_unit_dictionary.json', import.meta.url), 'utf8')).units.map(unit => [unit.unit_code, unit.unit_name]))
   return unitNames.get(code) || code || '未知'
 }
-// Project-wide constraints (R3.3 policy, term decisions, per-speaker voice notes) injected into character-line and chat inputs.
+// Project-wide constraints (R3.3 policy, per-speaker voice notes) injected into character-line and chat inputs.
+// The frozen card-line policy keeps its bytes for old receipts; its prose passes through the term
+// registry's replacements, and the term list itself comes only from the registry.
 let promptPolicy
 const promptRules = () => promptPolicy ||= JSON.parse(fs.readFileSync(new URL('../../translation/studio/policy/card-line-prompt.v1.json', import.meta.url), 'utf8'))
-let userTermPolicy
-const userTerms = () => {
-  if (!userTermPolicy) {
-    userTermPolicy = JSON.parse(fs.readFileSync(new URL('../../translation/studio/policy/user-approved-terms.v1.json', import.meta.url), 'utf8'))
-    assert.equal(userTermPolicy.schema, 'GS-USER-APPROVED-TERMS-V1')
-    assert.equal(userTermPolicy.status, 'project-user-approved')
-    assert(Array.isArray(userTermPolicy.terms))
-    assert.equal(new Set(userTermPolicy.terms.map(term=>term.src)).size,userTermPolicy.terms.length)
-  }
-  return userTermPolicy.terms
-}
-const relevantTerms = rows => {
-  const text = rows.map(row => row.source).join('\n')
-  // Only the explicitly approved supplement tolerates line breaks within a term.
-  // Keep the original R3.3 policy bytes frozen for historical receipt verification.
-  const compactText = rows.map(row=>row.source.replace(/\s+/gu,'')).join('\n')
-  const selected = [...promptRules().terms.filter(term => text.includes(term.src)),
-    ...userTerms().filter(term=>compactText.includes(term.src.replace(/\s+/gu,'')))]
-  return [...new Map(selected.map(term=>[term.src,term])).values()].map(term => `- ${term.src} → ${term.zh}${term.note ? `（${term.note}）` : ''}`)
-}
+const policyRules = key => [...promptRules()[key].map((rule, index) => supersededText(`card_line#${key}/${index}`, rule)),
+  ...addedRuleLines().map(rule => `【术语规则】${rule}`)]
+const speakerNote = speaker => supersededText(`card_line#speakers/${speaker}`, promptRules().speakers[speaker] || '')
+const relevantTerms = rows => termsForRows(rows.map(row => ({ source: row.source, speaker: speakerOf(row) })))
+  .map(term => `- ${term.src} → ${term.zh}${term.note ? `（${term.note}）` : ''}`)
 // Producer macros reach the model only as story-style markers and come back to the source macro
 // (restoreAddress), so an overlay never holds a translated slot such as ●●●●制作人.
 const ADDRESS_RULE = '{{GS_ADDRESS:编号:类型}} 是程序替换的制作人称呼（玩家设定的名字，未设定时显示“制作人”），整体是不可改动的占位符：可以随中文语序移动，但不能翻译、改写、删除或重复，也不要在它后面再补“制作人”。producer_name_with_p 本身已含“制作人”；后面原文的さん不译，ちゃん→酱、くん→君照常。producer_name 后面跟着的称呼（監督、ぴぃちゃん、番長さん、ボス等）照常翻译。'
@@ -91,7 +79,7 @@ export function renderCompactInput(batch, contexts = new Map()) {
   const chat = batch.rows.length > 0 && batch.rows.every(isChat)
   const lines = [
     `# SideM GS ${chat ? '聊天' : characterLines ? '角色台词' : '资料'}翻译 · ${batch.batch_id}`, '',
-    ...(chat ? [...CHAT_RULES, ...promptRules().chat_rules] : characterLines ? [...CHARACTER_LINE_RULES, ...promptRules().global_rules] : [
+    ...(chat ? [...CHAT_RULES, ...policyRules('chat_rules')] : characterLines ? [...CHARACTER_LINE_RULES, ...policyRules('global_rules')] : [
     '你是日中游戏本地化译者。将下面每条日文译成自然、准确的简体中文，供资料馆的名称、图鉴说明和技能说明使用。',
     '本批只含通用资料，不含剧情台词、首页对话或工作通讯。名称简洁有辨识度，说明按中文自然组织；技能严格保留触发条件、概率、时长、对象和效果。不要机械逐词直译，也不要擅自润色成角色对白。',
     '每个短编号独立翻译，不能漏条、合并、拆分或把含义搬到相邻条目。名称可有创意，但不能添加原文没有的事实、获取来源、衣装关联或解锁条件。同一专名保持一致；英文专名保留，普通日语语法译成中文。',
@@ -120,7 +108,7 @@ export function renderCompactInput(batch, contexts = new Map()) {
     const next = `${speaker}:${row.kind}:${row.field}`
     if (next !== group) {
       lines.push(`### ${speaker ? `说话人：${speakerLabel(speaker)} · ` : ''}${kinds[row.kind] || row.kind} · ${fields[row.field] || row.field}`); group = next
-      const note = speaker && speaker !== noteSpeaker ? promptRules().speakers[speaker] : ''
+      const note = speaker && speaker !== noteSpeaker ? speakerNote(speaker) : ''
       if (speaker) noteSpeaker = speaker
       if (note) lines.push(`【角色备注：${note}】`)
     }
