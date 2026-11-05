@@ -9,6 +9,8 @@
 - 包：本 worktree `.deploy/pkg-9e468f21`，8,874 文件 / 205,217,781 bytes；只包含代码、读模型、已提交译文和必要正文，无完整 public 媒体副本。打包前 E 盘空闲约 408 GB。
 - `npm run build:check` 通过；`prepare-readmodel-preview.mjs` 的构建审计、读模型与节目册检查通过。Wrangler 上传 1,781 文件，复用 7,091 文件，Functions 编译和部署成功。
 - 稳定入口 `preview-receipt.json` 已核对 source/release/data/compiled；`productionApproved=false`。首页、`/live/`、`/studio/` HTTP 200，保留 `noindex, nofollow`。
+- Cloudflare 列表确认部署 `4ee97bd4-e47f-46e4-8524-01c7d0ea6ff0` 的环境为 Preview、分支正确。`/_catalog/bootstrap.json` 与 `/data/compiled/manifest.json` 返回 200 JSON；线上舞台 JS/CSS 与包内 SHA-256 一致。
+- `verify-deployed-translations.mjs https://preview.gs-archive.com` 通过：release `4b5bec66f349…`，1,665 个译文包逐字节匹配 manifest（打包的 1,666 JSON 文件含 manifest）。
 - 本轮浏览器验收未完成：in-app browser 打开超时；Windows computer-use 无法可靠识别浏览器 URL，工具中止 UI 操作。不能据 HTTP 结果宣称编排、播放、真机 iPhone 或全站渲染验收通过。
 - 本次命令未部署 Production；既有自动构建与正式域名状态不由本记录推定。
 
