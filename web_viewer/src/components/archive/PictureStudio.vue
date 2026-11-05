@@ -91,7 +91,7 @@
                 <span class="studio-preview-art"><img v-if="media[`frames:${frame.id}`]?.image?.url" :src="media[`frames:${frame.id}`].image.url" alt="" loading="lazy" decoding="async" /><ImageOff v-else :size="20" /></span><span>{{ frame.label }}</span>
               </button>
             </div>
-            <p class="studio-boundary">相框使用原始锚点，尺寸仍为网页近似。</p>
+            <p class="studio-boundary">相框按原始锚点与原尺寸摆放。</p>
           </template>
           <template v-else>
             <div class="studio-preview-grid" role="group" aria-label="滤镜">
