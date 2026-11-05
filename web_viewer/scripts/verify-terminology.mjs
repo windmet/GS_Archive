@@ -3,7 +3,7 @@
 // uses a forbidden rendering is a violation; a unit that lacks the chosen rendering is "missing".
 // Counts may only go down from config/terminology-baseline.json, so backfills ratchet it.
 //   node scripts/verify-terminology.mjs [--report <file>] [--write-baseline]
-// Story units need the local Reader corpus, so this runs locally (gate:source), not in CI.
+// The Reader documents and story catalogues are tracked, so this runs in the CI source batch.
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'

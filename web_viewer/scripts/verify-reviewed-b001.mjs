@@ -4,6 +4,7 @@ import path from 'node:path'
 import { loadStudioIndexes, loadStudioDocument, projectRoot, sha256 } from './lib/ai-studio-source.mjs'
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 import { loadSourceSupersessions, reconstructCatalogue } from './lib/studio-source-supersessions.mjs'
+import { readCatalogueBeforeTermAmendments } from './lib/term-amendments.mjs'
 
 const reviewDir = path.join(projectRoot, 'translation/studio/reviews/B001-main-r3-20260929')
 const receipt = JSON.parse(await fs.readFile(path.join(reviewDir, 'receipt.json'), 'utf8'))
@@ -22,7 +23,7 @@ const reviewed = []
 const documentIds = new Set()
 for (const item of receipt.files) {
   const bytes = rekeyed.has(item.scenario_id) ? await reconstructCatalogue(rekeyed.get(item.scenario_id))
-    : await fs.readFile(path.join(projectRoot, 'public/translations/zh-CN/scenarios', `${item.scenario_id}.json`))
+    : readCatalogueBeforeTermAmendments(item.scenario_id)
   assert.equal(sha256(bytes), item.sha256, `Reviewed file drift: ${item.scenario_id}`)
   const overlay = JSON.parse(bytes)
   assert.deepEqual(validateStoryTranslationOverlay(overlay, { scenarioId: item.scenario_id, locale: 'zh-CN' }),

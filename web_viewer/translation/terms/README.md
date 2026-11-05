@@ -42,3 +42,9 @@
 - 片假名 パッション／ぱっしょん → **PASSION**；汉字 情熱 照常译“热情”，两者由此区分。
 - パッションの像 → PASSION之像；パッションチョコ（DX）→ PASSION巧克力（DX）；パッションシール → PASSION贴纸；パ、パ、パ、パッション → PA、PA、PA、PASSION。
 - 原文已是拉丁字母的 passion（舞田类）按原文大小写保留。
+
+## 存量回填
+
+已发布译文的术语修正记在 `translation/studio/amendments/<日期>-terms.json`（GS-TERM-AMENDMENT-V1），每条带原文绑定和改前文本。审校回执的复现脚本先撤销术语修正、再撤销空格修正，所以历史字节不变（`scripts/lib/term-amendments.mjs`）。`npm run verify:terminology` 检查全量译文不劣于 `config/terminology-baseline.json`，并验证修正记录可复现。回填降低计数后，用 `node scripts/verify-terminology.mjs --write-baseline` 重写基线。
+
+2026-11-05 第一批：203 个剧情单元、131 条 TM，另有 3 个草稿生成器（照片贴纸、道具礼物、元数据）同步改写。已批准词条的禁用写法降为 0。基线里仍留着这批范围外的 315プロ 等缺项。

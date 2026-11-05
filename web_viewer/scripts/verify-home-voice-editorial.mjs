@@ -4,14 +4,16 @@ import {createHash} from 'node:crypto'
 import {parseCompactReturn} from './lib/general-translation-markdown.mjs'
 import {sourceUnits,validateGeneralReturn} from './lib/general-translation-batches.mjs'
 import {readMemory,checkTranslation} from './lib/translation-memory.mjs'
+import {memoryBeforeTermAmendments,publishedBeforeTermAmendments} from './lib/term-amendments.mjs'
 
 // Replay original model returns through editorial changes before checking current
 // TM/publication. This protects unchanged rows as well as the targeted corrections.
 const read=file=>JSON.parse(fs.readFileSync(file,'utf8'))
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
 const root='translation/studio/general/returns'
-const memory=readMemory(process.cwd()),units=sourceUnits(process.cwd())
-const published=read('public/translations/zh-CN/archive-general/card-lines.json').entries
+// Term amendments postdate these receipts; replay against the text they replaced.
+const memory=memoryBeforeTermAmendments(readMemory(process.cwd())),units=sourceUnits(process.cwd())
+const published=publishedBeforeTermAmendments(read('public/translations/zh-CN/archive-general/card-lines.json').entries)
 const seen=new Set()
 let imported=0,reviewed=0,changes=0,pending=0,followupChanges=0,effectiveChanges=0
 for(let number=1;number<=6;number++) {

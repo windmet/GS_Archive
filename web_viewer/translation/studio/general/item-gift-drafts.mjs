@@ -18,10 +18,10 @@ Wとお揃い！サンバイザー	与 W 同款！遮阳帽
 『New year 315live』ラバーバンド	New year 315live 橡胶手环
 想いを告げるチョコレート	传达心意的巧克力
 想いに応えるマカロン	回应心意的马卡龙
-パッションシール	热情贴纸
+パッションシール	PASSION贴纸
 315ステッカー	315 贴纸
-パッションチョコ	热情巧克力
-パッションチョコDX	热情巧克力 DX
+パッションチョコ	PASSION巧克力
+パッションチョコDX	PASSION巧克力DX
 `.trim().split('\n').map(line=>line.split('\t')));
 export function itemGiftNameDraft(source,idolName) {
   if(Object.hasOwn(names,source)) return names[source];

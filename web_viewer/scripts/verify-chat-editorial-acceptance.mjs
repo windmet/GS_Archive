@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto'
 import {parseCompactReturn} from './lib/general-translation-markdown.mjs'
 import {sourceUnits,validateGeneralReturn} from './lib/general-translation-batches.mjs'
 import {readMemory,checkTranslation} from './lib/translation-memory.mjs'
+import {memoryBeforeTermAmendments,publishedBeforeTermAmendments} from './lib/term-amendments.mjs'
 import {protectProducerAddressingForTranslation,restoreProducerAddressingAfterTranslation} from '../src/localization/story/ProducerAddressing.js'
 
 // Preserve the imported editorial returns. Acceptance is a separately logged
@@ -66,8 +67,10 @@ for(const reference of registry.followups) {
   stages.push({receipt,batches:new Set(batches),byKey,seen:new Set(),count:0})
   previousHash=reference.receipt_sha256
 }
-const units=sourceUnits(process.cwd()),memory=readMemory(process.cwd())
-const published=read('public/translations/zh-CN/archive-general/chats.json')
+// Term amendments postdate these receipts; replay against the text they replaced.
+const units=sourceUnits(process.cwd()),memory=memoryBeforeTermAmendments(readMemory(process.cwd()))
+const publishedFile=read('public/translations/zh-CN/archive-general/chats.json')
+const published={...publishedFile,entries:publishedBeforeTermAmendments(publishedFile.entries)}
 const seen=new Set()
 const semanticBatches=new Set([...receipt.scope.semantic_rechecked_batches,...stages.flatMap(stage=>[...stage.batches])])
 let count=0
