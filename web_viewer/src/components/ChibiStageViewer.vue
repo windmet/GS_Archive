@@ -165,7 +165,7 @@
         <div class="performance-hud">
           <div class="performance-actions">
             <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
-            <button class="stage-icon-action" type="button" aria-label="沉浸观看" :title="touchUi ? '沉浸观看 · 隐藏界面并全屏' : '沉浸观看 · 隐藏界面并全屏 · F'" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
+            <button class="stage-icon-action" type="button" :aria-label="immersiveLabel" :title="touchUi ? `${immersiveLabel} · 隐藏界面并全屏` : `${immersiveLabel} · 隐藏界面并全屏 · F`" :disabled="fullscreenPending" @click="playImmersive"><Maximize :size="19" /></button>
           </div>
         </div>
 
@@ -226,7 +226,7 @@
             step="100"
             @change="seekStage"
           />
-          <button class="transport-immersive" type="button" aria-label="沉浸观看" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
+          <button class="transport-immersive" type="button" :aria-label="immersiveLabel" :disabled="fullscreenPending" @click="playImmersive"><Maximize :size="19" /></button>
         </div>
       </section>
 
@@ -529,6 +529,9 @@
     </ArchiveTerminalDialog>
     <!-- Pure mode keeps its controls in a strip along the top edge: hidden while the pointer is on the
          stage, shown when it reaches the top or a key moves focus there. -->
+    <!-- iPhone has no element fullscreen: the stage already covers the viewport, so 全屏播放 there is
+         this pseudo-fullscreen; in portrait it asks once to turn the phone, and the hint fades. -->
+    <p v-if="pureMode && pseudoFullscreen" class="pure-rotate-hint" role="status"><RotateCw :size="16" aria-hidden="true" />横置手机，舞台更大</p>
     <div v-if="pureMode" class="pure-peek">
       <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
       <button ref="pureExitButton" class="pure-exit" type="button" @click="toggleImmersive"><Minimize :size="16" />退出沉浸<kbd v-if="!touchUi">F</kbd></button>
@@ -577,6 +580,7 @@ import {
   Play,
   RefreshCw,
   RotateCcw,
+  RotateCw,
   X,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
@@ -693,7 +697,10 @@ const inspectorOpen = ref(false), helpOpen = ref(false), vocalSettingsOpen = ref
 const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId(), qualityTitleId = useId()
 const costumeNotice = ref(''), panelNotice = ref(''), snapshotBusy = ref(false)
 const { active: fullscreenActive, pending: fullscreenPending, notice: fullscreenNotice, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
-const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，沉浸观看只隐藏了界面。' : '')
+const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value === 'fullscreen-unavailable' ? '此浏览器不支持网页全屏，已改为铺满屏幕观看。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，沉浸观看只隐藏了界面。' : '')
+// Immersive mode without real fullscreen (iPhone Safari, or a refused request): the fixed stage root
+// already fills the viewport, the browser bars stay.
+const pseudoFullscreen = computed(() => pureMode.value && !fullscreenActive.value && !fullscreenPending.value)
 const snapshotUrl = ref(''), snapshotFilename = ref('')
 let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
@@ -1712,6 +1719,14 @@ async function applyFamilyCostume() {
 // Fullscreen is requested first, inside the user gesture; where the browser refuses it (iOS
 // Safari), the controls are still hidden. Leaving fullscreen through the browser ends it too.
 let immersiveFullscreen = false
+// 全屏播放: the same Maximize control; paused, it also starts the stage. Playback is begun first so its
+// audio unlock runs inside the tap, then fullscreen is requested before anything is awaited.
+const immersiveLabel = computed(() => playing.value || stageStarting.value ? '沉浸观看' : '全屏播放')
+async function playImmersive() {
+  const start = playing.value || stageStarting.value || !stageTransportReady.value || preloading.value ? null : toggleStage()
+  if (!pureMode.value) await toggleImmersive()
+  await start
+}
 async function toggleImmersive() {
   if (pureMode.value) {
     immersiveFullscreen = false
@@ -4630,6 +4645,11 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inherit; }
 .pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity 160ms ease-out; }
 .pure-peek:hover, .pure-peek:has(:focus-visible) { opacity: 1; }
+/* Pseudo-fullscreen hint: portrait only, gone after a few seconds or once the phone is turned. */
+.pure-rotate-hint { position: fixed; z-index: 8; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); display: none; align-items: center; gap: var(--gs-space-2); margin: 0; padding: var(--gs-space-3) var(--gs-space-5); border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); white-space: nowrap; translate: -50% 0; pointer-events: none; animation: pure-rotate-hint 5s ease-in forwards; }
+@media (orientation: portrait) { .pure-rotate-hint { display: flex; } }
+@keyframes pure-rotate-hint { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pure-rotate-hint { animation-timing-function: steps(1, end); } }
 .pure-exit { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; }
 /* Touch has no pointer to reach the edge: the screenshot and the way back stay in the corner, faint. */
 @media (hover: none) {
