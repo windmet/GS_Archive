@@ -4,7 +4,8 @@
 // SIDEM_READMODEL_CANDIDATE and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
 // Also a working template for later path-locator journeys (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md).
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -13,7 +14,7 @@ const out = process.argv[3] || '.analysis/detail-identity'
 mkdirSync(out, { recursive: true })
 const cache = path.join(os.homedir(), 'AppData/Local/ms-playwright')
 const dir = readdirSync(cache).filter(n => /^chromium-\d+$/.test(n)).sort().reverse().find(n => existsSync(path.join(cache, n, 'chrome-win64/chrome.exe')))
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-journey-'))
+const profile = createBrowserProfile('detail-identity')
 const port = 9700 + Math.floor(Math.random() * 200)
 const chrome = spawn(path.join(cache, dir, 'chrome-win64/chrome.exe'), [`--remote-debugging-port=${port}`, '--headless=new', `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' })
 const sleep = ms => new Promise(r => setTimeout(r, ms))
@@ -74,7 +75,7 @@ try {
   check('J5 back/forward keep identity URLs', back === memberUrl && fwd === '/units/01jup/', `back=${back} forward=${fwd}`)
   check('console errors', errors.length === 0, errors.join(' | ') || 'none')
 } finally {
-  socket.close(); chrome.kill(); try { rmSync(profile, { recursive: true, force: true }) } catch {}
+  socket.close(); await closeBrowser(chrome, profile)
 }
 writeFileSync(path.join(out, 'journey.json'), JSON.stringify({ base, at: new Date().toISOString(), results }, null, 2))
 process.exitCode = results.every(r => r.ok) ? 0 : 1

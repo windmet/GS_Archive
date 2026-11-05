@@ -6,7 +6,8 @@
 // Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server with the read-model candidate (picked
 // automatically, or SIDEM_READMODEL_CANDIDATE) and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -18,14 +19,14 @@ const binaries = readdirSync(cache).sort().reverse().flatMap(dir => [
   path.join(cache, dir, 'chrome-headless-shell-win64/chrome-headless-shell.exe'), path.join(cache, dir, 'chrome-win64/chrome.exe')])
   .filter(file => existsSync(file)).sort((a, b) => Number(b.includes('headless-shell')) - Number(a.includes('headless-shell')))
 if (!binaries.length) throw new Error('No cached Playwright Chromium found')
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-journey-'))
+const profile = createBrowserProfile('path-locator')
 const port = 9700 + Math.floor(Math.random() * 200)
 const headless = binaries[0].includes('headless-shell') ? [] : ['--headless=new']
 const chrome = spawn(binaries[0], [`--remote-debugging-port=${port}`, ...headless, `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' })
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 let targets
 for (let i = 0; i < 50 && !targets?.length; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() } catch { await sleep(200) } }
-if (!targets?.some(target => target.type === 'page')) { chrome.kill(); throw new Error(`${binaries[0]} did not expose a browser page`) }
+if (!targets?.some(target => target.type === 'page')) { await closeBrowser(chrome, profile); throw new Error(`${binaries[0]} did not expose a browser page`) }
 const socket = new WebSocket(targets.find(t => t.type === 'page').webSocketDebuggerUrl)
 await new Promise(r => socket.addEventListener('open', r))
 let seq = 0, errors = []
@@ -455,7 +456,7 @@ try {
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {
-  socket.close(); chrome.kill(); try { rmSync(profile, { recursive: true, force: true }) } catch {}
+  socket.close(); await closeBrowser(chrome, profile)
 }
 writeFileSync(path.join(out, 'journey.json'), JSON.stringify({ base, at: new Date().toISOString(), results }, null, 2))
 process.exitCode = results.every(r => r.ok) ? 0 : 1

@@ -4,7 +4,8 @@
 // --styles also samples each control role's computed style and writes styles.json (see lib/control-style-sample.mjs).
 // Needs a running dev server and a cached Playwright Chromium (no npm package required).
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -68,7 +69,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 prepareGalleryData()
 const out =path.join(root, '.analysis/gallery', label)
 mkdirSync(out, { recursive: true })
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-gallery-'))
+const profile = createBrowserProfile('gallery')
 const port = 9300 + Math.floor(Math.random() * 400)
 const chrome = spawn(findChrome(), [`--remote-debugging-port=${port}`, '--headless=new', `--user-data-dir=${profile}`,
   '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-first-run', 'about:blank'], { stdio: 'ignore' })
@@ -147,8 +148,8 @@ try {
     }
   }
 } finally {
-  socket.close(); chrome.kill()
-  try { rmSync(profile, { recursive: true, force: true }) } catch {}
+  socket.close()
+  await closeBrowser(chrome, profile)
 }
 writeFileSync(path.join(out, 'report.json'), JSON.stringify({ label, base, capturedAt: new Date().toISOString(), report }, null, 2))
 if (styles) writeFileSync(path.join(out, 'styles.json'), JSON.stringify({ label, summary: summarizeControlStyles(styleSamples), samples: styleSamples }, null, 2))

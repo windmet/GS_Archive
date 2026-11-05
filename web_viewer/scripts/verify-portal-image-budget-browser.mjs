@@ -6,7 +6,8 @@
 //   node scripts/verify-portal-image-budget-browser.mjs [base] [outDir]
 // Needs a running server (dev, scripts/serve-archive-build.mjs or a preview URL) and a cached Playwright Chromium.
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -21,7 +22,7 @@ const results = []
 const check = (name, ok, detail) => { results.push({ name, ok, detail }); console.log(`${ok ? 'ok  ' : 'FAIL'} ${name} — ${detail}`) }
 
 async function session(viewport, run, { blocked = [] } = {}) {
-  const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-budget-'))
+  const profile = createBrowserProfile('budget')
   const port = 9600 + Math.floor(Math.random() * 90)
   const chrome = spawn(path.join(cache, dir, 'chrome-win64/chrome.exe'), [`--remote-debugging-port=${port}`, '--headless=new', `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' })
   try {
@@ -50,7 +51,7 @@ async function session(viewport, run, { blocked = [] } = {}) {
     await run({ ev, idle, requests, errors, shot: async name => writeFileSync(path.join(out, `${name}.png`), Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64')) })
     socket.close()
   } finally {
-    chrome.kill(); await sleep(300); try { rmSync(profile, { recursive: true, force: true }) } catch {}
+    await closeBrowser(chrome, profile)
   }
 }
 const cardArt = requests => requests.filter(r => /\/assets\/card-art\//.test(r.url))

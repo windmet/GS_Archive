@@ -5,7 +5,8 @@
 // Default base http://127.0.0.1:5177: a dev server with the read-model candidate. Raw CDP on a cached Playwright
 // Chromium; chrome-headless-shell is preferred because it also starts where the full chrome.exe does not.
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -14,7 +15,7 @@ const cache = path.join(os.homedir(), 'AppData/Local/ms-playwright')
 const binaries = readdirSync(cache).sort().reverse().flatMap(dir => [
   path.join(cache, dir, 'chrome-headless-shell-win64/chrome-headless-shell.exe'), path.join(cache, dir, 'chrome-win64/chrome.exe')])
   .filter(file => existsSync(file)).sort((a, b) => Number(b.includes('headless-shell')) - Number(a.includes('headless-shell')))
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-breadcrumb-'))
+const profile = createBrowserProfile('breadcrumb')
 const port = 9500 + Math.floor(Math.random() * 150)
 const headless = binaries[0].includes('headless-shell') ? [] : ['--headless=new']
 const chrome = spawn(binaries[0], [`--remote-debugging-port=${port}`, ...headless, `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' })
@@ -78,6 +79,6 @@ try {
   await waitFor(`location.pathname === ${JSON.stringify(eventPath)} && !!document.querySelector('.archive-breadcrumb a')`, 15000)
   check('B4 history back returns to the event page', (await loc()) === eventPath && errors.length === 0, `${await loc()} errors=${errors.join(' | ') || 0}`)
 } finally {
-  socket.close(); chrome.kill(); try { rmSync(profile, { recursive: true, force: true }) } catch {}
+  socket.close(); await closeBrowser(chrome, profile)
 }
 process.exitCode = results.length === 4 && results.every(Boolean) ? 0 : 1
