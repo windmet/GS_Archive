@@ -1,7 +1,8 @@
 // A1 trusted-input interaction runner. Conditions prove named transitions only, never whole-site PASS.
 import {spawn,execFileSync} from 'node:child_process';
-import {mkdtempSync,readdirSync,readFileSync,writeFileSync,mkdirSync,rmSync} from 'node:fs';
-import {createHash} from 'node:crypto'; import os from 'node:os';import path from 'node:path';import assert from 'node:assert/strict';
+import {mkdtempSync,readdirSync,readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs';
+import {createHash} from 'node:crypto'; import path from 'node:path';import assert from 'node:assert/strict';
 import {findChrome} from './lib/layout-chrome.mjs';import {inspectLayout} from './lib/layout-probes.mjs';
 const args=process.argv.slice(2),opt=(k,d)=>args.find(a=>a.startsWith('--'+k+'='))?.slice(k.length+3)||d;
 const base=opt('base','http://127.0.0.1:5198'),only=opt('only','').split(',').filter(Boolean),sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -11,7 +12,7 @@ const scenarios=JSON.parse(readFileSync(new URL('./qa/interaction-scenarios.json
 assert.ok(scenarios.length,'No scenarios selected');for(const flow of scenarios)for(const step of flow.steps){assert.ok(step.expect||step.change,'Missing observable expectation');new Function('return ('+(step.expect||step.change)+')');}
 const windows=opt('windows','320x720,1280x688').split(',').map(s=>s.split('x').map(Number));
 writeFileSync(path.join(output,'manifest.json'),JSON.stringify({args,head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),createdAt:new Date().toISOString(),scenarioHash:createHash('sha256').update(readFileSync(new URL('./qa/interaction-scenarios.json',import.meta.url))).digest('hex'),routeHash:createHash('sha256').update(readFileSync(new URL('./qa/layout-routes.json',import.meta.url))).digest('hex'),sourceHash:createHash('sha256').update(readFileSync(new URL(import.meta.url))).digest('hex')},null,2));
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-box-on-line-'))
+const profile = createBrowserProfile('interaction-states')
 const port = await new Promise(async resolve=>{const {createServer}=await import('node:net');const server=createServer();server.listen(0,'127.0.0.1',()=>{const selected=server.address().port;server.close(()=>resolve(selected))})})
 const chrome = spawn(findChrome(), [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-first-run', 'about:blank'], { stdio: 'ignore' })
 let socket
@@ -56,4 +57,4 @@ try {
     }
   }
   writeFileSync(path.join(output,'transitions.json'),JSON.stringify(records,null,2));console.log('Evidence:',output);
-}finally{socket?.close();chrome.kill();await sleep(300);try{rmSync(profile,{recursive:true,force:true})}catch{}}
+}finally{socket?.close();await closeBrowser(chrome,profile)}

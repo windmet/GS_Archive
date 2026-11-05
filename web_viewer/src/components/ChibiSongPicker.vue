@@ -8,7 +8,7 @@
           <div class="selected-song-copy"><strong>{{ selectedGroup.title }}</strong><small>{{ songSummary(selectedGroup) }}</small></div>
           <div v-if="$slots['current-actions']" class="current-song-actions"><slot name="current-actions" /></div>
         </div>
-        <div class="stage-arrangement">
+        <div ref="arrangementRef" class="stage-arrangement">
           <!-- Phones: one row names the current arrangement and opens the same picker as a bottom sheet. -->
           <button v-if="compact && selectedGroup.versions.length > 1" class="arrangement-summary" type="button" aria-haspopup="dialog" :aria-expanded="drawerOpen" :disabled="disabled" @click="drawerOpen = true"><span>编排</span><strong>{{ [kindLabels[selectedKind], selectedScript?.label].filter(Boolean).join(' · ') }}</strong><ChevronRight :size="17" aria-hidden="true" /></button>
           <component :is="compact ? ArchiveTerminalDialog : 'div'" v-if="selectedGroup.versions.length > 1" v-bind="compact ? { class: 'filter-sheet arrangement-sheet', open: drawerOpen, title: '编排', titleId: 'stage-arrangement-sheet-title' } : { class: 'arrangement-inline' }" @close="drawerOpen = false">
@@ -129,6 +129,16 @@ function chooseGroup(group) {
   if (next.id !== props.selectedSongId) emit('select-song', next.id)
 }
 
+// The stage header's 编排 pill: phones open the same sheet as the summary row; wide panels bring
+// the inline picker into view and put focus on the chosen option.
+const arrangementRef = ref(null)
+function openArrangement() {
+  if (props.disabled || !(selectedGroup.value?.versions.length > 1)) return
+  if (compact.value) { drawerOpen.value = true; return }
+  arrangementRef.value?.scrollIntoView({ block: 'nearest' })
+  arrangementRef.value?.querySelector('[role="radio"][aria-checked="true"]')?.focus({ preventScroll: true })
+}
+defineExpose({ openArrangement })
 function chooseVersion(id) {
   if (props.disabled || id === props.selectedSongId || !selectedGroup.value?.versions.some(version => version.id === id)) return
   emit('select-song', id)

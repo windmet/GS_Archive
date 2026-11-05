@@ -1,8 +1,9 @@
 // A0 candidate collector. A run completing is not a full-site quality gate.
 import {spawn,execFileSync} from 'node:child_process';
-import {existsSync,mkdtempSync,readdirSync,readFileSync,rmSync,writeFileSync,mkdirSync} from 'node:fs';
+import {existsSync,mkdtempSync,readdirSync,readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs';
 import {createHash} from 'node:crypto';
-import os from 'node:os'; import path from 'node:path'; import assert from 'node:assert/strict';
+import path from 'node:path'; import assert from 'node:assert/strict';
 import {findChrome} from './lib/layout-chrome.mjs';
 import {inspectLayout} from './lib/layout-probes.mjs';
 const args=process.argv.slice(2),opt=(key,fallback)=>args.find(a=>a.startsWith('--'+key+'='))?.slice(key.length+3)||fallback;
@@ -20,7 +21,7 @@ const routes=fixtureTest?['Demo','Worst case','Empty','One','Dense'].map(id=>({i
 if(!routes.length)throw Error('No matching routes');
 const windows=opt('windows',selfTest?'390x844':'320x720,390x844,1280x688').split(',').map(s=>s.split('x').map(Number));
 assert.ok(windows.every(([w,h])=>Number.isInteger(w)&&w>0&&Number.isInteger(h)&&h>0),'Invalid windows');
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-box-on-line-'))
+const profile = createBrowserProfile('layout-integrity')
 const port = 9500 + Math.floor(Math.random() * 400)
 const chrome = spawn(findChrome(), [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-first-run', 'about:blank'], { stdio: 'ignore' })
 let socket
@@ -71,4 +72,4 @@ try {
   const screenshots=results.filter(r=>r.screenshot);assert.equal(screenshots.length,results.length,'Missing screenshot');assert.equal(new Set(screenshots.map(r=>r.screenshot)).size,results.length);
   if(selfTest){writeFileSync(path.join(output,'self-test-summary.json'),JSON.stringify({passed:results.filter(r=>r.testPassed).length,total:results.length,results:results.map(r=>({id:r.routeId,passed:r.testPassed,expected:r.expected,kinds:r.detection?.findings.map(f=>f.kind)}))},null,2));if(results.some(r=>!r.testPassed))process.exitCode=1;}
   console.log('Evidence:',output);
-}finally{socket?.close();chrome.kill();await sleep(300);try{rmSync(profile,{recursive:true,force:true})}catch{}}
+}finally{socket?.close();await closeBrowser(chrome,profile)}

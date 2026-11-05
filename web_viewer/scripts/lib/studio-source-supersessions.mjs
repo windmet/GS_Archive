@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { projectRoot, sha256 } from './ai-studio-source.mjs'
+import { catalogueBeforeTermAmendments } from './term-amendments.mjs'
 
 export const SUPERSESSION_FILE = 'translation/studio/supersessions/2026-10-21-story-recompile.json'
 const scenarios = path.join(projectRoot, 'public/translations/zh-CN/scenarios')
@@ -21,8 +22,9 @@ export async function loadSourceSupersessions() {
 }
 
 // The superseded file is the moved entries of its part under its old header, in their old order.
+// Term amendments made after the move are undone first; the old file predates them.
 export async function reconstructCatalogue(item) {
-  const target = JSON.parse(await fs.readFile(path.join(scenarios, `${item.to}.json`), 'utf8'))
+  const target = JSON.parse(catalogueBeforeTermAmendments(item.to, await fs.readFile(path.join(scenarios, `${item.to}.json`))))
   const entries = Object.fromEntries(Object.entries(target.entries).filter(([id]) => id.split(':')[3] === item.from))
   return serializeCatalogue({ schema_version: target.schema_version, locale: target.locale, scenario_id: item.from,
     source_raw_hash: target.source_raw_hash, entries })

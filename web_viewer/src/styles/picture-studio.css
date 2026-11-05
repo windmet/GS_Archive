@@ -88,9 +88,11 @@
 
 .studio-material-heading { margin: var(--gs-space-4) 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .studio-sticker-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-3); }
-.studio-page .studio-sticker-grid button { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-paper); color: var(--gs-ink-3); cursor: pointer; }
+.studio-page .studio-sticker-grid button { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; min-height: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-paper); color: var(--gs-ink-3); cursor: pointer; }
 .studio-page .studio-sticker-grid button:not(:disabled):hover { background: var(--gs-paper-2); }
-.studio-sticker-grid img { width: 100%; height: 100%; object-fit: contain; }
+/* Out of flow: a percentage height on an in-flow image resolves to its intrinsic height, and the
+   square's automatic minimum then grows to fit a tall chibi, leaving the rows ragged. */
+.studio-sticker-grid img { position: absolute; inset: var(--gs-space-2); width: calc(100% - 2 * var(--gs-space-2)); height: calc(100% - 2 * var(--gs-space-2)); object-fit: contain; }
 .studio-material-count { position: absolute; top: var(--gs-space-1); right: var(--gs-space-1); min-width: 16px; padding: 0 3px; border-radius: var(--gs-radius-pill); background: var(--gs-action-bg); color: var(--gs-action-ink); font-size: var(--gs-text-caption); line-height: 16px; text-align: center; }
 
 /* 画布: centred on the dark stage at 16:9, as large as the stage allows; the bar below it. */

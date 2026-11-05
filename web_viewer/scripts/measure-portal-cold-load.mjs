@@ -8,7 +8,8 @@
 // "entity" is the moment the page's own content first appears in the DOM (an idol name, a unit's members, …),
 // which is what a reader waits for; FCP alone can be the empty app shell.
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -62,7 +63,7 @@ function findChrome() {
 
 async function measure(pageId) {
   const page = PAGES[pageId]
-  const dir = mkdtempSync(path.join(os.tmpdir(), 'gs-perf-'))
+  const dir = createBrowserProfile('perf')
   const port = 9500 + Math.floor(Math.random() * 400)
   const chrome = spawn(findChrome(), [`--remote-debugging-port=${port}`, '--headless=new', `--user-data-dir=${dir}`, '--no-first-run',
     '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', 'about:blank'], { stdio: 'ignore',windowsHide:true })
@@ -123,11 +124,7 @@ async function measure(pageId) {
       errors: errors.slice(0, 5), timedOut: Date.now() - started >= timeoutMs }
   } finally {
     try { socket?.close() } catch {}
-    chrome.kill(); await sleep(300)
-    try {
-      if(path.dirname(realpathSync(dir))!==realpathSync(os.tmpdir()) || realpathSync(dir)!==path.resolve(dir) || !path.basename(dir).startsWith('gs-perf-'))throw Error('Unsafe profile cleanup')
-      rmSync(dir, { recursive: true, force: true })
-    } catch {}
+    await closeBrowser(chrome, dir)
   }
 }
 

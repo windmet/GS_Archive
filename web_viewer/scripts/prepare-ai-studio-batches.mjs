@@ -24,7 +24,7 @@ await fs.mkdir(out)
 
 const order = ['main', 'unit_story', 'idol_story', 'event', 'birthday', 'extra', 'work', 'card_scenarios', 'seasonal']
 const indexes = await loadStudioIndexes()
-const policy = await loadStudioPolicy({ version: 3 })
+const policy = await loadStudioPolicy({ version: 4 })
 const byDomain = new Map(order.map(domain => [domain, []]))
 const known = new Set(indexes.reading.entries.map(entry => entry.document_id))
 for (const id of selectedDocuments) assert(known.has(id), `Unknown reading document: ${id}`)
@@ -36,7 +36,7 @@ for (const entry of indexes.reading.entries) {
 }
 
 const softRows = 1000, softCharacters = 30000, hardRows = 1300, hardCharacters = 40000
-const plan = { schema: studioSchema, projection_version: 3, ...studioPolicyManifest(policy), source_commit: head, soft_rows: softRows,
+const plan = { schema: studioSchema, projection_version: 4, ...studioPolicyManifest(policy), source_commit: head, soft_rows: softRows,
   soft_characters: softCharacters, hard_rows: hardRows, hard_characters: hardCharacters,
   documents: 0, units: 0, batches: [] }
 let batchNumber = 0
@@ -44,7 +44,7 @@ async function writeBatch(domain, loaded) {
   const batchId = targetBatch || `B${String(++batchNumber).padStart(3, '0')}-${domain.replaceAll('_', '-')}`
   const folder = path.join(out, batchId)
   await fs.mkdir(folder)
-  const batch = { schema: studioSchema, projection_version: 3,
+  const batch = { schema: studioSchema, projection_version: 4,
     ...studioPolicyManifest(policy), batch_id: batchId, source_commit: head, domain,
     documents: [], rows: [] }
   batch.trial_policy = policy.trial

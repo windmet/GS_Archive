@@ -139,8 +139,9 @@
       <div class="header-divider" aria-hidden="true"></div>
       <div class="stage-header-title">
         <h1>{{ isSpecialSingle ? '社长特别演出' : '2D 舞台' }}</h1>
-        <!-- The title row names the page; the line under it names what is on stage: the song, then on wide screens its arrangement. -->
-        <p v-if="selectedSong"><span>{{ selectedSong.title }}</span><span v-if="headerArrangement" class="stage-header-arrangement"> · {{ headerArrangement }}</span></p>
+        <!-- The title row names the page; the line under it names what is on stage: the song, then its arrangement.
+             A song with several arrangements makes that a pill, so 组合版 / 单人中心 are found from the stage itself. -->
+        <p v-if="selectedSong"><span class="stage-header-song">{{ selectedSong.title }}</span><button v-if="headerArrangement" class="stage-header-arrangement" type="button" aria-haspopup="dialog" :aria-label="`切换编排，当前 ${headerArrangement.label}，共 ${headerArrangement.count} 种`" :disabled="booting" @click="openArrangement"><span>{{ headerArrangement.label }}</span><small>{{ headerArrangement.count }} 种</small><ChevronDown :size="14" aria-hidden="true" /></button></p>
       </div>
       <button class="stage-icon-action stage-header-help" type="button" aria-label="快捷键与操作帮助" @click="helpOpen = true"><CircleHelp :size="19" /></button>
       <!-- 更多: settings that are set once (高级设置); on phones also help and the archive language, so the bar keeps back, title, 更多. -->
@@ -164,7 +165,7 @@
         <div class="performance-hud">
           <div class="performance-actions">
             <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
-            <button class="stage-icon-action" type="button" aria-label="沉浸观看" :title="touchUi ? '沉浸观看 · 隐藏界面并全屏' : '沉浸观看 · 隐藏界面并全屏 · F'" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
+            <button class="stage-icon-action" type="button" :aria-label="immersiveLabel" :title="touchUi ? `${immersiveLabel} · 隐藏界面并全屏` : `${immersiveLabel} · 隐藏界面并全屏 · F`" :disabled="fullscreenPending" @click="playImmersive"><Maximize :size="19" /></button>
           </div>
         </div>
 
@@ -225,7 +226,7 @@
             step="100"
             @change="seekStage"
           />
-          <button class="transport-immersive" type="button" aria-label="沉浸观看" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
+          <button class="transport-immersive" type="button" :aria-label="immersiveLabel" :disabled="fullscreenPending" @click="playImmersive"><Maximize :size="19" /></button>
         </div>
       </section>
 
@@ -237,7 +238,7 @@
         </nav>
         <div class="inspector-scroll" :class="{ 'is-song-panel': panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup') }">
           <section v-show="panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup')" :id="`${inspectorTitleId}-song`" class="control-section panel-section song-section">
-            <ChibiSongPicker :songs="songs" :song-directory="songDirectory" :selected-song-id="selectedSongId" :disabled="booting" @select-song="selectStageScript">
+            <ChibiSongPicker ref="songPickerRef" :songs="songs" :song-directory="songDirectory" :selected-song-id="selectedSongId" :disabled="booting" @select-song="selectStageScript">
               <template #current-actions><button v-if="stageVocalAvailable" class="stage-audio-action" type="button" :class="{ enabled: stageVocalEnabled }" aria-label="演唱音源设置" :title="stageVocalEnabled ? stageVocalToggleLabel : '原曲音源 · 可切换编成声部'" @click="vocalSettingsOpen = true"><Music2 :size="18" /></button></template>
             </ChibiSongPicker>
           </section>
@@ -528,6 +529,9 @@
     </ArchiveTerminalDialog>
     <!-- Pure mode keeps its controls in a strip along the top edge: hidden while the pointer is on the
          stage, shown when it reaches the top or a key moves focus there. -->
+    <!-- iPhone has no element fullscreen: the stage already covers the viewport, so 全屏播放 there is
+         this pseudo-fullscreen; in portrait it asks once to turn the phone, and the hint fades. -->
+    <p v-if="pureMode && pseudoFullscreen" class="pure-rotate-hint" role="status"><RotateCw :size="16" aria-hidden="true" />横置手机，舞台更大</p>
     <div v-if="pureMode" class="pure-peek">
       <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
       <button ref="pureExitButton" class="pure-exit" type="button" @click="toggleImmersive"><Minimize :size="16" />退出沉浸<kbd v-if="!touchUi">F</kbd></button>
@@ -560,6 +564,7 @@ import GsTabs from './gs/GsTabs.vue'
 import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
+  ChevronDown,
   CircleAlert,
   CircleHelp,
   Ellipsis,
@@ -575,6 +580,7 @@ import {
   Play,
   RefreshCw,
   RotateCcw,
+  RotateCw,
   X,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
@@ -691,7 +697,10 @@ const inspectorOpen = ref(false), helpOpen = ref(false), vocalSettingsOpen = ref
 const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId(), qualityTitleId = useId()
 const costumeNotice = ref(''), panelNotice = ref(''), snapshotBusy = ref(false)
 const { active: fullscreenActive, pending: fullscreenPending, notice: fullscreenNotice, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
-const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，沉浸观看只隐藏了界面。' : '')
+const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value === 'fullscreen-unavailable' ? '此浏览器不支持网页全屏，已改为铺满屏幕观看。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，沉浸观看只隐藏了界面。' : '')
+// Immersive mode without real fullscreen (iPhone Safari, or a refused request): the fixed stage root
+// already fills the viewport, the browser bars stay.
+const pseudoFullscreen = computed(() => pureMode.value && !fullscreenActive.value && !fullscreenPending.value)
 const snapshotUrl = ref(''), snapshotFilename = ref('')
 let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
@@ -1158,9 +1167,17 @@ function closeMoreOnLeave(event) { if (!event.currentTarget.contains(event.relat
 // The arrangement is named as the 曲目 page names it; a song with one arrangement shows only its title.
 const stageSongLibrary = computed(() => buildStageSongLibrary(songs.value, props.songDirectory))
 const headerArrangement = computed(() => {
-  const group = findStageSongGroup(stageSongLibrary.value, selectedSongId.value)
-  return group?.versions.length > 1 ? group.versions.find(version => version.id === selectedSongId.value)?.label || '' : ''
+  const group = findStageSongGroup(stageSongLibrary.value, selectedSongId.value),
+    label = group?.versions.length > 1 ? group.versions.find(version => version.id === selectedSongId.value)?.label : ''
+  return label ? { label, count: group.versions.length } : null
 })
+const songPickerRef = ref(null)
+// The picker lives on the 曲目 tab; show it first so its sheet or inline list can open.
+async function openArrangement() {
+  panelTab.value = 'song'
+  await nextTick()
+  songPickerRef.value?.openArrangement()
+}
 // The rail marks this position with C; it is the same 1st performer slot the Center line follows.
 const centerStagePosition = computed(() => stagePositionForPerformerSlot(1))
 const oneshotCenterIdolCode = computed(() => {
@@ -1702,6 +1719,14 @@ async function applyFamilyCostume() {
 // Fullscreen is requested first, inside the user gesture; where the browser refuses it (iOS
 // Safari), the controls are still hidden. Leaving fullscreen through the browser ends it too.
 let immersiveFullscreen = false
+// 全屏播放: the same Maximize control; paused, it also starts the stage. Playback is begun first so its
+// audio unlock runs inside the tap, then fullscreen is requested before anything is awaited.
+const immersiveLabel = computed(() => playing.value || stageStarting.value ? '沉浸观看' : '全屏播放')
+async function playImmersive() {
+  const start = playing.value || stageStarting.value || !stageTransportReady.value || preloading.value ? null : toggleStage()
+  if (!pureMode.value) await toggleImmersive()
+  await start
+}
 async function toggleImmersive() {
   if (pureMode.value) {
     immersiveFullscreen = false
@@ -4373,7 +4398,16 @@ function formatTime(milliseconds) {
   background: var(--gs-chrome);
 }
 .stage-header h1 { margin: 0; color: var(--gs-surface); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.stage-header p { margin: 2px 0 0; overflow: hidden; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
+.stage-header p { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; margin: 2px 0 0; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); white-space: nowrap; }
+.stage-header-song { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* 编排 pill: outlined on the dark bar; the hit area reaches past its 24px outline to a touch target. */
+.stage-header-arrangement { position: relative; display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-1); max-width: 60%; height: 24px; padding: 0 var(--gs-space-2) 0 var(--gs-space-3); border: 1px solid color-mix(in srgb, var(--gs-chrome-ink) 45%, transparent); border-radius: var(--gs-radius-pill); background: transparent; color: var(--gs-surface); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); cursor: pointer; }
+.stage-header-arrangement::after { content: ''; position: absolute; inset: -10px -4px; }
+.stage-header-arrangement > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.stage-header-arrangement > small { color: var(--gs-chrome-ink); font-size: inherit; font-weight: var(--gs-weight-regular); }
+.stage-header-arrangement:hover:not(:disabled) { border-color: var(--gs-chrome-ink); }
+.stage-header-arrangement:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.stage-header-arrangement:disabled { opacity: .6; cursor: default; }
 .stage-more { position: relative; flex: none; }
 .stage-more-menu { position: absolute; z-index: 30; top: calc(100% + 4px); right: 0; display: grid; min-width: 200px; padding: 6px; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); color: var(--gs-ink); }
 .stage-more-menu > button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
@@ -4611,6 +4645,11 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inherit; }
 .pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity 160ms ease-out; }
 .pure-peek:hover, .pure-peek:has(:focus-visible) { opacity: 1; }
+/* Pseudo-fullscreen hint: portrait only, gone after a few seconds or once the phone is turned. */
+.pure-rotate-hint { position: fixed; z-index: 8; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); display: none; align-items: center; gap: var(--gs-space-2); margin: 0; padding: var(--gs-space-3) var(--gs-space-5); border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); white-space: nowrap; translate: -50% 0; pointer-events: none; animation: pure-rotate-hint 5s ease-in forwards; }
+@media (orientation: portrait) { .pure-rotate-hint { display: flex; } }
+@keyframes pure-rotate-hint { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pure-rotate-hint { animation-timing-function: steps(1, end); } }
 .pure-exit { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; }
 /* Touch has no pointer to reach the edge: the screenshot and the way back stay in the corner, faint. */
 @media (hover: none) {
@@ -4639,7 +4678,6 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
   .stage-header { padding-right: max(12px, var(--stage-safe-right)); padding-left: max(12px, var(--stage-safe-left)); gap: 8px; }
   .stage-header h1 { font-size: 15px; }
   .stage-header p { font-size: var(--gs-text-meta); }
-  .stage-header-arrangement { display: none; }
   .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 0; padding: 0 var(--stage-safe-right) var(--stage-safe-bottom) var(--stage-safe-left); }
   .stage-inspector { border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); box-shadow: var(--gs-shadow-float); }
   .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 150px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }

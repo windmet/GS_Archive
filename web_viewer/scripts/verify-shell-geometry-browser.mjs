@@ -4,7 +4,8 @@
 //   node scripts/verify-shell-geometry-browser.mjs [--base=http://127.0.0.1:5173]
 // Needs a running dev server and a cached Playwright Chromium or chrome-headless-shell (no npm package required).
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs'
 import os from 'node:os'
 import path from 'node:path'
 import assert from 'node:assert/strict'
@@ -60,7 +61,7 @@ const MEASURE = `(() => {
   })
 })()`
 
-const profile = mkdtempSync(path.join(os.tmpdir(), 'gs-shell-geometry-'))
+const profile = createBrowserProfile('shell-geometry')
 const port = 9500 + Math.floor(Math.random() * 400)
 const chrome = spawn(findChrome(), [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-first-run', 'about:blank'], { stdio: 'ignore' })
 let socket
@@ -119,7 +120,5 @@ try {
   console.log(`Shell geometry: ${checked} page states (${VIEWPORTS.length} windows x 2 sidebar states x ${PAGES.length} pages): one 61px line, no sidebar scroll, no text under 12px, back not mint, icon axis fixed at 29 passed`)
 } finally {
   socket?.close()
-  chrome.kill()
-  await sleep(300)
-  try { rmSync(profile, { recursive: true, force: true }) } catch { /* the browser may still hold it */ }
+  await closeBrowser(chrome, profile)
 }

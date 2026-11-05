@@ -1,15 +1,15 @@
 // A2 prop-boundary evidence collector; READY never means a product quality PASS.
 import {spawn,execFileSync} from 'node:child_process';
-import {mkdtempSync,readFileSync,writeFileSync,mkdirSync,rmSync} from 'node:fs';
+import {mkdtempSync,readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import { closeBrowser, createBrowserProfile } from './lib/browser-profile.mjs';
 import {createHash} from 'node:crypto';
 import {createServer} from 'node:net';
-import path from 'node:path';import os from 'node:os';
-import {findChrome} from './lib/layout-chrome.mjs';
+import path from 'node:path';import {findChrome} from './lib/layout-chrome.mjs';
 import {inspectLayout} from './lib/layout-probes.mjs';
 const args=process.argv.slice(2),opt=(k,d)=>args.find(a=>a.startsWith('--'+k+'='))?.slice(k.length+3)||d;
 const base=opt('base','http://127.0.0.1:5198'),only=opt('only','').split(',').filter(Boolean);
 const outputRoot=opt('output','E:/Web_build/SideM_Archived/web_viewer/.analysis/ui-audit-a2');mkdirSync(outputRoot,{recursive:true});
-const output=mkdtempSync(path.join(outputRoot,'run-')),profile=mkdtempSync(path.join(os.tmpdir(),'gs-a2-'));
+const output=mkdtempSync(path.join(outputRoot,'run-')),profile=createBrowserProfile('a2');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const extrema=JSON.parse(readFileSync(new URL('./fixtures/responsive/extremes.json',import.meta.url),'utf8'));
@@ -74,4 +74,4 @@ try{
  console.log('Evidence:',output);
  for(const [file,hash]of Object.entries(sourceHashes))if(createHash('sha256').update(readFileSync(new URL(file,import.meta.url))).digest('hex')!==hash)throw Error('Fixture source changed during run: '+file);
  if(results.some(r=>r.status==='INCONCLUSIVE'))process.exitCode=1;
-}finally{socket?.close();chrome.kill();await sleep(400);try{rmSync(profile,{recursive:true,force:true});}catch{}}
+}finally{socket?.close();await closeBrowser(chrome,profile);}
