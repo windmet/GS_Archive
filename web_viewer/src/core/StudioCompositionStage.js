@@ -14,7 +14,7 @@ import { decodeUnitySpineSkeleton } from "../../shared/story/SpineBinary.js";
 import { neckOverlayAnimation } from "./spineNeckOverlay.js";
 import { installNativeFramePose } from "./spineFramePose.js";
 import { faceEffectSlots, hideFaceEffects } from "./spineFaceEffects.js";
-import { studioFramePlacement } from "./StudioFramePlacement.mjs";
+import { studioFramePlacement, studioFrameSprite } from "./StudioFramePlacement.mjs";
 import { studioActorPlacement, studioActorPoseBounds, studioActorSelectionBounds } from "./StudioActorPlacement.mjs";
 import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls, studioSnapMove } from './StudioGestures.mjs';
 import { bindStudioCanvasInput } from './StudioCanvasInput.mjs';
@@ -570,6 +570,13 @@ export class StudioCompositionStage {
           texture.destroy(true);
           throw new DOMException("Aborted", "AbortError");
         }
+        if (key !== "background") {
+          const part = studioFrameSprite(binding.url, texture.width, texture.height);
+          if (part.trim) {
+            texture.orig = new PIXI.Rectangle(0, 0, part.width, part.height);
+            texture.trim = new PIXI.Rectangle(part.trim.x, part.trim.y, part.trim.width, part.trim.height);
+          }
+        }
         const sprite = new PIXI.Sprite(texture);
         loaded.push({ sprite, texture });
         if (key === "background") {
@@ -577,9 +584,6 @@ export class StudioCompositionStage {
           sprite.scale.set(Math.max(W / texture.width, H / texture.height));
           sprite.position.set(W / 2, H / 2);
         } else {
-          sprite.scale.set(
-            Math.min(1.5, 340 / texture.width, 220 / texture.height),
-          );
           const placement = studioFramePlacement(loaded.length - 1, W, H);
           sprite.anchor.set(placement.anchorX, placement.anchorY);
           sprite.position.set(placement.x, placement.y);
