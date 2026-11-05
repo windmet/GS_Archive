@@ -1,5 +1,7 @@
 # 当前状态（新任务从这里开始）
 
+最新 Preview 发布（2026-11-05）：源码 `9e468f21`，包含 master `a7b97598`（#176–#178），部署 `4ee97bd4`；[preview.gs-archive.com](https://preview.gs-archive.com/) 已核对版本回执。数据绑定沿用上一版，浏览器/真机验收未完成。见 [发布记录](PREVIEW_RELEASE_20261105.md)。下方旧发布快照保留历史含义。
+
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
 更新：2026-10-30（地址层代码基线 master `97b1a1ae`，R4 #139 已合入；其他条线保留各自交接记录，站点/R2 发布快照未重新验收）
