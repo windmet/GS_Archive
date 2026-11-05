@@ -18,7 +18,7 @@ export async function checkStudioBatch(folderArgument) {
   const output = await fs.readFile(path.join(folder, 'output.md'), 'utf8')
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' }).trim()
   assert.equal(batch.schema, studioSchema)
-  assert([undefined, 2, 3].includes(batch.projection_version), 'Unknown projection version')
+  assert([undefined, 2, 3, 4].includes(batch.projection_version), 'Unknown projection version')
   assert.equal(batch.source_commit, head, 'Source commit changed; regenerate batch before import')
   if (batch.parent) {
     assert.equal(batch.scope, 'pilot-only')
@@ -45,7 +45,7 @@ export async function checkStudioBatch(folderArgument) {
   if (policy) {
     for (const [key, value] of Object.entries(studioPolicyManifest(policy)))
       assert.equal(batch[key], value, `Studio policy drift: ${key}`)
-    if (policy.version === 3) {
+    if (policy.version >= 3) {
       assert(isDeepStrictEqual(batch.trial_policy, policy.trial), 'Trial policy drift')
       assert.equal(batch.trial_prompt, policy.prompt, 'Trial prompt drift')
     }

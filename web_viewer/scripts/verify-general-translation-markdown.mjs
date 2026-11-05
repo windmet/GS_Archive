@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {sourceUnits,hash,validateGeneralReturn} from './lib/general-translation-batches.mjs'
+import {sourceUnits,hash,validateGeneralReturn,CARD_LINE_KINDS} from './lib/general-translation-batches.mjs'
 import {planCompactBatches,parseCompactReturn,renderCompactInput,returnHeading} from './lib/general-translation-markdown.mjs'
 
 const units=sourceUnits(process.cwd()),plan=planCompactBatches(units)
@@ -56,4 +56,19 @@ assert(chatInput(['てんげん\nひょうじんは']).includes('- てんげん�
 assert(!chatInput(['てんげん','ひょうじんは']).includes('- てんげんひょうじんは →'))
 assert(chatInput(['麗さんのいえのフントのしゃしん']).includes('- 麗さんのいえのフント → 丽先生家的阿尔托'))
 assert(!chatInput(['フント']).includes('阿尔托'))
+// Terms come from the term registry: scoped nicknames reach only their speaker, superseded
+// renderings never reach a prompt, and the frozen speaker notes carry the registry replacement.
+const spokenInput=(speaker,source,kind='chat-line')=>{
+  const rows=[{kind,field:kind==='chat-line'?'text':'normal',key:`fixture:${speaker}`,source,sourceHash:hash(source),references:[{kind,id:`fixture.json:${speaker}`,field:'text',speaker,owner:speaker}]}]
+  return renderCompactInput({schema:'GS-GENERAL-BATCH-V1',locale:'zh-CN',batch_id:'G-chats-fixture',rows,source_digest:hash(JSON.stringify(rows))})
+}
+assert(spokenInput('017kir','ちょうちょさん！').includes('- ちょうちょさん → 蝶蝶桑'))
+assert(!spokenInput('025suz','ちょうちょさん！').includes('- ちょうちょさん →'))
+assert(spokenInput('040ren','チビ！').includes('- チビ → 矮子'))
+assert(!spokenInput('026gen','施設にはチビもいるし').includes('- チビ →'))
+assert(spokenInput('025suz','パッションの像だ').includes('- パッションの像 → PASSION之像'))
+assert(!spokenInput('010pie','カエール').includes('青蛙玩偶'))
+const kirioCard=spokenInput('017kir','ちょうちょさん！',CARD_LINE_KINDS[0])
+assert(kirioCard.includes('ちょうちょさん→蝶蝶桑')&&!kirioCard.includes('蝶蝶小姐'),'speaker note carries the registry replacement')
+assert(!spokenInput('040ren','チビ！',CARD_LINE_KINDS[0]).includes('小不点'))
 console.log(`PASS: compact ${units.length} fields / ${plan.batches.length} batches; complete input budgets, local identity reconstruction, multiline/CRLF/BOM, unknown/missing/duplicate IDs, wrong source/batch, uncertainty, protected tokens and reference-independent identity.`)

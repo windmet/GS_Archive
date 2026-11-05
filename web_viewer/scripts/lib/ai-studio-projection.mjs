@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { buildIdolIndex, CONTEXT_SCHEMA, projectChoiceEntryLinks, projectStudioContext } from './ai-studio-context.mjs'
 import { projectRoot, sha256 } from './ai-studio-source.mjs'
+import { addedRuleLines, registryTrialPolicy, supersededText } from './term-registry.mjs'
 
 const files = {
   dictionary: 'public/data/masterdata/idol_unit_dictionary.json',
@@ -11,28 +12,35 @@ const files = {
   alias: 'translation/bible/reference/SideM_stable_aliases_from_calltable.json',
 }
 
+// V4 reads the same frozen V3 files but takes every term from translation/terms/registry.v1.json,
+// with the registry's replacements applied to the frozen voice prose.
 export async function loadStudioPolicy({ version = 2 } = {}) {
-  assert(version === 2 || version === 3, 'Unsupported Studio projection version')
-  const selected = version === 3 ? {
+  assert([2, 3, 4].includes(version), 'Unsupported Studio projection version')
+  const selected = version >= 3 ? {
     ...files,
     voice: 'translation/studio/policy/voice-profiles.trial.v1.1.json',
     trial: 'translation/studio/policy/trial-policy.v2.3.json',
     prompt: 'translation/studio/policy/translation-r3.3.md',
     names: 'translation/studio/policy/idol-names.v1.json',
+    ...(version === 4 ? { registry: 'translation/terms/registry.v1.json' } : {}),
   } : files
   const bytes = Object.fromEntries(await Promise.all(Object.entries(selected).map(async ([key, file]) =>
     [key, await fs.readFile(path.join(projectRoot, file))])))
   const dictionary = JSON.parse(bytes.dictionary)
+  const registry = version === 4 ? JSON.parse(bytes.registry) : null
   const voice = JSON.parse(bytes.voice)
   const glossary = JSON.parse(bytes.glossary)
-  assert.equal(voice.schema, version === 3 ? 'GS-VOICE-TRIAL-V1' : 'GS-VOICE-PROPOSAL-V1')
+  assert.equal(voice.schema, version >= 3 ? 'GS-VOICE-TRIAL-V1' : 'GS-VOICE-PROPOSAL-V1')
   assert.equal(glossary.status, 'pending-human-policy-selection')
   if (version === 2) assert(voice.profiles.every(profile => profile.status === 'proposed-for-retrial-not-approved'))
   else assert(voice.profiles.every(profile => profile.editorial_status === 'frozen-for-trial'
     && profile.public_approval === false && profile.required && profile.forbidden))
+  if (registry) for (const profile of voice.profiles) for (const field of ['style', 'required', 'forbidden'])
+    profile[field] = supersededText(`voice#profiles/canonical_ja=${profile.canonical_ja}/${field}`, profile[field], registry)
   assert(glossary.items.every(item => item.chosen_zh === null), 'Approved terminology requires an explicit policy revision')
-  const trial = version === 3 ? JSON.parse(bytes.trial) : null
-  const names = version === 3 ? JSON.parse(bytes.names) : null
+  const frozenTrial = version >= 3 ? JSON.parse(bytes.trial) : null
+  const trial = registry ? registryTrialPolicy(frozenTrial, registry) : frozenTrial
+  const names = version >= 3 ? JSON.parse(bytes.names) : null
   if (names) {
     assert.equal(names.schema, 'GS-IDOL-NAME-POLICY-V1')
     assert.equal(names.entries.length, 49)
@@ -40,22 +48,27 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
     const ids = buildIdolIndex(dictionary)
     assert(names.entries.every(entry => ids.has(entry.entity_id) && entry.name && entry.source_name))
   }
-  if (trial) {
-    assert.equal(trial.schema, 'GS-TRIAL-POLICY-V2')
-    assert.equal(trial.editorial_status, 'frozen-for-trial')
-    assert.equal(trial.public_approval, false)
-    assert(trial.items.every(item => item.editorial_status === 'frozen-for-trial'
+  if (frozenTrial) {
+    assert.equal(frozenTrial.schema, 'GS-TRIAL-POLICY-V2')
+    assert.equal(frozenTrial.editorial_status, 'frozen-for-trial')
+    assert.equal(frozenTrial.public_approval, false)
+    assert(frozenTrial.items.every(item => item.editorial_status === 'frozen-for-trial'
       && item.public_approval === false && item.chosen_rendering))
+  }
+  if (trial) {
+    assert(trial.items.every(item => item.public_approval === false && item.chosen_rendering))
     assert.equal(new Set(trial.items.map(item => item.key)).size, trial.items.length, 'Duplicate trial key')
     for (const item of trial.items) if (item.target_term) {
       assert(!item.target_entity_id, 'Term hints must not also claim an idol target')
-      assert(item.target_term.entity_id.startsWith('trial:') && item.target_term.entity_type
+      assert(item.target_term.entity_id.startsWith(registry ? 'term:' : 'trial:') && item.target_term.entity_type
         && item.target_term.canonical_ja, `Invalid trial term: ${item.key}`)
     }
   }
+  const added = registry ? addedRuleLines(registry) : []
   return {
     version, idolIndex: buildIdolIndex(dictionary), voice, glossary, trial,
-    prompt: version === 3 ? `${bytes.prompt.toString('utf8').trim()}\n\n## 项目姓名显示表\n\n${names.entries.map(entry =>
+    prompt: version >= 3 ? `${bytes.prompt.toString('utf8').trim()}${added.length
+      ? `\n\n## 术语登记表补充规则（优先于上文）\n\n${added.map(line => `- ${line}`).join('\n')}` : ''}\n\n## 项目姓名显示表\n\n${names.entries.map(entry =>
       `- ${[entry.source_name, ...(entry.source_aliases || [])].join('／')} → ${entry.name}${entry.status === 'pending-human-name-selection' ? '（中文名待确认，暂保留原名）' : ''}`).join('\n')}\n` : null,
     hashes: Object.fromEntries(Object.entries(bytes).map(([key, data]) => [`${key}_sha256`, sha256(data)])),
   }
@@ -66,7 +79,7 @@ export function projectDocumentContext(rows, policy) {
   return rows.map(row => {
     const context = projectStudioContext(row, policy.idolIndex)
     context.choice_entry = choices.get(row.text_ref.unit_id) || null
-    if (policy.version === 3) context.mentions = projectMentions(row, policy, context.actor)
+    if (policy.version >= 3) context.mentions = projectMentions(row, policy, context.actor)
     return context
   })
 }
@@ -93,9 +106,10 @@ function projectMentions(row, policy, actor) {
 
 export function studioPolicyManifest(policy) {
   return { context_schema: CONTEXT_SCHEMA, ...policy.hashes,
-    voice_policy_status: policy.version === 3 ? 'frozen-for-trial-not-public' : 'proposed-for-retrial-not-approved',
+    voice_policy_status: policy.version >= 3 ? 'frozen-for-trial-not-public' : 'proposed-for-retrial-not-approved',
     glossary_status: 'pending-human-policy-selection',
     ...(policy.version === 3 ? { trial_policy_status: 'frozen-for-trial-not-public' } : {}),
+    ...(policy.version === 4 ? { trial_policy_status: 'term-registry-v1-not-public' } : {}),
     alias_policy: 'external-reference-only-no-automatic-linking' }
 }
 

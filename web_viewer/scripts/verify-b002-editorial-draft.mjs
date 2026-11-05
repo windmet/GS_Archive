@@ -7,6 +7,7 @@ import { parseStudioResult, renderStudioInput, checkStudioRows } from './lib/ai-
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 import { restoreProducerAddressingAfterTranslation, protectProducerAddressingForTranslation } from '../src/localization/story/ProducerAddressing.js'
 import {beforeSpacingAmendment} from './lib/story-spacing-amendment.mjs'
+import { readCatalogueBeforeTermAmendments } from './lib/term-amendments.mjs'
 
 // Editorial drafts replay original model output → optional ID remap / metadata row fill → logged edits → public overlays.
 const drafts = [
@@ -186,7 +187,7 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
     }
     const rekeyed = supersessions.catalogues.get(file.scenario_id)
     const currentBytes = rekeyed ? await reconstructCatalogue(rekeyed)
-      : await fs.readFile(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`))
+      : readCatalogueBeforeTermAmendments(file.scenario_id)
     const bytes = beforeSpacingAmendment(currentBytes,spacingByCatalogue.get(file.scenario_id))
     if(spacingByCatalogue.has(file.scenario_id))spacingSeen.add(file.scenario_id)
     assert.equal(sha256(bytes), file.sha256, `Reviewed catalogue drift: ${file.scenario_id}`)

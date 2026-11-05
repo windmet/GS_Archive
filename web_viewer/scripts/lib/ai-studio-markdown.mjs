@@ -22,12 +22,12 @@ function splitRow(line) {
 }
 
 export function renderStudioInput(batch) {
-  const contextual = batch.projection_version === 2 || batch.projection_version === 3
+  const contextual = batch.projection_version >= 2
   const lines = [`# GS Archive Translation Batch ${batch.batch_id}`, '',
     `Batch schema: ${studioSchema}`, 'Target: Simplified Chinese',
     `Source commit: ${batch.source_commit}`, '',
     'Translate every T ID exactly once. Return only a Markdown table with columns `ID` and `Chinese`.',
-    ...(batch.projection_version === 3 ? [
+    ...(batch.projection_version >= 3 ? [
       'IDs are opaque strings: copy each T plus SIX digits exactly, including every leading zero. Never renumber or shorten an ID.',
       'Boundary examples: T000099, T000100, T000999. T00100 and T00999 are INVALID. Before returning, compare the complete ID set with the input.',
     ] : []),
@@ -44,9 +44,9 @@ export function renderStudioInput(batch) {
       'An empty or unresolved Voice must not be guessed from sprites, the preceding line, or dialogue content.',
       'Phone and message rows need their channel preserved. Choice targets are entry-only; keep wrong answers wrong.',
       'Voice suggestions below are provisional. Pending Chinese proper names and honorifics require human review.', '')
-    if (batch.projection_version === 3) {
+    if (batch.projection_version >= 3) {
       lines.push(batch.trial_prompt.trim(), '',
-        '## 本轮已冻结的试译词条（不是官方审定）', '')
+        batch.projection_version === 4 ? '## 项目术语表（来自术语登记表，不是官方审定）' : '## 本轮已冻结的试译词条（不是官方审定）', '')
       for (const item of batch.trial_policy.items)
         lines.push(`- ${item.key}: ${item.scope} → ${item.chosen_rendering}。要求：${item.required}`)
       if (batch.trial_policy.proper_name_exceptions.length)
@@ -54,7 +54,7 @@ export function renderStudioInput(batch) {
       lines.push(`待审术语：${batch.trial_policy.pending_terms.join('；')}。不要在Chinese写译注。`, '')
     }
     for (const [id, profile] of Object.entries(batch.voice_roster || {})) {
-      if (batch.projection_version === 3) lines.push(profile.style
+      if (batch.projection_version >= 3) lines.push(profile.style
         ? `- ${id} (${profile.name}): 风格 ${profile.style} 必须 ${profile.required} 禁止 ${profile.forbidden}`
         : `- ${id} (${profile.name})`)
       else lines.push(`- ${id} (${profile.name}): ${profile.style || 'No voice proposal.'}${profile.avoid ? ` Avoid: ${profile.avoid}` : ''}`)
@@ -81,12 +81,12 @@ export function renderStudioInput(batch) {
       const choices = batch.rows.filter(row => row.document_id === doc.document_id && row.context?.choice_entry)
       for (const row of choices) {
         const entry = row.context.choice_entry
-        if (batch.projection_version === 3) {
+        if (batch.projection_version >= 3) {
           const targetIds = entry.target_text_unit_ids.map(id => batch.rows.find(candidate => candidate.unit_id === id)?.rid).filter(Boolean)
           lines.push(`Choice entry ${row.rid}: ${entry.resolution}; ${targetIds.length ? `target ${targetIds.join(', ')}` : 'no direct text target in this request'}; entry only, exit unverified.`)
         } else lines.push(`Choice entry ${row.rid}: ${entry.resolution}; target step ${entry.target_step_index ?? 'unknown'}; target text units ${entry.target_text_unit_ids.length}. Entry only; exit and reconvergence unverified.`)
       }
-      if (batch.projection_version === 3) for (const row of batch.rows.filter(item => item.document_id === doc.document_id && item.context?.mentions?.length))
+      if (batch.projection_version >= 3) for (const row of batch.rows.filter(item => item.document_id === doc.document_id && item.context?.mentions?.length))
         for (const mention of row.context.mentions)
           lines.push(`Mention ${row.rid}: ${mention.source_form} → ${mention.canonical_ja} (${mention.target_entity_id}); this trial renders ${mention.chosen_rendering}. Preserve source naming level; do not replace Speaker or add a name absent from Japanese.`)
     }
@@ -190,16 +190,16 @@ export function checkStudioRows(rows, translations, { trialPolicy = null } = {})
 
 export function renderRepair(batch, missing) {
   const needed = new Set(missing)
-  if (batch.projection_version === 2 || batch.projection_version === 3) {
+  if (batch.projection_version >= 2) {
     const rows = batch.rows.filter(row => needed.has(row.rid))
     const ids = new Set(rows.map(row => row.context?.actor?.entity_id).filter(Boolean))
     const roster = Object.fromEntries(Object.entries(batch.voice_roster || {}).filter(([id]) => ids.has(id)))
     const lines = [`# ${batch.batch_id} Repair`, '', 'Return only the missing T IDs in a two-column ID | Chinese table.',
       'C rows are read-only context; do not output or revise them.',
       'Hidden Speaker labels must stay hidden in translated text.', '']
-    if (batch.projection_version === 3) lines.push(batch.trial_prompt.trim(), '',
+    if (batch.projection_version >= 3) lines.push(batch.trial_prompt.trim(), '',
       ...batch.trial_policy.items.map(item => `- ${item.key}: ${item.scope} → ${item.chosen_rendering}。${item.required}`), '')
-    for (const [id, profile] of Object.entries(roster)) lines.push(batch.projection_version === 3
+    for (const [id, profile] of Object.entries(roster)) lines.push(batch.projection_version >= 3
       ? `- ${id} (${profile.name}): ${profile.style || ''} 必须 ${profile.required || ''} 禁止 ${profile.forbidden || ''}`
       : `- ${id} (${profile.name}): ${profile.style || 'No voice proposal.'}`)
     lines.push('', '| ID | Speaker | Voice | Kind | Mode | Japanese |', '|---|---|---|---|---|---|')

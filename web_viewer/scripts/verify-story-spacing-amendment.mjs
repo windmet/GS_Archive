@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import {removeChineseInlineSpaces,beforeSpacingAmendment} from './lib/story-spacing-amendment.mjs'
+import {readCatalogueBeforeTermAmendments} from './lib/term-amendments.mjs'
 assert.equal(removeChineseInlineSpaces('巧克力 甜香， 想到你。'), '巧克力甜香，想到你。')
 const preserved='315 Production / Cafe Parade\n第1章　舞台　完\nA B\n\n{{GS_ADDRESS:0:producer_name}}'
 assert.equal(removeChineseInlineSpaces(preserved),preserved)
 const data=JSON.parse(fs.readFileSync('translation/studio/amendments/20261031-b036-spacing.json'))
 let units=0
 for(const item of data.catalogues) {
-  const bytes=fs.readFileSync(`public/translations/zh-CN/scenarios/${item.scenario_id}.json`)
+  const bytes=readCatalogueBeforeTermAmendments(item.scenario_id)
   beforeSpacingAmendment(bytes,item)
   const forged=structuredClone(item)
   forged.edits[0].before+='别的文字'
