@@ -68,3 +68,21 @@ console.log(`Idol page: ${ids.length} identities including missing ID; hash ${ha
   assert.equal(dictionary.by_idol_code['007kei'].display_age, '？？', 'the placeholder is kept, not replaced by the internal number')
   assert.equal(formatIdolAge(dictionary.by_idol_code['007kei'].display_age), '？？')
 }
+
+// The self-introduction plays as a voice on the profile; the staged ADV is a separate button. The 关联资料
+// list counts the work stories from the work read model and opens the work page.
+{
+  const page = readFileSync(new URL('../src/components/archive/ArchiveIdolDetail.vue', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const intro = page.match(/<section v-if="selfIntroduction" class="idol-intro"[\s\S]*?<\/section>/)?.[0] || ''
+  assert.match(intro, /<ArchiveVoiceRow :src="introVoiceUrl"/, 'the self-introduction voice plays in place')
+  assert.match(page, /introVoiceUrl = computed\(\(\) => getVoiceUrl\(props\.selfIntroduction\?\.voice, props\.selfIntroduction\?\.scenarioId\)\)/)
+  assert.equal(intro.match(/emit\('play-introduction'/g)?.length, 1, 'one ADV button')
+  assert.doesNotMatch(intro.replace(/<ArchiveVoiceRow[^>]*>/, ''), /aria-label="播放/, 'the only play control is the voice transport')
+  assert.match(page, /\{ id: 'work', label: '工作剧情', figure: props\.work\?\.stories \?\? null/)
+  assert.match(app, /:work="currentIdolWork\?\.id === currentCharacterId \? currentIdolWork : null"/)
+  assert.match(app, /if \(domain === 'work'\) return openWorkArchive\(currentCharacterId\.value\)/)
+  const nav = readFileSync(new URL('../src/composables/useStoryArchiveNavigation.js', import.meta.url), 'utf8')
+  assert.match(nav, /return \{ id, stories: idol\.short_stories\.length, lines: idol\.scene_lines\.length \}/)
+  console.log('Idol page: self-introduction voice in place with a separate ADV button; work stories row wired to the work read model')
+}
