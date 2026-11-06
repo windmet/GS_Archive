@@ -59,4 +59,14 @@ assert(studio.includes('label="摄影服装类别"') && studio.includes('v-if="f
   assert.match(shell,/\.archive-shell\.is-home-focus, \.archive-shell\.is-reader, \.archive-shell\.is-tool \{ --archive-mobile-nav-inset: 0px;/)
   assert.match(consolePanel,/\.console-panel \{ position: fixed;[^}]*bottom: var\(--archive-mobile-nav-inset, 0px\);/,'the phone sheet stands on the nav')
 }
+// The console's costume thumbnails are the collection's pictures: the costumes catalogue's image per model,
+// through the same costumeImage rule (site render where the game has none or a wrong one), never renders only.
+{
+  const app=fs.readFileSync(new URL('../src/App.vue',import.meta.url),'utf8')
+  assert.match(consolePanel,/costumeImage\(costume\.modelId, props\.costumeImages\?\.get\(costume\.modelId\) \|\| null\)/,'console thumbnails use the collection image')
+  assert.doesNotMatch(consolePanel,/costumeImage\([^)]*, null\)/,'no renders-only lookup is left')
+  assert.match(home,/:costume-images="costumeImages"/)
+  assert.match(app,/:costume-images="homeCostumeImages"/)
+  assert.match(app,/catalog\('costumes', \{ priority: 'background' \}\)\s*\.then\(rows => \{ homeCostumeImages\.value = new Map\(rows\.map\(row => \[row\.id, row\.image \|\| null\]\)\) \}\)/)
+}
 console.log('Costume filters: 690 native models, 549 Live +141 story-only, exact-model categories, pinned selection and all home/photo entry points passed')

@@ -41,7 +41,7 @@
             <p v-if="filteredCostumes.pinned" class="console-note">当前：{{ costumeLabel(filteredCostumes.pinned) }}（不在此类别）</p>
             <div class="console-grid">
               <button v-for="costume in filteredCostumes.rows" :key="costume.modelId" type="button" class="console-costume" :class="{ 'is-current': activeCostume?.modelId === costume.modelId }" :aria-pressed="activeCostume?.modelId === costume.modelId" @click="emit('update:selectedCostume', costume.modelId)">
-                <img v-if="thumbOf(costume)" class="console-costume-thumb" :src="thumbOf(costume)" alt="" loading="lazy" decoding="async" /><Shirt v-else :size="16" aria-hidden="true" /><span>{{ costumeLabel(costume) }}</span>
+                <img v-if="thumbOf(costume)" class="console-costume-thumb" :src="thumbOf(costume)" alt="" loading="lazy" decoding="async" @error="failedThumbs = new Set([...failedThumbs, costume.modelId])" /><Shirt v-else :size="16" aria-hidden="true" /><span>{{ costumeLabel(costume) }}</span>
               </button>
             </div>
             <p v-if="!filteredCostumes.rows.length" class="console-empty" role="status">这个类别下没有衣装。</p>
@@ -65,7 +65,7 @@
   </div>
 </template>
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { ChevronsUpDown, Search, Shirt, SlidersHorizontal } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import GsSegmented from '../gs/GsSegmented.vue'
@@ -81,6 +81,7 @@ const props = defineProps({
   selectedId: { type: String, default: '' }, homeMode: { type: String, default: 'spine' },
   activeCostume: { type: Object, default: null }, costumeCategory: { type: String, default: '' },
   filteredCostumes: { type: Object, default: () => ({ rows: [], pinned: null }) },
+  costumeImages: { type: Map, default: null },
   cards: { type: Array, default: () => [] }, cardKey: { type: String, default: '' }, activeCard: { type: Object, default: null },
   settingsOpen: Boolean, idolLabel: { type: Function, required: true }, costumeLabel: { type: Function, required: true },
 })
@@ -90,8 +91,11 @@ const activeName = computed(() => props.idolLabel(props.activeIdol))
 const activeSubject = computed(() => props.homeMode === 'card'
   ? (props.activeCard?.label || '默认卡面')
   : (props.activeCostume ? props.costumeLabel(props.activeCostume) : '未选衣装'))
-// Site renders of the spine models (CostumeCollection's own map); a model without one keeps the Shirt icon.
-const thumbOf = costume => costumeImage(costume.modelId, null)?.url || ''
+// The collection's picture for the model (game icon, or the site render where the game has none or a wrong
+// one), through the same costumeImage rule; a model without one, or whose picture fails, keeps the Shirt icon.
+const failedThumbs = shallowRef(new Set())
+const thumbOf = costume => failedThumbs.value.has(costume.modelId) ? ''
+  : costumeImage(costume.modelId, props.costumeImages?.get(costume.modelId) || null)?.url || ''
 const colorOf = idol => normalizeIdolAccentColor(idol.color) || 'var(--gs-rule)'
 const ringColor = computed(() => colorOf(props.activeIdol))
 const categoryCounts = computed(() => costumeCategoryCounts(props.activeIdol.costumes))
@@ -123,7 +127,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 .console-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.1; }
 .console-capsule > svg { flex: none; color: var(--gs-ink-3); }
 .console-settings { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
-.console-costume-thumb { flex: none; width: 28px; height: 28px; border-radius: var(--gs-radius-media); object-fit: contain; background: var(--gs-paper); }
+.console-costume-thumb { flex: none; width: 40px; height: 40px; border-radius: var(--gs-radius-media); object-fit: contain; background: var(--gs-paper); }
 .console-settings:hover { background: var(--gs-hover); }
 .console-capsule:focus-visible, .console-settings:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .console-scrim { display: none; }
