@@ -41,7 +41,7 @@
         <p class="idol-intro-line gs-flow" :lang="introLine.lang" :class="{ 'is-pending': introLine.pending }">{{ introLine.text }}</p>
         <div class="idol-intro-voice">
           <ArchiveVoiceRow :src="introVoiceUrl" label="播放自我介绍语音" />
-          <button type="button" class="idol-intro-adv" aria-label="在 ADV 舞台播放自我介绍" title="ADV 演出" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction.file)">
+          <button type="button" class="idol-intro-adv" aria-label="在 ADV 舞台播放自我介绍" title="ADV 演出" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction)">
             <MonitorPlay :size="20" aria-hidden="true" />
           </button>
         </div>

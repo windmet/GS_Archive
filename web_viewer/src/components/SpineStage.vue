@@ -83,6 +83,7 @@ import { isSilhouetteOnlyModel } from '../utils/AssetResolver.js'
 import { loadFigurePlacement } from '../utils/FigurePlacementStore.js'
 import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
 import { getCachedMotionSetting, getCachedMotionTable, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
+import { MOTION_NECK_RESET_MIX } from '../core/spineTracks.js'
 import { applyStepSceneState } from '../core/applyStepSceneState.js'
 import { getStepSceneState } from '../core/story-runtime/StepSceneState.js'
 import { storyReleaseProbe } from '../core/story-runtime/StoryReleaseProbe.js'
@@ -489,7 +490,7 @@ function applyStateBodyMotion(manager, sid, modelId, spineState, step) {
   const started = manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back,
     getMotionSetting(sid, modelId, spineState.anim), false, null, getCachedMotionTable(sid, modelId), spineState.anim_track_time ?? 0)
   if (started && !spineState.neck_anim && !spineState.neck_anim_stop) {
-    manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:motion-neck-reset:${sid}`)
+    manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:motion-neck-reset:${sid}`, MOTION_NECK_RESET_MIX)
   }
 }
 
@@ -526,6 +527,10 @@ watch(() => props.step, (step, oldStep) => {
   }
   const newId = Number(step?.step_id)
   const oldId = Number(oldStep?.step_id)
+  // Event keys dedupe re-projections of one step (a costume or background change).
+  // Entering another step, including a return to an earlier one, is a new
+  // performance whose entry neck must apply even if its key was seen before.
+  if (step?.step_id !== oldStep?.step_id) manager.resetSpineEventKeys?.()
   const resetScreenEffects = Number.isFinite(newId)
     && Number.isFinite(oldId)
     && (newId < oldId || newId > oldId + 1)

@@ -556,6 +556,9 @@ watch(() => activeIdol.value?.id, () => {
 
 watch(activeCue, () => {
   homeCueRuntime.cancelCurrentStep('home-cue-change')
+  // Runs before SpineStage reprojects the new line, whose entry may not change the
+  // body (and so would not reset a neck the previous line still holds).
+  spineStageRef.value?.manager?.beginSpinePerformance?.()
   voiceError.value = false
   if (stageTapCommitPending.value) return
   stopVoice()
@@ -667,6 +670,7 @@ async function handleStageTap() {
     if (!prepared) prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, includeLip: props.homeMode === 'spine', signal: tapOwner.signal })
     if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
     homeCueRuntime.cancelCurrentStep('home-next-cue')
+    spineStageRef.value?.manager?.beginSpinePerformance?.()
     stageTapCommitPending.value = true
     emit('update:selectedCue', next.cue)
     await nextTick()
@@ -727,6 +731,9 @@ async function toggleVoice() {
   voicePlayer.unlockAudioContext()
   voicePlayer.resetVoiceDedup()
   homeCueRuntime.cancelCurrentStep('home-replay')
+  // The replay reprojects the same step: without this the entry neck pose and the
+  // timed neck reset keep their first-play keys and are skipped.
+  spineStageRef.value?.manager?.beginSpinePerformance?.()
   performanceRevision.value++
   await nextTick()
   if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return

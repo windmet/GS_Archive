@@ -118,7 +118,7 @@
 
     <!-- Bottom control dock -->
     <PlayerControlDock
-      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !endBarOpen"
+      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !endBarOpen && !previewOnly"
       :compact="immersiveCompact"
       :auto-enabled="autoEnabled"
       :skip-enabled="skipEnabled"
@@ -145,8 +145,16 @@
       <Play :size="15" /><span>{{ uiText('player.auto.tapToResume') }}</span>
     </button>
 
+    <!-- Preview mode (one voiced line, no dock): at its end, replay the line or go back to its page. -->
+    <div v-if="endBarOpen && previewOnly" class="episode-complete is-preview" role="region" :aria-label="uiText('player.complete.region')">
+      <span class="end-copy" role="status"><strong>{{ uiText('player.preview.complete') }}</strong></span>
+      <span class="end-actions">
+        <button type="button" data-preview-replay @click="replayPreview"><RotateCcw :size="16" aria-hidden="true" />{{ uiText('player.preview.replay') }}</button>
+        <button class="primary" type="button" @click="emit('back')">{{ returnLabel }}</button>
+      </span>
+    </div>
     <!-- End of an episode: the bar takes the dock's place so the last line stays where it was read. -->
-    <div v-if="endBarOpen" class="episode-complete" role="region" :aria-label="uiText('player.complete.region')">
+    <div v-else-if="endBarOpen" class="episode-complete" role="region" :aria-label="uiText('player.complete.region')">
       <span v-if="chapterCountdownLeftMs" class="end-countdown" aria-hidden="true">
         <svg viewBox="0 0 24 24"><circle class="track" cx="12" cy="12" r="10" /><circle class="fill" cx="12" cy="12" r="10" :style="{ strokeDashoffset: 62.83 * (1 - chapterCountdownLeftMs / CHAPTER_COUNTDOWN_MS) }" /></svg>
       </span>
@@ -250,7 +258,7 @@ import TitleUI from '../components/TitleUI.vue'
 import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
-import { BookOpenText, Eye, EyeOff, FastForward, Gauge, LogOut, Play, SkipForward, X } from '@lucide/vue'
+import { BookOpenText, Eye, EyeOff, FastForward, Gauge, LogOut, Play, RotateCcw, SkipForward, X } from '@lucide/vue'
 import PlayerEpisodePicker from '../components/player/PlayerEpisodePicker.vue'
 import PlayerMenuPanel from '../components/player/PlayerMenuPanel.vue'
 import PlayerTopBar from '../components/player/PlayerTopBar.vue'
@@ -312,7 +320,7 @@ const props = defineProps({
   // A story that hands over to a song's Live ({ afterStepId, code, title }); offered when that step completes.
   liveLink: { type: Object, default: null },
 })
-const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue', 'select-episode', 'open-song'])
+const emit = defineEmits(['back', 'replay-preview', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue', 'select-episode', 'open-song'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -979,6 +987,14 @@ function restoreFromBacklog(nodeId) {
   stopPlaybackModes('backlog-restore')
   if (!restoreHistoryNode(node)) restoredSceneState.value = null
 }
+
+// Preview mode (one voiced line: card voices, office lines, the profile self-introduction) has no dock
+// or episode end: the line closes when its voice ends. Replay plays it again from its start (scene,
+// motion timeline, lip, voice), which the backlog's silent restore does not: App publishes it anew.
+function replayPreview() { emit('replay-preview') }
+watch(voiceStatus, state => {
+  if (props.previewOnly && state === 'ended' && isLastStep.value && !episodeFinished.value) goNext()
+})
 
 function replayBacklogVoice(node, backend) {
   backlogVoiceNode.value = node.node_id
@@ -1677,6 +1693,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .end-actions button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
 .end-actions button.primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
 .end-actions button:disabled { opacity: .5; cursor: default; }
+.episode-complete.is-preview .end-actions button { display: inline-flex; align-items: center; gap: var(--gs-space-2); }
 .end-actions button:focus-visible, .audio-tap:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .end-countdown { position: relative; flex: none; width: 28px; height: 28px; margin-left: calc(-1 * var(--gs-space-2)); }
 .end-countdown svg { width: 100%; height: 100%; transform: rotate(-90deg); }

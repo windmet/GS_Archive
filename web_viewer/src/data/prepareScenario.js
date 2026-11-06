@@ -1,6 +1,8 @@
 import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import { tracePlayer } from '../core/PlayerTrace.js'
 import { createStoryAssetPriority } from '../../shared/story/StoryAssetPriority.js'
+import { resolveStoryPlaybackWindow } from '../../shared/story/StoryPlaybackWindow.js'
+import { warmLipCurves } from '../core/VoiceLipStore.js'
 
 /** Prepare a scenario without owning page, route, queue or loading state. */
 export async function prepareScenario(name, {
@@ -45,6 +47,9 @@ export async function prepareScenario(name, {
   if (!scenario || typeof scenario !== 'object' || !Array.isArray(scenario.steps)) {
     throw new Error(`Invalid scenario ${name}: steps must be an array`)
   }
+  // Lip curves are not in the asset plan; the first lines' curves load while the stage does.
+  const { entryIndex, endIndex } = resolveStoryPlaybackWindow(scenario, playbackEntry)
+  void warmLipCurves(scenario.steps.slice(entryIndex, endIndex + 1), { fetchImpl })
   const [digest, { createStoryAssetPlan }] = await awaitOwned(Promise.all([
     crypto.subtle.digest('SHA-256', bytes), import('../../shared/story/StoryAssetPlan.js'),
   ]))

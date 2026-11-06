@@ -804,8 +804,8 @@
     "file": "src/App.vue",
     "line": 182,
     "event": "@play-introduction",
-    "handler": "file => loadScenario(file, 'idol_detail')",
-    "template": "@play-introduction=\"file => loadScenario(file, 'idol_detail')\"",
+    "handler": "previewIdolIntroduction",
+    "template": "@play-introduction=\"previewIdolIntroduction\"",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -2025,7 +2025,17 @@
     "line": 521,
     "event": "@back",
     "handler": "closePlayer",
-    "template": "@back=\"closePlayer\"",
+    "template": "@back=\"closePlayer\" @replay-preview=\"replayVoicePreview\"",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "App",
+    "file": "src/App.vue",
+    "line": 521,
+    "event": "@replay-preview",
+    "handler": "replayVoicePreview",
+    "template": "@back=\"closePlayer\" @replay-preview=\"replayVoicePreview\"",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -3622,7 +3632,27 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 160,
+    "line": 152,
+    "event": "@click",
+    "handler": "replayPreview",
+    "template": "<button type=\"button\" data-preview-replay @click=\"replayPreview\"><RotateCcw :size=\"16\" aria-hidden=\"true\" />{{ uiText('player.preview.replay') }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "StoryViewer",
+    "file": "src/core/StoryViewer.vue",
+    "line": 153,
+    "event": "@click",
+    "handler": "emit('back')",
+    "template": "<button class=\"primary\" type=\"button\" @click=\"emit('back')\">{{ returnLabel }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "StoryViewer",
+    "file": "src/core/StoryViewer.vue",
+    "line": 168,
     "event": "@click",
     "handler": "cancelChapterCountdown",
     "template": "<button v-if=\"chapterCountdownLeftMs\" type=\"button\" @click=\"cancelChapterCountdown\">{{ uiText('player.complete.cancel') }}</button>",
@@ -3632,7 +3662,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 161,
+    "line": 169,
     "event": "@click",
     "handler": "continueReview",
     "template": "<button v-else type=\"button\" @click=\"continueReview\">{{ uiText('player.complete.review') }}</button>",
@@ -3642,7 +3672,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 162,
+    "line": 170,
     "event": "@click",
     "handler": "emit('open-song', completionLiveLink.code)",
     "template": "<button v-if=\"completionLiveLink\" class=\"primary\" type=\"button\" data-live-link :title=\"completionLiveLink.title\" @click=\"emit('open-song', completionLiveLink.code)\">{{ uiText('player.complete.live') }}</button>",
@@ -3652,7 +3682,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 163,
+    "line": 171,
     "event": "@click",
     "handler": "emit('retry-queue')",
     "template": "<button v-if=\"queueStatus === 'error'\" type=\"button\" @click=\"emit('retry-queue')\">{{ uiText('player.queue.retry') }}</button>",
@@ -3662,7 +3692,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 164,
+    "line": 172,
     "event": "@click",
     "handler": "requestNextEpisode()",
     "template": "<button v-else-if=\"nextTarget?.available\" :class=\"{ primary: !completionLiveLink }\" type=\"button\" :disabled=\"transitioning\" @click=\"requestNextEpisode()\">{{ transitioning ? uiText('player.complete.loadingNext') : chapterCountdownLeftMs ? uiText('player.complete.playNow') : uiText(nextTarget.kind === 'chapter' ? 'player.complete.nextEpisode' : 'player.next') }}</button>",
@@ -3672,7 +3702,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 165,
+    "line": 173,
     "event": "@click",
     "handler": "emit('back')",
     "template": "<button v-else :class=\"{ primary: !completionLiveLink }\" type=\"button\" @click=\"emit('back')\">{{ returnLabel }}</button>",
@@ -3682,7 +3712,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 170,
+    "line": 178,
     "event": "@close",
     "handler": "menuOpen = false",
     "template": "<PlayerMenuPanel v-if=\"menuOpen && !HIDE_UI\" :title=\"uiText(pickerOpen ? 'player.picker.title' : 'player.settings.panel')\" :paused-label=\"uiText('player.settings.paused')\" :close-label=\"uiText('player.settings.close')\" @close=\"menuOpen = false\">",
@@ -3692,7 +3722,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 171,
+    "line": 179,
     "event": "@back",
     "handler": "pickerOpen = false",
     "template": "<PlayerEpisodePicker v-if=\"pickerOpen\" :snapshot=\"queueSnapshot\" :status=\"queueStatus\" :pending=\"transitioning\" @back=\"pickerOpen = false\" @select=\"selectEpisode\" @retry=\"emit('retry-queue')\" />",
@@ -3702,7 +3732,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 171,
+    "line": 179,
     "event": "@select",
     "handler": "selectEpisode",
     "template": "<PlayerEpisodePicker v-if=\"pickerOpen\" :snapshot=\"queueSnapshot\" :status=\"queueStatus\" :pending=\"transitioning\" @back=\"pickerOpen = false\" @select=\"selectEpisode\" @retry=\"emit('retry-queue')\" />",
@@ -3712,7 +3742,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 171,
+    "line": 179,
     "event": "@retry",
     "handler": "emit('retry-queue')",
     "template": "<PlayerEpisodePicker v-if=\"pickerOpen\" :snapshot=\"queueSnapshot\" :status=\"queueStatus\" :pending=\"transitioning\" @back=\"pickerOpen = false\" @select=\"selectEpisode\" @retry=\"emit('retry-queue')\" />",
@@ -3722,7 +3752,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 173,
+    "line": 181,
     "event": "@click",
     "handler": "pickerOpen = true",
     "template": "<button @click=\"pickerOpen = true\">{{ uiText('player.picker.title') }}</button>",
@@ -3732,7 +3762,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 175,
+    "line": 183,
     "event": "@click",
     "handler": "requestNextEpisode()",
     "template": "<button v-if=\"nextTarget?.available\" :disabled=\"transitioning\" @click=\"requestNextEpisode()\"><SkipForward :size=\"19\" /><span>{{ nextLabel }}</span></button>",
@@ -3742,7 +3772,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 176,
+    "line": 184,
     "event": "@click",
     "handler": "emit('retry-queue')",
     "template": "<button v-if=\"queueStatus === 'error'\" @click=\"emit('retry-queue')\">{{ uiText('player.queue.retry') }}</button>",
@@ -3752,7 +3782,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 178,
+    "line": 186,
     "event": "@click",
     "handler": "openBacklog",
     "template": "<button @click=\"openBacklog\"><BookOpenText :size=\"19\" /><span>{{ uiText('player.settings.backlog') }}</span></button>",
@@ -3762,7 +3792,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 179,
+    "line": 187,
     "event": "@click",
     "handler": "emit('back')",
     "template": "<button @click=\"emit('back')\"><LogOut :size=\"19\" /><span>{{ returnLabel }}</span></button>",
@@ -3772,7 +3802,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 182,
+    "line": 190,
     "event": "@click",
     "handler": "enterImmersive",
     "template": "<button v-if=\"!immersive.active.value\" :disabled=\"immersive.pending.value\" @click=\"enterImmersive\"><span>{{ uiText('player.immersive.enter') }}</span></button>",
@@ -3782,7 +3812,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 183,
+    "line": 191,
     "event": "@click",
     "handler": "immersive.leave()",
     "template": "<button v-else @click=\"immersive.leave()\"><span>{{ uiText('player.immersive.leave') }}</span></button>",
@@ -3792,7 +3822,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 184,
+    "line": 192,
     "event": "@change",
     "handler": "saveMobileViewMode",
     "template": "<label class=\"menu-setting\"><span>{{ uiText('player.immersive.mode') }}</span><select v-model=\"mobileViewMode\" @change=\"saveMobileViewMode\"><option value=\"ask\">{{ uiText('player.immersive.ask') }}</option><option value=\"landscape\">{{ uiText('player.immersive.landscape') }}</option><option value=\"portrait\">{{ uiText('player.immersive.portrait') }}</option></select></label>",
@@ -3802,7 +3832,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 186,
+    "line": 194,
     "event": "@click",
     "handler": "cycleLanguage",
     "template": "<button @click=\"cycleLanguage\"><span>{{ uiText('player.immersive.language') }}</span><b>{{ langLabel }}</b></button>",
@@ -3812,7 +3842,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 187,
+    "line": 195,
     "event": "@click",
     "handler": "storyLocalization.retryTranslation()",
     "template": "<button v-if=\"storyLocalization.retryAvailable.value\" :disabled=\"storyLocalization.loading.value\" @click=\"storyLocalization.retryTranslation()\">译文暂时无法载入 · 重试译文</button>",
@@ -3822,7 +3852,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 190,
+    "line": 198,
     "event": "@change",
     "handler": "emit('update:continuous-playback', $event.target.checked)",
     "template": "<input type=\"checkbox\" :checked=\"continuousPlayback\" @change=\"emit('update:continuous-playback', $event.target.checked)\" />",
@@ -3832,7 +3862,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 192,
+    "line": 200,
     "event": "@click",
     "handler": "toggleAuto",
     "template": "<button :class=\"{ active: autoEnabled }\" @click=\"toggleAuto\"><Play :size=\"19\" /><span>{{ uiText('player.settings.auto') }}</span><b>{{ autoEnabled ? 'ON' : 'OFF' }}</b></button>",
@@ -3842,7 +3872,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 195,
+    "line": 203,
     "event": "@change",
     "handler": "saveAutoDelay",
     "template": "<input v-model.number=\"autoDelayMs\" type=\"number\" min=\"0\" max=\"10000\" step=\"100\" @change=\"saveAutoDelay\" />",
@@ -3852,7 +3882,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 198,
+    "line": 206,
     "event": "@click",
     "handler": "cycleStorySpeed",
     "template": "<button data-testid=\"player-speed\" @click=\"cycleStorySpeed\"><Gauge :size=\"19\" /><span>{{ uiText('player.settings.speed') }}</span><b>×{{ storySpeed.toFixed(1) }}</b></button>",
@@ -3862,7 +3892,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 199,
+    "line": 207,
     "event": "@click",
     "handler": "toggleSkip",
     "template": "<button :class=\"{ active: skipEnabled }\" @click=\"toggleSkip\"><FastForward :size=\"19\" /><span>{{ uiText('player.settings.skip') }}</span><b>{{ skipEnabled ? 'ON' : 'OFF' }}</b></button>",
@@ -3872,7 +3902,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 202,
+    "line": 210,
     "event": "@change",
     "handler": "saveSkipMode",
     "template": "<select v-model=\"skipMode\" @change=\"saveSkipMode\"><option value=\"readOnly\">{{ uiText('player.settings.readOnly') }}</option><option value=\"all\">{{ uiText('player.settings.all') }}</option></select>",
@@ -3882,7 +3912,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 208,
+    "line": 216,
     "event": "@input",
     "handler": "saveProducerName($event.target.value)",
     "template": "<label class=\"menu-setting\"><span>{{ uiText('player.settings.producerName') }}</span><input class=\"producer-name-input\" :value=\"producerName\" type=\"text\" autocomplete=\"off\" :placeholder=\"uiText('player.settings.producerNamePlaceholder')\" @input=\"saveProducerName($event.target.value)\" /></label>",
@@ -3892,7 +3922,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 209,
+    "line": 217,
     "event": "@click",
     "handler": "uiHidden = true; menuOpen = false",
     "template": "<button @click=\"uiHidden = true; menuOpen = false\"><EyeOff :size=\"19\" /><span>{{ uiText('player.settings.hideUi') }}</span></button>",
@@ -3902,7 +3932,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 211,
+    "line": 219,
     "event": "@change",
     "handler": "changeVoiceBackend",
     "template": "<select v-model=\"voiceBackend\" @change=\"changeVoiceBackend\">",
@@ -3912,7 +3942,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 217,
+    "line": 225,
     "event": "@click",
     "handler": "menuOpen = false; retryCurrentVoice()",
     "template": "<button @click=\"menuOpen = false; retryCurrentVoice()\">{{ uiText('backlog.replayVoice') }}</button>",
@@ -3922,7 +3952,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 221,
+    "line": 229,
     "event": "@keydown.stop",
     "handler": "handleViewingOfferKeydown",
     "template": "<div v-if=\"viewingOfferOpen\" class=\"viewing-offer\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"viewing-offer-title\" @keydown.stop=\"handleViewingOfferKeydown\">",
@@ -3932,7 +3962,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 226,
+    "line": 234,
     "event": "@click",
     "handler": "chooseViewingMode('landscape')",
     "template": "<button ref=\"viewingOfferAction\" class=\"primary\" @click=\"chooseViewingMode('landscape')\">{{ uiText('player.immersive.enter') }}</button>",
@@ -3942,7 +3972,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 227,
+    "line": 235,
     "event": "@click",
     "handler": "chooseViewingMode('portrait')",
     "template": "<button @click=\"chooseViewingMode('portrait')\">{{ uiText('player.immersive.continue') }}</button>",
@@ -3952,7 +3982,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 232,
+    "line": 240,
     "event": "@click",
     "handler": "enterImmersive",
     "template": "<button v-if=\"!immersive.active.value\" :disabled=\"immersive.pending.value\" @click=\"enterImmersive\">{{ uiText('player.immersive.enter') }}</button>",
@@ -3962,7 +3992,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 233,
+    "line": 241,
     "event": "@click",
     "handler": "viewingShortcutDismissed = true; immersive.dismiss()",
     "template": "<button @click=\"viewingShortcutDismissed = true; immersive.dismiss()\">{{ uiText('player.immersive.dismiss') }}</button>",
@@ -5414,8 +5444,8 @@
     "file": "src/components/archive/ArchiveIdolDetail.vue",
     "line": 44,
     "event": "@click",
-    "handler": "emit('play-introduction', selfIntroduction.file)",
-    "template": "<button type=\"button\" class=\"idol-intro-adv\" aria-label=\"在 ADV 舞台播放自我介绍\" title=\"ADV 演出\" :data-archive-focus-id=\"`idol-intro:${idol.idol_code}`\" @click=\"emit('play-introduction', selfIntroduction.file)\">",
+    "handler": "emit('play-introduction', selfIntroduction)",
+    "template": "<button type=\"button\" class=\"idol-intro-adv\" aria-label=\"在 ADV 舞台播放自我介绍\" title=\"ADV 演出\" :data-archive-focus-id=\"`idol-intro:${idol.idol_code}`\" @click=\"emit('play-introduction', selfIntroduction)\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
