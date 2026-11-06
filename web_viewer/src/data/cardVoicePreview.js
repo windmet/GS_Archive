@@ -1,3 +1,5 @@
+import { voicePreviewScenario } from './voicePreviewScenario.js'
+
 // Only source-backed home dialogue can enter the story renderer.
 /** Resolve only cues evidenced for this card; arbitrary URL voice IDs are rejected. */
 export function findCardVoiceCue(card, voiceId, operationalCues = []) {
@@ -23,15 +25,6 @@ export function buildCardVoicePreviewScenario(card, cue, { translate } = {}) {
   const preview = cardVoicePreviewStep(card, cue)
   if (!preview) return null
   const cueId = typeof cue === 'string' ? cue : cue.cue
-  const step = JSON.parse(JSON.stringify(preview.preview_step))
-  step.step_id = 1
-  const translated = typeof translate === 'function' ? translate(step.dialogue.text) : ''
-  if (translated) step.dialogue.text_cn = translated
-  return {
-    scenario_id: `card_voice_preview_${card.resource_id}_${cueId}`,
-    source_scenario_id: preview.scenario_id,
-    source_compiled_file: preview.compiled_file,
-    total_steps: 1,
-    steps: [step],
-  }
+  return voicePreviewScenario({ id: `card_voice_preview_${card.resource_id}_${cueId}`, step: preview.preview_step,
+    sourceScenarioId: preview.scenario_id, sourceCompiledFile: preview.compiled_file, translate })
 }

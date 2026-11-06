@@ -73,6 +73,8 @@ export default Object.freeze({
   'player.complete.upNext': 'まもなく次の話',
   'player.complete.cancel': 'キャンセル',
   'player.complete.playNow': '今すぐ再生',
+  'player.preview.complete': 'ボイス再生完了',
+  'player.preview.replay': 'もう一度',
   'player.auto.tapToResume': 'タップでオート再生を続ける',
   'player.loading': 'ストーリーデータを読み込み中…',
   'backlog.title': 'ログ',

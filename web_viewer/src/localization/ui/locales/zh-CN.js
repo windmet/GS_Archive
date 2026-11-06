@@ -73,6 +73,8 @@ export default Object.freeze({
   'player.complete.upNext': '即将播放下一话',
   'player.complete.cancel': '取消',
   'player.complete.playNow': '立即播放',
+  'player.preview.complete': '语音播放完毕',
+  'player.preview.replay': '重播',
   'player.auto.tapToResume': '轻触继续自动播放',
   'player.loading': '正在加载剧情数据…',
   'backlog.title': '剧情回看',

@@ -1,5 +1,5 @@
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
-import { OFFICE_VOICE_CUE, ownsArchiveSource } from '../src/core/archiveRoute.js'
+import { IDOL_INTRO_CUE, OFFICE_VOICE_CUE, ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -58,7 +58,8 @@ function setup() {
     ...state, navigation, loading, loadingPurpose: { value: 'archive-data' }, preloadProgress: { value: 0 },
     EXTERNAL_STORY_RESOURCES_ENABLED: false,
     buildCardVoicePreviewScenario, findCardVoiceCue, idolDisplayName: id => `speaker:${id}`,
-    OFFICE_VOICE_CUE, previewOfficeVoice: async voice => { throw new Error(`Unexpected office voice preview ${voice}`) },
+    OFFICE_VOICE_CUE, IDOL_INTRO_CUE, warmLipCurves: async () => 0, currentIdolDetail: { value: null },
+    previewIdolIntroduction: async () => { throw new Error('Unexpected self-introduction preview') }, previewOfficeVoice: async voice => { throw new Error(`Unexpected office voice preview ${voice}`) },
     loadArchiveNames: () => Promise.resolve(), loadArchiveLines: () => Promise.resolve(), archiveNamedTranslation: () => '',
     cardReadModelDetail: { value: null },
     archiveRouteReady: true,
@@ -110,6 +111,7 @@ function setup() {
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
     productionFunction('translatedPreview'),
+    functionSource('let currentVoicePreview = null', 'async function openVoicePreview('),
     productionFunction('translatedVoicePreview'),
     productionFunction('openVoicePreview'),
     functionSource('function onPlayerReady(', 'async function loadScenario('),

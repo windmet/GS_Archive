@@ -411,7 +411,7 @@ export function normalizeArchiveRoute(input = {}) {
   }
 
   const contract = ARCHIVE_ROUTE_CONTRACTS[view]
-  if (view === 'player' && !scenario && !(voice && (card || OFFICE_VOICE_CUE.test(voice)))) view = contract.fallback
+  if (view === 'player' && !scenario && !(voice && (card || OFFICE_VOICE_CUE.test(voice) || (idol && IDOL_INTRO_CUE.test(voice))))) view = contract.fallback
   else if (contract?.required.some(key => !route[key])) view = contract.fallback
   route.view = view || 'home'
   if (route.view === 'chibi_stage') {
@@ -641,6 +641,8 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 // only after it is in ENFORCED_ROUTE_VIEWS (see docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md).
 // Yamamura's office system lines preview in the player without a card (src/data/officeVoicePreviews.json).
 export const OFFICE_VOICE_CUE = /^4_1_101_0[0-2]_a\d{4}$/
+// The profile self-introduction (9_2_<idol number>_00) previews in the player and returns to the profile.
+export const IDOL_INTRO_CUE = /^9_2_\d{3}_00$/
 export { ARCHIVE_SECTION_PATHS } from './publicRoutes.js'
 
 // Whether a pathname is one of the public locators (a section root or a detail path) the address bar can carry.
