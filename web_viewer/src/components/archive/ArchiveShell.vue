@@ -469,7 +469,11 @@ onBeforeUnmount(() => navObserver?.disconnect())
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: var(--archive-topbar) minmax(0, 1fr) calc(74px + env(safe-area-inset-bottom, 0px));
+    /* Bottom sheets inside the shell stand on the mobile nav, which already holds the safe area. */
+    --archive-mobile-nav-inset: calc(74px + env(safe-area-inset-bottom, 0px));
+    --archive-sheet-safe-bottom: 0px;
   }
+  .archive-shell.is-home-focus, .archive-shell.is-reader, .archive-shell.is-tool { --archive-mobile-nav-inset: 0px; --archive-sheet-safe-bottom: env(safe-area-inset-bottom, 0px); }
   .archive-shell.is-home { --archive-topbar: 0px; }
   .archive-shell.is-reader { grid-template-rows: minmax(0,1fr); }
   .archive-shell.is-reader .archive-content, .archive-shell.is-reader .archive-pending-layer { grid-row:1; }
