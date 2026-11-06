@@ -34,7 +34,7 @@ for (const [source, locale, expected] of [
   [`${ten}師匠`, 'ja', '師匠'], [`${ten}师父`, 'zh-CN', '师父'], [`${ten}ぴぃちゃん`, 'ja', 'ぴぃちゃん'], [`${ten}P酱`, 'zh-CN', 'P酱'],
   [`我が主${ten}。`, 'ja', '我が主プロデューサー。'], [`吾主${ten}。`, 'zh-CN', '吾主制作人。'],
   [`${ten}さん`, 'ja', 'プロデューサーさん'], [`${fourP}、ありがとな`, 'ja', 'プロデューサー、ありがとな'],
-  [`${fourP}，谢谢`, 'zh-CN', '制作人，谢谢'], [`${fourP}酱！`, 'zh-CN', 'P酱！'],
+  [`${fourP}，谢谢`, 'zh-CN', '制作人，谢谢'], [`${fourP}酱！`, 'zh-CN', '制作人酱！'],
 ]) {
   assert.equal(renderProducerAddressing(source, '', { locale }), expected, source)
   assert.equal(renderProducerAddressing(source), expected, `${source} (language from the text)`)

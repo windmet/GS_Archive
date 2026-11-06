@@ -35,10 +35,11 @@ export function producerAddressingLocale(source) {
   return /[\u3040-\u30ff]/u.test(rest) ? 'ja' : 'zh-CN'
 }
 
+// ●●●●プロデューサー酱 with no name reads 制作人酱, like the lines without a name slot; a set name
+// still shortens it to 晴P酱.
 function unnamedSlot(part, following, language) {
   if (part.kind === 'producer_name') return FOLLOWING_ADDRESS.test(following) ? '' : PRODUCER_WORD[language]
-  // ●●●●プロデューサー酱 in Chinese text is "§P酱": keep the P rather than "制作人酱".
-  return language === 'zh' && following.startsWith('酱') ? 'P' : PRODUCER_WORD[language]
+  return PRODUCER_WORD[language]
 }
 
 /** Return plain text for Vue interpolation/textContent, never for an HTML sink. */

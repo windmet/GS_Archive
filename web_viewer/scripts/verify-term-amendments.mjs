@@ -28,14 +28,17 @@ for (const amendment of amendments) {
 }
 
 let story = 0
-for (const amendment of amendments) for (const record of amendment.story) {
+// A catalogue amended by several files replays through every newer file first, so each record is
+// checked against the chain that ends at its own file.
+for (const [index, amendment] of amendments.entries()) for (const record of amendment.story) {
   const bytes = fs.readFileSync(`public/translations/zh-CN/scenarios/${record.scenario_id}.json`)
-  catalogueBeforeTermAmendments(record.scenario_id, bytes, [amendment])
+  const chain = [amendment, ...amendments.slice(index + 1)]
+  catalogueBeforeTermAmendments(record.scenario_id, bytes, chain)
   // A forged before text, or drifted live bytes, must not reconstruct.
   const forged = structuredClone(amendment)
   forged.story.find(item => item.scenario_id === record.scenario_id).edits[0].before += '别的文字'
-  assert.throws(() => catalogueBeforeTermAmendments(record.scenario_id, bytes, [forged]), `forged before accepted ${record.scenario_id}`)
-  assert.throws(() => catalogueBeforeTermAmendments(record.scenario_id, Buffer.from(`${bytes} `), [amendment]), `drifted bytes accepted ${record.scenario_id}`)
+  assert.throws(() => catalogueBeforeTermAmendments(record.scenario_id, bytes, [forged, ...chain.slice(1)]), `forged before accepted ${record.scenario_id}`)
+  assert.throws(() => catalogueBeforeTermAmendments(record.scenario_id, Buffer.from(`${bytes} `), chain), `drifted bytes accepted ${record.scenario_id}`)
   story += record.edits.length
 }
 
