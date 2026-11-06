@@ -2322,7 +2322,17 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 145,
+    "line": 144,
+    "event": "@click",
+    "handler": "openArrangement",
+    "template": "<p v-if=\"selectedSong\"><span class=\"stage-header-song\">{{ selectedSong.title }}</span><button v-if=\"headerArrangement\" class=\"stage-header-arrangement\" type=\"button\" aria-haspopup=\"dialog\" :aria-label=\"`切换编排，当前 ${headerArrangement.label}，共 ${headerArrangement.count} 种`\" :disabled=\"booting\" @click=\"openArrangement\"><span>{{ headerArrangement.label }}</span><small>{{ headerArrangement.count }} 种</small><ChevronDown :size=\"14\" aria-hidden=\"true\" /></button></p>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ChibiStageViewer",
+    "file": "src/components/ChibiStageViewer.vue",
+    "line": 146,
     "event": "@click",
     "handler": "helpOpen = true",
     "template": "<button class=\"stage-icon-action stage-header-help\" type=\"button\" aria-label=\"快捷键与操作帮助\" @click=\"helpOpen = true\"><CircleHelp :size=\"19\" /></button>",
@@ -2332,7 +2342,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 147,
+    "line": 148,
     "event": "@focusout",
     "handler": "closeMoreOnLeave",
     "template": "<div class=\"stage-more\" @focusout=\"closeMoreOnLeave\" @keydown.esc.stop=\"moreOpen = false\">",
@@ -2342,7 +2352,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 147,
+    "line": 148,
     "event": "@keydown.esc.stop",
     "handler": "moreOpen = false",
     "template": "<div class=\"stage-more\" @focusout=\"closeMoreOnLeave\" @keydown.esc.stop=\"moreOpen = false\">",
@@ -2352,7 +2362,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 148,
+    "line": 149,
     "event": "@click",
     "handler": "moreOpen = !moreOpen",
     "template": "<button class=\"stage-icon-action\" type=\"button\" aria-label=\"更多\" aria-haspopup=\"menu\" :aria-expanded=\"moreOpen\" @click=\"moreOpen = !moreOpen\"><Ellipsis :size=\"19\" /></button>",
@@ -2362,7 +2372,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 150,
+    "line": 151,
     "event": "@click",
     "handler": "moreOpen = false; helpOpen = true",
     "template": "<button class=\"stage-more-help\" type=\"button\" role=\"menuitem\" @click=\"moreOpen = false; helpOpen = true\"><CircleHelp :size=\"17\" />快捷键与操作帮助</button>",
@@ -2372,7 +2382,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 152,
+    "line": 153,
     "event": "@click",
     "handler": "moreOpen = false; exportStageSnapshot()",
     "template": "<button class=\"stage-more-snapshot\" type=\"button\" role=\"menuitem\" :disabled=\"!stageReady || snapshotBusy\" @click=\"moreOpen = false; exportStageSnapshot()\"><Camera :size=\"17\" />导出舞台截图</button>",
@@ -2382,7 +2392,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 153,
+    "line": 154,
     "event": "@click",
     "handler": "moreOpen = false; inspectorOpen = true",
     "template": "<button type=\"button\" role=\"menuitem\" @click=\"moreOpen = false; inspectorOpen = true\"><Settings2 :size=\"17\" />高级设置</button>",
@@ -2392,7 +2402,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 166,
+    "line": 167,
     "event": "@click",
     "handler": "exportStageSnapshot",
     "template": "<button class=\"stage-icon-action\" type=\"button\" aria-label=\"导出舞台截图\" title=\"PNG · 不含界面与歌词\" :disabled=\"!stageReady || snapshotBusy\" @click=\"exportStageSnapshot\"><Camera :size=\"19\" /></button>",
@@ -2402,17 +2412,17 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 167,
+    "line": 168,
     "event": "@click",
-    "handler": "toggleImmersive",
-    "template": "<button class=\"stage-icon-action\" type=\"button\" aria-label=\"沉浸观看\" :title=\"touchUi ? '沉浸观看 · 隐藏界面并全屏' : '沉浸观看 · 隐藏界面并全屏 · F'\" :disabled=\"fullscreenPending\" @click=\"toggleImmersive\"><Maximize :size=\"19\" /></button>",
+    "handler": "playImmersive",
+    "template": "<button class=\"stage-icon-action\" type=\"button\" :aria-label=\"immersiveLabel\" :title=\"touchUi ? `${immersiveLabel} · 隐藏界面并全屏` : `${immersiveLabel} · 隐藏界面并全屏 · F`\" :disabled=\"fullscreenPending\" @click=\"playImmersive\"><Maximize :size=\"19\" /></button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 184,
+    "line": 185,
     "event": "@click",
     "handler": "toggleImmersive",
     "template": "<button type=\"button\" @click=\"toggleImmersive\"><Maximize :size=\"15\" />沉浸观看</button>",
@@ -2422,7 +2432,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 185,
+    "line": 186,
     "event": "@click",
     "handler": "dismissImmersiveHint",
     "template": "<button type=\"button\" class=\"immersive-hint-close\" aria-label=\"不再提示\" @click=\"dismissImmersiveHint\"><X :size=\"15\" /></button>",
@@ -2432,7 +2442,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 201,
+    "line": 202,
     "event": "@click",
     "handler": "resetStage",
     "template": "<button type=\"button\" aria-label=\"回到开头\" @click=\"resetStage\">",
@@ -2442,7 +2452,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 210,
+    "line": 211,
     "event": "@click",
     "handler": "toggleStage",
     "template": "@click=\"toggleStage\"",
@@ -2452,7 +2462,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 226,
+    "line": 227,
     "event": "@change",
     "handler": "seekStage",
     "template": "@change=\"seekStage\"",
@@ -2462,17 +2472,17 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 228,
+    "line": 229,
     "event": "@click",
-    "handler": "toggleImmersive",
-    "template": "<button class=\"transport-immersive\" type=\"button\" aria-label=\"沉浸观看\" :disabled=\"fullscreenPending\" @click=\"toggleImmersive\"><Maximize :size=\"19\" /></button>",
+    "handler": "playImmersive",
+    "template": "<button class=\"transport-immersive\" type=\"button\" :aria-label=\"immersiveLabel\" :disabled=\"fullscreenPending\" @click=\"playImmersive\"><Maximize :size=\"19\" /></button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 234,
+    "line": 235,
     "event": "@click",
     "handler": "panelTab = 'lineup'",
     "template": "<button type=\"button\" :disabled=\"isSpecialSingle\" :aria-pressed=\"panelTab === 'lineup' && !isSpecialSingle\" :aria-controls=\"`${inspectorTitleId}-lineup`\" @click=\"panelTab = 'lineup'\">编队</button>",
@@ -2482,7 +2492,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 235,
+    "line": 236,
     "event": "@click",
     "handler": "panelTab = 'song'",
     "template": "<button type=\"button\" :aria-pressed=\"panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup')\" :aria-controls=\"`${inspectorTitleId}-song`\" @click=\"panelTab = 'song'\">曲目</button>",
@@ -2492,7 +2502,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 236,
+    "line": 237,
     "event": "@click",
     "handler": "panelTab = 'viewing'",
     "template": "<button type=\"button\" :aria-pressed=\"panelTab === 'viewing'\" :aria-controls=\"`${inspectorTitleId}-viewing`\" @click=\"panelTab = 'viewing'\">画面</button>",
@@ -2502,17 +2512,17 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 240,
+    "line": 241,
     "event": "@select-song",
     "handler": "selectStageScript",
-    "template": "<ChibiSongPicker :songs=\"songs\" :song-directory=\"songDirectory\" :selected-song-id=\"selectedSongId\" :disabled=\"booting\" @select-song=\"selectStageScript\">",
+    "template": "<ChibiSongPicker ref=\"songPickerRef\" :songs=\"songs\" :song-directory=\"songDirectory\" :selected-song-id=\"selectedSongId\" :disabled=\"booting\" @select-song=\"selectStageScript\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 241,
+    "line": 242,
     "event": "@click",
     "handler": "vocalSettingsOpen = true",
     "template": "<template #current-actions><button v-if=\"stageVocalAvailable\" class=\"stage-audio-action\" type=\"button\" :class=\"{ enabled: stageVocalEnabled }\" aria-label=\"演唱音源设置\" :title=\"stageVocalEnabled ? stageVocalToggleLabel : '原曲音源 · 可切换编成声部'\" @click=\"vocalSettingsOpen = true\"><Music2 :size=\"18\" /></button></template>",
@@ -2522,7 +2532,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 248,
+    "line": 249,
     "event": "@click",
     "handler": "applyOriginalLineup",
     "template": "<header class=\"stage-group-head\"><h3 id=\"stage-group-formation\">站位 · {{ activePositions.length }} 人</h3><div class=\"lineup-actions\"><button type=\"button\" :disabled=\"!originalStageLineup || booting\" @click=\"applyOriginalLineup\">原曲成员</button><button type=\"button\" :disabled=\"booting\" @click=\"randomizeLineup\"><Shuffle :size=\"15\" />随机</button></div></header>",
@@ -2532,7 +2542,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 248,
+    "line": 249,
     "event": "@click",
     "handler": "randomizeLineup",
     "template": "<header class=\"stage-group-head\"><h3 id=\"stage-group-formation\">站位 · {{ activePositions.length }} 人</h3><div class=\"lineup-actions\"><button type=\"button\" :disabled=\"!originalStageLineup || booting\" @click=\"applyOriginalLineup\">原曲成员</button><button type=\"button\" :disabled=\"booting\" @click=\"randomizeLineup\"><Shuffle :size=\"15\" />随机</button></div></header>",
@@ -2542,7 +2552,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 259,
+    "line": 260,
     "event": "@click",
     "handler": "selectedPosition = position; panelTab = 'lineup'; costumeNotice = ''",
     "template": "@click=\"selectedPosition = position; panelTab = 'lineup'; costumeNotice = ''\"",
@@ -2552,7 +2562,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 293,
+    "line": 294,
     "event": "@click",
     "handler": "pickerPosition = editingSlot.position",
     "template": "<button class=\"idol-change-action\" type=\"button\" :disabled=\"booting || editingSlot.loading || !activePositions.includes(editingSlot.position)\" :aria-label=\"`替换 ${editingSlot.position} 号位偶像`\" @click=\"pickerPosition = editingSlot.position\">",
@@ -2562,7 +2572,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 297,
+    "line": 298,
     "event": "@update:model-value",
     "handler": "editingSlot.costumeId = $event; costumeNotice = ''; loadSlot(editingSlot)",
     "template": "<GsFilterMenu class=\"costume-control\" variant=\"row\" label=\"衣装\" :model-value=\"editingSlot.costumeId\" :options=\"editingCostumeOptions\" :disabled=\"booting || editingSlot.loading || !activePositions.includes(editingSlot.position)\" @update:model-value=\"editingSlot.costumeId = $event; costumeNotice = ''; loadSlot(editingSlot)\" />",
@@ -2572,7 +2582,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 298,
+    "line": 299,
     "event": "@click",
     "handler": "syncEditingCostume",
     "template": "<button class=\"costume-sync-action\" type=\"button\" :disabled=\"booting || editingSlot.loading || !costumeSyncPlan\" :aria-label=\"`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`\" @click=\"syncEditingCostume\">应用到出演成员</button>",
@@ -2582,7 +2592,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 304,
+    "line": 305,
     "event": "@update:model-value",
     "handler": "stageVocalEnabled = $event; handleStageVocalToggle()",
     "template": "<label class=\"camera-toggle\"><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span><GsSwitch :model-value=\"stageVocalEnabled\" aria-label=\"按编成偶像演唱\" :disabled=\"booting\" @update:model-value=\"stageVocalEnabled = $event; handleStageVocalToggle()\" /></label>",
@@ -2592,7 +2602,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 305,
+    "line": 306,
     "event": "@click",
     "handler": "vocalSettingsOpen = true",
     "template": "<button type=\"button\" class=\"lineup-vocal-mix\" aria-label=\"声部与伴奏音量\" title=\"声部与伴奏音量\" @click=\"vocalSettingsOpen = true\"><Music2 :size=\"17\" /></button>",
@@ -2602,7 +2612,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 309,
+    "line": 310,
     "event": "@update:model-value",
     "handler": "oneshotSelection = $event",
     "template": "<GsFilterMenu variant=\"row\" label=\"Center 台词\" :model-value=\"oneshotSelection\" :options=\"oneshotOptions\" :disabled=\"booting\" @update:model-value=\"oneshotSelection = $event\" />",
@@ -2612,7 +2622,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 315,
+    "line": 316,
     "event": "@update:model-value",
     "handler": "costumeSelectionBusy || (costumeScope = $event, costumeNotice = '', costumeFamilyId = '', costumeVersionKey = '')",
     "template": "<GsTabs class=\"costume-scope-tabs\" size=\"panel\" aria-label=\"套服适用范围\" :model-value=\"costumeScope\" :options=\"sharedCostumeScopes.map(scope => ({ value: scope.id, label: scope.label }))\" @update:model-value=\"costumeSelectionBusy || (costumeScope = $event, costumeNotice = '', costumeFamilyId = '', costumeVersionKey = '')\" />",
@@ -2622,7 +2632,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 317,
+    "line": 318,
     "event": "@update:model-value",
     "handler": "costumeFamilyId = $event; costumeVersionKey = ''; costumeNotice = ''",
     "template": "<GsFilterMenu class=\"costume-control\" variant=\"row\" label=\"款式\" :model-value=\"selectedCostumeFamily.id\" :options=\"availableCostumeFamilies.map(family => ({ value: family.id, label: stageFamilyLabel(family) }))\" :disabled=\"costumeSelectionBusy\" @update:model-value=\"costumeFamilyId = $event; costumeVersionKey = ''; costumeNotice = ''\" />",
@@ -2632,7 +2642,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 319,
+    "line": 320,
     "event": "@click",
     "handler": "costumeVersionKey = choice.key; costumeNotice = ''",
     "template": "<span class=\"costume-version-choices\"><template v-for=\"(choice, index) in selectedFamilyVersions\" :key=\"choice.key\"><span v-if=\"index\" class=\"costume-version-divider\" aria-hidden=\"true\">/</span><button type=\"button\" :aria-pressed=\"choice.key === selectedCostumeChoice?.key\" :disabled=\"costumeSelectionBusy\" @click=\"costumeVersionKey = choice.key; costumeNotice = ''\">{{ choice.version.another ? '另一款' : '普通款' }} <small>{{ choice.plan.matched.length }}/{{ activeSlots.length }}</small></button></template></span>",
@@ -2642,7 +2652,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 322,
+    "line": 323,
     "event": "@click",
     "handler": "applyFamilyCostume",
     "template": "<button type=\"button\" class=\"costume-family-apply\" :disabled=\"costumeSelectionBusy || !selectedCostumeChoice\" @click=\"applyFamilyCostume\">应用给可用成员</button>",
@@ -2652,7 +2662,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 332,
+    "line": 333,
     "event": "@update:model-value",
     "handler": "cameraEnabled = $event; applyCameraTransform()",
     "template": "<label class=\"camera-toggle\"><span>演出镜头</span><GsSwitch :model-value=\"cameraEnabled\" aria-label=\"演出镜头\" @update:model-value=\"cameraEnabled = $event; applyCameraTransform()\" /></label>",
@@ -2662,7 +2672,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 333,
+    "line": 334,
     "event": "@update:model-value",
     "handler": "lyricsEnabled = $event",
     "template": "<label class=\"camera-toggle\"><span>显示歌词</span><GsSwitch :model-value=\"lyricsEnabled\" aria-label=\"显示歌词\" @update:model-value=\"lyricsEnabled = $event\" /></label>",
@@ -2672,7 +2682,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 334,
+    "line": 335,
     "event": "@input",
     "handler": "applyCameraTransform",
     "template": "<label class=\"range-control viewing-range\"><span>视图</span><input v-model.number=\"stageViewScale\" aria-label=\"整体视图缩放\" type=\"range\" min=\"0.5\" max=\"1.5\" step=\"0.01\" @input=\"applyCameraTransform\" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>",
@@ -2682,7 +2692,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 338,
+    "line": 339,
     "event": "@input",
     "handler": "applyPlaybackSpeed",
     "template": "<label class=\"range-control viewing-range\"><span>倍速</span><input v-model.number=\"playbackSpeed\" aria-label=\"播放倍速\" type=\"range\" min=\"0.5\" max=\"2\" step=\"0.05\" @input=\"applyPlaybackSpeed\" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>",
@@ -2692,7 +2702,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 339,
+    "line": 340,
     "event": "@update:model-value",
     "handler": "frameRateSetting = $event; setFrameRate()",
     "template": "<GsFilterMenu class=\"viewing-select\" variant=\"row\" label=\"帧率\" :model-value=\"frameRateSetting\" :options=\"frameRateOptions\" @update:model-value=\"frameRateSetting = $event; setFrameRate()\" />",
@@ -2702,7 +2712,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 344,
+    "line": 345,
     "event": "@click",
     "handler": "pendingQuality = stageQuality; qualityPromptOpen = true",
     "template": "<div class=\"viewing-select viewing-load\"><span>加载方式</span><strong>{{ stageQuality === 'full' ? '完整' : '轻量' }}</strong><button type=\"button\" aria-label=\"更改舞台加载方式\" @click=\"pendingQuality = stageQuality; qualityPromptOpen = true\">更改</button></div>",
@@ -2712,7 +2722,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 346,
+    "line": 347,
     "event": "@click",
     "handler": "toggleImmersive",
     "template": "<div class=\"viewing-actions\"><button type=\"button\" @click=\"toggleImmersive\"><Maximize :size=\"16\" />沉浸观看</button><button type=\"button\" @click=\"inspectorOpen = true\"><Settings2 :size=\"16\" />高级设置</button></div>",
@@ -2722,7 +2732,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 346,
+    "line": 347,
     "event": "@click",
     "handler": "inspectorOpen = true",
     "template": "<div class=\"viewing-actions\"><button type=\"button\" @click=\"toggleImmersive\"><Maximize :size=\"16\" />沉浸观看</button><button type=\"button\" @click=\"inspectorOpen = true\"><Settings2 :size=\"16\" />高级设置</button></div>",
@@ -2732,7 +2742,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 354,
+    "line": 355,
     "event": "@close",
     "handler": "pickerPosition = null",
     "template": "<ChibiIdolPicker :open=\"pickerPosition !== null\" :position=\"pickerPosition || 0\" :characters=\"characters\" :idol-directory=\"idolDirectory\" :selected-idol-code=\"slotByPosition(pickerPosition)?.characterId || ''\" :idol-name=\"idolName\" :idol-search=\"idolSearch\" @close=\"pickerPosition = null\" @select=\"selectStageIdol\" />",
@@ -2742,7 +2752,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 354,
+    "line": 355,
     "event": "@select",
     "handler": "selectStageIdol",
     "template": "<ChibiIdolPicker :open=\"pickerPosition !== null\" :position=\"pickerPosition || 0\" :characters=\"characters\" :idol-directory=\"idolDirectory\" :selected-idol-code=\"slotByPosition(pickerPosition)?.characterId || ''\" :idol-name=\"idolName\" :idol-search=\"idolSearch\" @close=\"pickerPosition = null\" @select=\"selectStageIdol\" />",
@@ -2752,7 +2762,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 355,
+    "line": 356,
     "event": "@close",
     "handler": "inspectorOpen = false",
     "template": "<ArchiveTerminalDialog class=\"stage-dev-dialog\" :open=\"inspectorOpen\" title=\"高级设置\" :title-id=\"inspectorTitleId\" @close=\"inspectorOpen = false\">",
@@ -2762,7 +2772,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 356,
+    "line": 357,
     "event": "@click",
     "handler": "emit('open-lab')",
     "template": "<div class=\"inspector-tools\"><button class=\"lab-link\" type=\"button\" @click=\"emit('open-lab')\">单人实验室</button><button class=\"rebuild-button\" type=\"button\" :disabled=\"booting\" @click=\"rebuildStage\"><RefreshCw :size=\"16\" />重新加载编队</button></div>",
@@ -2772,7 +2782,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 356,
+    "line": 357,
     "event": "@click",
     "handler": "rebuildStage",
     "template": "<div class=\"inspector-tools\"><button class=\"lab-link\" type=\"button\" @click=\"emit('open-lab')\">单人实验室</button><button class=\"rebuild-button\" type=\"button\" :disabled=\"booting\" @click=\"rebuildStage\"><RefreshCw :size=\"16\" />重新加载编队</button></div>",
@@ -2782,7 +2792,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 368,
+    "line": 369,
     "event": "@update:model-value",
     "handler": "staticStageEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>静态舞台</span><GsSwitch :model-value=\"staticStageEnabled\" aria-label=\"静态舞台\" @update:model-value=\"staticStageEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2792,7 +2802,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 371,
+    "line": 372,
     "event": "@update:model-value",
     "handler": "backmonitorEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>背景屏幕</span><GsSwitch :model-value=\"backmonitorEnabled\" aria-label=\"背景屏幕\" @update:model-value=\"backmonitorEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2802,7 +2812,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 374,
+    "line": 375,
     "event": "@update:model-value",
     "handler": "imageLayersEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>图片布景</span><GsSwitch :model-value=\"imageLayersEnabled\" aria-label=\"图片布景\" @update:model-value=\"imageLayersEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2812,7 +2822,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 377,
+    "line": 378,
     "event": "@update:model-value",
     "handler": "objectLayersEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>舞台物件</span><GsSwitch :model-value=\"objectLayersEnabled\" aria-label=\"舞台物件\" @update:model-value=\"objectLayersEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2822,7 +2832,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 380,
+    "line": 381,
     "event": "@update:model-value",
     "handler": "lightingEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>灯光染色</span><GsSwitch :model-value=\"lightingEnabled\" aria-label=\"灯光染色\" @update:model-value=\"lightingEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2832,7 +2842,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 383,
+    "line": 384,
     "event": "@update:model-value",
     "handler": "beamEffectsEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>光束灯效</span><GsSwitch :model-value=\"beamEffectsEnabled\" aria-label=\"光束灯效\" @update:model-value=\"beamEffectsEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2842,7 +2852,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 385,
+    "line": 386,
     "event": "@update:model-value",
     "handler": "penlightsEnabled = $event; applyLayerDebugVisibility()",
     "template": "<label><span>应援棒</span><GsSwitch :model-value=\"penlightsEnabled\" aria-label=\"应援棒\" @update:model-value=\"penlightsEnabled = $event; applyLayerDebugVisibility()\" /></label>",
@@ -2852,7 +2862,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 387,
+    "line": 388,
     "event": "@update:model-value",
     "handler": "charactersEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>舞台人物</span><GsSwitch :model-value=\"charactersEnabled\" aria-label=\"舞台人物\" @update:model-value=\"charactersEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2862,7 +2872,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 390,
+    "line": 391,
     "event": "@update:model-value",
     "handler": "characterShadowsEnabled = $event; applyLayerDebugVisibility()",
     "template": "<span>人物阴影</span><GsSwitch :model-value=\"characterShadowsEnabled\" aria-label=\"人物阴影\" @update:model-value=\"characterShadowsEnabled = $event; applyLayerDebugVisibility()\" />",
@@ -2872,7 +2882,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 402,
+    "line": 403,
     "event": "@input",
     "handler": "resizeStage",
     "template": "@input=\"resizeStage\"",
@@ -2882,7 +2892,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 486,
+    "line": 487,
     "event": "@close",
     "handler": "vocalSettingsOpen = false",
     "template": "<ArchiveTerminalDialog class=\"stage-dev-dialog stage-audio-dialog\" :open=\"vocalSettingsOpen\" title=\"演唱音源\" :title-id=\"vocalTitleId\" @close=\"vocalSettingsOpen = false\">",
@@ -2892,7 +2902,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 490,
+    "line": 491,
     "event": "@update:model-value",
     "handler": "stageVocalEnabled = $event; handleStageVocalToggle()",
     "template": "<span>{{ stageVocalToggleLabel }}</span><GsSwitch :model-value=\"stageVocalEnabled\" aria-label=\"按编成偶像演唱\" @update:model-value=\"stageVocalEnabled = $event; handleStageVocalToggle()\" />",
@@ -2902,7 +2912,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 495,
+    "line": 496,
     "event": "@input",
     "handler": "syncStageVocalMix",
     "template": "<input v-model.number=\"stageVocalBusGain\" type=\"range\" min=\"0\" max=\"1\" step=\"0.05\" @input=\"syncStageVocalMix\" />",
@@ -2912,7 +2922,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 500,
+    "line": 501,
     "event": "@input",
     "handler": "syncStageVocalMix",
     "template": "<input v-model.number=\"stageVocalBackingGain\" type=\"range\" min=\"0\" max=\"1\" step=\"0.05\" @input=\"syncStageVocalMix\" />",
@@ -2922,7 +2932,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 508,
+    "line": 509,
     "event": "@close",
     "handler": "helpOpen = false",
     "template": "<ArchiveTerminalDialog class=\"stage-dev-dialog stage-help-dialog\" :open=\"helpOpen\" title=\"观看与操作\" :title-id=\"helpTitleId\" @close=\"helpOpen = false\">",
@@ -2932,7 +2942,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 519,
+    "line": 520,
     "event": "@close",
     "handler": "chooseStageQuality(pendingQuality)",
     "template": "<ArchiveTerminalDialog class=\"stage-dev-dialog stage-quality-dialog\" :open=\"qualityPromptOpen\" title=\"选择舞台加载方式\" :title-id=\"qualityTitleId\" @close=\"chooseStageQuality(pendingQuality)\">",
@@ -2942,7 +2952,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 521,
+    "line": 522,
     "event": "@click",
     "handler": "pendingQuality = 'lite'",
     "template": "<button type=\"button\" role=\"radio\" :aria-checked=\"pendingQuality === 'lite'\" @click=\"pendingQuality = 'lite'\"><strong>轻量加载<small v-if=\"recommendedQuality === 'lite'\">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、应援棒、演出镜头与歌词。不开启光束和动态物件，手机与平板更流畅。</span></button>",
@@ -2952,7 +2962,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 522,
+    "line": 523,
     "event": "@click",
     "handler": "pendingQuality = 'full'",
     "template": "<button type=\"button\" role=\"radio\" :aria-checked=\"pendingQuality === 'full'\" @click=\"pendingQuality = 'full'\"><strong>完整加载<small v-if=\"recommendedQuality === 'full'\">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>",
@@ -2962,7 +2972,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 525,
+    "line": 526,
     "event": "@update:model-value",
     "handler": "rememberViewing = $event; saveStageViewing()",
     "template": "<label class=\"camera-toggle\"><span>记住选择，下次不再询问</span><GsSwitch :model-value=\"rememberViewing\" aria-label=\"记住选择，下次不再询问\" @update:model-value=\"rememberViewing = $event; saveStageViewing()\" /></label>",
@@ -2972,7 +2982,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 527,
+    "line": 528,
     "event": "@click",
     "handler": "chooseStageQuality(pendingQuality)",
     "template": "<button type=\"button\" class=\"quality-start\" @click=\"chooseStageQuality(pendingQuality)\">开始加载</button>",
@@ -2982,7 +2992,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 532,
+    "line": 536,
     "event": "@click",
     "handler": "exportStageSnapshot",
     "template": "<button class=\"stage-icon-action\" type=\"button\" aria-label=\"导出舞台截图\" title=\"PNG · 不含界面与歌词\" :disabled=\"!stageReady || snapshotBusy\" @click=\"exportStageSnapshot\"><Camera :size=\"19\" /></button>",
@@ -2992,7 +3002,7 @@
   {
     "component": "ChibiStageViewer",
     "file": "src/components/ChibiStageViewer.vue",
-    "line": 533,
+    "line": 537,
     "event": "@click",
     "handler": "toggleImmersive",
     "template": "<button ref=\"pureExitButton\" class=\"pure-exit\" type=\"button\" @click=\"toggleImmersive\"><Minimize :size=\"16\" />退出沉浸<kbd v-if=\"!touchUi\">F</kbd></button>",
@@ -3602,57 +3612,77 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 148,
+    "line": 143,
+    "event": "@click.stop",
+    "handler": "_ensureAudioCtx",
+    "template": "class=\"audio-tap\" type=\"button\" @click.stop=\"_ensureAudioCtx\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "StoryViewer",
+    "file": "src/core/StoryViewer.vue",
+    "line": 160,
+    "event": "@click",
+    "handler": "cancelChapterCountdown",
+    "template": "<button v-if=\"chapterCountdownLeftMs\" type=\"button\" @click=\"cancelChapterCountdown\">{{ uiText('player.complete.cancel') }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "StoryViewer",
+    "file": "src/core/StoryViewer.vue",
+    "line": 161,
     "event": "@click",
     "handler": "continueReview",
-    "template": "<button @click=\"continueReview\">继续回看</button>",
+    "template": "<button v-else type=\"button\" @click=\"continueReview\">{{ uiText('player.complete.review') }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 149,
+    "line": 162,
     "event": "@click",
     "handler": "emit('open-song', completionLiveLink.code)",
-    "template": "<button v-if=\"completionLiveLink\" class=\"primary\" data-live-link @click=\"emit('open-song', completionLiveLink.code)\">{{ uiText('player.complete.live') }}：{{ completionLiveLink.title }}</button>",
+    "template": "<button v-if=\"completionLiveLink\" class=\"primary\" type=\"button\" data-live-link :title=\"completionLiveLink.title\" @click=\"emit('open-song', completionLiveLink.code)\">{{ uiText('player.complete.live') }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 150,
+    "line": 163,
     "event": "@click",
     "handler": "emit('retry-queue')",
-    "template": "<button v-if=\"queueStatus === 'error'\" @click=\"emit('retry-queue')\">{{ uiText('player.queue.retry') }}</button>",
+    "template": "<button v-if=\"queueStatus === 'error'\" type=\"button\" @click=\"emit('retry-queue')\">{{ uiText('player.queue.retry') }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 151,
+    "line": 164,
     "event": "@click",
     "handler": "requestNextEpisode()",
-    "template": "<button v-else-if=\"nextTarget?.available\" class=\"primary\" :disabled=\"transitioning\" @click=\"requestNextEpisode()\">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>",
+    "template": "<button v-else-if=\"nextTarget?.available\" :class=\"{ primary: !completionLiveLink }\" type=\"button\" :disabled=\"transitioning\" @click=\"requestNextEpisode()\">{{ transitioning ? uiText('player.complete.loadingNext') : chapterCountdownLeftMs ? uiText('player.complete.playNow') : uiText(nextTarget.kind === 'chapter' ? 'player.complete.nextEpisode' : 'player.next') }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 152,
+    "line": 165,
     "event": "@click",
     "handler": "emit('back')",
-    "template": "<button :class=\"{ primary: !nextTarget?.available }\" @click=\"emit('back')\">{{ returnLabel }}</button>",
+    "template": "<button v-else :class=\"{ primary: !completionLiveLink }\" type=\"button\" @click=\"emit('back')\">{{ returnLabel }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 158,
+    "line": 170,
     "event": "@close",
     "handler": "menuOpen = false",
     "template": "<PlayerMenuPanel v-if=\"menuOpen && !HIDE_UI\" :title=\"uiText(pickerOpen ? 'player.picker.title' : 'player.settings.panel')\" :paused-label=\"uiText('player.settings.paused')\" :close-label=\"uiText('player.settings.close')\" @close=\"menuOpen = false\">",
@@ -3662,7 +3692,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 159,
+    "line": 171,
     "event": "@back",
     "handler": "pickerOpen = false",
     "template": "<PlayerEpisodePicker v-if=\"pickerOpen\" :snapshot=\"queueSnapshot\" :status=\"queueStatus\" :pending=\"transitioning\" @back=\"pickerOpen = false\" @select=\"selectEpisode\" @retry=\"emit('retry-queue')\" />",
@@ -3672,7 +3702,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 159,
+    "line": 171,
     "event": "@select",
     "handler": "selectEpisode",
     "template": "<PlayerEpisodePicker v-if=\"pickerOpen\" :snapshot=\"queueSnapshot\" :status=\"queueStatus\" :pending=\"transitioning\" @back=\"pickerOpen = false\" @select=\"selectEpisode\" @retry=\"emit('retry-queue')\" />",
@@ -3682,7 +3712,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 159,
+    "line": 171,
     "event": "@retry",
     "handler": "emit('retry-queue')",
     "template": "<PlayerEpisodePicker v-if=\"pickerOpen\" :snapshot=\"queueSnapshot\" :status=\"queueStatus\" :pending=\"transitioning\" @back=\"pickerOpen = false\" @select=\"selectEpisode\" @retry=\"emit('retry-queue')\" />",
@@ -3692,7 +3722,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 161,
+    "line": 173,
     "event": "@click",
     "handler": "pickerOpen = true",
     "template": "<button @click=\"pickerOpen = true\">{{ uiText('player.picker.title') }}</button>",
@@ -3702,7 +3732,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 163,
+    "line": 175,
     "event": "@click",
     "handler": "requestNextEpisode()",
     "template": "<button v-if=\"nextTarget?.available\" :disabled=\"transitioning\" @click=\"requestNextEpisode()\"><SkipForward :size=\"19\" /><span>{{ nextLabel }}</span></button>",
@@ -3712,7 +3742,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 164,
+    "line": 176,
     "event": "@click",
     "handler": "emit('retry-queue')",
     "template": "<button v-if=\"queueStatus === 'error'\" @click=\"emit('retry-queue')\">{{ uiText('player.queue.retry') }}</button>",
@@ -3722,7 +3752,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 166,
+    "line": 178,
     "event": "@click",
     "handler": "openBacklog",
     "template": "<button @click=\"openBacklog\"><BookOpenText :size=\"19\" /><span>{{ uiText('player.settings.backlog') }}</span></button>",
@@ -3732,7 +3762,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 167,
+    "line": 179,
     "event": "@click",
     "handler": "emit('back')",
     "template": "<button @click=\"emit('back')\"><LogOut :size=\"19\" /><span>{{ returnLabel }}</span></button>",
@@ -3742,7 +3772,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 170,
+    "line": 182,
     "event": "@click",
     "handler": "enterImmersive",
     "template": "<button v-if=\"!immersive.active.value\" :disabled=\"immersive.pending.value\" @click=\"enterImmersive\"><span>{{ uiText('player.immersive.enter') }}</span></button>",
@@ -3752,7 +3782,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 171,
+    "line": 183,
     "event": "@click",
     "handler": "immersive.leave()",
     "template": "<button v-else @click=\"immersive.leave()\"><span>{{ uiText('player.immersive.leave') }}</span></button>",
@@ -3762,7 +3792,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 172,
+    "line": 184,
     "event": "@change",
     "handler": "saveMobileViewMode",
     "template": "<label class=\"menu-setting\"><span>{{ uiText('player.immersive.mode') }}</span><select v-model=\"mobileViewMode\" @change=\"saveMobileViewMode\"><option value=\"ask\">{{ uiText('player.immersive.ask') }}</option><option value=\"landscape\">{{ uiText('player.immersive.landscape') }}</option><option value=\"portrait\">{{ uiText('player.immersive.portrait') }}</option></select></label>",
@@ -3772,7 +3802,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 174,
+    "line": 186,
     "event": "@click",
     "handler": "cycleLanguage",
     "template": "<button @click=\"cycleLanguage\"><span>{{ uiText('player.immersive.language') }}</span><b>{{ langLabel }}</b></button>",
@@ -3782,7 +3812,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 175,
+    "line": 187,
     "event": "@click",
     "handler": "storyLocalization.retryTranslation()",
     "template": "<button v-if=\"storyLocalization.retryAvailable.value\" :disabled=\"storyLocalization.loading.value\" @click=\"storyLocalization.retryTranslation()\">译文暂时无法载入 · 重试译文</button>",
@@ -3792,7 +3822,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 178,
+    "line": 190,
     "event": "@change",
     "handler": "emit('update:continuous-playback', $event.target.checked)",
     "template": "<input type=\"checkbox\" :checked=\"continuousPlayback\" @change=\"emit('update:continuous-playback', $event.target.checked)\" />",
@@ -3802,7 +3832,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 180,
+    "line": 192,
     "event": "@click",
     "handler": "toggleAuto",
     "template": "<button :class=\"{ active: autoEnabled }\" @click=\"toggleAuto\"><Play :size=\"19\" /><span>{{ uiText('player.settings.auto') }}</span><b>{{ autoEnabled ? 'ON' : 'OFF' }}</b></button>",
@@ -3812,7 +3842,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 183,
+    "line": 195,
     "event": "@change",
     "handler": "saveAutoDelay",
     "template": "<input v-model.number=\"autoDelayMs\" type=\"number\" min=\"0\" max=\"10000\" step=\"100\" @change=\"saveAutoDelay\" />",
@@ -3822,7 +3852,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 186,
+    "line": 198,
     "event": "@click",
     "handler": "toggleSkip",
     "template": "<button :class=\"{ active: skipEnabled }\" @click=\"toggleSkip\"><FastForward :size=\"19\" /><span>{{ uiText('player.settings.skip') }}</span><b>{{ skipEnabled ? 'ON' : 'OFF' }}</b></button>",
@@ -3832,7 +3862,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 189,
+    "line": 201,
     "event": "@change",
     "handler": "saveSkipMode",
     "template": "<select v-model=\"skipMode\" @change=\"saveSkipMode\"><option value=\"readOnly\">{{ uiText('player.settings.readOnly') }}</option><option value=\"all\">{{ uiText('player.settings.all') }}</option></select>",
@@ -3842,7 +3872,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 195,
+    "line": 207,
     "event": "@input",
     "handler": "saveProducerName($event.target.value)",
     "template": "<label class=\"menu-setting\"><span>{{ uiText('player.settings.producerName') }}</span><input class=\"producer-name-input\" :value=\"producerName\" type=\"text\" autocomplete=\"off\" :placeholder=\"uiText('player.settings.producerNamePlaceholder')\" @input=\"saveProducerName($event.target.value)\" /></label>",
@@ -3852,7 +3882,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 196,
+    "line": 208,
     "event": "@click",
     "handler": "uiHidden = true; menuOpen = false",
     "template": "<button @click=\"uiHidden = true; menuOpen = false\"><EyeOff :size=\"19\" /><span>{{ uiText('player.settings.hideUi') }}</span></button>",
@@ -3862,7 +3892,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 198,
+    "line": 210,
     "event": "@change",
     "handler": "changeVoiceBackend",
     "template": "<select v-model=\"voiceBackend\" @change=\"changeVoiceBackend\">",
@@ -3872,7 +3902,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 204,
+    "line": 216,
     "event": "@click",
     "handler": "menuOpen = false; retryCurrentVoice()",
     "template": "<button @click=\"menuOpen = false; retryCurrentVoice()\">{{ uiText('backlog.replayVoice') }}</button>",
@@ -3882,7 +3912,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 208,
+    "line": 220,
     "event": "@keydown.stop",
     "handler": "handleViewingOfferKeydown",
     "template": "<div v-if=\"viewingOfferOpen\" class=\"viewing-offer\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"viewing-offer-title\" @keydown.stop=\"handleViewingOfferKeydown\">",
@@ -3892,7 +3922,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 213,
+    "line": 225,
     "event": "@click",
     "handler": "chooseViewingMode('landscape')",
     "template": "<button ref=\"viewingOfferAction\" class=\"primary\" @click=\"chooseViewingMode('landscape')\">{{ uiText('player.immersive.enter') }}</button>",
@@ -3902,7 +3932,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 214,
+    "line": 226,
     "event": "@click",
     "handler": "chooseViewingMode('portrait')",
     "template": "<button @click=\"chooseViewingMode('portrait')\">{{ uiText('player.immersive.continue') }}</button>",
@@ -3912,7 +3942,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 219,
+    "line": 231,
     "event": "@click",
     "handler": "enterImmersive",
     "template": "<button v-if=\"!immersive.active.value\" :disabled=\"immersive.pending.value\" @click=\"enterImmersive\">{{ uiText('player.immersive.enter') }}</button>",
@@ -3922,7 +3952,7 @@
   {
     "component": "StoryViewer",
     "file": "src/core/StoryViewer.vue",
-    "line": 220,
+    "line": 232,
     "event": "@click",
     "handler": "viewingShortcutDismissed = true; immersive.dismiss()",
     "template": "<button @click=\"viewingShortcutDismissed = true; immersive.dismiss()\">{{ uiText('player.immersive.dismiss') }}</button>",

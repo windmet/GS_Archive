@@ -1,5 +1,5 @@
 <template>
-  <div ref="playerRoot" class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden, 'immersive-landscape': immersiveCompact, 'completion-open': episodeFinished && !completionDismissed && !uiHidden }" tabindex="0"
+  <div ref="playerRoot" class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden, 'immersive-landscape': immersiveCompact }" tabindex="0"
     @pointerdown.capture="_ensureAudioCtx" @keydown="handlePlayerKeydown">
     <pre
       v-if="RUNTIME_DEBUG"
@@ -117,7 +117,7 @@
 
     <!-- Bottom control dock -->
     <PlayerControlDock
-      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden"
+      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !endBarOpen"
       :compact="immersiveCompact"
       :auto-enabled="autoEnabled"
       :skip-enabled="skipEnabled"
@@ -139,19 +139,31 @@
       @replay-voice="replayBacklogVoice"
     />
 
-    <div v-if="episodeFinished && !completionDismissed && !HIDE_UI && !uiHidden" class="episode-complete" role="region" aria-label="观看导航">
-      <div class="complete-panel">
-        <strong>{{ communicationCompleted ? uiText('player.complete.communication') : uiText('player.complete.episode') }}</strong>
-        <p v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</p>
-        <p v-else-if="!nextTarget?.available && queueStatus !== 'error'">{{ nextTarget?.reason || '当前观看范围已结束' }}</p>
-        <div class="complete-actions">
-          <button @click="continueReview">继续回看</button>
-          <button v-if="completionLiveLink" class="primary" data-live-link @click="emit('open-song', completionLiveLink.code)">{{ uiText('player.complete.live') }}：{{ completionLiveLink.title }}</button>
-          <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
-          <button v-else-if="nextTarget?.available" class="primary" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>
-          <button :class="{ primary: !nextTarget?.available }" @click="emit('back')">{{ returnLabel }}</button>
-        </div>
-      </div>
+    <button v-if="autoEnabled && audioLocked && audioTapNeeded && !endBarOpen && !localBuffering && !HIDE_UI && !uiHidden && !backlogOpen && !viewingOfferOpen"
+      class="audio-tap" type="button" @click.stop="_ensureAudioCtx">
+      <Play :size="15" /><span>{{ uiText('player.auto.tapToResume') }}</span>
+    </button>
+
+    <!-- End of an episode: the bar takes the dock's place so the last line stays where it was read. -->
+    <div v-if="endBarOpen" class="episode-complete" role="region" :aria-label="uiText('player.complete.region')">
+      <span v-if="chapterCountdownLeftMs" class="end-countdown" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle class="track" cx="12" cy="12" r="10" /><circle class="fill" cx="12" cy="12" r="10" :style="{ strokeDashoffset: 62.83 * (1 - chapterCountdownLeftMs / CHAPTER_COUNTDOWN_MS) }" /></svg>
+        <em>{{ chapterCountdownSeconds }}</em>
+      </span>
+      <span class="end-copy" role="status">
+        <strong>{{ chapterCountdownLeftMs ? uiText('player.complete.upNext') : communicationCompleted ? uiText('player.complete.communication') : uiText('player.complete.episode') }}</strong>
+        <small v-if="queueStatus === 'idle' || queueStatus === 'loading'">{{ uiText('player.queue.loading') }}</small>
+        <small v-else-if="nextTarget?.available">{{ nextLabel }}</small>
+        <small v-else-if="queueStatus !== 'error'">{{ nextTarget?.reason || '当前观看范围已结束' }}</small>
+      </span>
+      <span class="end-actions">
+        <button v-if="chapterCountdownLeftMs" type="button" @click="cancelChapterCountdown">{{ uiText('player.complete.cancel') }}</button>
+        <button v-else type="button" @click="continueReview">{{ uiText('player.complete.review') }}</button>
+        <button v-if="completionLiveLink" class="primary" type="button" data-live-link :title="completionLiveLink.title" @click="emit('open-song', completionLiveLink.code)">{{ uiText('player.complete.live') }}</button>
+        <button v-if="queueStatus === 'error'" type="button" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
+        <button v-else-if="nextTarget?.available" :class="{ primary: !completionLiveLink }" type="button" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : chapterCountdownLeftMs ? uiText('player.complete.playNow') : uiText(nextTarget.kind === 'chapter' ? 'player.complete.nextEpisode' : 'player.next') }}</button>
+        <button v-else :class="{ primary: !completionLiveLink }" type="button" @click="emit('back')">{{ returnLabel }}</button>
+      </span>
     </div>
 
     </div><!-- /viewer-stage -->
@@ -413,19 +425,35 @@ const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const completionLiveLink = computed(() => props.liveLink && currentStep.value?.step_id === props.liveLink.afterStepId ? props.liveLink : null)
 const completionDismissed = ref(false)
+const endBarOpen = computed(() => episodeFinished.value && !completionDismissed.value && !HIDE_UI && !uiHidden.value)
 let automaticNextRequested = false
 const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${props.formatEpisodeLabel(props.nextTarget.label)}` : '')
-function requestNextEpisode({ automatic = false } = {}) {
+function requestNextEpisode({ automatic = false, chapter = !automatic && props.nextTarget?.kind === 'chapter' } = {}) {
   if (props.transitionPending || (automatic && automaticNextRequested)) return
   if (automatic) automaticNextRequested = true
+  cancelChapterCountdown()
   menuOpen.value = false
-  emit('next-episode', { instance: props.playbackInstance, chapter: !automatic && props.nextTarget?.kind === 'chapter' })
+  emit('next-episode', { instance: props.playbackInstance, chapter })
 }
-function continueReview() { completionDismissed.value = true; nextTick(() => playerRoot.value?.focus()) }
+function continueReview() { cancelChapterCountdown(); completionDismissed.value = true; nextTick(() => playerRoot.value?.focus()) }
+
+// Continuous playback runs straight through a chapter's segments; at a chapter boundary it
+// waits a short, cancellable countdown on the end bar first. A Live hand-off never counts down.
+const CHAPTER_COUNTDOWN_MS = 5000
+const chapterCountdownCancelled = ref(false)
+const chapterCountdownLeftMs = ref(0)
+let chapterCountdownTimer = null
+const chapterCountdownEligible = computed(() => episodeFinished.value && !completionDismissed.value && !chapterCountdownCancelled.value
+  && props.continuousPlayback && props.nextTarget?.kind === 'chapter' && props.nextTarget.available
+  && props.queueStatus === 'ready' && !completionLiveLink.value && !props.transitionPending)
+const chapterCountdownSeconds = computed(() => Math.ceil(chapterCountdownLeftMs.value / 1000))
+function stopChapterCountdownTimer() { clearInterval(chapterCountdownTimer); chapterCountdownTimer = null }
+function cancelChapterCountdown() { stopChapterCountdownTimer(); chapterCountdownLeftMs.value = 0; chapterCountdownCancelled.value = true }
 
 const transitioning = computed(() => props.transitionPending)
 const runtimeDiagnostics = ref(null)
 const debugVisibilityOverride = ref(null)
+const pageHidden = ref(false)
 
 let _runtimeDiagnosticsTimer = null
 let unregisterReleaseViewer = null
@@ -450,6 +478,31 @@ let playbackController = null
 let pendingStepEffects = null
 // A cut that only waits holds the screen between two steps (NativeCutWait.js).
 const nativeCutWait = createNativeCutWait({ onChange: () => playbackController?.notifyStateChanged() })
+
+// Auto waits for a running AudioContext so it never runs ahead of silent voices. Each episode
+// remounts the player after the tap that asked for it, so the lock lifts when this player's
+// context first runs; only when it cannot (no activation yet, or WebKit refusing) does the
+// player ask for a tap.
+const audioLocked = ref(false)
+const audioTapNeeded = ref(false)
+let audioTapTimer = null
+function setAudioLock(locked) {
+  audioLocked.value = locked
+  if (!locked) { audioTapNeeded.value = false; clearTimeout(audioTapTimer) }
+  playbackController?.setPaused('audio-lock', locked)
+}
+function releaseAudioLockWhenRunning() {
+  if (!audioLocked.value) return
+  if (!navigator.userActivation?.hasBeenActive) { audioTapNeeded.value = true; return }
+  const context = storyAudioSession.ensureContext()
+  if (!context) { setAudioLock(false); return }
+  // Ask for running outside a gesture; the session still holds it suspended while it is paused.
+  void storyAudioSession.resume('audio-lock')
+  const check = () => { if (context.state === 'running') { context.removeEventListener('statechange', check); setAudioLock(false) } }
+  context.addEventListener('statechange', check)
+  check()
+  audioTapTimer = setTimeout(() => { if (audioLocked.value) audioTapNeeded.value = true }, 1500)
+}
 
 // True while a title step is playing its FX. The FX is a transition the player
 // owns, not a screen the user dismisses: it always advances when it ends, which
@@ -515,7 +568,7 @@ function _setTalking(on) {
  */
 function _ensureAudioCtx() {
   if (!NO_AUDIO) storyAudioSession.unlockFromUserGesture()
-  playbackController?.setPaused('audio-lock', false)
+  setAudioLock(false)
 }
 
 function retryCurrentVoice(options = {}) {
@@ -712,6 +765,7 @@ function finishEpisode() {
   _stopCurrentVoice('episode-complete')
   episodeFinished.value = true
   completionDismissed.value = false
+  chapterCountdownCancelled.value = false
   if (props.continuousPlayback && props.hasNextEpisode) {
     requestNextEpisode({ automatic: true })
   }
@@ -1164,6 +1218,7 @@ function refreshRuntimeDiagnostics() {
 const collectReleaseSoakSample = options => buildRuntimeDiagnostics(options)
 
 function applyVisibilityPause(hidden) {
+  pageHidden.value = Boolean(hidden)
   if (hidden) clearFadeAutoAdvance()
   playbackController?.setPaused('visibility', hidden)
   setRuntimeSessionPaused('visibility', hidden)
@@ -1211,7 +1266,7 @@ playbackController = new PlaybackModeController({
   },
 })
 playbackController.setAuto(autoEnabled.value)
-playbackController.setPaused('audio-lock', autoEnabled.value && !NO_AUDIO)
+setAudioLock(autoEnabled.value && !NO_AUDIO)
 
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
 handleStepChange = stepSceneEffects.handleStepChange
@@ -1229,6 +1284,7 @@ onMounted(async () => {
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
   handleVisibilityChange()
+  releaseAudioLockWhenRunning()
   if (RUNTIME_DEBUG) {
     unregisterReleaseViewer = storyReleaseProbe.registerViewer(collectReleaseSoakSample)
     releaseSoakRecorder.record('viewer-attached')
@@ -1290,6 +1346,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateViewingViewport)
+  stopChapterCountdownTimer()
+  clearTimeout(audioTapTimer)
   titleAdvancePending = null
   nativeCutWait.cancel()
   pendingStepEffects = null
@@ -1354,6 +1412,21 @@ watch(() => props.hasNextEpisode, hasNext => {
     requestNextEpisode({ automatic: true })
   }
 })
+// The countdown holds while anything covers the end bar or the page is hidden, and resumes
+// from where it stopped; leaving the finished state (previous, backlog) resets it.
+watch([chapterCountdownEligible, () => menuOpen.value || backlogOpen.value || viewingOfferOpen.value || props.recoveryOpen || pageHidden.value], ([eligible, held]) => {
+  if (!eligible) { stopChapterCountdownTimer(); chapterCountdownLeftMs.value = 0; return }
+  if (!chapterCountdownLeftMs.value) chapterCountdownLeftMs.value = CHAPTER_COUNTDOWN_MS
+  if (held) { stopChapterCountdownTimer(); return }
+  if (chapterCountdownTimer) return
+  let last = performance.now()
+  chapterCountdownTimer = setInterval(() => {
+    const now = performance.now()
+    chapterCountdownLeftMs.value = Math.max(0, chapterCountdownLeftMs.value - (now - last))
+    last = now
+    if (!chapterCountdownLeftMs.value) requestNextEpisode({ automatic: true, chapter: true })
+  }, 200)
+}, { immediate: true })
 watch([immersiveEligible, smallScreen, portraitScreen], ([eligible, small, portrait]) => {
   if (eligible && small && portrait && !immersive.active.value && !immersive.pending.value && !uiHidden.value && mobileViewMode.value === 'ask' && playerSession.claimOffer()) {
     viewingOfferOpen.value = true
@@ -1419,7 +1492,6 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   --player-content-top: calc(var(--player-edge) + var(--player-topbar-height) + var(--player-topbar-gap));
   --player-content-bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + var(--player-dock-gap) + env(safe-area-inset-bottom));
 }
-.story-viewer-root.completion-open { --player-content-bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + 156px + env(safe-area-inset-bottom)); --player-dialogue-bottom: var(--player-content-bottom); }
 .playback-menu h3, .menu-position { padding: 8px 16px; margin: 0; font-size: 14px; }
 .viewer-stage {
   position: relative;
@@ -1549,17 +1621,44 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   outline: 2px solid var(--player-focus-outer);
   outline-offset: 2px;
 }
-/* End of a story or a chat: the archive's one floating surface, centred above the dock.
-   Title, one quiet status line, then the actions; the main one is navy. */
-.episode-complete { position: absolute; left: var(--player-edge); right: var(--player-edge); bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + 12px + env(safe-area-inset-bottom)); z-index: 35; display: flex; justify-content: center; pointer-events: none; }
-.complete-panel { box-sizing: border-box; width: min(440px, 100%); padding: var(--gs-space-5) var(--gs-space-6); border-radius: var(--gs-radius-panel); background: var(--gs-surface); color: var(--gs-ink); text-align: center; box-shadow: var(--gs-shadow-float); pointer-events: auto; }
-.complete-panel > strong { display: block; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
-.complete-panel > p { margin: var(--gs-space-1) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
-.complete-panel > .complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gs-space-3); margin-top: var(--gs-space-4); }
-.complete-panel button { display: inline-flex; flex: 1 1 140px; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
-.complete-panel button.primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
-.complete-panel button:disabled { opacity: .5; cursor: default; }
-.complete-panel button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+/* End of a story or a chat: a bar in the dock's place and of its height, so nothing above it
+   moves. Status on the left, then 回看 and the one navy action. */
+.episode-complete {
+  position: absolute; z-index: 35; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--player-dock-bottom) + env(safe-area-inset-bottom));
+  box-sizing: border-box; display: flex; align-items: center; gap: var(--gs-space-3);
+  width: min(560px, calc(100% - 2 * var(--player-edge))); min-height: var(--player-dock-height);
+  padding: var(--gs-space-2) var(--gs-space-2) var(--gs-space-2) var(--gs-space-5);
+  border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); box-shadow: var(--gs-shadow-float);
+}
+.end-copy { flex: 1; min-width: 0; display: grid; line-height: 1.35; }
+.end-copy strong, .end-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.end-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.end-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.end-actions { flex: none; display: flex; gap: var(--gs-space-2); }
+.end-actions button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
+.end-actions button.primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
+.end-actions button:disabled { opacity: .5; cursor: default; }
+.end-actions button:focus-visible, .audio-tap:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.end-countdown { position: relative; flex: none; width: 28px; height: 28px; margin-left: calc(-1 * var(--gs-space-2)); }
+.end-countdown svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.end-countdown circle { fill: none; stroke-width: 2.5; stroke-dasharray: 62.83; }
+.end-countdown .track { stroke: var(--gs-line); }
+.end-countdown .fill { stroke: var(--gs-mint); transition: stroke-dashoffset .2s linear; }
+.end-countdown em { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
+@media (max-width: 420px) {
+  .episode-complete { gap: var(--gs-space-2); padding-left: var(--gs-space-4); }
+  .end-actions button { padding: 0 var(--gs-space-3); }
+}
+@media (prefers-reduced-motion: reduce) { .end-countdown .fill { transition: none; } }
+/* Auto is on but this player's audio has not started: one tap starts it. */
+.audio-tap {
+  position: absolute; z-index: 21; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + var(--gs-space-3) + env(safe-area-inset-bottom));
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5);
+  border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-mint-ink);
+  box-shadow: var(--gs-shadow-float); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; white-space: nowrap;
+}
 .menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
 .menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 
