@@ -53,8 +53,9 @@
           :step="currentStep"
           :playing="isPlaying"
           :voice-status="voiceStatus"
+          :auto-held="autoHeld"
           @retry-voice="retryCurrentVoice"
-          @click="goNext"
+          @click="tapNext"
         />
       </Transition>
 
@@ -194,6 +195,7 @@
           <input v-model.number="autoDelayMs" type="number" min="0" max="10000" step="100" @change="saveAutoDelay" />
           <small>ms</small>
         </label>
+        <button data-testid="player-speed" @click="cycleStorySpeed"><Gauge :size="19" /><span>{{ uiText('player.settings.speed') }}</span><b>×{{ storySpeed.toFixed(1) }}</b></button>
         <button :class="{ active: skipEnabled }" @click="toggleSkip"><FastForward :size="19" /><span>{{ uiText('player.settings.skip') }}</span><b>{{ skipEnabled ? 'ON' : 'OFF' }}</b></button>
         <label class="menu-setting">
           <span>{{ uiText('player.settings.skipRange') }}</span>
@@ -248,7 +250,7 @@ import TitleUI from '../components/TitleUI.vue'
 import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
-import { BookOpenText, Eye, EyeOff, FastForward, LogOut, Play, SkipForward, X } from '@lucide/vue'
+import { BookOpenText, Eye, EyeOff, FastForward, Gauge, LogOut, Play, SkipForward, X } from '@lucide/vue'
 import PlayerEpisodePicker from '../components/player/PlayerEpisodePicker.vue'
 import PlayerMenuPanel from '../components/player/PlayerMenuPanel.vue'
 import PlayerTopBar from '../components/player/PlayerTopBar.vue'
@@ -274,7 +276,7 @@ import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { getStepSceneState, projectStepSceneState } from './story-runtime/StepSceneState.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
-import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
+import { PlayerPreferencesRepository, STORY_SPEEDS } from './story-runtime/PlayerPreferencesRepository.js'
 import { playerLanguageStatus } from '../components/player/PlayerLanguageStatus.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
@@ -418,6 +420,9 @@ const backlogOpen = ref(false)
 const backlogNodes = ref([])
 const autoEnabled = ref(initialPreferences.auto_enabled)
 const autoDelayMs = ref(initialPreferences.auto_delay_ms)
+// Native OnClickBackgroundPanel isAutoStop: a tap holds the running auto on this line.
+const autoHeld = ref(false)
+const storySpeed = ref(initialPreferences.story_speed)
 const skipEnabled = ref(false)
 const skipMode = ref(initialPreferences.skip_mode)
 const uiHidden = ref(initialPreferences.ui_hidden)
@@ -704,7 +709,7 @@ if (!voicePlayer) {
     currentStepIndex,
     compiledData,
     isPlaying,
-    noVoice: NO_VOICE,
+    noVoice: () => NO_VOICE || storySpeed.value > 1,
     canAnimateStage: () => communicationContext.value.needsStage,
     onStateChange: state => { voiceStatus.value = state },
     audioSession: storyAudioSession,
@@ -864,6 +869,40 @@ function toggleAuto() {
   playbackController?.setAuto(!autoEnabled.value)
 }
 
+// Native OnClickBackgroundPanel: while auto runs, the first tap on a line holds it there (stop
+// icon on the balloon) and the next tap moves on, after which auto carries on. Without auto, or
+// during a cut wait (which a tap clears), a tap moves on as before.
+function tapNext() {
+  if (autoEnabled.value && !autoHeld.value && !nativeCutWait.pending && !episodeFinished.value) {
+    autoHeld.value = true
+    return 'held'
+  }
+  const result = goNext()
+  // The second tap is taken even when a cut wait now holds the screen; auto resumes after it.
+  if (result !== 'blocked') autoHeld.value = false
+  return result
+}
+watch(autoHeld, held => playbackController?.setPaused('tap-hold', held))
+watch(autoEnabled, enabled => { if (!enabled) autoHeld.value = false })
+
+// Native speed ×1.0 / ×1.5 / ×2.0 (AdventureSettingsPanel, one button cycling): the cue clock,
+// idol motion, cut waits and auto timing run faster; BGM and SE keep their speed. Above ×1.0 the
+// native voice switch is masked off, so voice stops and lines wait only for reading.
+function setPlaybackRate(rate) {
+  const speed = STORY_SPEEDS.includes(rate) ? rate : 1
+  storySpeed.value = speed
+  storyRuntimeCues.setRate(speed)
+  spineStageRef.value?.manager?.setPlaybackRate?.(speed)
+  playbackController?.setRate(speed)
+  if (speed > 1) _stopCurrentVoice('story-speed')
+  return speed
+}
+
+function cycleStorySpeed() {
+  const next = STORY_SPEEDS[(STORY_SPEEDS.indexOf(storySpeed.value) + 1) % STORY_SPEEDS.length]
+  storySpeed.value = preferencesRepository.update({ story_speed: setPlaybackRate(next) }).story_speed
+}
+
 function toggleSkip() {
   _ensureAudioCtx()
   playbackController?.setSkip(!skipEnabled.value, skipMode.value)
@@ -985,7 +1024,7 @@ function goNext(source = 'user', onSettled) {
       finiteBranchNextIndex(compiledData.value, currentStepIndex.value))
     if (hold > 0) {
       const step = currentStep.value
-      holdNativeCut({ step, manual }, hold, () => leaveStep(manual))
+      holdNativeCut({ step, manual }, hold / storySpeed.value, () => leaveStep(manual))
       return 'held'
     }
   }
@@ -1090,6 +1129,7 @@ const stepSceneEffects = useStepSceneEffects({
   resetVoiceDedup: _resetVoiceDedup,
   onEpisodeEnd: finishEpisode,
   isAutoBlocked: () => isRuntimeAutoBlocked(),
+  getRate: () => storySpeed.value,
   beforeAutoAdvance: () => {
     markStepRead()
     recordHistoryStep()
@@ -1119,6 +1159,8 @@ const storyRuntimeCues = useStoryRuntimeCues({
 })
 
 function handleRuntimeReadinessChange(readiness) {
+  // The stage manager only exists once SpineStage mounts; new idols take its rate when they spawn.
+  if (readiness.status === 'playable') spineStageRef.value?.manager?.setPlaybackRate?.(storySpeed.value)
   runtimeReadinessStatus.value = readiness.status
   runtimeReadinessReason.value = readiness.reason || ''
   const hasFrame = initialReadyEmitted.value && (frameHolding.value || !frameHoldRequired.value)
@@ -1150,12 +1192,6 @@ function handleRuntimeReadinessChange(readiness) {
 
 function setRuntimeSessionPaused(reason, paused) {
   setStoryRuntimePaused({ reasons: runtimePauseReasons, cues: storyRuntimeCues, audioSession: storyAudioSession }, reason, paused).catch(() => {})
-}
-
-function setPlaybackRate(rate) {
-  const appliedRate = storyAudioSession.setRate(rate)
-  storyRuntimeCues.setRate(appliedRate)
-  return appliedRate
 }
 
 function buildRuntimeDiagnostics({ includeProjector = false } = {}) {
@@ -1235,7 +1271,8 @@ function applyDebugVisibility(hidden) {
 // shown first, capped so a long monologue still moves on.
 function unvoicedReadingMs() {
   const step = currentStep.value
-  if (!step?.dialogue || step.dialogue.voice || step.hide_dialogue === true) return 0
+  // Above ×1.0 voice is off, so voiced lines wait for reading too (PlaybackModeController scales it).
+  if (!step?.dialogue || (step.dialogue.voice && storySpeed.value === 1) || step.hide_dialogue === true) return 0
   const text = storyLocalization.resolveDialogue(step.dialogue).view?.primary?.text || ''
   return Math.min(8000, [...text.replace(/\s+/gu, '')].length * 100)
 }
@@ -1265,6 +1302,7 @@ playbackController = new PlaybackModeController({
   },
 })
 playbackController.setAuto(autoEnabled.value)
+setPlaybackRate(storySpeed.value)
 setAudioLock(autoEnabled.value && !NO_AUDIO)
 
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
@@ -1383,6 +1421,7 @@ watch(currentStep, (newStep, oldStep) => {
   titleAdvancePending = null
   setTitleAnimationPending(false)
   nativeCutWait.cancel()
+  autoHeld.value = false
   pendingStepEffects = {
     step: newStep,
     oldStep,

@@ -61,7 +61,7 @@ async function setup({withCue=false}={}) {
   playbackController:{notifyStateChanged(){}},episodeFinished:{value:false},backlogOpen:{value:false},menuOpen:{value:false},
   storyRuntimeCues:runtime,isLastStep:{value:false},markStepRead(){},recordHistoryStep(){},leaveRestoredScene(){},finishEpisode(){},
   restoredSceneState:{value:null},handleStepChange(){},advances:0,
-  compiledData:{value:source},nativeCutWait:createNativeCutWait(),nativeWaitSeconds,finiteBranchNextIndex,runtimePauseReasons:new Set(),
+  compiledData:{value:source},nativeCutWait:createNativeCutWait(),autoHeld:{value:false},storySpeed:{value:1},nativeWaitSeconds,finiteBranchNextIndex,runtimePauseReasons:new Set(),
   advanceStep(){ctx.advances++; ctx.oldStep=step.value; index.value=1; step.value=second; ctx.newStep=second; runInNewContext(navigation,ctx); runtime.handleStepChange()},
  }
  runInNewContext('var titleAdvancePending = null;\n'+functions,ctx)

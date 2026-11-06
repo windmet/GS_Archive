@@ -49,6 +49,8 @@ export default Object.freeze({
   'player.settings.continuous': '連続再生',
   'player.settings.auto': 'オート',
   'player.settings.autoDelay': 'オート待機',
+  'player.settings.speed': '再生速度',
+  'player.autoHeld': 'オート停止中・タップで次へ',
   'player.settings.skip': 'スキップ',
   'player.settings.skipRange': 'スキップ範囲',
   'player.settings.readOnly': '既読のみ',

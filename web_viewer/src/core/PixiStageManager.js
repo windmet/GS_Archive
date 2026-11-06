@@ -58,6 +58,7 @@ export class PixiStageManager {
     this.app = null
     this._destroyed = false
     this.spineInstances = {}   // { idolId: { spine: Spine, modelId: string, marker: Graphics } }
+    this.playbackRate = 1      // story speed; AdventureCharacterParent.UpdateSpeed scales idol motion
     this._spawnTokens = {}
     this._spawnLoads = new Map()
     this._textureOwner = new AbortController()
@@ -799,6 +800,12 @@ export class PixiStageManager {
       return tween
     } else {
       entry.spine.tint = target
+    }
+  }
+  setPlaybackRate(rate) {
+    this.playbackRate = Number(rate) > 0 ? Number(rate) : 1
+    for (const entry of Object.values(this.spineInstances)) {
+      if (entry?.spine?.state) entry.spine.state.timeScale = this.playbackRate
     }
   }
   setSpineScale(idolId, scale) {

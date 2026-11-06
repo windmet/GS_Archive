@@ -34,6 +34,7 @@ export class PlaybackModeController {
     this.autoEnabled = false
     this.skipEnabled = false
     this.skipMode = 'readOnly'
+    this.rate = 1
     this.pausedReasons = new Set()
     this.timer = null
     this.autoReadyAt = null
@@ -62,6 +63,13 @@ export class PlaybackModeController {
     this._schedule(0)
   }
 
+  /** Story speed: reading time and the auto delay shorten with it, as native waits count deltaTime×speed. */
+  setRate(rate) {
+    this.rate = Number(rate) > 0 ? Number(rate) : 1
+    this.autoReadyAt = null
+    this._schedule(0)
+  }
+
   setPaused(reason, paused) {
     if (!reason) return
     if (paused) this.pausedReasons.add(reason)
@@ -82,6 +90,7 @@ export class PlaybackModeController {
       skip_mode: this.skipMode,
       paused: [...this.pausedReasons],
       auto_ready_at: this.autoReadyAt,
+      rate: this.rate,
       timer_pending: Number(this.timer != null),
     }
   }
@@ -163,9 +172,10 @@ export class PlaybackModeController {
       // An unvoiced line (the producer's, narration) has no voice to wait for; it stays at least
       // as long as it takes to read, counted from when it appeared, so a short idol motion does
       // not cut it off and a long one does not add the reading time again afterwards.
-      const readUntil = this.shownAt + Math.max(0, Number(this.getReadingMs(step)) || 0)
-      this.autoReadyAt = Math.max(this.now(), readUntil) + this.autoDelayMs
-      this._schedule(Math.min(POLL_INTERVAL_MS, this.autoDelayMs))
+      const readUntil = this.shownAt + Math.max(0, Number(this.getReadingMs(step)) || 0) / this.rate
+      const delay = this.autoDelayMs / this.rate
+      this.autoReadyAt = Math.max(this.now(), readUntil) + delay
+      this._schedule(Math.min(POLL_INTERVAL_MS, delay))
       return
     }
     const remaining = this.autoReadyAt - this.now()

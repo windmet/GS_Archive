@@ -41,6 +41,7 @@ export function finalizeSpawnedSpine({
   marker.visible = debugMode
   manager._debugOverlay?.addChild(marker)
 
+  spine.state.timeScale = manager.playbackRate ?? 1
   spineContainer.addChild(fadeWrapper)
   manager.spineInstances[idolId] = {
     spine,

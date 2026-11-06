@@ -28,6 +28,7 @@ export function useStepSceneEffects({
   beforeAutoAdvance = () => {},
   beforeStepChange = () => {},
   getSteps = () => null,
+  getRate = () => 1,
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
@@ -153,9 +154,10 @@ export function useStepSceneEffects({
           }
         }
       }
-      // A wait-only cut after this step extends its hold (NativeCutWait.js).
+      // A wait-only cut after this step extends its hold (NativeCutWait.js). Story speed shortens
+      // both; a fade still running on the cue clock keeps isAutoBlocked() true until it lands.
       const hold = nativeWaitSeconds(getSteps(), autoStepIndex, autoStepIndex + 1)
-      _fadeAutoTimer = setTimeout(attemptAutoAdvance, autoAdvance.delayMs + hold * 1000)
+      _fadeAutoTimer = setTimeout(attemptAutoAdvance, (autoAdvance.delayMs + hold * 1000) / getRate())
     }
 
     if (!restore) {

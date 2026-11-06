@@ -49,6 +49,8 @@ export default Object.freeze({
   'player.settings.continuous': '连续播放',
   'player.settings.auto': '自动播放',
   'player.settings.autoDelay': '自动等待',
+  'player.settings.speed': '播放速度',
+  'player.autoHeld': '已停在这句，再点一下继续',
   'player.settings.skip': '快进',
   'player.settings.skipRange': '快进范围',
   'player.settings.readOnly': '仅已读',
