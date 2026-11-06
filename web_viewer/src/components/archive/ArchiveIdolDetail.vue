@@ -30,17 +30,21 @@
       </dl>
     </section>
 
-    <!-- The game's profile view (IdolProfileView) plays this line from its 自己紹介 button. -->
+    <!-- The game's profile view (IdolProfileView) plays this line from its 自己紹介 button: the voice plays
+         here; the ADV button opens the same line staged in the player. -->
     <section v-if="selfIntroduction" class="idol-intro" aria-labelledby="idol-intro-title">
       <div class="section-heading">
         <h3 id="idol-intro-title">自我介绍</h3>
         <span>偶像资料页「自己紹介」· 1 段语音</span>
       </div>
       <div class="idol-intro-body">
-        <button type="button" class="idol-intro-play" aria-label="播放自我介绍 ADV" title="播放 ADV" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction.file)">
-          <Play :size="18" fill="currentColor" aria-hidden="true" />
-        </button>
         <p class="idol-intro-line gs-flow" :lang="introLine.lang" :class="{ 'is-pending': introLine.pending }">{{ introLine.text }}</p>
+        <div class="idol-intro-voice">
+          <ArchiveVoiceRow :src="introVoiceUrl" label="播放自我介绍语音" />
+          <button type="button" class="idol-intro-adv" aria-label="在 ADV 舞台播放自我介绍" title="ADV 演出" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction.file)">
+            <MonitorPlay :size="20" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </section>
 
@@ -54,7 +58,7 @@
           <span class="related-figure">{{ item.figure ?? '—' }}<small v-if="item.unit && item.figure != null">{{ item.unit }}</small></span>
           <span class="related-copy">
             <strong>{{ item.label }}</strong>
-            <small>{{ item.figure == null ? '尚未确认' : item.breakdown }}</small>
+            <small>{{ item.figure == null ? (item.pending ? '' : '尚未确认') : item.breakdown }}</small>
           </span>
           <ChevronRight :size="18" aria-hidden="true" />
         </button>
@@ -120,8 +124,8 @@
 import { archiveLineText, archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { computed, ref, shallowRef, watch } from 'vue'
 import { idolThemeProperties } from '../../presentation/idolStageLight.js'
-import { ChevronRight, Info, Medal, Music, Play } from '@lucide/vue'
-import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { ChevronRight, Info, Medal, MonitorPlay, Music } from '@lucide/vue'
+import { getCharaSignUrl, getUnitLogoUrl, getVoiceUrl } from '../../utils/AssetResolver.js'
 import { validateArchivePayload } from '../../data/archiveDataContracts.js'
 import { portalIdolPortrait } from '../../presentation/ArchivePortalPresentation.js'
 import idolVisualFocus from '../../presentation/idolVisualFocus.json'
@@ -132,6 +136,7 @@ import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import { formatIdolAge } from '../../data/idolPage.js'
 import { honorBondSource } from '../../presentation/HonorBondSource.mjs'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 
@@ -146,6 +151,8 @@ const props = defineProps({
   selectedIdol: { type: String, default: '' },
   idolName: { type: Function, default: () => '' },
   selfIntroduction: { type: Object, default: null },
+  // Work story counts ({ stories, lines }), loaded after the profile; null while it loads.
+  work: { type: Object, default: null },
   // The idol has an office (事务所) page to open, and is the reader's own 担当.
   hasHome: Boolean,
   isFavorite: Boolean,
@@ -177,6 +184,7 @@ const heroStyle = computed(() => {
 })
 // The self-introduction is the idol's IdolDetail home voice (home-voice, self-intro in the card-lines shard).
 const introLine = computed(() => archiveLineText('card-lines', [['home-voice', 'self-intro']], props.selfIntroduction?.text || ''))
+const introVoiceUrl = computed(() => getVoiceUrl(props.selfIntroduction?.voice, props.selfIntroduction?.scenarioId))
 // Bond honors (担当 at bond Lv.50, the catchphrase at Lv.100), then FES achievements, then event
 // rankings grouped by event. Notes say where each group comes from in reader terms.
 const openHonorNote = ref('')
@@ -258,6 +266,7 @@ const related = computed(() => [
   { id: 'stories', label: '个人剧情', ...storyRow.value },
   { id: 'chat', label: '个人聊天', figure: props.stats.chats ?? null, unit: '条', breakdown: '' },
   { id: 'phone', label: '电话通信', figure: props.stats.phones ?? null, unit: '条', breakdown: '' },
+  { id: 'work', label: '工作剧情', figure: props.work?.stories ?? null, unit: '篇', breakdown: props.work ? `${props.work.lines} 句场景台词` : '', pending: !props.work },
   ...(props.photo ? [{ id: 'photos', label: '摄影姿势与语音', figure: props.photo.faceCount, unit: '表情', breakdown: `${props.photo.poseCount} 姿势 · ${props.photo.cueCount} 语音` }] : []),
   // Every archive idol has a Valentine / White Day arc; the seasonal page opens on theirs.
   { id: 'seasonal', label: '季节企划', figure: 2, unit: '', breakdown: '情人节与白色情人节' },
@@ -348,13 +357,14 @@ function formatDate(timestamp) {
 .song-links button > svg { margin: auto; color: var(--gs-ink-3); }
 .song-links span { display: grid; min-width: 0; }
 .song-links strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.idol-intro-body { display: flex; align-items: flex-start; gap: var(--gs-space-3); padding-top: var(--gs-space-3); }
+.idol-intro-body { padding-top: var(--gs-space-3); }
 .idol-intro-line { padding-top: var(--gs-space-2); }
 .idol-intro-line { margin: 0; color: var(--gs-ink); line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; }
 .idol-intro-line.is-pending { visibility: hidden; }
-/* A 44px play icon leading the line, like an episode row: out of the heading rule, no pill. */
-.idol-intro-play { display: grid; flex: none; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); margin-top: calc(-1 * var(--gs-space-2)); padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--gs-mint-ink); cursor: pointer; }
-@media (hover: hover) { .idol-intro-play:hover { background: var(--gs-current-bg-inset); } }
+/* The voice transport under the line, the ADV button beside it (the card text voice's 演出预览). */
+.idol-intro-voice { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; max-width: 520px; margin-top: var(--gs-space-3); }
+.idol-intro-adv { display: inline-grid; flex: none; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
+@media (hover: hover) { .idol-intro-adv:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); } }
 .honor-group + .honor-group { margin-top: var(--gs-space-7); }
 .honor-group h4 { display: flex; align-items: center; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-3); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .honor-group h4 small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }

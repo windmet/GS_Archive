@@ -93,6 +93,7 @@
         @update:selected-id="selectHomeIdol"
         v-model:selected-cue="homeSelectedCue"
         v-model:selected-costume="homeSelectedCostume"
+        :costume-images="homeCostumeImages"
         :no-audio="NO_AUDIO"
         :idols="archiveHomeIdols"
         :idol-name="idolDisplayName"
@@ -166,6 +167,7 @@
         :idol-name="idolDisplayName"
         :stats="currentIdolStats" :photo="currentIdolDetail?.photo" :honors="currentIdolDetail?.honors || []"
         :self-introduction="currentIdolDetail?.selfIntroduction || null"
+        :work="currentIdolWork?.id === currentCharacterId ? currentIdolWork : null"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="bootstrapIdolSwitcher"
@@ -1197,7 +1199,7 @@ const {
   openWorkArchive, selectWorkIdol, setWorkMode, playWorkStory,
   openIdolStoryArchive, selectIdolStory, openBirthdayIdolStory, openIdolBirthdayArchive,
   playIdolStorySection, playIdolStoryEpisode, openMobileIdolStory,
-  loadSeasonalCatalog, loadSeasonalDetail, loadSeasonalLedgerOnly, loadWorkCatalog, loadWorkDetail, loadIdolStoryCatalog, loadIdolStoryDetail,
+  loadSeasonalCatalog, loadSeasonalDetail, loadSeasonalLedgerOnly, loadWorkCatalog, loadWorkDetail, loadWorkSummary, loadIdolStoryCatalog, loadIdolStoryDetail,
   goBackFromSeasonalCampaign, goBackFromWorkArchive, goBackFromIdolStoryArchive,
   invalidateStoryArchiveNavigation, prepareStoryArchiveRoute,
 } = useStoryArchiveNavigation({
@@ -2313,6 +2315,7 @@ function openIdolDomain(domain) {
     return
   }
   if (domain === 'seasonal') return openSeasonalCampaign('', currentCharacterId.value)
+  if (domain === 'work') return openWorkArchive(currentCharacterId.value)
   if (domain === 'chat' || domain === 'phone') {
     openMobileArchive({
       idolCode: currentCharacterId.value,
@@ -2678,6 +2681,24 @@ watch([view, currentCharacterId], handleIdolDetailChange)
 watch(cardLayout, layout => {
   setLocalStorageValue('sidem-archive-card-layout', layout)
 })
+
+// The home console's costume thumbnails are the collection's own images (the costumes catalogue, read once).
+const homeCostumeImages = shallowRef(null)
+watch(view, nextView => {
+  if (nextView !== 'home' || homeCostumeImages.value) return
+  new DomainRepository(readModelClient, archiveBootstrap).catalog('costumes', { priority: 'background' })
+    .then(rows => { homeCostumeImages.value = new Map(rows.map(row => [row.id, row.image || null])) })
+    .catch(error => console.warn('[Home] Costume images unavailable:', error))
+}, { immediate: true })
+
+// The profile's 工作剧情 row: counts from the work read model, fetched after the profile is up.
+const currentIdolWork = shallowRef(null)
+watch(() => [view.value, currentCharacterId.value], ([nextView, idolCode]) => {
+  if (nextView !== 'idol_detail' || !idolCode || currentIdolWork.value?.id === idolCode) return
+  loadWorkSummary(idolCode).then(summary => {
+    if (view.value === 'idol_detail' && currentCharacterId.value === idolCode) currentIdolWork.value = summary
+  }).catch(error => console.warn('[WorkReadModel] Profile summary unavailable:', error))
+}, { immediate: true })
 
 watch(cardArtMode, mode => {
   setLocalStorageValue('sidem-archive-card-art-mode', mode)

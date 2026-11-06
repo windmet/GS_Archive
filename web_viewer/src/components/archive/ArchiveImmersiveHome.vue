@@ -59,6 +59,7 @@
     <ArchiveHomeConsole
       :idols="idols" :active-idol="activeIdol" :selected-id="selectedId" :home-mode="homeMode"
       :active-costume="activeCostume" :costume-category="costumeCategory" :filtered-costumes="filteredCostumes"
+      :costume-images="costumeImages"
       :cards="idolCards" :card-key="preferences.cardKey" :active-card="selectedCard" :settings-open="settingsOpen"
       :idol-label="displayName" :costume-label="costume => archiveText('costume', costume.name)"
       @update:selected-id="selectedId = $event" @update:selected-costume="selectCostume" @update:home-mode="emit('update:homeMode', $event)"
@@ -302,6 +303,8 @@ const props = defineProps({
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
   idolName: { type: Function, default: null },
+  // modelId → the collection's costume image (null until the catalogue loads).
+  costumeImages: { type: Map, default: null },
 })
 const emit = defineEmits(['settings', 'open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'open-card', 'open-other-voices', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 

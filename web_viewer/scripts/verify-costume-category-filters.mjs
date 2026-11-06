@@ -49,4 +49,24 @@ assert.match(home,/:filtered-costumes="filteredCostumes"/,'console rows come fro
 assert.equal((home.match(/v-if="filteredCostumes.pinned"/g)||[]).length,1,'current model remains visibly pinned in the settings picker')
 assert.match(consolePanel,/v-if="filteredCostumes\.pinned"/,'current model remains visibly pinned in the console')
 assert(studio.includes('label="摄影服装类别"') && studio.includes('v-if="filteredCostumes.pinned"'))
+// The phone sheet stands on the shell's mobile nav (it used to sit under it, hiding the last rows); the inset
+// is the nav row's own height and drops to 0 where the nav is hidden.
+{
+  const shell=fs.readFileSync(new URL('../src/components/archive/ArchiveShell.vue',import.meta.url),'utf8')
+  const navRow=shell.match(/grid-template-rows: var\(--archive-topbar\) minmax\(0, 1fr\) (calc\(74px \+ env\(safe-area-inset-bottom, 0px\)\));/)?.[1]
+  assert(navRow,'the mobile shell keeps its nav row')
+  assert(shell.includes(`--archive-mobile-nav-inset: ${navRow};`),'the sheet inset equals the nav row height')
+  assert.match(shell,/\.archive-shell\.is-home-focus, \.archive-shell\.is-reader, \.archive-shell\.is-tool \{ --archive-mobile-nav-inset: 0px;/)
+  assert.match(consolePanel,/\.console-panel \{ position: fixed;[^}]*bottom: var\(--archive-mobile-nav-inset, 0px\);/,'the phone sheet stands on the nav')
+}
+// The console's costume thumbnails are the collection's pictures: the costumes catalogue's image per model,
+// through the same costumeImage rule (site render where the game has none or a wrong one), never renders only.
+{
+  const app=fs.readFileSync(new URL('../src/App.vue',import.meta.url),'utf8')
+  assert.match(consolePanel,/costumeImage\(costume\.modelId, props\.costumeImages\?\.get\(costume\.modelId\) \|\| null\)/,'console thumbnails use the collection image')
+  assert.doesNotMatch(consolePanel,/costumeImage\([^)]*, null\)/,'no renders-only lookup is left')
+  assert.match(home,/:costume-images="costumeImages"/)
+  assert.match(app,/:costume-images="homeCostumeImages"/)
+  assert.match(app,/catalog\('costumes', \{ priority: 'background' \}\)\s*\.then\(rows => \{ homeCostumeImages\.value = new Map\(rows\.map\(row => \[row\.id, row\.image \|\| null\]\)\) \}\)/)
+}
 console.log('Costume filters: 690 native models, 549 Live +141 story-only, exact-model categories, pinned selection and all home/photo entry points passed')
