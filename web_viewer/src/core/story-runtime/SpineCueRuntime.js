@@ -4,10 +4,7 @@ import { getCachedMotionSetting, getCachedMotionTable } from '../../utils/IdolMo
 
 export function settleSpineNeckCue(manager, cue) {
   if (!manager || !cue?.target || !cue?.payload?.value) return false
-  manager.playSpineNeckAnim?.(cue.target, cue.payload.value, cue.cue_id)
-  const track = manager.spineInstances?.[cue.target]?.spine?.state?.getCurrent?.(SPINE_TRACK.neck)
-  if (!track) return false
-  track.trackTime = track.animationEnd
+  if (!manager.settleSpineNeckAnim?.(cue.target, cue.payload.value, cue.cue_id)) return false
   manager.flushSpinePose?.(cue.target, 0)
   return true
 }
@@ -67,7 +64,10 @@ export function createSpineCueHandle(cue, { step } = {}, {
         && other.action === 'spine.neck.play' && other.target === target
         && Number(other.at || 0) === Number(cue.at || 0))
       if (!neckAtSameTime) manager.stopSpineNeckAnim?.(target, `${cue.cue_id}:motion-neck-reset`)
-      manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, 0.3,
+      // No mix override: client PlayMotionInternal sets the motion directly under the
+      // AnimationState mix (every costume SkeletonDataAsset: defaultMix 0, no pair
+      // durations); only a back animation gets its own 0.3 s mix.
+      manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, null,
         motionTableFor(target, modelId), payload.track_time ?? 0)
     } else if (cue.action === 'spine.neck.play') {
       if (settleNeck) {
@@ -77,9 +77,11 @@ export function createSpineCueHandle(cue, { step } = {}, {
       }
       // IdolCharacter.CoPlayAnimation explicitly passes 0 to PlayNeck; the
       // merged row trackTime is passed only to CoPlayMotion.
-      manager.playSpineNeckAnim?.(target, payload.value, cue.cue_id)
-      const entry = manager.spineInstances?.[target]
-      const track = entry?.spine?.state?.getCurrent?.(SPINE_TRACK.neck)
+      // Completion belongs to the authored neck, which may be queued behind the
+      // back animation of a held pose (client PlayNeck registers on that entry).
+      const state = manager.spineInstances?.[target]?.spine?.state
+      const track = manager.playSpineNeckAnim?.(target, payload.value, cue.cue_id)
+        || state?.getCurrent?.(SPINE_TRACK.neck)
       if (track) {
         return new Promise(resolve => {
           let completed = false
@@ -98,7 +100,12 @@ export function createSpineCueHandle(cue, { step } = {}, {
           // Keep the neck track clamped at its final pose. The step transition or an
           // explicit neck.stop cue owns clearing it.
           track.listener = listener
-          const durationMs = Math.max(0, Number(track.animationEnd || 0) - Number(track.animationStart || 0)) * 1000
+          const current = state?.getCurrent?.(SPINE_TRACK.neck)
+          const leadSeconds = current && current !== track
+            ? Math.max(0, Number(track.delay || 0) - Number(current.trackTime || 0))
+            : 0
+          const durationMs = (leadSeconds
+            + Math.max(0, Number(track.animationEnd || 0) - Number(track.animationStart || 0))) * 1000
           const deadline = nowMilliseconds() + durationMs + 250
           const checkCompletion = () => {
             neckFallbackFrame = null

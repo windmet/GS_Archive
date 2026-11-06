@@ -127,7 +127,11 @@ function verifyScheduledNeckSettle() {
     spineInstances: {
       idol: { spine: { state: { getCurrent: index => index === 1 ? track : null } } },
     },
-    playSpineNeckAnim: (...args) => calls.push(['play', ...args]),
+    settleSpineNeckAnim: (...args) => {
+      calls.push(['settle', ...args])
+      track.trackTime = track.animationEnd
+      return track
+    },
     flushSpinePose: (...args) => calls.push(['flush', ...args]),
   }
   const cue = {
@@ -140,7 +144,7 @@ function verifyScheduledNeckSettle() {
   assert.equal(track.trackTime, track.animationEnd,
     'settling a not-yet-started neck cue must land on its authored final pose')
   assert.deepEqual(calls, [
-    ['play', 'idol', 'neck_question', 'step-12:001:spine-neck'],
+    ['settle', 'idol', 'neck_question', 'step-12:001:spine-neck'],
     ['flush', 'idol', 0],
   ])
 }

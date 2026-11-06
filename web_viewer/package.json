@@ -301,7 +301,7 @@
     "verify:spine-blink": "node scripts/verify-spine-close-eye.mjs",
     "verify:spine-frame-pose": "node scripts/verify-spine-native-frame-pose.mjs",
     "verify:spine-fade": "node scripts/verify-spine-atomic-fade.mjs",
-    "verify:spine-motion": "node scripts/verify-spine-motion-state.mjs && node scripts/verify-spine-client-motion.mjs && node scripts/verify-spine-neck-back.mjs && node scripts/verify-spine-track-time.mjs && python scripts/verify-story-track-time.py",
+    "verify:spine-motion": "node scripts/verify-spine-motion-state.mjs && node scripts/verify-spine-client-motion.mjs && node scripts/verify-spine-neck-back.mjs && node scripts/verify-spine-neck-ownership.mjs && node scripts/verify-spine-track-time.mjs && python scripts/verify-story-track-time.py",
     "verify:silhouette": "node scripts/verify-silhouette-fallback-contract.mjs",
     "verify:work-story": "node scripts/verify-work-story-index.mjs",
     "preview": "vite preview --configLoader native",

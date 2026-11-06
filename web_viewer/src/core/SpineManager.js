@@ -224,18 +224,20 @@ export class SpineManager {
     }
   }
 
+  /** Returns the authored neck TrackEntry (queued behind its back animation when
+   * leaving a held pose, like the client PlayNeckInternal return value), or null. */
   playSpineNeckAnim(idolId, animName, eventKey = '', trackTime = 0) {
     const entry = this.manager.spineInstances[idolId]
-    if (!entry?.spine) return
+    if (!entry?.spine) return null
     const { spine } = entry
     try {
       const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
       if (!allAnims.includes(animName)) {
         console.warn(`[PixiStageManager] Neck anim "${animName}" not found on "${entry.modelId}"`)
-        return
+        return null
       }
-      if (eventKey && spine._lastNeckEventKey === eventKey) return
-      if (!eventKey && spine._currentNeckAnim === animName) return
+      if (eventKey && spine._lastNeckEventKey === eventKey) return null
+      if (!eventKey && spine._currentNeckAnim === animName) return null
 
       const playbackToken = (spine._neckPlaybackToken || 0) + 1
       spine._neckPlaybackToken = playbackToken
@@ -276,9 +278,34 @@ export class SpineManager {
           },
         }
       }
+      return track
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to play neck anim "${animName}" on "${idolId}":`, err.message)
+      return null
     }
+  }
+
+  /** Skip/settle: lands the authored neck on its final frame. A back animation
+   * still in front of it is dropped, so the settled pose is never the back clip. */
+  settleSpineNeckAnim(idolId, animName, eventKey = '') {
+    const state = this.manager.spineInstances[idolId]?.spine?.state
+    if (!state) return null
+    let track = this.playSpineNeckAnim(idolId, animName, eventKey)
+    const current = state.getCurrent(SPINE_TRACK.neck)
+    if (!track) {
+      for (let queued = current; queued; queued = queued.next) {
+        if (queued.animation?.name === animName) track = queued
+      }
+      track ||= current
+    }
+    if (!track) return null
+    if (track !== current) {
+      track = state.setAnimation(SPINE_TRACK.neck, track.animation.name, false)
+      track.mixBlend = MixBlend.add
+      track.mixDuration = 0
+    }
+    track.trackTime = track.animationEnd
+    return track
   }
 
   stopSpineNeckAnim(idolId, eventKey = '') {

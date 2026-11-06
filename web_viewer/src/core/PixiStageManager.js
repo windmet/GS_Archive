@@ -1499,6 +1499,10 @@ export class PixiStageManager {
     return this.spineManager?.playSpineNeckAnim(idolId, animName, eventKey, trackTime)
   }
 
+  settleSpineNeckAnim(idolId, animName, eventKey = '') {
+    return this.spineManager?.settleSpineNeckAnim(idolId, animName, eventKey)
+  }
+
   stopSpineNeckAnim(idolId, eventKey = '') {
     return this.spineManager?.stopSpineNeckAnim(idolId, eventKey)
   }
