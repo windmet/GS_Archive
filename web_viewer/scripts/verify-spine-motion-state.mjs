@@ -23,8 +23,10 @@ function createHarness() {
         ]
       : [],
   }))
+  const current = {}
   const state = {
     data: { skeletonData: { animations } },
+    getCurrent: track => current[track] || null,
     setAnimation(track, name, loop) {
       const entry = {
         track,
@@ -37,6 +39,7 @@ function createHarness() {
         listener: null,
       }
       calls.push(['set', track, name, loop, entry])
+      current[track] = entry
       return entry
     },
     addAnimation(track, name, loop, delay) {
@@ -45,6 +48,7 @@ function createHarness() {
     },
     clearTrack(track) {
       calls.push(['clear', track])
+      delete current[track]
     },
   }
   const spine = { state, stateData: { defaultMix: 0 } }
@@ -127,7 +131,11 @@ function verifyScheduledNeckSettle() {
     spineInstances: {
       idol: { spine: { state: { getCurrent: index => index === 1 ? track : null } } },
     },
-    playSpineNeckAnim: (...args) => calls.push(['play', ...args]),
+    settleSpineNeckAnim: (...args) => {
+      calls.push(['settle', ...args])
+      track.trackTime = track.animationEnd
+      return track
+    },
     flushSpinePose: (...args) => calls.push(['flush', ...args]),
   }
   const cue = {
@@ -140,7 +148,7 @@ function verifyScheduledNeckSettle() {
   assert.equal(track.trackTime, track.animationEnd,
     'settling a not-yet-started neck cue must land on its authored final pose')
   assert.deepEqual(calls, [
-    ['play', 'idol', 'neck_question', 'step-12:001:spine-neck'],
+    ['settle', 'idol', 'neck_question', 'step-12:001:spine-neck'],
     ['flush', 'idol', 0],
   ])
 }
