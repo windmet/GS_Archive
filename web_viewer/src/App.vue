@@ -179,7 +179,7 @@
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
         @open-song="openSong"
-        @play-introduction="file => loadScenario(file, 'idol_detail')"
+        @play-introduction="previewIdolIntroduction"
         @select-idol="selectPrimaryIdol"
       />
 
@@ -510,7 +510,7 @@
       :has-next-episode="hasNextPlaybackEpisode"
       :next-target="playbackController.nextTarget.value"
       :position-label="[playbackController.continuation.value?.currentLabel, presentIdolEpisodeLabel({ sourceName:playbackController.queue.current.value?.label, format:'player' })].filter(Boolean).join(' · ')"
-      :return-label="returnViewAfterPlayer === 'reader' ? '返回阅读页' : returnViewAfterPlayer === 'mobile_archive' ? '返回通信' : '返回来源目录'"
+      :return-label="({ reader: '返回阅读页', mobile_archive: '返回通信', idol_detail: '返回偶像资料', card_detail: '返回卡片', unused_archive: '返回其他语音' })[returnViewAfterPlayer] || '返回来源目录'"
       :transition-pending="loading && Boolean(playbackController.pendingEntry.value)"
       :recovery-open="Boolean(playbackError || playbackReadiness?.status === 'blocked') && !loading"
       :queue-status="playbackController.queueStatus.value"
@@ -518,7 +518,7 @@
       :queue-error="playbackController.queueError.value"
       @retry-queue="playbackController.ensureQueue({ retry: true })"
       :continuous-playback="playbackController.continuationOverride.value ?? continuousPlayback"
-      @back="closePlayer"
+      @back="closePlayer" @replay-preview="replayVoicePreview"
       @ready="onPlayerReady"
       @next-episode="playNextEpisode"
       @update:continuous-playback="playbackController.setContinuous($event)"
@@ -591,6 +591,9 @@ import {loadArchiveNames,loadArchiveLines,archiveNamedText,archiveNamesSettled,a
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
+import { buildIdolIntroPreviewScenario } from './data/idolIntroPreview.js'
+import { HOME_VOICE_KEYS } from './localization/story/HomeVoiceTranslations.js'
+import { warmLipCurves } from './core/VoiceLipStore.js'
 import { storyLiveLink } from './data/storyLiveLinks.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
@@ -635,6 +638,7 @@ import {
   readArchiveRoute,
   writeArchiveRoute,
   OFFICE_VOICE_CUE,
+  IDOL_INTRO_CUE,
 } from './core/archiveRoute.js'
 import { COLLECTION_KINDS, collectionKindForEntity } from './core/CollectionRouteState.js'
 import { normalizeEventBrowseState } from './core/EventCatalogRouteState.js'
@@ -1720,15 +1724,17 @@ function updateArchiveFilter(key, value) {
 
 async function restoreVoicePreview(route, intent) {
   if (OFFICE_VOICE_CUE.test(route.voice || '')) return previewOfficeVoice(route.voice, { intent, syncRoute: false })
+  if (IDOL_INTRO_CUE.test(route.voice || '')) {
+    const intro = currentIdolDetail.value?.selfIntroduction
+    return intro?.voice.replace(/\.m4a$/, '') === route.voice ? previewIdolIntroduction(intro, { intent, syncRoute: false }) : false
+  }
   const card = cardReadModelDetail.value?.id === route.card ? cardReadModelDetail.value.card : null
   if (!card || !route.voice) return false
   const cue = findCardVoiceCue(card, route.voice, card.operational_voice_cues || [])
   if (!cue) return false
   const scenario = translatedVoicePreview(card, cue)
   if (!scenario) return false
-  loadingPurpose.value = 'story-playback'
-  return playbackController.preview(() => scenario,
-    route.voice, route.returnView || 'card_detail', { intent, syncRoute: false })
+  return startVoicePreview(() => scenario, route.voice, route.returnView || 'card_detail', { intent, syncRoute: false })
 }
 
 async function applyArchiveRoute(route, { restoring = true, intent: inherited } = {}) {
@@ -1897,7 +1903,8 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     if (route.view === 'player' && route.voice) {
       if (await restoreVoicePreview(route, intent)) return
       if (!intent.isCurrent()) return
-      view.value = OFFICE_VOICE_CUE.test(route.voice) ? 'unused_archive' : currentCard.value ? 'card_detail' : 'cards'
+      view.value = OFFICE_VOICE_CUE.test(route.voice) ? 'unused_archive' : IDOL_INTRO_CUE.test(route.voice) ? 'idol_detail'
+        : currentCard.value ? 'card_detail' : 'cards'
       return
     }
     if (route.view === 'spine_lab') await spineViewerLoader()
@@ -2453,11 +2460,16 @@ async function selectPlayerEpisode(request) {
 function playNextEpisode(request = {}) { return playbackController.next(request.instance, { chapter: request.chapter === true }) }
 
 // A voice preview is built once to learn the lines it speaks, then again with their card-line shards in.
-async function translatedPreview(build, kind) {
+// keys: the card-lines [kind, field] pairs its line translates through, in order (a kind alone: its text).
+// The line's lip curve is fetched before the player opens, since a voice already heard on the page starts at once.
+async function translatedPreview(build, keys) {
+  const pairs = typeof keys === 'string' ? [[keys, 'text']] : keys
   const sources = []
   await build(source => { sources.push(source); return '' })
   await loadArchiveLines(sources).catch(error => console.warn('Card line translations unavailable', error))
-  return build(source => archiveNamedTranslation(kind, source, 'text'))
+  const scenario = await build(source => pairs.map(([kind, field]) => archiveNamedTranslation(kind, source, field)).find(Boolean) || '')
+  await warmLipCurves(scenario?.steps)
+  return scenario
 }
 
 // Card voice previews are touch voices; the player gets their card-lines translation inline. Null when
@@ -2468,12 +2480,24 @@ function translatedVoicePreview(card, cue) {
   return translatedPreview(translate => buildCardVoicePreviewScenario(card, cue, { translate }), 'card-touch')
 }
 
+// Every voice preview starts here and is kept (its scenario built once), so the end bar can replay it.
+let currentVoicePreview = null
+function startVoicePreview(makeScenario, cue, returnView, options = {}) {
+  let made = null
+  currentVoicePreview = { makeScenario: () => (made ??= makeScenario()), cue, returnView }
+  loadingPurpose.value = 'story-playback'
+  return playbackController.preview(currentVoicePreview.makeScenario, cue, returnView, options)
+}
+function replayVoicePreview() {
+  if (!currentVoicePreview || view.value !== 'player') return false
+  const { makeScenario, cue, returnView } = currentVoicePreview
+  return playbackController.preview(makeScenario, cue, returnView, { syncRoute: false })
+}
+
 async function openVoicePreview(card, cue, returnView) {
   const scenario = translatedVoicePreview(card, cue)
   if (!scenario) return false
-  loadingPurpose.value = 'story-playback'
-  return playbackController.preview(() => scenario,
-    typeof cue === 'string' ? cue : cue.cue, returnView)
+  return startVoicePreview(() => scenario, typeof cue === 'string' ? cue : cue.cue, returnView)
 }
 
 // Yamamura's office lines open in the player from the other-voices archive and return there.
@@ -2482,8 +2506,12 @@ async function officeVoiceScenario(cue) {
   return translatedPreview(translate => buildOfficeVoicePreviewScenario(cue, { translate }), 'office-voice')
 }
 function previewOfficeVoice(cue, options = {}) {
-  loadingPurpose.value = 'story-playback'
-  return playbackController.preview(() => officeVoiceScenario(cue), cue, 'unused_archive', options)
+  return startVoicePreview(() => officeVoiceScenario(cue), cue, 'unused_archive', options)
+}
+// The profile's self-introduction plays as a preview of its one line and returns to the profile.
+function previewIdolIntroduction(intro, options = {}) {
+  return startVoicePreview(() => translatedPreview(translate => buildIdolIntroPreviewScenario(intro, { translate }), HOME_VOICE_KEYS),
+    intro.voice.replace(/\.m4a$/, ''), 'idol_detail', options)
 }
 
 async function restorePlaybackDestination(destination, route) {

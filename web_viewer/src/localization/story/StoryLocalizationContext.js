@@ -12,6 +12,7 @@ import { EntityTranslationRepository } from './EntityTranslationRepository.js'
 import { speakerDisplayLookup, speakerLabelCandidates, speakerLabelKey } from './SpeakerDisplayNames.js'
 import { chatOverlayEntry, isChatCandidate, loadChatTranslations } from './ChatTranslations.js'
 import { homeVoiceOverlayEntry, isHomeVoiceScenario, loadHomeVoiceTranslations } from './HomeVoiceTranslations.js'
+import { isVoicePreviewScenario } from '../../data/voicePreviewScenario.js'
 
 export const STORY_LOCALIZATION_KEY = Symbol('story-localization')
 
@@ -137,6 +138,9 @@ export function createStoryLocalization({
           catch { /* Optional: home voices keep their source. */ }
           if (requestGeneration !== generation) return
         }
+        // Voice previews carry their line's translation inline and home voices translate through card
+        // lines: neither has a scenario overlay, and asking would only meet the site's HTML fallback.
+        if (isVoicePreviewScenario(compiledData?.value) || isHomeVoiceScenario(compiledData?.value)) return
         const loaded = await repository.loadScenario({scenarioId,locale,signal})
         if (requestGeneration !== generation) return
         overlay.value = loaded
