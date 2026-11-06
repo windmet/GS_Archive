@@ -252,7 +252,10 @@ export class SpineManager {
       }
       // Client PlayNeckInternal: leaving a held neck pose first plays its back
       // animation (the first one the skeleton has; mix 0.25 s), then the new neck.
-      const back = (NECK_BACK_ANIMATIONS[spine._currentNeckAnim] || []).find(name => allAnims.includes(name))
+      // It reads the clip playing on track 1, so a neck still queued behind a back
+      // clip is not a pose to leave.
+      const playing = spine.state.getCurrent(SPINE_TRACK.neck)?.animation?.name
+      const back = (NECK_BACK_ANIMATIONS[playing] || []).find(name => allAnims.includes(name))
       let track = null
       if (back) {
         const backTrack = spine.state.setAnimation(SPINE_TRACK.neck, back, false)
@@ -308,7 +311,32 @@ export class SpineManager {
     return track
   }
 
-  stopSpineNeckAnim(idolId, eventKey = '') {
+  /** Starts a new performance of the same step: event keys only dedupe repeated
+   * delivery within one performance, so a deliberate replay must re-apply the
+   * entry neck and the timed resets that follow it. */
+  resetSpineEventKeys() {
+    for (const { spine } of Object.values(this.manager.spineInstances)) {
+      if (!spine) continue
+      spine._lastNeckEventKey = ''
+      spine._lastNeckStopEventKey = ''
+    }
+  }
+
+  /** Office lines are independent performances that start from their own entry
+   * pose: forget event keys and drop any neck the previous line left held. */
+  beginSpinePerformance() {
+    this.resetSpineEventKeys()
+    for (const { spine } of Object.values(this.manager.spineInstances)) {
+      if (!spine?.state) continue
+      spine._neckPlaybackToken = (spine._neckPlaybackToken || 0) + 1
+      spine.state.clearTrack(SPINE_TRACK.neck)
+      spine._currentNeckAnim = null
+    }
+  }
+
+  /** mixDuration > 0 fades a playing neck out (see MOTION_NECK_RESET_MIX);
+   * otherwise the neck layer is removed at once. */
+  stopSpineNeckAnim(idolId, eventKey = '', mixDuration = 0) {
     const entry = this.manager.spineInstances[idolId]
     if (!entry?.spine) return
     try {
@@ -316,7 +344,11 @@ export class SpineManager {
       if (eventKey && spine._lastNeckStopEventKey === eventKey) return
       spine._lastNeckStopEventKey = eventKey || ''
       spine._neckPlaybackToken = (spine._neckPlaybackToken || 0) + 1
-      spine.state.clearTrack(SPINE_TRACK.neck)
+      if (mixDuration > 0 && spine._currentNeckAnim && spine.state.getCurrent(SPINE_TRACK.neck)) {
+        spine.state.setEmptyAnimation(SPINE_TRACK.neck, mixDuration)
+      } else {
+        spine.state.clearTrack(SPINE_TRACK.neck)
+      }
       spine._currentNeckAnim = null
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to stop neck anim on "${idolId}":`, err.message)

@@ -1503,8 +1503,16 @@ export class PixiStageManager {
     return this.spineManager?.settleSpineNeckAnim(idolId, animName, eventKey)
   }
 
-  stopSpineNeckAnim(idolId, eventKey = '') {
-    return this.spineManager?.stopSpineNeckAnim(idolId, eventKey)
+  resetSpineEventKeys() {
+    return this.spineManager?.resetSpineEventKeys()
+  }
+
+  beginSpinePerformance() {
+    return this.spineManager?.beginSpinePerformance()
+  }
+
+  stopSpineNeckAnim(idolId, eventKey = '', mixDuration = 0) {
+    return this.spineManager?.stopSpineNeckAnim(idolId, eventKey, mixDuration)
   }
 
   /**

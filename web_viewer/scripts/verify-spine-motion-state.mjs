@@ -23,8 +23,10 @@ function createHarness() {
         ]
       : [],
   }))
+  const current = {}
   const state = {
     data: { skeletonData: { animations } },
+    getCurrent: track => current[track] || null,
     setAnimation(track, name, loop) {
       const entry = {
         track,
@@ -37,6 +39,7 @@ function createHarness() {
         listener: null,
       }
       calls.push(['set', track, name, loop, entry])
+      current[track] = entry
       return entry
     },
     addAnimation(track, name, loop, delay) {
@@ -45,6 +48,7 @@ function createHarness() {
     },
     clearTrack(track) {
       calls.push(['clear', track])
+      delete current[track]
     },
   }
   const spine = { state, stateData: { defaultMix: 0 } }

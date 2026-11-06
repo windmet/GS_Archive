@@ -1,4 +1,4 @@
-import { SPINE_TRACK } from '../spineTracks.js'
+import { SPINE_TRACK, MOTION_NECK_RESET_MIX } from '../spineTracks.js'
 import { createPerformanceHandle } from './PerformanceRegistry.js'
 import { getCachedMotionSetting, getCachedMotionTable } from '../../utils/IdolMotionSettingStore.js'
 
@@ -46,7 +46,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
       .filter(Boolean),
   )
   const targetExpectedInEntry = expectedSpineIds.has(cue.target)
-  const apply = (manager, duration, { settleNeck = false } = {}) => {
+  const apply = (manager, duration, { settleNeck = false, settled = false } = {}) => {
     const target = cue.target
     const payload = cue.payload || {}
     if (cue.action === 'spine.face.set') {
@@ -63,7 +63,10 @@ export function createSpineCueHandle(cue, { step } = {}, {
       const neckAtSameTime = (step?.cues || []).some(other => other !== cue
         && other.action === 'spine.neck.play' && other.target === target
         && Number(other.at || 0) === Number(cue.at || 0))
-      if (!neckAtSameTime) manager.stopSpineNeckAnim?.(target, `${cue.cue_id}:motion-neck-reset`)
+      // A skip lands on the settled pose at once; live playback fades the tilt out.
+      if (!neckAtSameTime) {
+        manager.stopSpineNeckAnim?.(target, `${cue.cue_id}:motion-neck-reset`, settled ? 0 : MOTION_NECK_RESET_MIX)
+      }
       // No mix override: client PlayMotionInternal sets the motion directly under the
       // AnimationState mix (every costume SkeletonDataAsset: defaultMix 0, no pair
       // durations); only a back animation gets its own 0.3 s mix.
@@ -80,13 +83,15 @@ export function createSpineCueHandle(cue, { step } = {}, {
       // Completion belongs to the authored neck, which may be queued behind the
       // back animation of a held pose (client PlayNeck registers on that entry).
       const state = manager.spineInstances?.[target]?.spine?.state
+      // No entry (missing clip or a duplicate delivery) means nothing to wait for.
       const track = manager.playSpineNeckAnim?.(target, payload.value, cue.cue_id)
-        || state?.getCurrent?.(SPINE_TRACK.neck)
       if (track) {
         return new Promise(resolve => {
           let completed = false
           const previousListener = track.listener
-          const listener = { complete: () => finish() }
+          // end/dispose: a reset or another neck discarded the entry before it
+          // completed, so it can no longer hold Auto.
+          const listener = { complete: () => finish(), end: () => finish(), dispose: () => finish() }
           const finish = () => {
             if (completed) return
             completed = true
@@ -176,7 +181,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
         return
       }
       console.debug('[StoryRuntime] cue settle', cue.cue_id)
-      return performWhenReady(0)
+      return performWhenReady(0, { settled: true })
     },
     onCancel: reason => {
       invalidateOperation()

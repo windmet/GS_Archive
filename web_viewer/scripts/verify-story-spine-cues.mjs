@@ -39,7 +39,10 @@ function setup(steps, { ready = true, sceneReady = null } = {}) {
     updateSpineFace: (...args) => calls.push(['face', ...args]),
     playSpineAnim: (...args) => calls.push(['body', ...args]),
     setSpineColor: (...args) => calls.push(['tint', ...args]),
-    playSpineNeckAnim: (...args) => { calls.push(['neck', ...args]) },
+    playSpineNeckAnim: (target, ...args) => {
+      calls.push(['neck', target, ...args])
+      return manager.spineInstances[target]?.spine?.state?.getCurrent?.(1)
+    },
     settleSpineNeckAnim: (target, ...args) => {
       calls.push(['neck-settle', target, ...args])
       const track = manager.spineInstances[target]?.spine?.state?.getCurrent?.(1)
@@ -188,7 +191,7 @@ print(json.dumps(result))
   // A body cue with no neck cue at the same time resets the neck first (client
   // IdolCharacter.CoPlayAnimation) and passes the model's whole motion table.
   assert.deepEqual(direct.calls, [
-    ['neck-stop', 'fixture', 'step-1:spine.body.play:motion-neck-reset'],
+    ['neck-stop', 'fixture', 'step-1:spine.body.play:motion-neck-reset', 0.3],
     ['body', 'fixture', 'value-1', false, true, 'motion-fixture', true, null, 'table-fixture', 0],
     ['tint', 'fixture', 'value-1', 0.7, 0, dependencies.now],
     ['neck-stop', 'fixture', 'step-1:spine.neck.stop'],

@@ -15,6 +15,7 @@ function setup() {
     playing:{value:false},performanceRevision:{value:0},
     resolveNextCue:()=>cue, emit:(_event,id)=>{calls.push(id);context.activeCue.value=cue},
     homeCueRuntime:{cancelCurrentStep(){},handleStepChange(){calls.push('runtime-start')}},
+    spineStageRef:{value:{manager:{beginSpinePerformance(){calls.push('begin-performance')}}}},
     voicePlayer:{unlockAudioContext(){},resetVoiceDedup(){},releasePreparedVoice(){},stopCurrentVoice(){},
       playPreparedVoice(){calls.push('play');return gate.promise},playVoice(){calls.push('play');return gate.promise},retryVoice(){calls.push('compat');return gate.promise}} }
   vm.createContext(context)
@@ -27,6 +28,7 @@ test('actual Home cached tap locks while async backend starts; second tap cannot
   const t=setup();const first=t.context.tap();assert.equal(t.context.stageTapPending.value,true)
   await t.context.tap();await until(()=>t.calls.includes('play'))
   assert.equal(t.calls.filter(x=>x==='play').length,1)
+  assert.ok(t.calls.indexOf('begin-performance')>=0&&t.calls.indexOf('begin-performance')<t.calls.indexOf('play'),'a tap starts a new Spine performance before its voice')
   t.gate.resolve(true);await first
   assert.equal(t.context.stageTapPending.value,false)
   assert.equal(t.context.stageTapCommitPending.value,false)
