@@ -25,6 +25,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
 }) {
   let operationToken = 0
   let releasePending = null
+  let pendingNeckState = null
   let neckFallbackFrame = null
   let readinessFrame = null
   let releaseReadiness = null
@@ -89,19 +90,31 @@ export function createSpineCueHandle(cue, { step } = {}, {
         return new Promise(resolve => {
           let completed = false
           const previousListener = track.listener
-          // end/dispose: a reset or another neck discarded the entry before it
-          // completed, so it can no longer hold Auto.
-          const listener = { complete: () => finish(), end: () => finish(), dispose: () => finish() }
+          const finishOn = event => entry => {
+            previousListener?.[event]?.(entry)
+            finish()
+          }
+          // A mixing-out entry can keep affecting the pose without holding Auto.
+          // A queued entry can be disposed without ever becoming current.
+          const listener = {
+            ...previousListener,
+            complete: finishOn('complete'),
+            interrupt: finishOn('interrupt'),
+            end: finishOn('end'),
+            dispose: finishOn('dispose'),
+          }
           const finish = () => {
             if (completed) return
             completed = true
             if (neckFallbackFrame != null) cancelFrame(neckFallbackFrame)
             neckFallbackFrame = null
             releasePending = null
+            pendingNeckState = null
             if (track.listener === listener) track.listener = previousListener
             resolve()
           }
           releasePending = finish
+          pendingNeckState = state
           // Keep the neck track clamped at its final pose. The step transition or an
           // explicit neck.stop cue owns clearing it.
           track.listener = listener
@@ -184,10 +197,13 @@ export function createSpineCueHandle(cue, { step } = {}, {
       return performWhenReady(0, { settled: true })
     },
     onCancel: reason => {
+      const manager = getManager()
+      const ownsPendingNeck = pendingNeckState
+        && manager?.spineInstances?.[cue.target]?.spine?.state === pendingNeckState
       invalidateOperation()
       const preservesAuthoredPose = reason === 'step-change' || reason === 'load-step'
-      if (cue.action === 'spine.neck.play' && !preservesAuthoredPose) {
-        getManager()?.stopSpineNeckAnim?.(cue.target, `${cue.cue_id}:cancel`)
+      if (ownsPendingNeck && !preservesAuthoredPose) {
+        manager.stopSpineNeckAnim?.(cue.target, `${cue.cue_id}:cancel`)
       }
     },
   })

@@ -299,7 +299,6 @@ export class SpineManager {
       for (let queued = current; queued; queued = queued.next) {
         if (queued.animation?.name === animName) track = queued
       }
-      track ||= current
     }
     if (!track) return null
     if (track !== current) {

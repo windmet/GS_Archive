@@ -110,7 +110,9 @@ const backThenYes = duration('neck_back_question') + duration('neck_yes')
   assert.ok(completedAt != null, 'neck cue completes')
   assert.ok(completedAt / 1000 >= backThenYes - FRAME * 2,
     `neck cue completed at ${(completedAt / 1000).toFixed(3)} s, before back + neck_yes (${backThenYes.toFixed(3)} s)`)
-  assert.equal(f.state.getCurrent(1)?.animation.name, 'neck_yes', 'completion lands on the authored neck')
+  const current = f.state.getCurrent(1)
+  assert.equal(current?.animation.name, 'neck_yes', 'completion lands on the authored neck')
+  assert.equal(current.trackTime, current.animationEnd, 'the renderer still clamps the target on completion')
 }
 
 // 2. With the skeleton stalled, the fallback deadline still covers back + target.
@@ -209,7 +211,7 @@ async function weightAtFiveSeconds({ skip }) {
   return worst
 }
 const liveWorst = await weightAtFiveSeconds({ skip: false })
-assert.ok(liveWorst <= 10, `live weight at 5 s moved a visible part ${liveWorst.toFixed(1)} px in one frame (head snap)`)
+assert.ok(liveWorst <= 10, `live weight at 5 s moved a visible part ${liveWorst.toFixed(1)} skeleton units in one frame (head snap)`)
 await weightAtFiveSeconds({ skip: true })
 {
   const f = fixture()
@@ -317,6 +319,31 @@ await weightAtFiveSeconds({ skip: true })
   await missing.tick(g.frame)
   assert.equal(missingDone, true, 'a neck clip the skeleton lacks does not wait on the held neck')
   await missingStart
+  await missing.handle.cancel('backlog-open')
+  assert.equal(g.state.getCurrent(1)?.animation.name, 'neck_question', 'cancelling a missing cue leaves the held pose')
+
+  g.manager.playSpineNeckAnim(SID, 'neck_yes', 'queued-yes')
+  g.frame()
+  const back = g.state.getCurrent(1)
+  const backTime = back.trackTime
+  const skippedMissing = cueRunner(g.manager, neckCue('neck_not_in_skeleton', 'skipped-missing'))
+  await skippedMissing.handle.settle('skip')
+  assert.equal(back.trackTime, backTime, 'skipping a missing cue leaves the unrelated back clip at its current time')
+
+  const scheduled = cueRunner(g.manager, neckCue('neck_no', 'future-neck'))
+  await scheduled.handle.cancel('backlog-open')
+  assert.equal(g.state.getCurrent(1), back, 'cancelling a scheduled cue leaves the neck it never owned')
+
+  const playing = fixture()
+  const running = cueRunner(playing.manager, neckCue('neck_yes', 'playing-yes'))
+  let released = false
+  const playingStart = running.handle.start().then(() => { released = true })
+  for (let i = 0; i < 15; i++) await running.tick(playing.frame)
+  playing.manager.stopSpineNeckAnim(SID, 'fade-playing-yes', 0.3)
+  await running.tick(playing.frame)
+  assert.equal(released, true, 'the interrupted current clip releases while its visual fade is still running')
+  assert.equal(playing.state.getCurrent(1)?.mixDuration, 0.3, 'releasing Auto keeps the visual fade')
+  await playingStart
 
   const h = fixture()
   h.manager.playSpineNeckAnim(SID, 'neck_lookup', 'lookup')
@@ -329,4 +356,4 @@ await weightAtFiveSeconds({ skip: true })
     'PlayNeckInternal reads the playing back clip, not the queued neck_question: no second back')
 }
 
-console.log(`Spine neck ownership: held neck_question → back → neck_yes completes after ${backThenYes.toFixed(3)} s (listener and stalled fallback), skip settles neck_yes; timed body cues mix 0 direct / 0.3 back; 3_1_002_01 weight at 5 s moves visible parts ≤ ${liveWorst.toFixed(1)} px/frame; office replay re-applies the entry neck and its reset; line switch, story return, interrupted/missing neck cues and back selection verified`)
+console.log(`Spine neck ownership: held neck_question → back → neck_yes completes after ${backThenYes.toFixed(3)} s (listener and stalled fallback), skip settles neck_yes; timed body cues mix 0 direct / 0.3 back; 3_1_002_01 weight at 5 s moves visible parts ≤ ${liveWorst.toFixed(1)} skeleton units/frame; office replay re-applies the entry neck and its reset; line switch, story return, interrupted/missing neck cues and back selection verified`)
