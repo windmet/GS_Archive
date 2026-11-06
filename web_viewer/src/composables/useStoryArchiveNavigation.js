@@ -102,15 +102,25 @@ export function useStoryArchiveNavigation({
     })()
   }
 
-  async function loadWorkDetail(id, options = navigation.getLoadOptions?.() || {}) {
+  async function loadWorkReadModel(id, options) {
     const row = (await loadWorkCatalog(options)).find(entry => entry.id === id)
     if (!row) throw new Error(`Unavailable work idol: ${id}`)
-    return withStoryText('work', await readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
+    return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
       if (data.view?.idol?.idol_code !== id || !Array.isArray(data.view.idol.short_stories) ||
         !Array.isArray(data.view.idol.scene_lines) || !Array.isArray(data.view?.sourceEvidence?.entries) ||
         !Array.isArray(data.view?.readingEntries))
         throw new Error('Work detail identity or shape mismatch')
-    } }), options)
+    } })
+  }
+
+  async function loadWorkDetail(id, options = navigation.getLoadOptions?.() || {}) {
+    return withStoryText('work', await loadWorkReadModel(id, options), options)
+  }
+
+  // The idol profile's 关联资料 row counts the same detail the work page opens (cached by the client).
+  async function loadWorkSummary(id, options = navigation.getLoadOptions?.() || {}) {
+    const { idol } = (await loadWorkReadModel(id, options)).view
+    return { id, stories: idol.short_stories.length, lines: idol.scene_lines.length }
   }
 
   async function loadIdolStoryCatalog(options = navigation.getLoadOptions?.() || {}) {
@@ -455,7 +465,7 @@ export function useStoryArchiveNavigation({
     openWorkArchive, selectWorkIdol, setWorkMode, playWorkStory,
     openIdolStoryArchive, selectIdolStory, openBirthdayIdolStory, openIdolBirthdayArchive,
     playIdolStorySection, playIdolStoryEpisode, openMobileIdolStory,
-    loadSeasonalCatalog, loadSeasonalDetail, loadSeasonalLedgerOnly, loadWorkCatalog, loadWorkDetail, loadIdolStoryCatalog, loadIdolStoryDetail,
+    loadSeasonalCatalog, loadSeasonalDetail, loadSeasonalLedgerOnly, loadWorkCatalog, loadWorkDetail, loadWorkSummary, loadIdolStoryCatalog, loadIdolStoryDetail,
     goBackFromSeasonalCampaign, goBackFromWorkArchive, goBackFromIdolStoryArchive,
     invalidateStoryArchiveNavigation, prepareStoryArchiveRoute,
   }
