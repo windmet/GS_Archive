@@ -1,16 +1,10 @@
 import { serveR2Resource } from '../_shared/r2-resource.js'
 
-const WORK_RELEASE = '2026-09-28-story-work-text-backfill-001'
-const WORK_PATH = /^\/data\/(?:compiled\/|reading\/)1_5_[A-Za-z0-9_]+\.json$/
 const SEASONAL_READING_RELEASE = 'seasonal-reading-v1'
 export const SEASONAL_READING_PATH = /^\/data\/reading\/5_0[12]_[A-Za-z0-9_]+\.json$/
-const WORK_INDEX = new Set([
-  '/data/reading/manifest.json',
-  '/data/authoritative_story_publications.json',
-  '/data/publication/manifest.json',
-  `/data/publication/releases/${WORK_RELEASE}.json`,
-  '/data/publication/releases/2026-10-12-birthday-small-talk-retirement-001.json',
-])
+// Work stories used to be redirected to a /_work-backfill/ copy in the Pages package. The data
+// (d049f4fa) and compiled (4afb61ee) snapshots have held the same 637 documents, stories and manifests
+// byte for byte since 2026-10-31, so they are served from R2 like every other Reader document.
 
 export const onRequest = context => {
   const { request, env } = context
@@ -18,11 +12,6 @@ export const onRequest = context => {
   if (env.ARCHIVE_SEASONAL_READING_RELEASE === SEASONAL_READING_RELEASE &&
       (request.method === 'GET' || request.method === 'HEAD') && SEASONAL_READING_PATH.test(pathname)) {
     return Response.redirect(new URL(`/_seasonal-reading${pathname}`, request.url), 302)
-  }
-  if (env.ARCHIVE_WORK_BACKFILL_RELEASE === WORK_RELEASE &&
-      (request.method === 'GET' || request.method === 'HEAD') &&
-      (WORK_PATH.test(pathname) || WORK_INDEX.has(pathname))) {
-    return Response.redirect(new URL(`/_work-backfill${pathname}`, request.url), 302)
   }
   return serveR2Resource({ ...context, prefix: 'data' })
 }

@@ -70,20 +70,9 @@ for (const shell of entityShells) {
 }
 // Every folder that holds a head shell revalidates, so a new release is never hidden behind a cached shell.
 const shellSections = [...new Set(entityShells.map(shell => shell.path.split('/')[0]))].sort()
-const workRelease = '2026-09-28-story-work-text-backfill-001'
+// Work stories are no longer copied into the package: the R2 data/compiled snapshots carry them
+// (functions/data/[[path]].js). A data revision without them would 404 the work Reader.
 const readingManifest = JSON.parse(await fs.readFile(path.join(root, 'public/data/reading/manifest.json'), 'utf8'))
-const workEntries = readingManifest.entries.filter(entry => entry.domain === 'work')
-assert(workEntries.length === 637, 'Work backfill preview requires 637 published Reading entries')
-const workFiles = new Set([
-  'data/reading/manifest.json', 'data/authoritative_story_publications.json',
-  'data/publication/manifest.json', `data/publication/releases/${workRelease}.json`,
-  'data/publication/releases/2026-10-12-birthday-small-talk-retirement-001.json',
-])
-for (const entry of workEntries) {
-  workFiles.add(`data/compiled/${entry.source_file}`)
-  workFiles.add(`data/reading/${entry.file}`)
-}
-for (const file of workFiles) await copy(path.join(root, 'public'), file, path.join(dist, '_work-backfill'))
 // The frozen R2 snapshot predates the seasonal Reading documents. Ship the
 // exact documents advertised by this candidate, just as work is backfilled.
 const seasonalEntries = readingManifest.entries.filter(entry => entry.domain === 'seasonal')
@@ -101,12 +90,11 @@ for (const directory of ['functions', 'shared/deploy']) for (const file of await
 const receipt = { purpose: 'device-review-preview', productionApproved: false,
   branch: 'gs-architecture-device-test', sourceRevision: budget.sourceRevision, sourceDigest: budget.sourceDigest,
   release: boot.release, dataRevision: a['--data-revision'], compiledRevision, initialJsGzipEstimate: budget.initialJsGzipEstimate,
-  workBackfillRelease: workRelease,
   seasonalReadingRelease: 'seasonal-reading-v1', seasonalReadingCount: seasonalEntries.length, entityHeadShells: entityShells.length, entityHeadShellOrigin: shellOrigin,
   allPublicRoutesMigrated: acceptance.allPublicRoutesMigrated, deviceReviewAccepted: acceptance.deviceReviewAccepted,
   remainingRoutes: acceptance.routes.unfinished, generatedAt: new Date().toISOString() }
 await fs.writeFile(path.join(dist, 'preview-receipt.json'), JSON.stringify(receipt, null, 2) + '\n')
-await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*'], exclude: ['/_app/*', '/_catalog/*', '/translations/*', '/_work-backfill/*', '/_seasonal-reading/*']}))
+await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*'], exclude: ['/_app/*', '/_catalog/*', '/translations/*', '/_seasonal-reading/*']}))
 await fs.writeFile(path.join(dist, '_headers'), `/*
   X-Robots-Tag: noindex, nofollow
 /_app/*
@@ -126,7 +114,7 @@ await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ na
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',
   vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_DATA_REVISION: a['--data-revision'],
     ...(compiledRevision ? { ARCHIVE_COMPILED_REVISION: compiledRevision } : {}),
-    ARCHIVE_WORK_BACKFILL_RELEASE: workRelease, ARCHIVE_SEASONAL_READING_RELEASE: 'seasonal-reading-v1' },
+    ARCHIVE_SEASONAL_READING_RELEASE: 'seasonal-reading-v1' },
   r2_buckets: [{binding: 'ARCHIVE_ASSETS', bucket_name: 'sidem-archive-preview'}] }, null, 2))
 for (const file of await listFiles(dist)) {
   const bytes = await safeRead(dist, file)
