@@ -9,7 +9,21 @@ const hash = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')
 const manifest = JSON.parse(await fs.readFile(new URL('data/reading/manifest.json',root),'utf8'))
 const profileOverlay = JSON.parse(await fs.readFile(new URL('translations/zh-CN/archive-general/profiles.json',root),'utf8'))
 const seasonalTitles = profileOverlay.entries['seasonal-title']?.title || {}
-const titles = [], translated = new Map(), chosen = new Map(), ownTitles = new Map()
+const titles = [], translated = new Map(), chosen = new Map(), ownTitles = new Map(), openings = new Map()
+// A work row shows its document's opening line outside the Reader. Its translation rides in the
+// document's title shard, which the work page already loads, so the list never downloads documents.
+const OPENING_DOMAINS = new Set(['work'])
+const loadOverlay = async catalogId => {
+  let overlay
+  try { overlay = JSON.parse(await fs.readFile(new URL(`translations/zh-CN/scenarios/${catalogId}.json`,root),'utf8')) }
+  catch(error) { if(error.code === 'ENOENT') return null; throw error }
+  if (!validateStoryTranslationOverlay(overlay,{scenarioId:catalogId,locale:'zh-CN'}).valid) throw Error(`Invalid overlay ${catalogId}`)
+  return overlay
+}
+const translatedRow = (row, overlay) => {
+  const view = resolveStoryText({source:row.source_text,textRef:row.text_ref,overlayEntry:overlay.entries[row.text_ref?.unit_id],preferences:{story_content_mode:'translation'}})
+  return view.translation.available ? {source:row.source_text,text:view.primary.text,source_hash:row.text_ref.source_hash,unit_id:row.text_ref.unit_id} : null
+}
 // A document is named by the title row that matches its manifest title. Where none does (extra and
 // some event documents carry a synopsis line as their manifest title), its opening title row
 // (cmd-000000) names it instead, bound to that document alone.
@@ -19,6 +33,14 @@ for (const entry of manifest.entries) {
   if (hash(bytes) !== entry.sha256) throw Error(`Stale Reader ${entry.document_id}`)
   const document = JSON.parse(bytes)
   const titleRows = document.rows.filter(row => row.kind === 'title')
+  if (OPENING_DOMAINS.has(entry.domain)) {
+    const opening = document.rows.find(row => row.kind === 'dialogue' || row.kind === 'narration')
+    const overlay = opening && await loadOverlay(document.text_catalog_id || document.scenario_id)
+    // The overlay text is kept as written (P-name slots unrendered): the page renders it with the
+    // reader's own P name through resolveStoryText, as the Reader does.
+    const record = overlay && translatedRow(opening, overlay)
+    if (record) openings.set(entry.document_id, {...record, text:overlay.entries[opening.text_ref.unit_id].text})
+  }
   const exact = titleRows.find(row => row.source_text === entry.title)
   const row = exact || titleRows.find(row => leadingTitle.test(row.text_ref?.unit_id || ''))
   const key = exact || !row ? entry.logical_id : `document:${entry.document_id}`
@@ -32,14 +54,9 @@ for (const entry of manifest.entries) {
     continue
   }
   if (!row) continue
-  const catalogId = document.text_catalog_id || document.scenario_id
-  let overlay
-  try { overlay = JSON.parse(await fs.readFile(new URL(`translations/zh-CN/scenarios/${catalogId}.json`,root),'utf8')) }
-  catch(error) { if(error.code === 'ENOENT') continue; throw error }
-  if (!validateStoryTranslationOverlay(overlay,{scenarioId:catalogId,locale:'zh-CN'}).valid) throw Error(`Invalid overlay ${catalogId}`)
-  const view = resolveStoryText({source:row.source_text,textRef:row.text_ref,overlayEntry:overlay.entries[row.text_ref?.unit_id],preferences:{story_content_mode:'translation'}})
-  if (!view.translation.available) continue
-  const record = {source:row.source_text,text:view.primary.text,source_hash:row.text_ref.source_hash,unit_id:row.text_ref.unit_id}
+  const overlay = await loadOverlay(document.text_catalog_id || document.scenario_id)
+  const record = overlay && translatedRow(row, overlay)
+  if (!record) continue
   if (key.startsWith('document:')) { ownTitles.set(entry.document_id, record); continue }
   const existing = translated.get(key)
   if (existing !== undefined && JSON.stringify(titles[existing]) !== JSON.stringify(record) && titles[existing].text !== record.text) throw Error(`Ambiguous chapter title ${key}`)
@@ -48,9 +65,11 @@ for (const entry of manifest.entries) {
 const documents = {}
 for (const entry of manifest.entries) {
   const { key, source } = chosen.get(entry.document_id)
-  if (ownTitles.has(entry.document_id)) { documents[entry.document_id] = {revision:entry.sha256,record:ownTitles.get(entry.document_id)}; continue }
+  const opening = openings.has(entry.document_id) ? {opening:openings.get(entry.document_id)} : {}
   const title = translated.get(key)
-  if (title !== undefined && titles[title].source === source) documents[entry.document_id] = {revision:entry.sha256,title}
+  if (ownTitles.has(entry.document_id)) documents[entry.document_id] = {revision:entry.sha256,record:ownTitles.get(entry.document_id),...opening}
+  else if (title !== undefined && titles[title].source === source) documents[entry.document_id] = {revision:entry.sha256,title,...opening}
+  else if (opening.opening) documents[entry.document_id] = {revision:entry.sha256,...opening}
 }
 const payloads = {}, shards = {}
 for (let n = 0; n < READER_TITLE_SHARD_COUNT; n++) {
@@ -77,4 +96,4 @@ for (const [key, text] of Object.entries(payloads)) {
     if (await fs.readFile(file,'utf8') !== text) throw Error(`Reader title shard ${key} differs from bound sources`)
   } else await fs.writeFile(file,text)
 }
-console.log(`Reader titles: ${titles.length} translated titles, ${Object.keys(documents).length} document bindings, ${Buffer.byteLength(output)} bytes (${fileURLToPath(target)})`)
+console.log(`Reader titles: ${titles.length} translated titles, ${Object.keys(documents).length} document bindings, ${openings.size} opening lines, ${Buffer.byteLength(output)} bytes (${fileURLToPath(target)})`)
