@@ -18,6 +18,8 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
   const volumes = audioSession ? null : new PlayerPreferencesRepository().load().volumes
   const session = audioSession || new StoryAudioSession({ masterVolume: volumes.master, busVolumes: volumes })
   const ownsAudioSession = !audioSession
+  // A getter lets the player turn voice off while it runs (story speed above ×1.0).
+  const voiceOff = typeof noVoice === 'function' ? noVoice : () => noVoice
   const lifetime = new AbortController()
   const preparations = new Set(), lipRequests = new Set()
   const decodedCache = new Map(), resolvedUrls = new Map()
@@ -67,7 +69,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
   function releasePreparedVoice(prepared) { prepared?.lipRequest?.cancel() }
   function requiresVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
     const voice = step?.dialogue?.voice
-    return Boolean(voice && !noVoice && !session.disabled && !disposed() && !isKnownDanglingStoryVoice(scenarioId, voice))
+    return Boolean(voice && !voiceOff() && !session.disabled && !disposed() && !isKnownDanglingStoryVoice(scenarioId, voice))
   }
   function hasDecodedVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
     return decodedCache.has(keyOf(step, scenarioId))
@@ -177,7 +179,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
     return sampleLipScale(curve, voiceElapsed())
   }
   function setTalking(on) {
-    if (noVoice || (on && !canAnimateStage())) return
+    if (voiceOff() || (on && !canAnimateStage())) return
     const id = current?.prepared.step?.chara_id
     if (!id || (on && current.prepared.step?.lipSync === false)) return
     spineStageRef.value?.manager?.setSpineTalking(id, on, getLipScale)
@@ -203,7 +205,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
   }
   function resetVoiceDedup() { generation++; lastVoiceUrl = null; lastVoiceStepIndex = -1 }
   async function playPreparedVoice(prepared) {
-    if (!prepared?.voice || (!prepared.audioBuffer && prepared.backend !== 'media') || noVoice || session.disabled || disposed()) {
+    if (!prepared?.voice || (!prepared.audioBuffer && prepared.backend !== 'media') || voiceOff() || session.disabled || disposed()) {
       releasePreparedVoice(prepared); return false
     }
     stopCurrentVoice('playPreparedVoice-new')

@@ -815,6 +815,18 @@ function verifyUnvoicedReadingTime() {
   now = 9800
   runTimer()
   assert.deepEqual(advances, ['auto', 'auto'])
+  // Story speed ×2: reading time and delay both halve (native waits count deltaTime×speed).
+  const fast = { ...line, step_id: 5 }
+  controller.getStep = () => fast
+  controller.setRate(2)
+  now = 10000
+  runTimer()
+  now = 11899
+  runTimer()
+  assert.deepEqual(advances, ['auto', 'auto'], 'at ×2 the line still waits 1500 + 400 ms')
+  now = 11900
+  runTimer()
+  assert.deepEqual(advances, ['auto', 'auto', 'auto'])
   controller.dispose()
 }
 

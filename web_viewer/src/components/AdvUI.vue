@@ -18,7 +18,9 @@
           <button type="button" @click.stop="emit('retry-voice')">{{ uiText('player.voice.retry') }}</button>
           <button type="button" @click.stop="emit('retry-voice', { backend: 'media' })">{{ uiText('player.voice.compat') }}</button>
         </div>
-        <div class="dialog-next">▶</div>
+        <!-- Native SetStopAutoIcon: a tap held the running auto on this line. -->
+        <div v-if="autoHeld" class="dialog-next held" role="img" :aria-label="uiText('player.autoHeld')" :title="uiText('player.autoHeld')" />
+        <div v-else class="dialog-next">▶</div>
       </div>
 
     </div>
@@ -38,6 +40,7 @@ const props = defineProps({
   step: { type: Object, default: null },
   playing: { type: Boolean, default: false },
   voiceStatus: { type: String, default: 'idle' },
+  autoHeld: { type: Boolean, default: false },
 })
 
 const localization = useStoryLocalization()
@@ -138,6 +141,7 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
   font-size: 1.05rem;
   animation: adv-pulse 1.2s ease-in-out infinite;
 }
+.dialog-next.held { width: 12px; height: 12px; bottom: 18px; background: var(--player-ink-700); animation: none; }
 
 @keyframes adv-pulse {
   0%, 100% { opacity: 0.3; }

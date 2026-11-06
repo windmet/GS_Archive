@@ -10,7 +10,7 @@ import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 // Wait-only client cuts (compiled post_wait / pre_wait) hold the screen between
 // steps. Runs the production StoryViewer handlers with controlled timers.
 const source = readFileSync(new URL('../src/core/StoryViewer.vue', import.meta.url), 'utf8')
-const handlers = ['goNext', 'holdNativeCut', 'leaveStep', 'onChoice', 'commitChoice'].map(name => {
+const handlers = ['goNext', 'tapNext', 'holdNativeCut', 'leaveStep', 'onChoice', 'commitChoice'].map(name => {
   const match = source.match(new RegExp(`\\nfunction ${name}\\([^]*?\\n\\}`))
   assert.ok(match, name)
   return match[0]
@@ -34,6 +34,7 @@ function viewer(steps) {
   const ctx = {
     RUNTIME_DEBUG: false, releaseSoakRecorder: { record() {} },
     compiledData: ref({ steps }), currentStepIndex: index, currentStep: computed(() => steps[index.value]),
+    storySpeed: ref(1), autoEnabled: ref(false), autoHeld: ref(false),
     episodeFinished: ref(false), backlogOpen: ref(false), menuOpen: ref(false), viewingOfferOpen: ref(false),
     runtimeReadinessStatus: ref('playable'), titlePaused: ref(false), titleAnimationPending: ref(false),
     titleAdvancePending: null, setTitleAnimationPending() {}, runtimePauseReasons: new Set(),
@@ -69,6 +70,47 @@ const adv = (id, extra = {}) => ({ step_id: id, type: 'adv', dialogue: { text: `
   assert.equal(ctx.goNext('user'), 'advanced')
   assert.equal(index.value, 1)
   assert.equal(timers.size, 0, 'the cleared wait leaves no timer behind')
+}
+{
+  // Story speed shortens the wait (NextCutWaitCoroutine counts deltaTime×speed).
+  const { ctx } = viewer([adv(1, { post_wait: 0.5 }), adv(2, { pre_wait: 0.25 }), adv(3)])
+  ctx.storySpeed.value = 2
+  assert.equal(ctx.goNext('user'), 'held')
+  assert.deepEqual(delays(), [375])
+  timers.clear()
+}
+{
+  // While auto runs, the first tap on a line holds it there and the next tap moves on
+  // (OnClickBackgroundPanel isAutoStop); without auto a tap moves on at once.
+  const { ctx, index } = viewer([adv(1), adv(2), adv(3)])
+  assert.equal(ctx.tapNext(), 'advanced')
+  assert.equal(index.value, 1)
+  ctx.autoEnabled.value = true
+  assert.equal(ctx.tapNext(), 'held')
+  assert.equal(ctx.autoHeld.value, true)
+  assert.equal(index.value, 1, 'the held line stays')
+  assert.equal(ctx.tapNext(), 'advanced')
+  assert.equal(index.value, 2)
+}
+{
+  // The second tap drops the hold at once, even when a cut wait now holds the screen.
+  const { ctx, index } = viewer([adv(1, { post_wait: 1 }), adv(2)])
+  ctx.autoEnabled.value = true
+  assert.equal(ctx.tapNext(), 'held')
+  assert.equal(ctx.tapNext(), 'held', 'the cut wait after the line runs')
+  assert.equal(ctx.autoHeld.value, false)
+  fire()
+  assert.equal(index.value, 1)
+}
+{
+  // A tap during a cut wait clears the wait even while auto runs.
+  const { ctx, index } = viewer([adv(1, { post_wait: 2 }), adv(2)])
+  ctx.goNext('user')
+  ctx.autoEnabled.value = true
+  assert.equal(ctx.tapNext(), 'advanced')
+  assert.equal(index.value, 1)
+  assert.equal(ctx.autoHeld.value, false)
+  assert.equal(timers.size, 0)
 }
 {
   // Skip mode never holds.
@@ -181,4 +223,7 @@ const adv = (id, extra = {}) => ({ step_id: id, type: 'adv', dialogue: { text: `
     globalThis.clearTimeout = savedClear
   }
 }
-console.log('Native cut wait runtime: hold, tap/skip/auto, pause, stale step, episode end, choice and transition timer passed')
+assert.match(watcher, /autoHeld\.value = false/, 'moving to another line drops the tap hold')
+assert.match(source, /watch\(autoHeld, held => playbackController\?\.setPaused\('tap-hold', held\)\)/, 'the tap hold pauses auto')
+assert.match(source, /@click="tapNext"/, 'the dialogue tap goes through tapNext')
+console.log('Native cut wait runtime: hold, speed, tap hold, tap/skip/auto, pause, stale step, episode end, choice and transition timer passed')

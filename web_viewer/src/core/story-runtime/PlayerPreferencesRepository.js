@@ -1,5 +1,6 @@
 const STORAGE_KEY = 'sidem-story-player-preferences'
 const SCHEMA_VERSION = 3
+export const STORY_SPEEDS = Object.freeze([1, 1.5, 2])
 
 export const DEFAULT_PLAYER_PREFERENCES = Object.freeze({
   schema_version: SCHEMA_VERSION,
@@ -12,6 +13,8 @@ export const DEFAULT_PLAYER_PREFERENCES = Object.freeze({
   missing_translation_policy: 'fallback-source',
   auto_enabled: false,
   auto_delay_ms: 800,
+  // Native StoryView speed (×1.0 / ×1.5 / ×2.0).
+  story_speed: 1,
   skip_mode: 'readOnly',
   voice_on_back: false,
   ui_hidden: false,
@@ -54,6 +57,7 @@ function normalize(input = {}) {
     missing_translation_policy: 'fallback-source',
     auto_enabled: input.auto_enabled === true,
     auto_delay_ms: finite(input.auto_delay_ms, defaults.auto_delay_ms, { min: 0, max: 10000 }),
+    story_speed: STORY_SPEEDS.includes(input.story_speed) ? input.story_speed : defaults.story_speed,
     skip_mode: ['readOnly', 'all'].includes(input.skip_mode) ? input.skip_mode : defaults.skip_mode,
     voice_on_back: input.voice_on_back === true,
     ui_hidden: input.ui_hidden === true,
