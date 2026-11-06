@@ -53,7 +53,7 @@ try {
   await names.loadArchiveLines([withP[0], withChan[0]])
   // Producer macros: never raw dots; the unnamed word follows the shown language; a set name replaces it.
   assert.ok(!touch(withP[0]).text.includes('●') && touch(withP[0]).text.includes('制作人，'))
-  assert.ok(touch(withChan[0]).text.includes('P酱') && !touch(withChan[0]).text.includes('制作人酱'))
+  assert.ok(touch(withChan[0]).text.includes('制作人酱') && !touch(withChan[0]).text.includes('P酱'))
   producerName.value = '晴'
   assert.ok(touch(withP[0]).text.includes('晴P，'))
   assert.ok(touch(withChan[0]).text.includes('晴P酱'))

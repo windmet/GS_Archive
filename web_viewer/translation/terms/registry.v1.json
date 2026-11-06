@@ -1,7 +1,7 @@
 {
   "schema": "GS-TERM-REGISTRY-V1",
   "locale": "zh-CN",
-  "revision": "2026-11-05",
+  "revision": "2026-11-07",
   "about": "唯一的项目术语来源。提示词、glossary 与检查器都应由本文件投影，不再手写各自的词表。项目译法不代表官方中文译名。status: approved=用户确认，检查器强制；project=现行试译词条，写入提示词，检查器只警告；pending=待审，不进提示词。",
   "name_table": {
     "file": "translation/studio/policy/idol-names.v1.json",
@@ -16,6 +16,11 @@
     "story_prompt": "translation/studio/policy/translation-r3.3.md"
   },
   "decisions": [
+    {
+      "id": "D-20261107-recheck",
+      "date": "2026-11-07",
+      "evidence": "用户采纳 .analysis/address-audit-20261106 与 produce-audit-20261107 的校对意见：舞田 ミスター→Mr. 系列；道流 師匠→师父、W 監督→监督；プロデュース 指人时译“担任／当制作人”；舞田原文英文词保留、片假名英文化保留；皮埃尔恢复标志性短停并统一用逗号；空名 ●●●●プロデューサーちゃん 显示“制作人酱”。"
+    },
     {
       "id": "D-20261105-audit",
       "date": "2026-11-05",
@@ -608,15 +613,19 @@
     {
       "id": "producer-chan",
       "kind": "producer-address",
-      "status": "project",
-      "decision": "D-trial-r33",
+      "status": "approved",
+      "decision": "D-20261107-recheck",
       "src": [
         "制作人＋ちゃん（宏外）"
       ],
       "zh": "酱",
       "migrated_from": [
         "trial#items/key=producer-chan"
-      ]
+      ],
+      "forbidden_zh": [
+        "小妹"
+      ],
+      "note": "空名的 ●●●●プロデューサーちゃん 显示“制作人酱”，填名后显示“姓名P酱”（ProducerAddressing）。百百人的 ぴぃちゃん 另见 producer-pii。"
     },
     {
       "id": "producer-pii",
@@ -641,8 +650,8 @@
     {
       "id": "w-kantoku",
       "kind": "producer-address",
-      "status": "project",
-      "decision": "D-trial-r33",
+      "status": "approved",
+      "decision": "D-20261107-recheck",
       "src": [
         "監督"
       ],
@@ -660,13 +669,34 @@
       "migrated_from": [
         "trial#items/key=w-kantoku",
         "card_line#terms/src=監督"
+      ],
+      "forbidden_zh": [
+        "監督"
+      ],
+      "exceptions": [
+        {
+          "ref": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_e:cmd-000026:dialogue:000",
+          "note": "享介说球队教练（not_this_term），译“教练”。"
+        },
+        {
+          "ref": "story-text:v1:1_1_005w00_01_1_1_005_01:1_1_005_01_e:cmd-000057:dialogue:000",
+          "note": "享介说球队教练（not_this_term），译“教练”。"
+        },
+        {
+          "ref": "story-text:v1:1_1_005w00_02_1_1_005_02:1_1_005_02_b:cmd-000081:dialogue:000",
+          "note": "享介说球队教练（not_this_term），译“教练”。"
+        },
+        {
+          "ref": "story-text:v1:1_1_005w00_02_1_1_005_02:1_1_005_02_d:cmd-000023:dialogue:000",
+          "note": "享介说球队教练（not_this_term），译“教练”。"
+        }
       ]
     },
     {
       "id": "michiru-shisho",
       "kind": "producer-address",
-      "status": "project",
-      "decision": "D-trial-r33",
+      "status": "approved",
+      "decision": "D-20261107-recheck",
       "src": [
         "師匠"
       ],
@@ -679,7 +709,13 @@
       },
       "migrated_from": [
         "trial#items/key=producer-shisho"
-      ]
+      ],
+      "forbidden_zh": [
+        "师傅",
+        "師匠",
+        "师匠"
+      ],
+      "note": "空名时 ●●●●●●●●●●師匠 只显示“师父”，渲染器只认这个写法。"
     },
     {
       "id": "genbu-bancho",
@@ -1030,8 +1066,8 @@
     {
       "id": "rui-mister-yamashita",
       "kind": "person-address",
-      "status": "project",
-      "decision": "D-trial-r33",
+      "status": "approved",
+      "decision": "D-20261107-recheck",
       "src": [
         "ミスターやました"
       ],
@@ -1043,6 +1079,40 @@
       },
       "migrated_from": [
         "trial#items/key=mister-yamashita"
+      ],
+      "forbidden_zh": [
+        "山下先生",
+        "Mister"
+      ],
+      "note": "舞田的 ミスター 系列统一用 Mr.，与卡面点触和剧情一致；单称 ミスター 由上下文交代所指。",
+      "family": [
+        {
+          "src": [
+            "ミスターはざま"
+          ],
+          "zh": "Mr. 硲",
+          "forbidden_zh": [
+            "硲先生"
+          ]
+        },
+        {
+          "src": [
+            "ミスターくろの"
+          ],
+          "zh": "Mr. 黑野",
+          "forbidden_zh": [
+            "黑野先生"
+          ]
+        },
+        {
+          "src": [
+            "ミスターたち"
+          ],
+          "zh": "Mr.们",
+          "forbidden_zh": [
+            "几位先生"
+          ]
+        }
       ]
     },
     {
@@ -1324,6 +1394,54 @@
       "migrated_from": [
         "card_line#terms/src=プロデュース"
       ]
+    },
+    {
+      "id": "produce-person",
+      "kind": "common-term",
+      "status": "approved",
+      "decision": "D-20261107-recheck",
+      "src": [
+        "プロデュース（对象是人）"
+      ],
+      "zh": "担任／当（某人的）制作人",
+      "forbidden_zh": [
+        "制作我",
+        "制作指导",
+        "你的制作"
+      ],
+      "note": "偶像对制作人说的感谢写成“谢谢你一直以来担任我（们）的制作人”或“拜托你了”；制作人自述写“做好制作人的工作”。对物（派对、婚礼、周边、私服、贺年卡）仍按语境译策划／制作／做造型；男极“制作部门”是节目名。"
+    },
+    {
+      "id": "rui-latin",
+      "kind": "character-term",
+      "status": "approved",
+      "decision": "D-20261107-recheck",
+      "src": [
+        "舞田原文中的拉丁字母词"
+      ],
+      "zh": "保留原文拉丁词形",
+      "scope": {
+        "speakers": [
+          "036rui"
+        ]
+      },
+      "note": "原文已是英文的词（special、happy、challenge、go、excavation）不意译；原文的日语不改写成英文（待って→等等）；不另加原文没有的英文（I’m）。片假名外来语写成英文（pose、character）沿用。"
+    },
+    {
+      "id": "pierre-pause",
+      "kind": "character-term",
+      "status": "approved",
+      "decision": "D-20261107-recheck",
+      "src": [
+        "ピエール的读点短停（、）"
+      ],
+      "zh": "话题／起句短停用逗号“，”",
+      "scope": {
+        "speakers": [
+          "010pie"
+        ]
+      },
+      "note": "保留“我，……”起句和明显的话题停顿；原文明确的找词（ゆう……やけ→晚……霞）照留。顿号只用于并列。不在连词、定语与名词、动词与宾语之间断开；原句顺畅的按正常中文读。"
     },
     {
       "id": "general-scout",
