@@ -148,7 +148,6 @@
     <div v-if="endBarOpen" class="episode-complete" role="region" :aria-label="uiText('player.complete.region')">
       <span v-if="chapterCountdownLeftMs" class="end-countdown" aria-hidden="true">
         <svg viewBox="0 0 24 24"><circle class="track" cx="12" cy="12" r="10" /><circle class="fill" cx="12" cy="12" r="10" :style="{ strokeDashoffset: 62.83 * (1 - chapterCountdownLeftMs / CHAPTER_COUNTDOWN_MS) }" /></svg>
-        <em>{{ chapterCountdownSeconds }}</em>
       </span>
       <span class="end-copy" role="status">
         <strong>{{ chapterCountdownLeftMs ? uiText('player.complete.upNext') : communicationCompleted ? uiText('player.complete.communication') : uiText('player.complete.episode') }}</strong>
@@ -438,15 +437,15 @@ function requestNextEpisode({ automatic = false, chapter = !automatic && props.n
 function continueReview() { cancelChapterCountdown(); completionDismissed.value = true; nextTick(() => playerRoot.value?.focus()) }
 
 // Continuous playback runs straight through a chapter's segments; at a chapter boundary it
-// waits a short, cancellable countdown on the end bar first. A Live hand-off never counts down.
-const CHAPTER_COUNTDOWN_MS = 5000
+// waits a short, cancellable countdown on the end bar first, about as long as the native
+// end fade before it loads the next episode. A Live hand-off never counts down.
+const CHAPTER_COUNTDOWN_MS = 1500
 const chapterCountdownCancelled = ref(false)
 const chapterCountdownLeftMs = ref(0)
 let chapterCountdownTimer = null
 const chapterCountdownEligible = computed(() => episodeFinished.value && !completionDismissed.value && !chapterCountdownCancelled.value
   && props.continuousPlayback && props.nextTarget?.kind === 'chapter' && props.nextTarget.available
   && props.queueStatus === 'ready' && !completionLiveLink.value && !props.transitionPending)
-const chapterCountdownSeconds = computed(() => Math.ceil(chapterCountdownLeftMs.value / 1000))
 function stopChapterCountdownTimer() { clearInterval(chapterCountdownTimer); chapterCountdownTimer = null }
 function cancelChapterCountdown() { stopChapterCountdownTimer(); chapterCountdownLeftMs.value = 0; chapterCountdownCancelled.value = true }
 
@@ -1425,7 +1424,7 @@ watch([chapterCountdownEligible, () => menuOpen.value || backlogOpen.value || vi
     chapterCountdownLeftMs.value = Math.max(0, chapterCountdownLeftMs.value - (now - last))
     last = now
     if (!chapterCountdownLeftMs.value) requestNextEpisode({ automatic: true, chapter: true })
-  }, 200)
+  }, 100)
 }, { immediate: true })
 watch([immersiveEligible, smallScreen, portraitScreen], ([eligible, small, portrait]) => {
   if (eligible && small && portrait && !immersive.active.value && !immersive.pending.value && !uiHidden.value && mobileViewMode.value === 'ask' && playerSession.claimOffer()) {
@@ -1644,9 +1643,8 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .end-countdown svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .end-countdown circle { fill: none; stroke-width: 2.5; stroke-dasharray: 62.83; }
 .end-countdown .track { stroke: var(--gs-line); }
-.end-countdown .fill { stroke: var(--gs-mint); transition: stroke-dashoffset .2s linear; }
-.end-countdown em { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
-@media (max-width: 420px) {
+.end-countdown .fill { stroke: var(--gs-mint); transition: stroke-dashoffset .1s linear; }
+@media (max-width: 760px) {
   .episode-complete { gap: var(--gs-space-2); padding-left: var(--gs-space-4); }
   .end-actions button { padding: 0 var(--gs-space-3); }
 }
