@@ -169,9 +169,10 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
   .console-capsule .console-copy, .console-capsule > svg { display: none; }
   .console-mode :deep(.gs-segmented-option) { padding: 0 var(--gs-space-3); }
   .console-intro { right: 0; max-width: 220px; }
-  /* A bottom sheet with an idol tab and a costume tab. */
+  /* A bottom sheet with an idol tab and a costume tab, standing on the shell's mobile nav (it was
+     drawn under the nav, so the last rows could not be reached). */
   .console-scrim { position: fixed; z-index: 7; inset: 0; display: block; border: 0; background: rgb(11 20 36 / 25%); }
-  .console-panel { position: fixed; z-index: 8; top: auto; right: 0; bottom: 0; left: 0; width: auto; max-width: none; max-height: 72vh; border-bottom-left-radius: 0; border-bottom-right-radius: 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .console-panel { position: fixed; z-index: 8; top: auto; right: 0; bottom: var(--archive-mobile-nav-inset, 0px); left: 0; width: auto; max-width: none; max-height: calc(72vh - var(--archive-mobile-nav-inset, 0px)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; padding-bottom: var(--archive-sheet-safe-bottom, env(safe-area-inset-bottom, 0px)); }
   .console-tabs { display: grid; grid-template-columns: repeat(2, 1fr); border-bottom: 1px solid var(--gs-line); }
   .console-tabs button { min-height: var(--gs-control-touch); border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
   .console-tabs button[aria-selected=true] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); }
