@@ -47,10 +47,11 @@ assert.equal((await call(data, '/data/test.json')).headers.get('Content-Type'), 
 for (const key of ['/data/compiled/1_5_001tom_1_5_001_00_0.json',
   '/data/reading/1_5_001tom_1_5_001_00_0.json', '/data/reading/manifest.json',
   '/data/publication/releases/2026-10-12-birthday-small-talk-retirement-001.json']) {
-  const redirected = await data({ request: new Request(`https://preview.pages.dev${key}`),
-    env: { ARCHIVE_WORK_BACKFILL_RELEASE: '2026-09-28-story-work-text-backfill-001' } })
-  assert.equal(redirected.status, 302)
-  assert.equal(redirected.headers.get('Location'), `https://preview.pages.dev/_work-backfill${key}`)
+  // Work stories come from the R2 snapshots; a deployment still carrying the retired variable is not redirected.
+  const served = await data({ request: new Request(`https://preview.pages.dev${key}`),
+    env: { ARCHIVE_ASSETS: bucket, ARCHIVE_WORK_BACKFILL_RELEASE: '2026-09-28-story-work-text-backfill-001' } })
+  assert.notEqual(served.status, 302, `work key ${key} must not be redirected`)
+  assert.equal(served.headers.get('Location'), null)
 }
 const seasonal = JSON.parse(await fs.readFile(new URL('../public/data/reading/manifest.json', import.meta.url), 'utf8'))
   .entries.filter(entry => entry.domain === 'seasonal')
