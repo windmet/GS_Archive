@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, shallowRef, watch } from 'vue'
-import { readerStoryTitle, readerTitle, readerTitleShardKey } from '../../presentation/ReaderTitle.js'
+import { readerOpening, readerStoryTitle, readerTitle, readerTitleShardKey } from '../../presentation/ReaderTitle.js'
 import { uiLocale } from '../../utils/LanguageStore.js'
 import translationRelease from '../../../config/translation-release.json' with {type:'json'}
 import { createReaderTitleRepository } from '../../data/ReaderTitleRepository.js'
@@ -12,6 +12,10 @@ const url = `/translations/zh-CN/reader-titles.json?rev=${translationRelease.rel
 const repository = createReaderTitleRepository({ url })
 export function useReaderTitles() {
   return useTitleIndex((entry, source) => readerTitle(index.value, entry, source, uiLocale.value), true)
+}
+// A document's translated opening line (work rows), or null where the shard carries none.
+export function useReaderOpenings() {
+  return useTitleIndex((entry, source) => readerOpening(index.value, entry, source, uiLocale.value), true)
 }
 // Story file + source title, for pages that do not load reading entries (the portal).
 export function useStoryTitles() {

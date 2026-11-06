@@ -18,13 +18,16 @@ export function validateReaderTitles(value) {
   const validTitle = title => title && typeof title.source === 'string' && title.source && typeof title.text === 'string' && title.text && HASH.test(title.source_hash) && title.unit_id?.startsWith('story-text:v1:')
   for (const title of value.titles) if (!validTitle(title)) throw Error('Invalid Reader title binding')
   // A binding names a shared title (index into titles) or carries a title that names only its own
-  // document (record), kept in the document's shard so the root index stays small.
+  // document (record), kept in the document's shard so the root index stays small. It may also carry
+  // the document's opening line (work rows show it outside the Reader), or only that.
   for (const [id, record] of Object.entries(value.documents)) {
     const metadata = record?.record, seasonal = metadata && typeof metadata.source === 'string' && metadata.source
       && typeof metadata.text === 'string' && metadata.text && HASH.test(metadata.source_hash)
       && metadata.unit_id === `metadata:v1:seasonal-title:title:${metadata.source_hash.slice(7)}`
     const shared = Number.isInteger(record?.title) && value.titles[record.title], own = metadata !== undefined && (validTitle(metadata) || seasonal)
-    if (!/^[A-Za-z0-9_-]+$/.test(id) || !HASH.test(record?.revision) || Boolean(shared) === Boolean(own)) throw Error('Invalid Reader document title binding')
+    const opening = record?.opening
+    if (opening !== undefined && !validTitle(opening)) throw Error('Invalid Reader document opening binding')
+    if (!/^[A-Za-z0-9_-]+$/.test(id) || !HASH.test(record?.revision) || (shared && own) || (!shared && !own && !opening)) throw Error('Invalid Reader document title binding')
   }
   return value
 }
@@ -41,6 +44,16 @@ export function readerStoryTitle(index, storyFile, source, locale = 'zh-CN') {
   const story = String(storyFile || '').replace(/\.json$/, '')
   const title = story && index.titles.find(row => row.source === source && row.unit_id.startsWith(`story-text:v1:${story}:`))
   return title?.text || source
+}
+// A document's opening line outside the Reader (a work row): its translation binding (overlay text as
+// written, for resolveStoryText) when it is for this document revision and the same source line, else
+// null so the caller can fall back.
+const compact = value => String(value || '').replace(/[\s　]/gu, '')
+export function readerOpening(index, entry, source, locale = 'zh-CN') {
+  if (locale === 'ja-JP' || !source) return null
+  const binding = index?.documents?.[entry?.document_id]
+  const opening = binding?.revision === entry?.sha256 ? binding.opening : null
+  return opening && compact(opening.source) === compact(source) ? opening : null
 }
 export function readerTitle(index, entry, source, locale = 'zh-CN') {
   if (locale === 'ja-JP') return source
