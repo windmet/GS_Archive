@@ -93,6 +93,7 @@
         @update:selected-id="selectHomeIdol"
         v-model:selected-cue="homeSelectedCue"
         v-model:selected-costume="homeSelectedCostume"
+        :costume-images="homeCostumeImages"
         :no-audio="NO_AUDIO"
         :idols="archiveHomeIdols"
         :idol-name="idolDisplayName"
@@ -2680,6 +2681,15 @@ watch([view, currentCharacterId], handleIdolDetailChange)
 watch(cardLayout, layout => {
   setLocalStorageValue('sidem-archive-card-layout', layout)
 })
+
+// The home console's costume thumbnails are the collection's own images (the costumes catalogue, read once).
+const homeCostumeImages = shallowRef(null)
+watch(view, nextView => {
+  if (nextView !== 'home' || homeCostumeImages.value) return
+  new DomainRepository(readModelClient, archiveBootstrap).catalog('costumes', { priority: 'background' })
+    .then(rows => { homeCostumeImages.value = new Map(rows.map(row => [row.id, row.image || null])) })
+    .catch(error => console.warn('[Home] Costume images unavailable:', error))
+}, { immediate: true })
 
 // The profile's 工作剧情 row: counts from the work read model, fetched after the profile is up.
 const currentIdolWork = shallowRef(null)
