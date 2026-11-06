@@ -11,6 +11,7 @@ import { TranslationRepository } from './TranslationRepository.js'
 import { EntityTranslationRepository } from './EntityTranslationRepository.js'
 import { speakerDisplayLookup, speakerLabelCandidates, speakerLabelKey } from './SpeakerDisplayNames.js'
 import { chatOverlayEntry, isChatCandidate, loadChatTranslations } from './ChatTranslations.js'
+import { homeVoiceOverlayEntry, isHomeVoiceScenario, loadHomeVoiceTranslations } from './HomeVoiceTranslations.js'
 
 export const STORY_LOCALIZATION_KEY = Symbol('story-localization')
 
@@ -131,6 +132,11 @@ export function createStoryLocalization({
             chatEntries.value = entries
           } catch (error) { if (error?.name === 'AbortError') throw error /* Optional: chats keep their source. */ }
         }
+        if (isHomeVoiceScenario(compiledData?.value)) {
+          try { await loadHomeVoiceTranslations(compiledData.value) }
+          catch { /* Optional: home voices keep their source. */ }
+          if (requestGeneration !== generation) return
+        }
         const loaded = await repository.loadScenario({scenarioId,locale,signal})
         if (requestGeneration !== generation) return
         overlay.value = loaded
@@ -172,6 +178,7 @@ export function createStoryLocalization({
     if (unitId && overlay.value?.entries?.[unitId]) return overlay.value.entries[unitId]
     if (inlineEntry) return inlineEntry
     return chatOverlayEntry(chatEntries.value, compiledData?.value, source, textRef)
+      || homeVoiceOverlayEntry(compiledData?.value, source, textRef)
   }
 
   function resolveUnit({ source = '', textRef = null, speaker = null, inlineEntry = null } = {}) {
