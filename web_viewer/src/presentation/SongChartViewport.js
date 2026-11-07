@@ -23,5 +23,6 @@ export function chartGeometryWindow(geometry, from, to) {
     links: geometry.links.filter(n => inside(n.y)),
     middleNodes: geometry.middleNodes.filter(n => inside(n.y)),
     notes: geometry.notes.filter(n => n.endY >= from - 24 && n.y <= to + 24),
+    flickConnectors: (geometry.flickConnectors || []).filter(n => n.endY >= from - 24 && n.y <= to + 24),
   }
 }
