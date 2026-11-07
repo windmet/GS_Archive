@@ -4,14 +4,17 @@ const images = new Map(), cells = new Map()
 const MAX_BYTES = 16 * 1024 * 1024
 let cachedBytes = 0
 
+// A ready texture is shared for the page's lifetime; a failed one is fetched again by the next
+// subscriber, and every listener (renderers included) hears the retry's outcome.
 export function subscribeEffectTexture(id, url, listener) {
   let entry = images.get(id)
-  if (!entry) {
+  if (!entry) images.set(id, entry = { image: null, status: 'failed', listeners: new Set() })
+  if (entry.status === 'failed') {
     const image = new Image()
-    entry = { image, status: 'pending', listeners: new Set() }
-    images.set(id, entry)
-    image.onload = () => { entry.status = 'ready'; for (const fn of entry.listeners) fn(entry) }
-    image.onerror = () => { entry.status = 'failed'; for (const fn of entry.listeners) fn(entry) }
+    entry.image = image; entry.status = 'pending'
+    for (const fn of entry.listeners) fn(entry)
+    image.onload = () => { if (entry.image !== image) return; entry.status = 'ready'; for (const fn of entry.listeners) fn(entry) }
+    image.onerror = () => { if (entry.image !== image) return; entry.status = 'failed'; for (const fn of entry.listeners) fn(entry) }
     image.src = url
   }
   entry.listeners.add(listener)
