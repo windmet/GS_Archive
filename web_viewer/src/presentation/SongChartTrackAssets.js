@@ -30,7 +30,8 @@ export function preloadSongChartTrackAssets(onProgress = () => {}) {
   let done = 0, failed = 0
   const settle = ok => { done++; if (!ok) failed++; onProgress(done, assets.length) }
   return Promise.all(assets.map(asset => asset.effect
-    ? new Promise(resolve => { const off = subscribeEffectTexture(asset.id, asset.url, entry => { if (entry.status === 'pending') return; queueMicrotask(off); settle(entry.status === 'ready'); resolve() }) })
+    // A cached texture calls back synchronously, before `off` is assigned, so unsubscribe lazily and settle once.
+    ? new Promise(resolve => { let settled = false; const off = subscribeEffectTexture(asset.id, asset.url, entry => { if (entry.status === 'pending' || settled) return; settled = true; queueMicrotask(() => off()); settle(entry.status === 'ready'); resolve() }) })
     : keepImage(asset.url).then(settle)
   )).then(() => ({ total: assets.length, failed }))
 }
