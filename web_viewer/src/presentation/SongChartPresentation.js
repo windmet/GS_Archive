@@ -1,4 +1,5 @@
 import { nativeSongNoteIsHold } from './SongTrackNativeNoteTypes.js'
+import { compileSongFlickConnectors } from './SongTrackFlickConnectors.js'
 const TYPES = new Set(['SMALL', 'LARGE', 'FLICK_LEFT', 'FLICK_UP', 'FLICK_RIGHT', 'HOLD', 'VARIABLE_HOLD', 'LARGE_HOLD', 'LARGE_VARIABLE_HOLD', 'SPECIAL'])
 const END_TYPES = new Set(['END_NORMAL', 'END_FLICK_LEFT', 'END_FLICK_UP', 'END_FLICK_RIGHT'])
 const arrow = type => type?.endsWith('LEFT') ? '←' : type?.endsWith('RIGHT') ? '→' : type?.endsWith('UP') ? '↑' : ''
@@ -52,6 +53,17 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
   const x = lane => 105 + lane * 55
   const y = tick => 42 + tick * pixelsPerThousand / 1000
   const height = Math.ceil(y(chart.maxTick) + 42)
+  // One hold-texture strip through { lane, tick, v } points; v runs 0–200 along the texture.
+  const strip = points => {
+    const triangles = []
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1], b = points[i]
+      const leftA = { x: x(a.lane) - 5.5, y: y(a.tick) }, rightA = { x: x(a.lane) + 5.5, y: y(a.tick) }
+      const leftB = { x: x(b.lane) - 5.5, y: y(b.tick) }, rightB = { x: x(b.lane) + 5.5, y: y(b.tick) }
+      for (const mesh of [songTextureTriangle([leftA, rightA, leftB], [{x:0,y:a.v},{x:200,y:a.v},{x:0,y:b.v}]), songTextureTriangle([rightA, rightB, leftB], [{x:200,y:a.v},{x:200,y:b.v},{x:0,y:b.v}])]) if (mesh) triangles.push(mesh)
+    }
+    return triangles
+  }
   return {
     width: 410, height,
     lanes: Array.from({ length: 6 }, (_, i) => 77.5 + i * 55),
@@ -59,17 +71,16 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
     tempos: chart.tempos.map(t => ({ ...t, y: y(t.tick) })),
     links: songSimultaneousLinks(chart).map(l => ({ ...l, x1: x(l.from), x2: x(l.to), y: y(l.tick) })),
     middleNodes: songHoldMiddleNodes(chart).map(n => ({ ...n, x: x(n.lane), y: y(n.tick) })),
+    // The perspective track's successive-flick connectors, drawn in source coordinates so a
+    // connector crossing a column or tile edge appears in both slices and in the export.
+    flickConnectors: compileSongFlickConnectors(chart).filter(c => c.toTick > c.fromTick).map(c => ({ id: c.id, flickgroup: c.flickgroup,
+      y: y(c.fromTick), endY: y(c.toTick),
+      bodyTriangles: strip([{ lane: c.fromLane, tick: c.fromTick, v: 0 }, { lane: c.toLane, tick: c.toTick, v: 200 }]) })),
     notes: chart.notes.map(n => {
       const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
       const last = points.at(-1)
-      const bodyTriangles = []
-      for (let i = 1; nativeSongNoteIsHold(n) && n.duration > 0 && i < points.length; i++) {
-        const a = points[i - 1], b = points[i]
-        const leftA = { x: x(a.posx) - 5.5, y: y(n.tick + a.subtick) }, rightA = { x: x(a.posx) + 5.5, y: y(n.tick + a.subtick) }
-        const leftB = { x: x(b.posx) - 5.5, y: y(n.tick + b.subtick) }, rightB = { x: x(b.posx) + 5.5, y: y(n.tick + b.subtick) }
-        const va = a.subtick / n.duration * 200, vb = b.subtick / n.duration * 200
-        for (const mesh of [songTextureTriangle([leftA, rightA, leftB], [{x:0,y:va},{x:200,y:va},{x:0,y:vb}]), songTextureTriangle([rightA, rightB, leftB], [{x:200,y:va},{x:200,y:vb},{x:0,y:vb}])]) if (mesh) bodyTriangles.push(mesh)
-      }
+      const bodyTriangles = nativeSongNoteIsHold(n) && n.duration > 0
+        ? strip(points.map(p => ({ lane: p.posx, tick: n.tick + p.subtick, v: p.subtick / n.duration * 200 }))) : []
       return {
         id: n.sourceIndex, type: n.type, x: x(n.start), y: y(n.tick), endX: x(last.posx), endY: y(n.tick + n.duration),
         path: points.map((p, i) => `${i ? 'L' : 'M'} ${x(p.posx)} ${y(n.tick + p.subtick)}`).join(' '),

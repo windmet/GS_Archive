@@ -70,7 +70,7 @@ import { compileSongChartDemonstration, createSongChartDemonstration } from '../
 import { createSongChartHitEffectPool } from '../../presentation/SongChartHitEffectSelection.js'
 import { createSongChartSoundPlayer } from '../../presentation/SongChartSoundPlayer.js'
 import { createSongComboPresentation, delayedChartSeconds, noteTimingSeconds } from '../../presentation/SongComboTiming.js'
-import { preloadSongChartTrackAssets } from '../../presentation/SongChartTrackAssets.js'
+import { preloadSongChartTrackAssets, songChartFirstBeatAssets } from '../../presentation/SongChartTrackAssets.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
@@ -149,7 +149,7 @@ const soundSet = ref('se1'), soundVolume = ref(.7), soundError = ref('')
 const sounds = createSongChartSoundPlayer()
 const soundStats = shallowRef(sounds.stats)
 watch(soundSet, async set => {
-  soundError.value = ''; sounds.cancel()
+  soundError.value = ''; sounds.cancel(); sounds.warm(set)
   if (!playing.value) return
   try { if (await sounds.prepare(set) === false) return; sounds.seek(chartSeconds(audio.value?.currentTime || 0)) }
   catch { soundError.value = '打击音加载失败，请重新选择套装重试。' }
@@ -225,13 +225,18 @@ watch(noteTiming, () => {
   sounds.seek(chartSeconds(seconds)); seekDemonstration(seconds); cadence.sync(seconds)
 })
 watch(volume, value => { if (audio.value) audio.value.volume = value * masterVolume })
-// Effect and Combo textures load as soon as a chart is ready; playback waits for them (see togglePlayback)
-// so nothing is fetched once the song is running.
+// The textures the current view and switches draw load as soon as a chart is ready, and again when
+// the view or a switch changes; playback waits only for those (see togglePlayback), and each press of
+// play retries any that failed. Cached ones settle at once.
 const assetsProgress = ref(null)
-let assetsReady = Promise.resolve()
+let assetsRequest = 0
 function loadTrackAssets() {
-  assetsReady = preloadSongChartTrackAssets((done, total) => { assetsProgress.value = done < total ? { done, total } : null }).then(() => { assetsProgress.value = null })
+  const request = ++assetsRequest
+  const assets = songChartFirstBeatAssets({ mode: mode.value, demonstration: demonstrationEnabled.value, combo: comboEnabled.value })
+  const progress = (done, total) => { if (request === assetsRequest) assetsProgress.value = done < total ? { done, total } : null }
+  return preloadSongChartTrackAssets(progress, assets).finally(() => { if (request === assetsRequest) assetsProgress.value = null })
 }
+watch([mode, demonstrationEnabled, comboEnabled], () => { if (chart.value) void loadTrackAssets() })
 async function loadChart() {
   stopPlayback(); const current = ++generation; controller?.abort()
   editingTick.value = false
@@ -255,7 +260,7 @@ async function loadChart() {
       comboPresentation = createSongComboPresentation(timeline)
       sounds.setTimeline(timeline)
       effectPool = createSongChartHitEffectPool({ setIndex: 1 })
-      loadTrackAssets()
+      void loadTrackAssets(); sounds.warm(soundSet.value)
       loading.value = false; seekSeconds(0)
     }
   } catch (e) { if (current === generation && e.name !== 'AbortError') error.value = e.message || '谱面加载失败' }
@@ -326,7 +331,7 @@ async function togglePlayback() {
   // on resume would discard the frozen effects and restart their epoch.
   try {
     soundError.value = ''
-    await assetsReady
+    await loadTrackAssets()
     if (current !== playGeneration) return
     try { await sounds.prepare(soundSet.value) }
     catch { soundError.value = '打击音加载失败，歌曲仍可播放；请重新选择套装重试。' }
