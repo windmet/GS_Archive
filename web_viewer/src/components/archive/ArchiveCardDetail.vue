@@ -429,7 +429,12 @@ const detailRoot = ref(null)
 watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
   if (!voice) return
   await nextTick()
-  detailRoot.value?.querySelector(`[data-voice-cue="${CSS.escape(voice)}"]`)?.scrollIntoView({ block: 'center' })
+  // Center it inside this page's own scroller only: scrollIntoView would also scroll the overflow-hidden document,
+  // pushing the whole shell up where the reader cannot scroll it back.
+  const box = detailRoot.value, row = box?.querySelector(`[data-voice-cue="${CSS.escape(voice)}"]`)
+  if (!row) return
+  const offset = row.getBoundingClientRect().top - box.getBoundingClientRect().top
+  box.scrollTop += offset - (box.clientHeight - row.offsetHeight) / 2
 }, { immediate: true, flush: 'post' })
 
 const skillMovieMegabytes = computed(() => ((props.skillMovie?.bytes || 0) / 1e6).toFixed(1))
@@ -779,7 +784,8 @@ function openRelation(item) {
 .costume-setting-heading { display: block; margin-bottom: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .costume-variants { display: grid; gap: var(--gs-space-2); margin-top: var(--gs-space-3); }
 .costume-variants { grid-template-columns: minmax(0, 1fr); gap: 0; }
-.costume-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 84px 84px 20px; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-2) var(--gs-space-2) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+/* position: relative anchors the visually hidden source labels; unanchored they hang off the document and make it scrollable. */
+.costume-row { position: relative; display: grid; grid-template-columns: 48px minmax(0, 1fr) 84px 84px 20px; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-2) var(--gs-space-2) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
 button.costume-row { cursor: pointer; }
 .costume-thumb { display: grid; place-items: center; width: 48px; height: 48px; overflow: hidden; border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-mint-ink); }
 .costume-thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
