@@ -100,9 +100,38 @@ export function createSongTrackRenderer(chart) {
     songSimultaneousLinks({ notes }).map(link => ({ ...link, speed })))
 
   const flickConnectors = compileSongFlickConnectors(chart)
-
-  const prepared = { timing, speeds, links, middleNodes: songHoldMiddleNodes(chart), flickConnectors }
+  const middleNodes = songHoldMiddleNodes(chart)
+  const toSeconds = tick => timing ? timing.tickToSeconds(tick) : tick
+  // Cursor-independent per-note data, and every drawable sorted by start tick so a frame
+  // binary-searches its read window instead of scanning the whole chart.
+  const notes = chart.notes.map(n => {
+    const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
+    return { n, points, secondsPoints: points.map(p => ({ subtick: toSeconds(n.tick + p.subtick), posx: p.posx })) }
+  })
+  const prepared = { timing, speeds, links, middleNodes, flickConnectors, notes,
+    index: {
+      notes: songTrackTickIndex(notes, entry => entry.n.tick, entry => entry.n.duration),
+      flickConnectors: songTrackTickIndex(flickConnectors, c => c.fromTick, c => c.toTick - c.fromTick),
+      middleNodes: songTrackTickIndex(middleNodes, n => n.tick),
+      links: songTrackTickIndex(links, l => l.tick),
+    },
+    windowSpeeds: [...new Set([...chart.notes.map(n => n.speed ?? 1), ...links.map(l => l.speed), ...flickConnectors.map(c => c.speed)])] }
   return (cursor = 0, span = 6000, skin = 'Note1SpriteAtlas') => renderSongTrackGeometry(chart, cursor, span, skin, prepared)
+}
+
+// Items sorted by start tick, keeping their source order; `reach` is the longest extent past the start.
+function songTrackTickIndex(items, start, extent = () => 0) {
+  const entries = items.map((item, order) => ({ item, order, tick: start(item) })).sort((a, b) => a.tick - b.tick || a.order - b.order)
+  return { entries, reach: entries.reduce((max, entry) => Math.max(max, extent(entry.item)), 0) }
+}
+
+// Items that may overlap [from, to], in source order so equal-tick draw order never changes.
+function songTrackWindowItems({ entries, reach }, from, to) {
+  let low = 0, high = entries.length
+  while (low < high) { const mid = (low + high) >> 1; if (entries[mid].tick < from - reach) low = mid + 1; else high = mid }
+  const found = []
+  for (let i = low; i < entries.length && entries[i].tick <= to; i++) found.push(entries[i])
+  return found.sort((a, b) => a.order - b.order).map(entry => entry.item)
 }
 
 export function buildSongTrackGeometry(chart, cursor = 0, span = 6000, skin = 'Note1SpriteAtlas') {
@@ -144,11 +173,11 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
       special: type === 'SPECIAL',
       role })
   }
-  for (const n of chart.notes) {
+  const latestEnd = Math.max(...prepared.windowSpeeds.map(endForSpeed))
+  for (const { n, points, secondsPoints } of songTrackWindowItems(prepared.index.notes, cursor, latestEnd)) {
     const end = n.tick + n.duration
     const speed = n.speed ?? 1, windowEnd = endForSpeed(speed)
     if (end < cursor || n.tick > windowEnd) continue
-    const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
     glyph(n, n.tick, points[0].posx, n.type, 'head')
     if (!nativeSongNoteIsHold(n) || !n.duration) continue
     glyph(n, end, points.at(-1).posx, n.endtype || 'END_NORMAL', 'tail')
@@ -158,7 +187,6 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
     // Preview policy: show the future portion inside this note's read window.
     // Native input/deleted-middle scheduling is separate from this adapter.
     for (const p of points) if (n.tick + p.subtick > from && n.tick + p.subtick < to) ticks.add(n.tick + p.subtick)
-    const secondsPoints = points.map(p => ({ subtick: toSeconds(n.tick + p.subtick), posx: p.posx }))
     const samples = [...ticks].sort((a, b) => a - b).map(tick => {
       const lane = laneAt(secondsPoints, toSeconds(tick)), p = project(lane, tick, speed)
       return { tick, lane, fraction: p.fraction }
@@ -184,7 +212,7 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
   }
   // NoteDrawManager radius is 64; HoldMesh.Create subtracts 20 once: 44.
   const flickHoldMetrics = nativeHolds.metrics
-  for (const fc of (prepared.flickConnectors || [])) {
+  for (const fc of songTrackWindowItems(prepared.index.flickConnectors, cursor, latestEnd)) {
     const { fromLane, toLane, fromTick, toTick, speed } = fc
     const windowEnd = endForSpeed(speed)
     if (toTick < cursor || fromTick > windowEnd) continue
@@ -220,11 +248,11 @@ function renderSongTrackGeometry(chart, cursor, span, skin, prepared) {
   const topY = projectTrackPoint(2, 1).y, judgeY = projectTrackPoint(2, 0).y
   // Native same-timing links also require equal note speeds. Keep this visual
   // grouping separate from the long chart's schematic tick-only grouping.
-  const links = prepared.links.filter(l => l.tick >= cursor && l.tick <= endForSpeed(l.speed))
+  const links = songTrackWindowItems(prepared.index.links, cursor, latestEnd).filter(l => l.tick >= cursor && l.tick <= endForSpeed(l.speed))
     .map(l => ({ ...l, id: `${l.tick}-${l.speed}`,
       a: project(l.from, l.tick, l.speed), b: project(l.to, l.tick, l.speed) }))
   return { width, height, topY, judgeY, cursor, span, holds,
-    middleNodes: prepared.middleNodes.filter(n => n.tick >= cursor && n.tick <= endForSpeed(speeds.get(n.sourceIndex))).map(n => {
+    middleNodes: songTrackWindowItems(prepared.index.middleNodes, cursor, latestEnd).filter(n => n.tick >= cursor && n.tick <= endForSpeed(speeds.get(n.sourceIndex))).map(n => {
       const p = project(n.lane, n.tick, speeds.get(n.sourceIndex))
       const image = songTrackNoteImage('middle', skin, n.lane, p.fraction)
       return { ...n, x: p.x, y: p.y, width: image.visibleWidth, image }

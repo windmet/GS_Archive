@@ -27,4 +27,19 @@ for(const set of Object.keys(spec.sets)) {
 }
 await player.prepare('off'); const count=started.length; player.seek(.9);player.paint(.9);assert.equal(started.length,count)
 player.dispose()
+// Bytes are fetched before any click without an AudioContext; play only decodes, and a failed fetch is retried.
+{
+  const fetched=[]; let contexts=0, failOnce=true
+  const warmPlayer=createSongChartSoundPlayer({contextFactory:()=>{contexts++;return ctx},fetchAudio:async url=>{fetched.push(url);if(failOnce){failOnce=false;return {ok:false}}return {ok:true,arrayBuffer:async()=>new ArrayBuffer(4)}}})
+  const ids=[...new Set(Object.values(spec.sets.se1))]
+  warmPlayer.warm('se1'); await new Promise(r=>setTimeout(r,0))
+  assert.equal(contexts,0,'warming creates no AudioContext')
+  assert.equal(fetched.length,ids.length,'warming fetches each sound of the set once')
+  const before=fetched.length
+  assert.equal(await warmPlayer.prepare('se1'),true,'a failed warm fetch does not fail play')
+  assert.equal(fetched.length-before,1,'play refetches only the failed sound')
+  assert.equal(warmPlayer.stats.decoded,ids.length)
+  await warmPlayer.prepare('se1'); assert.equal(fetched.length-before,1,'decoded sounds are never fetched again')
+  warmPlayer.dispose()
+}
 console.log('Four sound sets, hashes, simultaneous suppression, lookahead, cancel/seek, catch-up and off passed')

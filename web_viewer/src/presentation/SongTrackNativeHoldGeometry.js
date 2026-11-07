@@ -32,15 +32,21 @@ export function buildNativeSongHoldMesh(points, target, metrics, drawScale = 1) 
   const append = (pair, v) => {
     for (let side = 0; side < 2; side++) { vertices.push(pair[side]); uv.push([side, v]) }
   }
+  // Runs for every visible hold on every frame: the subdivision loop allocates only its output.
+  const far = (p, q) => Math.abs(f(p.x - q.x)) >= 2 || Math.abs(f(p.y - q.y)) >= 2 || Math.abs(f(p.z - q.z)) >= 2
+  const lerp = (p, q, t) => ({ x: mix(p.x, q.x, t), y: mix(p.y, q.y, t), z: mix(p.z, q.z, t) })
   for (const part of parts) {
-    const count = Math.ceil(f(Math.max(...[0, 1].map(i => magnitude(f(part.b[i].x - part.a[i].x), f(part.b[i].y - part.a[i].y)))) * 4 / .1))
-    const a = part.a.map(project), b = part.b.map(project)
-    const old = vertices.slice(-2)
-    if (vertices.length < 2 || a.some((p, i) => ['x', 'y', 'z'].some(axis => Math.abs(f(p[axis] - old[i][axis])) >= 2))) append(a, part.v0)
+    const count = Math.ceil(f(Math.max(magnitude(f(part.b[0].x - part.a[0].x), f(part.b[0].y - part.a[0].y)),
+      magnitude(f(part.b[1].x - part.a[1].x), f(part.b[1].y - part.a[1].y))) * 4 / .1))
+    const a0 = project(part.a[0]), a1 = project(part.a[1]), b0 = project(part.b[0]), b1 = project(part.b[1])
+    const n = vertices.length
+    if (n < 2 || far(a0, vertices[n - 2]) || far(a1, vertices[n - 1])) append([a0, a1], part.v0)
     for (let i = 1; i <= count; i++) {
       const t = f(i / count)
       const index = vertices.length
-      append(a.map((p, side) => Object.fromEntries(['x', 'y', 'z'].map(axis => [axis, mix(p[axis], b[side][axis], t)]))), mix(part.v0, part.v1, t))
+      vertices.push(lerp(a0, b0, t), lerp(a1, b1, t))
+      const v = mix(part.v0, part.v1, t)
+      uv.push([0, v], [1, v])
       triangles.push(index - 2, index - 1, index, index - 1, index + 1, index)
     }
   }

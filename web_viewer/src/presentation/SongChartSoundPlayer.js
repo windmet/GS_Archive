@@ -17,6 +17,24 @@ export function songSoundRole(event, set = 'se1') {
 export function createSongChartSoundPlayer({ contextFactory = () => new (window.AudioContext || window.webkitAudioContext)(), fetchAudio = url => fetch(url) } = {}) {
   let context, gain, groups = [], index = 0, generation = 0, selected = 'off', last = -Infinity, scheduled = 0
   const buffers = new Map(), sources = new Set()
+  // Encoded bytes fetched before any click (no AudioContext needed), so pressing play only decodes.
+  // A failed fetch is forgotten and retried by the next warm or prepare.
+  const bytes = new Map()
+  function fetchBytes(id) {
+    let promise = bytes.get(id)
+    if (!promise) {
+      promise = Promise.resolve().then(() => fetchAudio(manifest.assets[id].url)).then(response => {
+        if (!response.ok) throw Error('效果音加载失败')
+        return response.arrayBuffer()
+      })
+      promise.catch(() => { if (bytes.get(id) === promise) bytes.delete(id) })
+      bytes.set(id, promise)
+    }
+    return promise
+  }
+  function warm(set) {
+    for (const id of new Set(Object.values(manifest.sets[set] || {}))) if (!buffers.has(id)) fetchBytes(id).catch(() => {})
+  }
   function cancel() {
     for (const source of sources) { try { source.stop() } catch {} }
     sources.clear(); last = -Infinity
@@ -35,9 +53,11 @@ export function createSongChartSoundPlayer({ contextFactory = () => new (window.
     await context.resume()
     await Promise.all([...new Set(Object.values(manifest.sets[set]))].map(async id => {
       if (buffers.has(id)) return
-      const response = await fetchAudio(manifest.assets[id].url)
-      if (!response.ok) throw Error('效果音加载失败')
-      buffers.set(id, await context.decodeAudioData(await response.arrayBuffer()))
+      const encoded = await fetchBytes(id)
+      if (buffers.has(id)) return
+      // decodeAudioData detaches its argument; the cached bytes stay intact for a concurrent prepare.
+      buffers.set(id, await context.decodeAudioData(encoded.slice(0)))
+      bytes.delete(id)
     }))
     return token === generation
   }
@@ -62,7 +82,7 @@ export function createSongChartSoundPlayer({ contextFactory = () => new (window.
       }
     }
   }
-  return { prepare, paint, seek, cancel,
+  return { prepare, warm, paint, seek, cancel,
     get stats() { return { scheduled, active:sources.size, decoded:buffers.size, context:context?.state || 'idle' } },
     setTimeline(timeline) { groups = timeline?.groups || []; seek(0) },
     dispose() { generation++; cancel(); void context?.close() },
