@@ -4,6 +4,7 @@
 
 <script setup>
 import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { createSongHoldMeshBatch } from '../../presentation/SongHoldMeshBatch.js'
 import nativeHolds from '../../../config/song-track-native-hold-geometry.v1.json'
 
 const props = defineProps({ holds: { type: Array, required: true }, skin: { type: String, required: true }, auditFrame: { type: Object, default: null } })
@@ -15,7 +16,7 @@ function contextLost() {
 }
 const canvas = ref(null)
 const vertexCount = computed(() => props.holds.reduce((sum, hold) => sum + hold.nativeMesh.vertices.length, 0))
-let gl, program, vertices, indices, texture, disposed = false, loadedSkin = null
+let gl, program, vertices, indices, texture, drawBatch, disposed = false, loadedSkin = null
 const images = new Map()
 const shaders = []
 
@@ -34,25 +35,12 @@ function draw() {
   if (loadedSkin !== props.skin) return
   gl.useProgram(program)
   gl.bindTexture(gl.TEXTURE_2D, texture)
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertices)
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices)
-  let bytes = 0
-  for (const hold of props.holds) {
-    const mesh = hold.nativeMesh
-    const data = new Float32Array(mesh.vertices.length * 4)
-    for (let i = 0; i < mesh.vertices.length; i++) {
-      const offset = i * 4
-      data[offset] = mesh.vertices[i].x
-      data[offset + 1] = mesh.vertices[i].y
-      data[offset + 2] = mesh.uv[i][0]
-      data[offset + 3] = mesh.uv[i][1]
-    }
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.triangles), gl.DYNAMIC_DRAW)
-    gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_SHORT, 0)
-    if (audit) bytes += data.byteLength + mesh.triangles.length * Uint16Array.BYTES_PER_ELEMENT
+  const stats = audit ? { vertices: vertexCount.value, bytes: 0, draws: 0 } : null
+  drawBatch(props.holds, stats)
+  if (stats) {
+    stats.ms = performance.now() - start
+    audit.record(props.auditFrame, 'hold', stats)
   }
-  audit?.record(props.auditFrame, 'hold', { ms: performance.now() - start, vertices: vertexCount.value, bytes, draws: props.holds.length })
 }
 async function loadSkin() {
   if (!gl || disposed) return
@@ -85,6 +73,7 @@ onMounted(() => {
     gl.useProgram(program)
     vertices = gl.createBuffer()
     indices = gl.createBuffer()
+    drawBatch = createSongHoldMeshBatch(gl, vertices, indices)
     gl.bindBuffer(gl.ARRAY_BUFFER, vertices)
     for (const [name, offset] of [['position', 0], ['uv', 8]]) {
       const attribute = gl.getAttribLocation(program, name)
