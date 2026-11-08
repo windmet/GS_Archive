@@ -41,6 +41,7 @@ function summarize(sample) {
   const intervals = sample.raf.slice(1).map((time, i) => time - sample.raf[i])
   return {
     mode: sample.mode,
+    performanceMs: [sample.startedAt, sample.finishedAt],
     media: [sample.mediaFrom, sample.mediaTo],
     rafMs: summary(intervals),
     longRaf: { over33ms: intervals.filter(ms => ms > 33.5).length, over50ms: intervals.filter(ms => ms > 50).length },
@@ -113,7 +114,7 @@ async function capture(mode, code, difficulty, song, start, seconds) {
     await until(() => audio.currentTime >= start, '音频未到达采样起点')
     sample.mediaFrom = audio.currentTime
     active = true
-    const began = performance.now()
+    sample.startedAt = performance.mark('chart-audit-' + mode + '-start').startTime
     let frameRequest
     const observe = now => {
       sample.raf.push(now)
@@ -135,9 +136,10 @@ async function capture(mode, code, difficulty, song, start, seconds) {
       cancelAnimationFrame(frameRequest)
       document.removeEventListener('visibilitychange', visibility)
       window.removeEventListener('blur', visibility)
+      sample.finishedAt = performance.mark('chart-audit-' + mode + '-end').startTime
       sample.mediaTo = audio.currentTime
     }
-    if (sample.mediaTo - sample.mediaFrom < (performance.now() - began) / 1000 * .95) {
+    if (sample.mediaTo - sample.mediaFrom < (sample.finishedAt - sample.startedAt) / 1000 * .95) {
       sample.warnings.push('媒体推进落后于墙钟')
     }
     return { summary: summarize(sample), frames: [...sample.frames.values()], raf: sample.raf }
@@ -163,7 +165,8 @@ run.onclick = async () => {
     const start = Math.round(Math.max(0, Math.min(timing.duration - seconds, Number.isFinite(requestedStart) ? requestedStart : defaults[code])) * 100) / 100
     const report = {
       code, start, seconds, milestone, speed: 5, viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
-      browser: navigator.userAgent, limitation: 'CPU and JS layer submissions only. GPU present times require a device trace.',
+      browser: navigator.userAgent, timeOrigin: performance.timeOrigin,
+      limitation: 'CPU and JS layer submissions only. GPU present times require a device trace.',
       samples: [],
     }
     const show = () => {

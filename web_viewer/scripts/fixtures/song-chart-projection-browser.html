@@ -5,7 +5,7 @@
 <p>固定来源粒子年龄和谱面窗口；用于几何/像素检查，不声称与未提供曲目及配速的录屏同一帧。</p>
 <label>命中年龄<input id="age" aria-label="命中年龄" type="range" min="0.02" max="0.65" step="0.01" value="0.3"></label>
 <label>轨道配速<input id="speed" aria-label="轨道配速" type="number" min="1" max="11" step="0.5" value="11"></label>
-<button id="check">验证当前像素</button><pre role="status">加载中</pre><div id="app"></div>
+<button id="check">验证当前像素</button><button id="lose">模拟 Hold WebGL 丢失</button><pre role="status">加载中</pre><div id="app"></div>
 <script type="module">
 import {createApp,ref,nextTick,h} from '/node_modules/vue/dist/vue.runtime.esm-bundler.js'
 import Track from '/src/components/archive/ArchiveSongTrackPreview.vue'
@@ -19,6 +19,17 @@ createApp({setup:()=>()=>h(Track,{chart,title:'BRAND NEW FIELD EXPERT · fixed r
 document.querySelector('#age').oninput=e=>{age.value=+e.target.value;update()}
 document.querySelector('#speed').onchange=e=>speed.value=+e.target.value
 const status=document.querySelector('[role=status]')
+document.querySelector('#lose').onclick=()=>{
+  const canvas=document.querySelector('[data-native-hold-canvas]')
+  const extension=canvas?.getContext('webgl')?.getExtension('WEBGL_lose_context')
+  if(!extension){status.textContent='当前浏览器无法模拟 Hold context lost';return}
+  canvas.addEventListener('webglcontextlost',async()=>{
+    await nextTick()
+    const fallback=document.querySelectorAll('[data-track-hold] image').length
+    status.textContent=!canvas.isConnected&&fallback>0?'Hold SVG fallback 已绘制 '+fallback+' 个三角形':'FAILED: Hold SVG fallback missing'
+  },{once:true})
+  extension.loseContext()
+}
 document.querySelector('#check').onclick=()=>{
  try{
   const effect=document.querySelector('.track-effects-canvas'),hold=document.querySelector('[data-native-hold-canvas]')
