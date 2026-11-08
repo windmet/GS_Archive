@@ -60,7 +60,7 @@
 import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
-import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { computed, getCurrentInstance, inject, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { ChevronLeft, ChevronRight, Download, Info, Maximize, Minimize, Pause, Play, SkipBack, SkipForward, X } from '@lucide/vue'
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js'
 import { playableSongChart, validateSongChart } from '../../presentation/SongChartPresentation.js'
@@ -134,10 +134,14 @@ const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tick
 const chart = shallowRef(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
 // A stable, non-reactive container passes the ref itself into the track. The
 // parent template never reads its value, so a track frame cannot rerender it.
-const trackPosition = Object.freeze({ tick: shallowRef(0), ended: shallowRef(false) })
+// Only the performance fixture provides this observer. It shares the existing media sample.
+const audit = inject('song-chart-audit', null)
+const auditFrame = audit ? shallowRef(null) : null
+let auditFrameId = 0
+const trackPosition = Object.freeze({ tick: shallowRef(0), ended: shallowRef(false), auditFrame })
 const trackEffects = Object.freeze({ state: shallowRef(null) })
 const trackCombo = Object.freeze({ state: shallowRef(null) })
-const comboEnabled = ref(true), noteTiming = ref(0), transportSeconds = ref(0)
+const comboEnabled = ref(audit ? audit.mode === 'D' : true), noteTiming = ref(0), transportSeconds = ref(0)
 const noteTimingMilliseconds = computed(() => (noteTimingSeconds(noteTiming.value)*1000).toFixed(1))
 const chartSeconds = seconds => delayedChartSeconds(seconds,noteTiming.value)
 let comboPresentation = createSongComboPresentation()
@@ -145,7 +149,7 @@ let effectPool = null
 const exporting = ref(false), exportError = ref(''), audio = ref(null), audioError = ref(''), starting = ref(false)
 const exportFormat = ref('svg'), exportProgress = ref(0)
 const playbackRate = ref(1), volume = ref(1), clockSnapshot = ref({ phase: 'idle', currentTime: 0, duration: null })
-const soundSet = ref('se1'), soundVolume = ref(.7), soundError = ref('')
+const soundSet = ref(audit ? 'off' : 'se1'), soundVolume = ref(.7), soundError = ref('')
 const sounds = createSongChartSoundPlayer()
 const soundStats = shallowRef(sounds.stats)
 watch(soundSet, async set => {
@@ -164,7 +168,7 @@ const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.valu
 watch(() => playing.value, () => { if (immersive.value) revealControls() })
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 // Defaults: perspective track, auto demonstration, hit sound SE1 at 70%, Combo on.
-const demonstrationEnabled = ref(true), demonstrationState = shallowRef(null)
+const demonstrationEnabled = ref(audit ? ['C', 'D'].includes(audit.mode) : true), demonstrationState = shallowRef(null)
 let demonstration = null, demonstrationFrame = null
 function sampleDemonstration(seconds, discontinuity = false) {
   if (!demonstration) return
@@ -195,7 +199,12 @@ const nextNote = computed(() => endpoints.value.find(n => n.tick > safeCursor.va
 let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0
 const cadence = createSongChartPlaybackCadence({
   track: seconds => {
-    if (timing.value) trackPosition.tick.value = timing.value.secondsToTick(chartSeconds(seconds))
+    const chartTime = chartSeconds(seconds)
+    if (timing.value) trackPosition.tick.value = timing.value.secondsToTick(chartTime)
+    if (auditFrame) {
+      auditFrame.value = Object.freeze({ id: ++auditFrameId, mediaTime: seconds, chartTime, cursorTick: trackPosition.tick.value })
+      audit.record(auditFrame.value, 'track')
+    }
     sampleDemonstration(seconds)
   },
   controls: seconds => {

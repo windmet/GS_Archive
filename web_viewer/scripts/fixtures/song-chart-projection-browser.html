@@ -28,7 +28,12 @@ document.querySelector('#check').onclick=()=>{
   let visible=0,green=0
   for(let i=0;i<pixels.length;i+=4){if(pixels[i+3])visible++;if(pixels[i+3]>32&&pixels[i+1]-pixels[i]>24)green++}
   const gl=hold.getContext('webgl'),rgba=new Uint8Array(1280*720*4);gl.readPixels(0,0,1280,720,gl.RGBA,gl.UNSIGNED_BYTE,rgba)
-  let holdPixels=0;for(let i=3;i<rgba.length;i+=4)if(rgba[i])holdPixels++
+  if(gl.getError()!==gl.NO_ERROR)throw Error('Hold WebGL error')
+  let holdPixels=0,holdHash=2166136261
+  for(let i=0;i<rgba.length;i++){
+    if(i%4===3&&rgba[i])holdPixels++
+    holdHash=Math.imul(holdHash^rgba[i],16777619)>>>0
+  }
   const rings=[288,640,992].map(center=>{
     let count=0,x=0,y=0,xy=0,minX=1280,maxX=0,minY=720,maxY=0
     // Exclude the Auto badge at y449 from the center ring's color bounds.
@@ -50,7 +55,7 @@ document.querySelector('#check').onclick=()=>{
   if(!bridgeAlpha.every(a=>a>10))throw Error('flick mesh exists but actual connector midpoint has no pixels')
   if(visible<1000||green<500||holdPixels<100)throw Error('actual rendered particle/connector pixels missing')
   if(+hold.dataset.flickCount<2)throw Error('right flick chain missing')
-  status.textContent=JSON.stringify({status:'passed',age:age.value,speed:speed.value,renderer:effect.dataset.particleRenderer,visible,green,rings,flickConnectors:+hold.dataset.flickCount,holdPixels,bridgeAlpha},null,2)
+  status.textContent=JSON.stringify({status:'passed',age:age.value,speed:speed.value,renderer:effect.dataset.particleRenderer,visible,green,rings,flickConnectors:+hold.dataset.flickCount,holdPixels,holdHash,bridgeAlpha},null,2)
  }catch(e){status.textContent='FAILED: '+e.message;console.error(e)}
 }
 await nextTick();status.textContent='就绪：三轨固定命中、右滑连续链，等待贴图加载后验证'

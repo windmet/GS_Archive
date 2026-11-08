@@ -26,7 +26,7 @@
     </svg>
     <!-- Every layer is a sibling box of the same size, not a foreignObject: WebKit does not scale a canvas inside one
          with the svg's viewBox, which moved the long notes and effects off the lanes on iPad. -->
-    <ArchiveSongHoldMeshPreview v-if="!holdCanvasUnavailable" :holds="scene.holds" :skin="skin" @unavailable="holdCanvasUnavailable = true" />
+    <ArchiveSongHoldMeshPreview v-if="audit?.mode !== 'A' && !holdCanvasUnavailable" :holds="scene.holds" :skin="skin" :audit-frame="auditFrame" @unavailable="holdCanvasUnavailable = true" />
     <svg class="track-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" aria-hidden="true">
       <defs>
         <clipPath v-for="note in [...scene.glyphs, ...scene.middleNodes]" :id="`${uid}-note-${note.id}`" :key="`note-${note.id}`"><polygon :points="note.image.points" /></clipPath>
@@ -52,6 +52,7 @@
       :holds="holds"
       :auto-eval="autoEval"
       :judge-y="scene.judgeY"
+      :audit-frame="auditFrame"
     />
     <svg class="track-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" aria-hidden="true">
       <ArchiveSongAutoEvaluationPreview v-if="demonstrationEnabled" :state="autoEval" />
@@ -67,7 +68,7 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, ref } from 'vue'
+import { computed, getCurrentInstance, inject, onBeforeUpdate, onMounted, onUpdated, ref } from 'vue'
 import { createSongTrackRenderer, projectTrackPoint } from '../../presentation/SongTrackPresentation.js'
 import { buildSongChartTiming } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackNativeTiming.js'
@@ -90,6 +91,8 @@ const props = defineProps({
   demonstrationEnabled: { type: Boolean, default: false },
 })
 
+const audit = inject('song-chart-audit', null)
+const auditFrame = computed(() => props.position.auditFrame?.value ?? null)
 const uid = `track-${getCurrentInstance().uid}`
 const holdCanvasUnavailable = ref(false)
 // The media clock continues through the outro. Clamping to maxTick leaves the
@@ -101,8 +104,13 @@ const timing = computed(() => buildSongChartTiming(props.chart))
 const span = computed(() => songTrackSpanForSpeed(props.speed, timing.value, safeCursor.value))
 const renderTrack = computed(() => createSongTrackRenderer(props.chart))
 const scene = computed(() => {
-  const result = renderTrack.value(safeCursor.value, span.value, props.skin)
-  return props.position.ended?.value ? { ...result, glyphs: [], holds: [], middleNodes: [], links: [] } : result
+  const render = renderTrack.value, cursor = safeCursor.value, readSpan = span.value
+  const start = audit && performance.now()
+  const result = render(cursor, readSpan, props.skin)
+  audit?.record(auditFrame.value, 'geometry', { ms: performance.now() - start, notes: result.glyphs.length, holds: result.holds.length })
+  if (props.position.ended?.value) return { ...result, glyphs: [], holds: [], middleNodes: [], links: [] }
+  if (audit?.mode === 'A') return { ...result, holds: [], middleNodes: [], links: [] }
+  return result
 })
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)
 const laneOutline = computed(() => {
@@ -115,6 +123,20 @@ const laneAlphas = computed(() => activeEffects.value?.laneAlphas || [0, 0, 0, 0
 const hits = computed(() => activeEffects.value?.hits || [])
 const holds = computed(() => activeEffects.value?.holds || [])
 const autoEval = computed(() => activeEffects.value?.autoEval || { active: false, age: 0, alpha: 0 })
+
+if (audit) {
+  let updateStart
+  const recordSvg = () => audit.record(auditFrame.value, 'svg', {
+    ms: updateStart === undefined ? null : performance.now() - updateStart,
+    holdExpected: audit.mode !== 'A' && !holdCanvasUnavailable.value,
+    holdFallback: holdCanvasUnavailable.value,
+    combo315: props.comboEnabled && props.combo?.state?.value?.specialAge != null,
+    effectExpected: props.demonstrationEnabled && Boolean(hits.value.length || holds.value.length || autoEval.value.active),
+  })
+  onBeforeUpdate(() => { updateStart = performance.now() })
+  onMounted(recordSvg)
+  onUpdated(recordSvg)
+}
 </script>
 
 <style scoped>
