@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
-import { ARCHIVE_SOURCES, CARD_DETAIL_SOURCE, IDOL_COMMUNICATION_SOURCES } from '../src/data/ArchiveDataRepository.js'
+import { ARCHIVE_PRODUCT_FIXTURES, CARD_DETAIL_FIXTURE, IDOL_COMMUNICATION_FIXTURES } from './lib/archive-product-fixtures.mjs'
 
-const sources = { ...ARCHIVE_SOURCES, cardDetailIndex: CARD_DETAIL_SOURCE, ...IDOL_COMMUNICATION_SOURCES }
+const sources = { ...ARCHIVE_PRODUCT_FIXTURES, cardDetailIndex: CARD_DETAIL_FIXTURE, ...IDOL_COMMUNICATION_FIXTURES }
 const fixtures = Object.fromEntries(Object.entries(sources).map(([key, url]) => [key,
   key === 'compiledIndex' ? { categories: [] } : JSON.parse(readFileSync(new URL(`../public${url}`, import.meta.url), 'utf8')),
 ]))

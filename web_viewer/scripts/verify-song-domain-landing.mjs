@@ -5,7 +5,6 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readArchiveRoute, buildArchiveUrl, buildArchiveBreadcrumbs, ARCHIVE_NAVIGATION } from '../src/core/archiveRoute.js'
-import { ARCHIVE_SOURCES } from '../src/data/ArchiveDataRepository.js'
 import { verifySongLandingBehavior } from './lib/song-landing-behavior.mjs'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 
@@ -148,7 +147,7 @@ assert.equal(catalog.songs.flslgt.performance_mapping.performer_scope, 'fixed_sp
 assert.equal(catalog.songs.drvalv.performance_mapping.performer_scope, 'configurable_formation')
 assert.equal(catalog.songs.brndnf.performance_mapping.performer_scope, 'fixed_unit')
 
-// Public route and repository contracts are values and round trips, not source formatting.
+// Public route contracts are values and round trips, not source formatting.
 assert.equal(ARCHIVE_NAVIGATION.find(entry => entry.id === 'songs')?.label, '歌曲')
 const restored = readArchiveRoute(buildArchiveUrl('http://localhost/', detailRoute))
 assert.equal(restored.song, 'drvalv')
@@ -157,8 +156,6 @@ const breadcrumb = buildArchiveBreadcrumbs(detailRoute, { title: 'DRIVE A LIVE' 
 assert.ok(breadcrumb)
 assert.equal(breadcrumb.label, '歌曲')
 assert.equal(breadcrumb.route.song, '')
-assert.equal(ARCHIVE_SOURCES.songCatalog, '/data/song_catalog.json')
-assert.equal(ARCHIVE_SOURCES.songJacketIndex, '/data/song_jacket_index.json')
 validateArchivePayload('songCatalog', catalog)
 validateArchivePayload('songJacketIndex', jacketIndex)
 assert.throws(() => validateArchivePayload('songCatalog', { ...catalog, schema_version: 0 }))

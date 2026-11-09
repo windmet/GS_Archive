@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import {
@@ -279,6 +280,19 @@ assert.doesNotMatch(appComponent, /buildExternalStoryNavigationEntries\(/,
   'the withdrawn external registry must not join story sources in the live app')
 assert.doesNotMatch(appComponent, /ensureIdolCommunicationData|loadIdolCommunicationData|ArchiveDataRepository/,
   'withdrawn external-resource routes must not retain the legacy archive repository')
+// The legacy global loader is retired: the file stays gone and nothing in the app may name it again.
+assert.equal(existsSync(new URL('../src/data/ArchiveDataRepository.js', import.meta.url)), false,
+  'src/data/ArchiveDataRepository.js was retired; read-models are the only data path')
+const reintroduced = []
+const walkSource = directory => {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const full = path.join(directory, entry.name)
+    if (entry.isDirectory()) walkSource(full)
+    else if (/\.(js|mjs|ts|vue)$/.test(entry.name) && /ArchiveDataRepository/.test(readFileSync(full, 'utf8'))) reintroduced.push(full)
+  }
+}
+walkSource(fileURLToPath(new URL('../src/', import.meta.url)))
+assert.deepEqual(reintroduced, [], 'no source file may import or mention the retired ArchiveDataRepository')
 const internalCalls = []
 const internalNavigation = bindStoryNavigation(appComponent, { openIdolStoryArchive: id => internalCalls.push(id) })
 internalNavigation.stop()
