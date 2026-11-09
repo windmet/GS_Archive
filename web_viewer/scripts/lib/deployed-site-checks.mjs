@@ -1,8 +1,11 @@
 // Post-deploy smoke for a Pages deployment (docs/RELEASE_CONTRACT.md, gate 3). Pure: every check goes through an
 // injected get(path) -> { status, type, headers, body: Buffer, skipped? } and probeOrigin(origin), so the same code
 // runs against curl, a local package directory (Pages semantics) and the fixtures in verify-deployed-site-checks.mjs.
+import { getBrandMarkUrl, getOwnerAvatarUrl, getQqGroupQrUrl } from '../../src/utils/AssetResolver.js'
+// The brand images come from the runtime resolver: the about page's avatar and QQ code went out on 11-04 without
+// their R2 objects and no sample asked for them.
 export const SAMPLE_KEYS = Object.freeze(['/data/compiled/manifest.json', '/data/reading/manifest.json',
-  '/assets/brand/image_logo_imas_M_mark.png', '/assets/song-chart-track/live_lane_gradation.png'])
+  getBrandMarkUrl(), getOwnerAvatarUrl(), getQqGroupQrUrl(), '/assets/song-chart-track/live_lane_gradation.png'])
 const RECEIPTS = ['production-receipt.json', 'preview-receipt.json']
 const ENTITY_SHELL = /^(idols|cards|songs|units|events|gashas)\/[^/]+\/index\.html$/
 
