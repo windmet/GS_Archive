@@ -620,7 +620,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
-import { ENTITY_NOT_FOUND, NOT_FOUND_NOTICE, isUnknownArchivePath, notFoundRoute, resolveNotFound, setNotFoundNoindex } from './core/archiveNotFound.js'
+import { createArchiveNotFoundState } from './core/archiveNotFound.js'
 import { archiveCardName, archiveSongChartName, archiveSongStageName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from './presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_BRAND, STORY_KINDS, sectionLabel, ARCHIVE_SECTION_GROUPS } from './core/archiveSections.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
@@ -2590,26 +2590,15 @@ async function prepareRouteData(route, isCurrent) {
   if (!route) return null
   const song = await prepareSongRoute(route, { isCurrent })
   if (!song) return null
-  return song === ENTITY_NOT_FOUND ? notFoundRoute() : route
+  // true keeps the route; a route object (an unknown song) replaces it.
+  return song === true ? route : song
 }
 
+// A not-found start or restore lands on the portal with a notice and a noindex meta; the state ends when the
+// visitor leaves the page it landed on (core/archiveNotFound.js).
+const archiveNotFound = createArchiveNotFoundState({ view, notice: userPreferenceNotice, watch })
 let startupRouteNormalized = false
 let restoreRequest = 0
-// A not-found start or restore lands on the portal with a notice and a noindex meta (core/archiveNotFound.js).
-// The state ends when the visitor leaves the page it landed on.
-let startupUnknownPath = isUnknownArchivePath(window.location.href)
-let notFoundLandingView = null
-function showNotFound(decision) {
-  userPreferenceNotice.value = decision.notice
-  setNotFoundNoindex(document, decision.noindex)
-  notFoundLandingView = view.value
-}
-watch(view, next => {
-  if (!notFoundLandingView || next === notFoundLandingView) return
-  notFoundLandingView = null
-  setNotFoundNoindex(document, false)
-  if (userPreferenceNotice.value === NOT_FOUND_NOTICE) userPreferenceNotice.value = ''
-})
 async function restoreRoute(route, { restoring = true } = {}) {
   return navigation.run(async intent => {
     const request = ++restoreRequest
@@ -2634,8 +2623,8 @@ async function restoreRoute(route, { restoring = true } = {}) {
       route = await prepareRouteData(route, () => intent.isCurrent() && request === restoreRequest)
       if (!route) return
     }
-    const notFound = resolveNotFound({ unknownPath: startupUnknownPath, entityMissing: Boolean(route.notFound) })
-    if (route.notFound) route = { view: route.view }
+    const outcome = archiveNotFound.resolve(route)
+    route = outcome.route
     if (navigation.isDisposed() || !intent.isCurrent() || request !== restoreRequest) return
     const pending = applyArchiveRoute(route, { restoring, intent })
     const expected = navigation.getRevision()
@@ -2643,13 +2632,12 @@ async function restoreRoute(route, { restoring = true } = {}) {
     if (navigation.isDisposed() || expected !== navigation.getRevision()) return
     // Failed media preparation must not rewrite a deep link to an empty catalog.
     if (isDirectScenarioEntry(route) && playbackError.value) return
-    startupUnknownPath = false
-    if (notFound) showNotFound(notFound)
+    archiveNotFound.show(outcome.decision)
     if (!startupRouteNormalized) {
       loading.value = false
       startupRouteNormalized = true
       writeArchiveRoute(currentArchiveRoute(), { replace: true })
-    } else if (notFound) writeArchiveRoute(currentArchiveRoute(), { replace: true })
+    } else if (outcome.decision) writeArchiveRoute(currentArchiveRoute(), { replace: true })
     if (!restoring) writeArchiveRoute(currentArchiveRoute())
     adoptArchiveViewContext()
   }, { restoring: true })

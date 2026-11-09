@@ -61,7 +61,7 @@ function restoreFixture() {
   })
   const source = ['prepareRouteData', 'restoreRoute'].map(name => { const node = body.find(item => item.id?.name === name); return script.slice(node.start, node.end) }).join('\n')
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
-  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
+  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0; const archiveNotFound = { resolve: route => ({ route, decision: null }), show() {} };\n' + source, c)
   return { ...t, applied }
 }
 
@@ -200,7 +200,8 @@ for (const direction of ['watcher-to-open', 'open-to-watcher']) {
   assert.equal(t.context.idolReadModelDetail.value.id, '001tom')
   assert.equal(t.applied.at(-1).view, 'idol_detail')
   await t.context.restoreRoute({ view: 'idol_detail', idol: 'unknown' })
-  assert.equal(t.applied.at(-1).view, 'idol_picker'); assert.equal(t.applied.at(-1).pickTarget, 'profile')
+  // An idol outside the roster is a wrong address, no longer a picker.
+  assert.equal(t.applied.at(-1).view, 'portal'); assert.equal(t.applied.at(-1).notFound, true)
   t.transport.data.get('idol:002sht').view.stats = null
   await t.context.restoreRoute({ view: 'idol_detail', idol: '002sht' })
   assert.equal(t.applied.at(-1).view, 'idols'); assert.equal(t.applied.at(-1).category, 'idol')

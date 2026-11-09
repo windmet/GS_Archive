@@ -90,7 +90,7 @@ for (const disposed of [false, true]) {
     currentArchiveRoute: () => applied.at(-1),
     writeArchiveRoute: value => written.push(value),
     onArchivePopState: callback => { popState = callback; return () => {} },
-    installSpineAnimationDebug: () => () => {},
+    installSpineAnimationDebug: () => () => {}, createArchiveNotFoundState: () => ({ resolve: route => ({ route, decision: null }), show() {} }),
     adoptArchiveViewContext: () => {},
     console, archiveRouteReady: false,
   }
@@ -141,7 +141,7 @@ for (const disposed of [false, true]) {
     applyArchiveRoute: (value, { intent }) => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true, intent }),
     currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => { written.push(value); latestWritten.resolve() },
     onArchivePopState: callback => { popState = callback; return () => {} },
-    installSpineAnimationDebug: () => () => {}, adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
+    installSpineAnimationDebug: () => () => {}, createArchiveNotFoundState: () => ({ resolve: route => ({ route, decision: null }), show() {} }), adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
   // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
@@ -186,7 +186,7 @@ for (const asynchronous of [false, true]) {
       if (intent.isCurrent()) page = 'player'
     }, { restoring: true, intent: inherited }),
     currentArchiveRoute: () => ({ view: page }), writeArchiveRoute: value => written.push(value),
-    onArchivePopState: () => () => {}, installSpineAnimationDebug: () => () => {},
+    onArchivePopState: () => () => {}, installSpineAnimationDebug: () => () => {}, createArchiveNotFoundState: () => ({ resolve: route => ({ route, decision: null }), show() {} }),
     adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
@@ -244,7 +244,7 @@ for (const route of [
     navigation: createArchiveNavigationCoordinator(),
     applyArchiveRoute: async value => { applied.push(value) },
     currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: () => {},
-    onArchivePopState: () => () => {}, installSpineAnimationDebug: () => () => {},
+    onArchivePopState: () => () => {}, installSpineAnimationDebug: () => () => {}, createArchiveNotFoundState: () => ({ resolve: route => ({ route, decision: null }), show() {} }),
     adoptArchiveViewContext: () => {}, primeArchiveRouteComponent: () => {},
     console: { error: () => {} }, archiveRouteReady: false,
   }

@@ -63,7 +63,7 @@ function restoreFixture() {
   })
   const source = ['prepareRouteData', 'restoreRoute'].map(name => { const node = body.find(item => item.id?.name === name); return script.slice(node.start, node.end) }).join('\n')
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
-  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
+  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0; const archiveNotFound = { resolve: route => ({ route, decision: null }), show() {} };\n' + source, c)
   return t
 }
 const originalError = console.error

@@ -6,9 +6,6 @@ import { isArchiveLocatorPath } from './archiveRoute.js'
 export const NOT_FOUND_NOTICE = '没有找到这个页面，已回到资料馆。'
 const NOINDEX_ATTRIBUTE = 'data-gs-not-found'
 
-/** A route-preparation result: the requested entity is not in its catalogue. Never a transport failure. */
-export const ENTITY_NOT_FOUND = 'entity-not-found'
-
 export class EntityNotFoundError extends Error {
   constructor(message) { super(message); this.name = 'EntityNotFoundError' }
 }
@@ -42,4 +39,34 @@ export function setNotFoundNoindex(doc, on) {
   meta.setAttribute('content', 'noindex')
   meta.setAttribute(NOINDEX_ATTRIBUTE, '')
   head.append(meta)
+}
+
+/**
+ * The not-found state of one App: `resolve` before a route is applied, `show` once it is. The notice and meta stay
+ * until the visitor leaves the view the not-found landed on, and only then; a genuine page never carries them.
+ */
+export function createArchiveNotFoundState({ view, notice, watch, doc = globalThis.document, href = globalThis.location?.href }) {
+  let unknownPath = isUnknownArchivePath(href || '/')
+  let landing = null
+  watch(view, next => {
+    if (landing === null || next === landing) return
+    landing = null
+    setNotFoundNoindex(doc, false)
+    if (notice.value === NOT_FOUND_NOTICE) notice.value = ''
+  })
+  return {
+    /** The route to apply (the marker stripped) and the decision for it. */
+    resolve(route) {
+      const decision = resolveNotFound({ unknownPath, entityMissing: Boolean(route.notFound) })
+      return { route: route.notFound ? { view: route.view } : route, decision }
+    },
+    /** Called after the route is applied: the startup address has been dealt with, whatever the outcome. */
+    show(decision) {
+      unknownPath = false
+      if (!decision) return
+      notice.value = decision.notice
+      setNotFoundNoindex(doc, decision.noindex)
+      landing = view.value
+    },
+  }
 }

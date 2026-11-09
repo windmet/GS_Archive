@@ -167,6 +167,7 @@ function appHarness(t, overrides = {}) {
   bindStoryNavigation(appSource, context).stop(); bindEventNavigation(appSource, context).stop(); bindHomeNavigation(appSource, context).stop(); bindUnitNavigation(appSource, context); bindCardNavigation(appSource, context); bindGashaNavigation(appSource, context); bindResourceNavigation(appSource, context); bindIdolFixtureNavigation(appSource, context)
   bindSongNavigation(appSource, context).stop()
   bindMobileNavigation(appSource, context).stop()
+  context.archiveNotFound = { resolve: route => ({ route, decision: null }), show() {} }
   vm.createContext(context)
   vm.runInContext(`${applyCode}\n${restoreCode}\nthis.restoreEntry = restoreRoute; this.applyEntry = applyArchiveRoute`, context)
   bindReaderNavigation(appSource, context).stop()

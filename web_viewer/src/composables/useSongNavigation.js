@@ -1,5 +1,5 @@
 import { computed, shallowRef, watch } from 'vue'
-import { ENTITY_NOT_FOUND } from '../core/archiveNotFound.js'
+import { notFoundRoute } from '../core/archiveNotFound.js'
 import { entityDescriptor } from '../../readmodels/runtime/ReadModelClient.mjs'
 import { SONG_PERFORMER_SCOPES } from '../presentation/SongPresentation.js'
 
@@ -219,7 +219,7 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
           if (!isCurrent()) return false
           // The catalogue loaded and names neither the song nor a variant of it: a wrong address, not a failed read.
           const songs = Object.values(songReadModelCatalog.value?.songs || {})
-          if (songReadModelCatalog.value && !songs.some(row => row.song_code === route.song || (row.variants || []).some(variant => variant.song_code === route.song))) return ENTITY_NOT_FOUND
+          if (songReadModelCatalog.value && !songs.some(row => row.song_code === route.song || (row.variants || []).some(variant => variant.song_code === route.song))) return notFoundRoute()
           songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'
         }
       }

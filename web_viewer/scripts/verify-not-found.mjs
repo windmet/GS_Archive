@@ -4,8 +4,8 @@
 // it a transport failure. The browser counterpart is verify-not-found-browser.mjs (local only).
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { ref } from 'vue'
-import { ENTITY_NOT_FOUND, EntityNotFoundError, NOT_FOUND_NOTICE, isEntityNotFound, isUnknownArchivePath, notFoundRoute,
+import { nextTick, ref, watch } from 'vue'
+import { EntityNotFoundError, NOT_FOUND_NOTICE, createArchiveNotFoundState, isEntityNotFound, isUnknownArchivePath, notFoundRoute,
   resolveNotFound, setNotFoundNoindex } from '../src/core/archiveNotFound.js'
 import { isBareArchiveEntry } from '../src/core/archiveStartup.js'
 import { useCardNavigation } from '../src/composables/useCardNavigation.js'
@@ -54,6 +54,38 @@ assert.ok(isEntityNotFound(new EntityNotFoundError('x')) && !isEntityNotFound(ne
   setNotFoundNoindex(doc, false); setNotFoundNoindex({}, true)
 }
 
+// 3b. The per-App state: an unknown startup path and a missing entity both decide; leaving the landing view ends it.
+{
+  const metas = []
+  const head = { querySelector: () => metas[0] || null, append: meta => metas.push(meta) }
+  const doc = { head, createElement: () => { const attrs = new Map(); const meta = { attrs, setAttribute: (k, v) => attrs.set(k, v), remove: () => metas.splice(0) }; return meta } }
+  const make = href => { const view = ref('__boot__'), notice = ref(''); return { view, notice, state: createArchiveNotFoundState({ view, notice, watch, doc, href }) } }
+  // unknown startup path: decided once, shown, kept while the landing view stays, ended by leaving it
+  const a = make('https://x.test/foo-bar/')
+  const first = a.state.resolve({ view: 'portal' })
+  assert.deepEqual(first.route, { view: 'portal' }); assert.deepEqual(first.decision, { notice: NOT_FOUND_NOTICE, noindex: true })
+  a.view.value = 'portal'; await nextTick()
+  a.state.show(first.decision)
+  assert.equal(a.notice.value, NOT_FOUND_NOTICE); assert.equal(metas.length, 1)
+  a.view.value = 'portal'; await nextTick()
+  assert.equal(metas.length, 1, 'staying on the landing page keeps the state')
+  a.view.value = 'cards'; await nextTick()
+  assert.equal(metas.length, 0, 'leaving removes noindex'); assert.equal(a.notice.value, '', 'and the notice')
+  assert.equal(a.state.resolve({ view: 'cards' }).decision, null, 'the startup address is consumed: later restores are genuine')
+  // a missing entity is decided per route, strips the marker, and never clobbers a different notice on leaving
+  const b = make('https://x.test/')
+  assert.equal(b.state.resolve({ view: 'idols' }).decision, null)
+  const missing = b.state.resolve(notFoundRoute())
+  assert.deepEqual(missing.route, { view: 'portal' }); assert.ok(missing.decision)
+  b.view.value = 'portal'; b.state.show(missing.decision); b.notice.value = 'something else'
+  b.view.value = 'cards'; await nextTick()
+  assert.equal(b.notice.value, 'something else'); assert.equal(metas.length, 0)
+  // a genuine start never sets anything
+  const c = make('https://x.test/idols/001tom/')
+  assert.equal(c.state.resolve({ view: 'idol_detail', idol: '001tom' }).decision, null)
+  c.state.show(null); assert.equal(c.notice.value, ''); assert.equal(metas.length, 0)
+}
+
 // 4. Every detail route reports a missing entity, and only a missing entity (a failed read keeps its old fallback).
 const catalogEntry = { detail: 'detail', id: 'real', resource_id: 'real', catalog: { unit: { unit_code: 'real' } } }
 const everything = overrides => new Proxy({ ...overrides }, { get: (target, key) => key in target ? target[key] : ref(null), has: () => true })
@@ -97,7 +129,7 @@ for (const [name, factory, routeFor, oldFallbackView] of cases) {
   const make = () => useSongNavigation(everything({ ...common, songReadModelCatalog: ref(catalog),
     songReadModelDetail: ref(null), songReadModelStatus: ref(''), currentSongId: ref(''), view: ref('portal') })).prepareSongRoute
   for (const routeView of ['song_detail', 'chart_lab'])
-    assert.equal(await quietly(() => make()({ view: routeView, song: 'zzzzzz' }, current)), ENTITY_NOT_FOUND, `${routeView}: unknown song`)
+    assert.deepEqual(await quietly(() => make()({ view: routeView, song: 'zzzzzz' }, current)), notFoundRoute(), `${routeView}: unknown song`)
   assert.equal(await quietly(() => make()({ view: 'song_detail', song: 'drv999' }, current)), true, 'a variant is a real song; its failed read is not a not-found')
   assert.equal(await quietly(() => make()({ view: 'song_detail', song: 'drvalv' }, current)), true)
   assert.equal(await quietly(() => make()({ view: 'chibi_stage' }, current)), true, 'the stage default is never a not-found')
@@ -105,9 +137,9 @@ for (const [name, factory, routeFor, oldFallbackView] of cases) {
 
 // 5. App wiring: the restore path consumes the decision, rewrites the address, and the state ends on leaving.
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-for (const needle of ['isUnknownArchivePath(window.location.href)', 'resolveNotFound({ unknownPath: startupUnknownPath, entityMissing: Boolean(route.notFound) })',
-  'song === ENTITY_NOT_FOUND ? notFoundRoute() : route', 'userPreferenceNotice.value = decision.notice', 'setNotFoundNoindex(document, decision.noindex)', 'setNotFoundNoindex(document, false)',
-  'else if (notFound) writeArchiveRoute(currentArchiveRoute(), { replace: true })'])
+for (const needle of ['createArchiveNotFoundState({ view, notice: userPreferenceNotice, watch })', 'const outcome = archiveNotFound.resolve(route)', 'route = outcome.route',
+  'archiveNotFound.show(outcome.decision)', 'return song === true ? route : song',
+  'else if (outcome.decision) writeArchiveRoute(currentArchiveRoute(), { replace: true })'])
   assert.ok(app.includes(needle), `App.vue wires: ${needle}`)
 let static404 = true
 try { readFileSync(new URL('../public/404.html', import.meta.url)) } catch { static404 = false }
