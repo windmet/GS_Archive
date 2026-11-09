@@ -55,7 +55,7 @@ assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImag
   const listeners = {}
   const image = (complete = false) => {
     const attributes = new Map()
-    return { tagName: 'IMG', complete, hasAttribute: name => attributes.has(name), setAttribute: (name, value) => attributes.set(name, value) }
+    return { tagName: 'IMG', complete, hasAttribute: name => attributes.has(name), setAttribute: (name, value) => attributes.set(name, value), removeAttribute: name => attributes.delete(name) }
   }
   const early = image(true), late = image(), broken = image()
   const doc = {
@@ -72,6 +72,8 @@ assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImag
   assert.equal(IMAGE_FAILED_ATTRIBUTE, 'data-gs-failed')
   assert.ok(broken.hasAttribute(IMAGE_FAILED_ATTRIBUTE), 'a failed image is marked failed')
   assert.ok(!late.hasAttribute(IMAGE_FAILED_ATTRIBUTE) && !early.hasAttribute(IMAGE_FAILED_ATTRIBUTE), 'a loaded image is not')
+  listeners.load({ target: broken })
+  assert.ok(!broken.hasAttribute(IMAGE_FAILED_ATTRIBUTE), 'a failed image that later loads loses the placeholder tone')
   uninstall()
   assert.deepEqual(Object.keys(listeners), [])
 }

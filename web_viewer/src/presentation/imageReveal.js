@@ -9,7 +9,9 @@ export const IMAGE_FAILED_ATTRIBUTE = 'data-gs-failed'
 
 function mark(target, failed = false) {
   if (target?.tagName !== 'IMG') return
+  // A later successful load (the src changed after an error) clears the failure.
   if (failed) target.setAttribute(IMAGE_FAILED_ATTRIBUTE, '')
+  else target.removeAttribute(IMAGE_FAILED_ATTRIBUTE)
   if (!target.hasAttribute(IMAGE_LOADED_ATTRIBUTE)) target.setAttribute(IMAGE_LOADED_ATTRIBUTE, '')
 }
 
