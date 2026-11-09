@@ -52,3 +52,22 @@ Windows Codex Browser / Chromium 156，开发服务 127.0.0.1:5219。实际 view
 本机夜神 7.0.6.2 的两个现有实例均未进入 Android 桌面。Android 7 32 位实例停在 99%，VirtualBox 5.2.36 日志明确报 VERR_SUPDRV_NO_RAW_MODE_HYPER_V_ROOT。Android 9 64 位实例启动前提示未开启 VT，Windows 查询显示固件虚拟化已启用且宿主正在运行 Hyper-V。nox_adb devices -l 未枚举可连接的实例，因而本次没有 Android 浏览器播放或帧时间数据。夜神另有 [Hyper-V 兼容测试版](https://support.bignox.com/ja/else/hypervonbeta)，当前安装的引擎与该测试版分开看待。
 
 本地诊断服务仍在 127.0.0.1:5219，页面返回 HTTP 200。等可用实例或 Android 真机出现在 adb devices 中，再通过 adb reverse tcp:5219 tcp:5219 从设备打开同一诊断地址。Android 真机使用 USB 调试和设备端授权即可。[Android 本地服务转发文档](https://developer.android.com/develop/ui/views/layout/webapps/access-local-server)。
+
+### 重启后复测（2026-11-09 11:40）
+
+关闭 Hyper-V 启动项并重启后 HypervisorPresent=False，Nox_1（Android 9 x86_64）正常进入桌面，nox_adb 在 127.0.0.1:62025 可连。实例没有 Chrome，只有 AOSP 浏览器与 Android System WebView 92.0.4515.131；改为 1080×1920、420 dpi 的竖屏，页面 viewport 412×656、DPR 2.625。WebView 的 devtools socket 经 adb forward 用 CDP 驱动，每个模式开始时把播放器滚入视口。基线为 HEAD 仅将 ArchiveSongHoldMeshPreview.vue 退回 5feb0a91，诊断页两边相同，分别在 5219/5220 由 adb reverse 提供，实验与基线交替各三轮，LEADING YOUR DREAM EXPERT 40–48 秒。
+
+- 兼容性：WebView 92 缺 Array.prototype.findLast，诊断页直接失败于 SongChartTiming.js。src 下 findLast/findLastIndex/toSorted 等 ES2023 数组方法共 9 处（谱面计时与小人舞台），构建未做 polyfill，Chrome/WebView 97 以下与 Safari 15.4 以下会同样失败。本次测量通过 CDP 在文档创建前注入 polyfill，未改代码。
+- WebView 对每个新建的媒体元素都要求用户手势，诊断页每个模式重新挂载播放器，B–D 需要用 CDP 输入事件补点一次播放键。这只影响诊断流程，正常页面单一播放器不受影响。
+
+| 档 | rAF P50 基线/实验 | rAF P95 基线/实验 | >33.5 ms 间隔 基线/实验 | 轨道 Vue 更新 P95 基线/实验 | Hold Draw Call P95（累计） | 粒子采样 P95 基线/实验 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| A | 16.7/16.7 ms | 33–50/33–50 ms | 14–20/16–21 | 20–22/19–21 ms | — | — |
+| B | 16.7/16.7 ms | 33.4/33.4 ms | 6–10/8–9 | 14.5–16.3/14.6–14.9 ms | 4→1（670–758→353–373） | — |
+| C | 33.3/33.3 ms | 50–67/50–67 ms | 43–49/41–46 | 28–34/31–36 ms | 4→1（464–497→235–238） | 11–13/11–15 ms |
+| D | 33.3/33.3 ms | 50/50 ms | 36–41/34–38 | 25–30/24–26 ms | 4→1（488–495→246–252） | 8.5–9.1/8.0–8.7 ms |
+
+- Hold 批处理的提交次数减半可重复，Hold 提交 CPU P95 0.2–0.3 ms，两版帧时间没有可分辨差异，与 Browser 结论一致。
+- 加入自动演示（C）后两版都从 60 fps 掉到约 30 fps：rAF P50 16.7→33.3 ms，轨道 Vue 更新 P95 约翻倍，粒子采样 P95 8–15 ms。粒子路径是这台环境里的主要预算挤占项，下一步应优先做粒子直绘或减少每帧采样，而不是继续压 Hold。
+- 18 轮采样三层应提交的 frameId 全部齐全，Combo 315 每轮覆盖 22–26 帧，无缓冲、seek 或失焦记录。Android 错位在模拟器中未复现。A 总排在第一个模式，P95 偏高可能含首轮 JIT 预热。
+- 模拟器的 CPU 走宿主虚拟化、GPU 走宿主 OpenGL 转译，WebView 版本也偏旧，数据只用于相对比较，不能替代 Android 真机与 iOS 的验收。
