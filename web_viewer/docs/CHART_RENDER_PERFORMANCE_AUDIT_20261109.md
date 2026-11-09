@@ -46,3 +46,9 @@ Windows Codex Browser / Chromium 156，开发服务 127.0.0.1:5219。实际 view
 4. Android 错位取能重现的曲目、难度和秒数，对照录屏与逐帧记录。先看错位是否同帧随时间增长或集中在特定 BPM/VariableHold，再用 trace 区分图层提交和浏览器合成。iOS 掉帧比较 B/C 和 C/D，单独确认特效采样、Canvas 复制、SVG/Combo 绘制是否挤占帧预算。
 
 目前这台 Windows 电脑未检测到已连接的真机调试设备。设备 CPU/GPU、实屏呈现、Android 错位复现及长时间播放仍待验收。后续粒子直绘和单 Canvas 原型应以同帧几何、Flick、315、加色混合、seek 和 fallback 作验收，再比较真机数据。
+
+## 夜神模拟器接入检查
+
+本机夜神 7.0.6.2 的两个现有实例均未进入 Android 桌面。Android 7 32 位实例停在 99%，VirtualBox 5.2.36 日志明确报 VERR_SUPDRV_NO_RAW_MODE_HYPER_V_ROOT。Android 9 64 位实例启动前提示未开启 VT，Windows 查询显示固件虚拟化已启用且宿主正在运行 Hyper-V。nox_adb devices -l 未枚举可连接的实例，因而本次没有 Android 浏览器播放或帧时间数据。夜神另有 [Hyper-V 兼容测试版](https://support.bignox.com/ja/else/hypervonbeta)，当前安装的引擎与该测试版分开看待。
+
+本地诊断服务仍在 127.0.0.1:5219，页面返回 HTTP 200。等可用实例或 Android 真机出现在 adb devices 中，再通过 adb reverse tcp:5219 tcp:5219 从设备打开同一诊断地址。Android 真机使用 USB 调试和设备端授权即可。[Android 本地服务转发文档](https://developer.android.com/develop/ui/views/layout/webapps/access-local-server)。
