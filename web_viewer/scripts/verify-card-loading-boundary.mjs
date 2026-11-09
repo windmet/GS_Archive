@@ -69,7 +69,7 @@ function restoration() {
   })
   const source = ['prepareRouteData', 'restoreRoute'].map(name => { const node = body.find(item => item.id?.name === name); return script.slice(node.start, node.end) }).join('\n')
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
-  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
+  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0; const archiveNotFound = { resolve: route => ({ route, decision: null }), show() {} };\n' + source, c)
   return { ...t, applied }
 }
 
@@ -291,7 +291,8 @@ for (const route of [{ view: 'cards' }, { view: 'card_detail', card: 'first' }, 
 }
 {
   const t = restoration(); await t.context.restoreRoute({ view: 'card_detail', card: 'missing' })
-  equal(t.applied, [{ view: 'cards' }]); assert.match(t.context.cardReadModelStatus.value, /稍后重试/)
+  // A card the catalogue does not list is a wrong address (core/archiveNotFound.js), not a failed read to retry.
+  equal(t.applied, [{ view: 'portal', notFound: true }]); assert.equal(t.context.cardReadModelStatus.value, '')
 }
 for (const fail of [false, true]) {
   const t = restoration(), job = t.hold('card:first')

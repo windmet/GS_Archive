@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { EntityNotFoundError, isEntityNotFound, notFoundRoute } from '../core/archiveNotFound.js'
 import { cardAttribute } from '../presentation/CatalogIdolScope.js'
 import { buildCardRarityTabs, filterArchiveCards } from '../data/cardFilters.js'
 
@@ -268,7 +269,7 @@ export function useCardNavigation({
 
   async function loadCardDetail(id, options = navigation.getLoadOptions?.() || {}) {
     const row = (await loadCardCatalog(options)).find(card => card.resource_id === id)
-    if (!row) throw new Error(`Unavailable card: ${id}`)
+    if (!row) throw new EntityNotFoundError(`Unavailable card: ${id}`)
     return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
       if (data.card?.resource_id !== id || !data.ownerReference ||
         !Array.isArray(data.card?.home_voice_cues) || !Array.isArray(data.card?.scenario_entries))
@@ -291,6 +292,7 @@ export function useCardNavigation({
         cardReadModelStatus.value = ''
       } catch (error) {
         if (!isCurrent()) return null
+        if (isEntityNotFound(error)) return notFoundRoute()
         console.error('[CardReadModel] Failed to restore card route:', error)
         cardReadModelStatus.value = '卡片资料暂时无法读取，请稍后重试。'
         route = { view: 'cards' }

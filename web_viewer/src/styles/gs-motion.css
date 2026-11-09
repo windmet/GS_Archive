@@ -40,6 +40,8 @@
    box shows the surface beneath. Layout is untouched: the image keeps its size while hidden. */
 :where(#story-viewer, body > :not(#app)) :where(img:not([data-gs-loaded])) { opacity: 0; }
 :where(#story-viewer, body > :not(#app)) :where(img) { transition: opacity var(--gs-motion-enter) var(--gs-ease-out); }
+/* A failed image is a quiet block of the placeholder tone; alt text and each component's own fallback stay visible. */
+:where(#story-viewer, body > :not(#app)) :where(img[data-gs-failed]) { background-color: var(--gs-paper-2); }
 
 /* Layers that mount over the page. A component that changes how far or how long a layer travels
    (a drawer that becomes a bottom sheet on phones) sets --gs-enter-travel / --gs-enter-duration,

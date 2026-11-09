@@ -235,7 +235,7 @@ try {
     // An event row or search hit opens the event page; only the lead card's "开始阅读" reads directly.
     t.openCatalogStory(eventEntry)
     assert.deepEqual(t.calls.at(-1), ['openEventDetail', { event_id: event.id }, 'story_catalog'])
-    t.readEventStory(eventEntry)
+    await t.readEventStory(eventEntry)
     assert.deepEqual(t.calls.at(-1), ['openStoryReader', event.firstReadingId,
       { event: event.id, parentView: 'story_catalog', storyType: 'event', story: event.storyFile }])
     // A link that names only the file reads its owner from the loaded story.

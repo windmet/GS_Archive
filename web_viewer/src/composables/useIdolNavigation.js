@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { EntityNotFoundError, isEntityNotFound, notFoundRoute } from '../core/archiveNotFound.js'
 
 export function useIdolNavigation({
   idolReadModelCatalog, idolReadModelDetail, idolReadModelStatus, currentCharacterId,
@@ -92,7 +93,7 @@ export function useIdolNavigation({
 
   async function loadIdolDetail(idolCode, options = navigation.getLoadOptions?.() || {}) {
     const row = (await loadIdolCatalog(options))[idolCode]
-    if (!row) throw new Error(`Unavailable idol: ${idolCode}`)
+    if (!row) throw new EntityNotFoundError(`Unavailable idol: ${idolCode}`)
     return readModelClient.load({...row.detail,expectedId: idolCode}, { ...options, expectedId: idolCode, validate: data => {
       if (data.view?.profile?.idol_code !== idolCode || !data.view?.stats ||
         !Array.isArray(data.view?.events) || !Array.isArray(data.view?.songs))
@@ -123,7 +124,7 @@ export function useIdolNavigation({
     const returnsToProfile = route.view === 'player' && route.returnView === 'idol_detail'
     if ((route.view === 'idol_detail' || returnsToProfile) && route.idol) {
       if (!archiveBootstrap.idols.some(idol => idol.id === route.idol)) {
-        route = { view: 'idol_picker', pickTarget: 'profile' }
+        return notFoundRoute()
       } else {
         try {
           const detail = await loadIdolDetail(route.idol)
@@ -132,6 +133,7 @@ export function useIdolNavigation({
           idolReadModelStatus.value = ''
         } catch (error) {
           if (!isCurrent()) return null
+          if (isEntityNotFound(error)) return notFoundRoute()
           console.error('[IdolReadModel] Failed to restore idol detail:', error)
           idolReadModelStatus.value = '偶像档案暂时无法读取，请重新选择。'
           route = { view: 'idols', category: 'idol' }

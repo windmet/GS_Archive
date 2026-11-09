@@ -154,6 +154,7 @@ function restoreFixture() {
     assert.ok(node, `App initializes ${name}`)
     return script.slice(node.start, node.end)
   }).join('\n')
+  context.archiveNotFound = { resolve: route => ({ route, decision: null }), show() {} }
   vm.runInNewContext(setup + '\n' + restoreSource, context)
   return { ...t, applied, writes, restore: context.restoreRoute, invalidations: () => invalidations }
 }

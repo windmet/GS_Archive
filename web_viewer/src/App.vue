@@ -579,7 +579,6 @@ import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.
 import ArchivePageLoadError from './components/archive/ArchivePageLoadError.vue'
 import ArchiveLoadNotice from './components/archive/ArchiveLoadNotice.vue'
 import ArchiveLanguageSwitch from './components/archive/ArchiveLanguageSwitch.vue'
-import { eventResources } from './data/eventResourceGraph.js'
 import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
@@ -621,6 +620,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
+import { createArchiveNotFoundState } from './core/archiveNotFound.js'
 import { archiveCardName, archiveSongChartName, archiveSongStageName, archiveDocumentTitle, archiveIdolPlaceName, archiveSectionTitle, archiveTabSectionTitle } from './presentation/ArchiveDocumentTitle.js'
 import { ARCHIVE_BRAND, STORY_KINDS, sectionLabel, ARCHIVE_SECTION_GROUPS } from './core/archiveSections.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
@@ -2588,10 +2588,15 @@ async function prepareRouteData(route, isCurrent) {
   if (!route) return null
   route = await prepareStoryRoute(route, { isCurrent })
   if (!route) return null
-  if (!await prepareSongRoute(route, { isCurrent })) return null
-  return route
+  const song = await prepareSongRoute(route, { isCurrent })
+  if (!song) return null
+  // true keeps the route; a route object (an unknown song) replaces it.
+  return song === true ? route : song
 }
 
+// A not-found start or restore lands on the portal with a notice and a noindex meta; the state ends when the
+// visitor leaves the page it landed on (core/archiveNotFound.js).
+const archiveNotFound = createArchiveNotFoundState({ view, notice: userPreferenceNotice, watch })
 let startupRouteNormalized = false
 let restoreRequest = 0
 async function restoreRoute(route, { restoring = true } = {}) {
@@ -2618,6 +2623,8 @@ async function restoreRoute(route, { restoring = true } = {}) {
       route = await prepareRouteData(route, () => intent.isCurrent() && request === restoreRequest)
       if (!route) return
     }
+    const outcome = archiveNotFound.resolve(route)
+    route = outcome.route
     if (navigation.isDisposed() || !intent.isCurrent() || request !== restoreRequest) return
     const pending = applyArchiveRoute(route, { restoring, intent })
     const expected = navigation.getRevision()
@@ -2625,11 +2632,12 @@ async function restoreRoute(route, { restoring = true } = {}) {
     if (navigation.isDisposed() || expected !== navigation.getRevision()) return
     // Failed media preparation must not rewrite a deep link to an empty catalog.
     if (isDirectScenarioEntry(route) && playbackError.value) return
+    archiveNotFound.show(outcome.decision)
     if (!startupRouteNormalized) {
       loading.value = false
       startupRouteNormalized = true
       writeArchiveRoute(currentArchiveRoute(), { replace: true })
-    }
+    } else if (outcome.decision) writeArchiveRoute(currentArchiveRoute(), { replace: true })
     if (!restoring) writeArchiveRoute(currentArchiveRoute())
     adoptArchiveViewContext()
   }, { restoring: true })

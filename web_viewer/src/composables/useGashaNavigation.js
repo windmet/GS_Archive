@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { EntityNotFoundError, isEntityNotFound, notFoundRoute } from '../core/archiveNotFound.js'
 
 export function useGashaNavigation({
   gashaReadModelCatalog, gashaReadModelDetail, gashaReadModelStatus, gashaCatalogFunctions,
@@ -123,7 +124,7 @@ export function useGashaNavigation({
 
   async function loadGashaDetail(id, options = navigation.getLoadOptions?.() || {}) {
     const row = (await loadGashaCatalog(options)).rows.find(entry => String(entry.id) === id)
-    if (!row) throw new Error(`Unavailable gasha: ${id}`)
+    if (!row) throw new EntityNotFoundError(`Unavailable gasha: ${id}`)
     if(row.source_type==='item-masterdata')return {id,gasha:row}
     const detail = await readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
       if (String(data.gasha?.id) !== id || !Array.isArray(data.gasha?.derived_pickup_cards))
@@ -146,6 +147,7 @@ export function useGashaNavigation({
         gashaReadModelStatus.value = ''
       } catch (error) {
         if (!isCurrent()) return null
+        if (isEntityNotFound(error)) return notFoundRoute()
         console.error('[GashaReadModel] Failed to restore gasha route:', error)
         gashaReadModelStatus.value = '卡池资料暂时无法读取，请稍后重试。'
         route = { ...route, view: 'gashas', gasha: '' }

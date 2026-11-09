@@ -1,5 +1,4 @@
 import { watch } from 'vue'
-import { storyEventResources } from '../data/eventResourceGraph.js'
 import { withStoryText } from '../localization/story/StoryTextReadiness.js'
 import { landingCollectionSections, storyOwner, storyOwnerNeedsLanding } from '../core/StoryOwner.js'
 // Story domains with their own landing page in the catalog; their collections and stories return there.
@@ -229,7 +228,9 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   }
 
   // The newest event's "开始阅读" goes straight to its text; every other event entry opens the event page.
-  function readEventStory(entry) {
+  // The 111 KB event graph loads here, not at startup; the click waits one small chunk.
+  async function readEventStory(entry) {
+    const { storyEventResources } = await import('../data/eventResourceGraph.js')
     const resource = storyEventResources(entry)
     if (resource?.firstReadingId && resource.storyFile === entry.file)
       return openStoryReader(resource.firstReadingId, { event: resource.id, parentView: 'story_catalog', storyType: 'event', story: entry.file })

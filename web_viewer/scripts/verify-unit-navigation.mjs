@@ -59,7 +59,7 @@ function restoration() {
   })
   const source = ['prepareRouteData', 'restoreRoute'].map(name => { const node = body.find(item => item.id?.name === name); return script.slice(node.start, node.end) }).join('\n')
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
-  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
+  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0; const archiveNotFound = { resolve: route => ({ route, decision: null }), show() {} };\n' + source, c)
   return { ...t, applied }
 }
 try {
@@ -168,7 +168,8 @@ try {
     await t.c.restoreRoute({view:'player',returnView:'unit_detail',unit:'2'})
     assert.equal(t.c.unitReadModelDetail.value.id,'2')
     await t.c.restoreRoute({view:'unit_detail',unit:'missing'})
-    assert.equal(t.applied.at(-1).view,'idols'); assert.match(t.c.unitReadModelStatus.value,/重试/)
+    // A unit the catalogue does not list is a wrong address, not a failed read to retry.
+    assert.equal(t.applied.at(-1).view,'portal'); assert.equal(t.applied.at(-1).notFound,true); assert.equal(t.c.unitReadModelStatus.value,'')
   }
   for (const rejectOld of [false,true]) {
     const t = restoration(), job = t.hold('1'), pending = t.c.restoreRoute({view:'unit_detail',unit:'1'})

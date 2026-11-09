@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { installImageReveal, IMAGE_LOADED_ATTRIBUTE } from '../src/presentation/imageReveal.js'
+import { installImageReveal, IMAGE_LOADED_ATTRIBUTE, IMAGE_FAILED_ATTRIBUTE } from '../src/presentation/imageReveal.js'
 
 // Archive motion contract (docs/GS_UI_CONSTITUTION.md, 动效): restrained, never delaying input,
 // exits shorter than entrances, reduced motion keeps fades only, and every layer that animates in
@@ -42,6 +42,8 @@ for (const file of walk(path.join(root, 'src'))) {
 assert.match(motion, /^:where\(button, a\[href\], summary, \[role="button"\], \[role="tab"\], \[role="option"\]\) \{\n  transition:/m)
 assert.match(motion, /@media \(hover: none\) \{\n  :where\(button[^{]*:where\(:active:not\(:disabled, \[aria-disabled="true"\]\)\) \{\n    transform: scale\(\.97\);\n    filter: brightness\(\.92\);/)
 assert.match(motion, /:where\(#story-viewer, body > :not\(#app\)\) :where\(img:not\(\[data-gs-loaded\]\)\) \{ opacity: 0; \}/)
+assert.match(motion, /:where\(img\[data-gs-failed\]\) \{ background-color: var\(--gs-paper-2\); \}/, 'a failed image shows the placeholder tone, never hidden')
+assert.ok(!/img\[data-gs-failed\][^}]*(?:opacity|visibility|display)/.test(motion), 'alt text and fallbacks of a failed image stay visible')
 
 const main = read('src/main.js')
 assert.ok(main.includes("import './styles/gs-motion.css'"), 'motion styles load with the tokens')
@@ -53,7 +55,7 @@ assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImag
   const listeners = {}
   const image = (complete = false) => {
     const attributes = new Map()
-    return { tagName: 'IMG', complete, hasAttribute: name => attributes.has(name), setAttribute: (name, value) => attributes.set(name, value) }
+    return { tagName: 'IMG', complete, hasAttribute: name => attributes.has(name), setAttribute: (name, value) => attributes.set(name, value), removeAttribute: name => attributes.delete(name) }
   }
   const early = image(true), late = image(), broken = image()
   const doc = {
@@ -66,6 +68,12 @@ assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImag
   assert.ok(!late.hasAttribute(IMAGE_LOADED_ATTRIBUTE))
   listeners.load({ target: late }); listeners.error({ target: broken }); listeners.load({ target: { tagName: 'SCRIPT' } })
   assert.ok(late.hasAttribute(IMAGE_LOADED_ATTRIBUTE) && broken.hasAttribute(IMAGE_LOADED_ATTRIBUTE))
+  // Only a failure is marked failed: that is what the placeholder tone keys on.
+  assert.equal(IMAGE_FAILED_ATTRIBUTE, 'data-gs-failed')
+  assert.ok(broken.hasAttribute(IMAGE_FAILED_ATTRIBUTE), 'a failed image is marked failed')
+  assert.ok(!late.hasAttribute(IMAGE_FAILED_ATTRIBUTE) && !early.hasAttribute(IMAGE_FAILED_ATTRIBUTE), 'a loaded image is not')
+  listeners.load({ target: broken })
+  assert.ok(!broken.hasAttribute(IMAGE_FAILED_ATTRIBUTE), 'a failed image that later loads loses the placeholder tone')
   uninstall()
   assert.deepEqual(Object.keys(listeners), [])
 }

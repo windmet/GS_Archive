@@ -67,7 +67,7 @@ function restoration() {
   })
   const source = ['prepareRouteData', 'restoreRoute'].map(name => { const node = body.find(item => item.id?.name === name); return script.slice(node.start, node.end) }).join('\n')
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
-  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
+  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0; const archiveNotFound = { resolve: route => ({ route, decision: null }), show() {} };\n' + source, c)
   return { ...t, applied }
 }
 
@@ -231,8 +231,9 @@ for (const kind of ['gashas', 'gasha_detail']) {
 {
   const t = restoration(), route = { view: 'gasha_detail', gasha: 'missing', query: 'keep', sourceRoute: '?view=portal' }
   await t.c.restoreRoute(route)
-  equal(t.applied, [{ ...route, view: 'gashas', gasha: '' }])
-  assert.match(t.c.gashaReadModelStatus.value, /重试/)
+  // A gasha the catalogue does not list is a wrong address, not a failed read to retry.
+  equal(t.applied, [{ view: 'portal', notFound: true }])
+  assert.equal(t.c.gashaReadModelStatus.value, '')
 }
 for (const fails of [false, true]) {
   const t = restoration(), job = t.hold(`gasha:${t.ids[0]}`)
