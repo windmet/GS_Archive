@@ -137,7 +137,7 @@ try {
   await playFrom(Math.max(0, duration - 4))
   await until(`window.__chart.audio().ended`, 'the end of the song', 40)
   await sleep(300)
-  const end = JSON.parse(await evaluate(`JSON.stringify({ notes: document.querySelectorAll('[data-track-note]').length, holds: document.querySelectorAll('[data-native-hold-canvas]')[0]?.dataset.holdCount, time: document.querySelector('.chart-time').textContent })`))
+  const end = JSON.parse(await evaluate(`JSON.stringify({ notes: document.querySelectorAll('[data-track-note]').length + Number(document.querySelector('[data-track-canvas]')?.dataset.noteCount || 0), holds: (document.querySelector('[data-track-canvas]') || document.querySelector('[data-native-hold-canvas]'))?.dataset.holdCount, time: document.querySelector('.chart-time').textContent })`))
   if (end.notes !== 0 || Number(end.holds || 0) !== 0) failures.push(`outro: ${end.notes} notes / ${end.holds} holds left on the track after the song ended`)
   receipts.push(`infoct outro: ended at ${end.time.replace(/\s+/g, ' ')}, ${end.notes} notes left`)
 

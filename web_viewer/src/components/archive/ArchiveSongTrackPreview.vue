@@ -9,7 +9,7 @@
       <rect width="1280" height="720" fill="#162b36" />
       <image href="/assets/song-chart-track/live_lane_gradation.png" x="0" y="0" width="1280" height="720" preserveAspectRatio="none" :clip-path="`url(#${uid}-lane)`" />
       <polygon :points="laneOutline" fill="#07151b" opacity=".25" />
-      <g v-if="demonstrationEnabled && laneAlphas.some(a => a > 0)" class="track-lane-flashes" pointer-events="none">
+      <g v-if="!canvasMode && demonstrationEnabled && laneAlphas.some(a => a > 0)" class="track-lane-flashes" pointer-events="none">
         <polygon
           v-for="i in 5"
           :key="`lane-flash-${i - 1}`"
@@ -26,13 +26,25 @@
     </svg>
     <!-- Every layer is a sibling box of the same size, not a foreignObject: WebKit does not scale a canvas inside one
          with the svg's viewBox, which moved the long notes and effects off the lanes on iPad. -->
-    <ArchiveSongHoldMeshPreview v-if="!holdCanvasUnavailable" :holds="scene.holds" :skin="skin" @unavailable="holdCanvasUnavailable = true" />
+    <!-- Everything that moves is one WebGL frame. As separate SVG and canvas layers, Android Chrome presented the
+         notes, holds, links and particles from different frames, so parts slid off each other during playback. -->
+    <ArchiveSongTrackCanvas
+      v-if="canvasMode"
+      :scene="scene"
+      :skin="skin"
+      :lane-alphas="demonstrationEnabled ? laneAlphas : null"
+      :hits="hits"
+      :hold-effects="holds"
+      :audit-frame="auditFrame"
+      @unavailable="trackCanvasUnavailable = true"
+    />
+    <template v-else>
+    <ArchiveSongHoldMeshPreview v-if="audit?.mode !== 'A' && !holdCanvasUnavailable" :holds="scene.holds" :skin="skin" :audit-frame="auditFrame" @unavailable="holdCanvasUnavailable = true" />
+    <!-- Note images carry no clip-path: the affine image already lands on the native quad, and a clipPath whose
+         polygon moves every frame was painted out of step with its image on Android Chrome, cutting notes in half. -->
     <svg class="track-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" aria-hidden="true">
-      <defs>
-        <clipPath v-for="note in [...scene.glyphs, ...scene.middleNodes]" :id="`${uid}-note-${note.id}`" :key="`note-${note.id}`"><polygon :points="note.image.points" /></clipPath>
-      </defs>
       <line v-for="link in scene.links" :key="link.id" :data-simultaneous-tick="link.tick" :x1="link.a.x" :x2="link.b.x" :y1="link.a.y" :y2="link.b.y" stroke="#e9faf6" :stroke-width="Math.max(.5, 2 * link.a.scale)" opacity=".8" />
-      <g v-for="n in scene.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick" data-native-role="middle" :clip-path="`url(#${uid}-note-${n.id})`"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
+      <g v-for="n in scene.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick" data-native-role="middle"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
       <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" :y="scene.judgeY - 12" width="1280" height="24" preserveAspectRatio="none" />
       <image href="/assets/song-chart-track/live_target_line.png" x="0" :y="scene.judgeY - 10" width="1280" height="20" preserveAspectRatio="none" />
       <g v-for="(p, i) in scene.judges" :key="i" :data-judge-lane="i">
@@ -42,7 +54,7 @@
         <circle :cx="p.x" :cy="p.y" r="9" fill="none" stroke="#befaff" stroke-width="2.5" />
       </g>
       <g v-for="n in scene.glyphs" :key="n.id" :data-track-note="n.sourceIndex" :data-endpoint="n.endpoint" :data-tick="n.tick" :data-note-role="n.role" :data-note-speed="n.speed" :data-note-fraction="n.fraction">
-        <g :clip-path="`url(#${uid}-note-${n.id})`"><image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" /></g>
+        <image :href="n.image.url" :width="n.image.pngWidth" :height="n.image.pngHeight" :transform="n.image.transform" preserveAspectRatio="none" />
         <ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="n.width" :show-body="false" :hint="n.hint" />
       </g>
     </svg>
@@ -52,7 +64,9 @@
       :holds="holds"
       :auto-eval="autoEval"
       :judge-y="scene.judgeY"
+      :audit-frame="auditFrame"
     />
+    </template>
     <svg class="track-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" aria-hidden="true">
       <ArchiveSongAutoEvaluationPreview v-if="demonstrationEnabled" :state="autoEval" />
       <g v-if="demonstrationEnabled && holds.length" class="track-hold-effects" pointer-events="none" aria-hidden="true">
@@ -67,12 +81,13 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, ref } from 'vue'
+import { computed, getCurrentInstance, inject, onBeforeUpdate, onMounted, onUpdated, ref } from 'vue'
 import { createSongTrackRenderer, projectTrackPoint } from '../../presentation/SongTrackPresentation.js'
 import { buildSongChartTiming } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackNativeTiming.js'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
+import ArchiveSongTrackCanvas from './ArchiveSongTrackCanvas.vue'
 import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
 import ArchiveSongHitEffectPreview from './ArchiveSongHitEffectPreview.vue'
 import ArchiveSongAutoEvaluationPreview from './ArchiveSongAutoEvaluationPreview.vue'
@@ -90,8 +105,14 @@ const props = defineProps({
   demonstrationEnabled: { type: Boolean, default: false },
 })
 
+const audit = inject('song-chart-audit', null)
+const auditFrame = computed(() => props.position.auditFrame?.value ?? null)
 const uid = `track-${getCurrentInstance().uid}`
 const holdCanvasUnavailable = ref(false)
+// The SVG layers stay as the fallback for a browser without WebGL, for audit mode A, which measures them, and for
+// fixtures that check the SVG layer contract (they provide 'song-track-renderer' = 'svg').
+const trackCanvasUnavailable = ref(inject('song-track-renderer', 'canvas') === 'svg')
+const canvasMode = computed(() => !trackCanvasUnavailable.value && audit?.mode !== 'A')
 // The media clock continues through the outro. Clamping to maxTick leaves the
 // final note sitting exactly on its inclusive draw boundary forever.
 const safeCursor = computed(() => Math.max(0, props.position.tick.value))
@@ -101,8 +122,13 @@ const timing = computed(() => buildSongChartTiming(props.chart))
 const span = computed(() => songTrackSpanForSpeed(props.speed, timing.value, safeCursor.value))
 const renderTrack = computed(() => createSongTrackRenderer(props.chart))
 const scene = computed(() => {
-  const result = renderTrack.value(safeCursor.value, span.value, props.skin)
-  return props.position.ended?.value ? { ...result, glyphs: [], holds: [], middleNodes: [], links: [] } : result
+  const render = renderTrack.value, cursor = safeCursor.value, readSpan = span.value
+  const start = audit && performance.now()
+  const result = render(cursor, readSpan, props.skin)
+  audit?.record(auditFrame.value, 'geometry', { ms: performance.now() - start, notes: result.glyphs.length, holds: result.holds.length })
+  if (props.position.ended?.value) return { ...result, glyphs: [], holds: [], middleNodes: [], links: [] }
+  if (audit?.mode === 'A') return { ...result, holds: [], middleNodes: [], links: [] }
+  return result
 })
 const holdSprite = computed(() => noteRendering.skins[props.skin].hold_line.url)
 const laneOutline = computed(() => {
@@ -115,6 +141,21 @@ const laneAlphas = computed(() => activeEffects.value?.laneAlphas || [0, 0, 0, 0
 const hits = computed(() => activeEffects.value?.hits || [])
 const holds = computed(() => activeEffects.value?.holds || [])
 const autoEval = computed(() => activeEffects.value?.autoEval || { active: false, age: 0, alpha: 0 })
+
+if (audit) {
+  let updateStart
+  const recordSvg = () => audit.record(auditFrame.value, 'svg', {
+    ms: updateStart === undefined ? null : performance.now() - updateStart,
+    canvas: canvasMode.value,
+    holdExpected: !canvasMode.value && audit.mode !== 'A' && !holdCanvasUnavailable.value,
+    holdFallback: holdCanvasUnavailable.value,
+    combo315: props.comboEnabled && props.combo?.state?.value?.specialAge != null,
+    effectExpected: !canvasMode.value && props.demonstrationEnabled && Boolean(hits.value.length || holds.value.length || autoEval.value.active),
+  })
+  onBeforeUpdate(() => { updateStart = performance.now() })
+  onMounted(recordSvg)
+  onUpdated(recordSvg)
+}
 </script>
 
 <style scoped>

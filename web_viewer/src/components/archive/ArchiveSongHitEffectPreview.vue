@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   sampleHitEffectFrame,
   sampleHoldEffectFrame,
@@ -31,8 +31,10 @@ const props = defineProps({
   holds: { type: Array, default: () => [] },
   autoEval: { type: Object, default: () => ({ active: false, age: 0, alpha: 0 }) },
   judgeY: { type: Number, default: 572 },
+  auditFrame: { type: Object, default: null },
 })
 
+const audit = inject('song-chart-audit', null)
 const canvasRef = ref(null)
 const images = new Map()
 const assetsPending = ref(0), assetsFailed = ref(0)
@@ -83,10 +85,12 @@ function draw() {
 
   ctx.clearRect(0, 0, 1280, 720)
 
+  const start = audit && performance.now()
   const particles = []
   for (const hold of props.holds) particles.push(...sampleHoldEffectFrame(hold, hold.age))
   for (const hit of props.hits) particles.push(...sampleHitEffectFrame(hit, hit.age))
-  if (drawParticleCanvas(ctx, particles, images)) particleRenderer.value = 'webgl-perspective'
+  const stats = audit ? { sampleMs: performance.now() - start, particles: particles.length, draws: 0, bytes: 0, contextLost: false } : null
+  if (drawParticleCanvas(ctx, particles, images, stats)) particleRenderer.value = 'webgl-perspective'
   else {
     particleRenderer.value = 'canvas2d-fallback'
     for(const inst of particles) {
@@ -95,12 +99,18 @@ function draw() {
     }
   }
 
+  if (stats) {
+    stats.ms = performance.now() - start
+    stats.renderer = particleRenderer.value
+    audit.record(props.auditFrame, 'effect', stats)
+  }
+
   // Auto UI uses a separate SVG sibling: its base is source-over, while
   // this particle surface adds to the real track backdrop.
 
 }
 
-watch([() => props.hits, () => props.holds, () => props.autoEval], draw, { deep: false })
+watch([() => props.hits, () => props.holds, () => props.autoEval, () => props.auditFrame], draw, { deep: false })
 
 onMounted(() => {
   preloadImages()

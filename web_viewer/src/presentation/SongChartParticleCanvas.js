@@ -39,11 +39,14 @@ function createPipeline() {
   return state
 }
 
-export function drawParticleCanvas(ctx, particles, images) {
+export function drawParticleCanvas(ctx, particles, images, stats) {
   if (pipeline === undefined) {
     try { pipeline = createPipeline() } catch { pipeline = null }
   }
-  if (!pipeline || pipeline.lost) return false
+  if (!pipeline || pipeline.lost) {
+    if (stats) stats.contextLost = Boolean(pipeline?.lost)
+    return false
+  }
   const { gl, canvas, program, buffer, textures } = pipeline
   gl.clear(gl.COLOR_BUFFER_BIT); gl.useProgram(program); gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
   const groups = new Map()
@@ -73,6 +76,10 @@ export function drawParticleCanvas(ctx, particles, images) {
     } else gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW)
     gl.drawArrays(gl.TRIANGLES, 0, data.length / 9)
+    if (stats) {
+      stats.draws++
+      stats.bytes += data.length * Float32Array.BYTES_PER_ELEMENT
+    }
   }
   ctx.drawImage(canvas, 0, 0)
   return true
