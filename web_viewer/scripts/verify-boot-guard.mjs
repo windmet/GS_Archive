@@ -4,7 +4,7 @@
 // The browser-level counterpart is verify-boot-guard-browser.mjs.
 import assert from 'node:assert/strict'
 import vm from 'node:vm'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { transformSync } from 'esbuild'
 import { renderEntityHeadShells } from './generate-entity-head-shells.mjs'
@@ -29,6 +29,18 @@ assert.doesNotThrow(() => transformSync(guard, { target: 'es5', loader: 'js' }),
 assert.ok(Number.isInteger(policy.bootGuardGzipLimit) && policy.bootGuardGzipLimit > 0, 'startup-policy.json needs bootGuardGzipLimit')
 const gzipBytes = gzipSync(guard, { level: 9 }).length
 assert.ok(gzipBytes < policy.bootGuardGzipLimit, `boot guard is ${gzipBytes} B gzip, limit ${policy.bootGuardGzipLimit}`)
+
+// The panel must paint over every app layer. An invalid z-index (the first version had 2e9, which CSS rejects)
+// computes to auto, and the app's own positioned layers then cover it.
+{
+  const panelZ = guard.match(/z-index:(\d+);/)
+  assert.ok(panelZ, 'the panel z-index must be a plain CSS integer')
+  let appMax = 0
+  for (const entry of readdirSync(new URL('../src', import.meta.url), { recursive: true, withFileTypes: true }))
+    if (entry.isFile() && /\.(vue|css)$/.test(entry.name))
+      for (const [, z] of readFileSync(`${entry.parentPath}/${entry.name}`, 'utf8').matchAll(/z-index:\s*(\d+)/g)) appMax = Math.max(appMax, +z)
+  assert.ok(appMax > 0 && +panelZ[1] > appMax, `panel z-index ${panelZ[1]} must exceed the app's highest ${appMax}`)
+}
 
 // 4. Behaviour in a minimal fake DOM.
 class Node {
@@ -121,6 +133,9 @@ function boot({ search = '', missing = [], entries = [], caps = {}, storage = 'o
   t.fire('error', { target: t.win, error: new RangeError('probe'), message: 'ignored', filename: 'https://x.test/src/main.js' })
   const { name, message, src } = t.boot.state().error
   assert.deepEqual([name, message, src], ['RangeError', 'probe', 'https://x.test/src/main.js'])
+  // Chrome reports a ResizeObserver loop as a window error on healthy pages; it must not replace the real one.
+  t.fire('error', { target: t.win, message: 'ResizeObserver loop completed with undelivered notifications.' })
+  assert.equal(t.boot.state().error.message, 'probe', 'a ResizeObserver loop notice is not a boot error')
   t.fire('unhandledrejection', { reason: new Error('late') }); assert.equal(t.boot.state().error.message, 'late')
   t.fire('unhandledrejection', { reason: 'plain string' }); assert.equal(t.boot.state().error.message, 'plain string')
 }

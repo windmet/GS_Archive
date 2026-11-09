@@ -81,7 +81,7 @@
   if (!d.body) return d.addEventListener('DOMContentLoaded', show);
   el = d.createElement('div');
   el.id = 'gs-boot-guard';
-  el.setAttribute('style', 'position:fixed;inset:0;z-index:2e9;overflow:auto;padding:16px;background:#f5f6f8;color:#13213a');
+  el.setAttribute('style', 'position:fixed;inset:0;z-index:999999;overflow:auto;padding:16px;background:#f5f6f8;color:#13213a');
   el.innerHTML = '<h2>启动诊断</h2><pre style="white-space:pre-wrap;word-break:break-all;font-size:12px"></pre><button style="min-height:44px">重新加载</button> <button style="min-height:44px">绕缓存重载</button> <button style="min-height:44px">复制诊断信息</button> <button style="min-height:44px">继续等待</button>';
   pre = el.getElementsByTagName('pre')[0];
   el.addEventListener('click', function (e) {
@@ -93,6 +93,7 @@
  function onerr(e) {
   var t = e.target, u = t && (t.src || t.href);
   if (t && t.tagName) { if (u && 'SCRIPT LINK'.indexOf(t.tagName) > -1) { bad.push(u); note({ name: 'ResourceError', message: '加载失败' }, u); } return; }
+  if (/^ResizeObserver loop/.test(e.message)) return;
   note(e.error || e.reason || e, e.filename);
  }
  addEventListener('error', onerr, true);
