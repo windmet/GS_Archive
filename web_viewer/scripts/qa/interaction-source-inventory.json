@@ -8484,8 +8484,8 @@
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
     "line": 2,
     "event": "@keydown.esc",
-    "handler": "immersive && leaveImmersive()",
-    "template": "<section ref=\"previewRoot\" class=\"chart-preview\" :class=\"{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && !controlsShown }\" aria-label=\"谱面查看器\" @keydown.esc=\"immersive && leaveImmersive()\" @pointerdown=\"immersive && revealControls()\">",
+    "handler": "onEscape",
+    "template": "<section ref=\"previewRoot\" class=\"chart-preview\" :class=\"{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && (locked || !controlsShown), 'is-locked': locked }\" aria-label=\"谱面查看器\" @keydown.esc=\"onEscape\" @pointerdown=\"immersive && !locked && revealControls()\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8494,8 +8494,8 @@
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
     "line": 2,
     "event": "@pointerdown",
-    "handler": "immersive && revealControls()",
-    "template": "<section ref=\"previewRoot\" class=\"chart-preview\" :class=\"{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && !controlsShown }\" aria-label=\"谱面查看器\" @keydown.esc=\"immersive && leaveImmersive()\" @pointerdown=\"immersive && revealControls()\">",
+    "handler": "immersive && !locked && revealControls()",
+    "template": "<section ref=\"previewRoot\" class=\"chart-preview\" :class=\"{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && (locked || !controlsShown), 'is-locked': locked }\" aria-label=\"谱面查看器\" @keydown.esc=\"onEscape\" @pointerdown=\"immersive && !locked && revealControls()\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8544,6 +8544,16 @@
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
     "line": 11,
     "event": "@click",
+    "handler": "lockControls",
+    "template": "<button v-if=\"immersive\" type=\"button\" class=\"chart-immersive-lock\" @click=\"lockControls\"><Lock :size=\"15\" aria-hidden=\"true\" />锁定</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 12,
+    "event": "@click",
     "handler": "leaveImmersive",
     "template": "<button v-if=\"immersive\" type=\"button\" class=\"chart-immersive-exit\" @click=\"leaveImmersive\"><Minimize :size=\"15\" aria-hidden=\"true\" />退出沉浸</button>",
     "status": "PENDING",
@@ -8552,7 +8562,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 12,
+    "line": 13,
     "event": "@click",
     "handler": "infoOpen = !infoOpen",
     "template": "<div class=\"chart-actions\"><button type=\"button\" :aria-expanded=\"infoOpen\" @click=\"infoOpen = !infoOpen\"><Info :size=\"15\" aria-hidden=\"true\" />谱面信息</button><button v-if=\"!standalone\" type=\"button\" @click=\"opened = false\"><X :size=\"15\" aria-hidden=\"true\" />收起谱面</button><slot name=\"actions\" /><span v-if=\"chart && mode === 'long'\" class=\"chart-export-actions\"><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'png'\" @click=\"download('png')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'svg'\" @click=\"download('svg')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>",
@@ -8562,7 +8572,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 12,
+    "line": 13,
     "event": "@click",
     "handler": "opened = false",
     "template": "<div class=\"chart-actions\"><button type=\"button\" :aria-expanded=\"infoOpen\" @click=\"infoOpen = !infoOpen\"><Info :size=\"15\" aria-hidden=\"true\" />谱面信息</button><button v-if=\"!standalone\" type=\"button\" @click=\"opened = false\"><X :size=\"15\" aria-hidden=\"true\" />收起谱面</button><slot name=\"actions\" /><span v-if=\"chart && mode === 'long'\" class=\"chart-export-actions\"><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'png'\" @click=\"download('png')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'svg'\" @click=\"download('svg')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>",
@@ -8572,7 +8582,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 12,
+    "line": 13,
     "event": "@click",
     "handler": "download('png')",
     "template": "<div class=\"chart-actions\"><button type=\"button\" :aria-expanded=\"infoOpen\" @click=\"infoOpen = !infoOpen\"><Info :size=\"15\" aria-hidden=\"true\" />谱面信息</button><button v-if=\"!standalone\" type=\"button\" @click=\"opened = false\"><X :size=\"15\" aria-hidden=\"true\" />收起谱面</button><slot name=\"actions\" /><span v-if=\"chart && mode === 'long'\" class=\"chart-export-actions\"><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'png'\" @click=\"download('png')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'svg'\" @click=\"download('svg')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>",
@@ -8582,7 +8592,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 12,
+    "line": 13,
     "event": "@click",
     "handler": "download('svg')",
     "template": "<div class=\"chart-actions\"><button type=\"button\" :aria-expanded=\"infoOpen\" @click=\"infoOpen = !infoOpen\"><Info :size=\"15\" aria-hidden=\"true\" />谱面信息</button><button v-if=\"!standalone\" type=\"button\" @click=\"opened = false\"><X :size=\"15\" aria-hidden=\"true\" />收起谱面</button><slot name=\"actions\" /><span v-if=\"chart && mode === 'long'\" class=\"chart-export-actions\"><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'png'\" @click=\"download('png')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type=\"button\" :disabled=\"exporting\" :aria-busy=\"exporting && exportFormat === 'svg'\" @click=\"download('svg')\"><Download :size=\"15\" aria-hidden=\"true\" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>",
@@ -8592,7 +8602,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 16,
+    "line": 17,
     "event": "@click",
     "handler": "download(exportFormat)",
     "template": "<p v-if=\"exportError\" role=\"alert\">{{ exportError }} <button type=\"button\" :disabled=\"exporting\" @click=\"download(exportFormat)\">重试导出</button></p>",
@@ -8602,7 +8612,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 20,
+    "line": 21,
     "event": "@click",
     "handler": "loadChart",
     "template": "<p v-else-if=\"error\" role=\"alert\">{{ error }} <button type=\"button\" @click=\"loadChart\">重试</button></p>",
@@ -8612,27 +8622,107 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 22,
+    "line": 25,
+    "event": "@pointerdown",
+    "handler": "showUnlock",
+    "template": "<div v-if=\"locked\" class=\"chart-lock-shield\" data-chart-lock-shield @pointerdown=\"showUnlock\">",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 26,
+    "event": "@pointerdown.stop",
+    "handler": "startUnlock",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 26,
+    "event": "@pointerup",
+    "handler": "cancelUnlock",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 26,
+    "event": "@pointercancel",
+    "handler": "cancelUnlock",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 26,
+    "event": "@pointerleave",
+    "handler": "cancelUnlock",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 26,
+    "event": "@keydown.enter.prevent",
+    "handler": "unlockControls",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 26,
+    "event": "@keydown.space.prevent",
+    "handler": "unlockControls",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 28,
     "event": "@keydown",
     "handler": "onCanvasKey",
-    "template": "<div class=\"chart-viewport\" :class=\"{ 'is-long': mode === 'long' }\" tabindex=\"0\" role=\"region\" aria-label=\"谱面画布\" @keydown=\"onCanvasKey\"><p class=\"chart-count chart-hud\"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if=\"mode === 'perspective'\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :position=\"trackPosition\" :speed=\"safeSpeed\" :effects=\"trackEffects\" :combo=\"trackCombo\" :combo-enabled=\"comboEnabled\" :demonstration-enabled=\"demonstrationEnabled\" /><ArchiveSongLongPreview v-else ref=\"longPreview\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :cursor=\"safeCursor\" :scale=\"scale\" :layout=\"longLayout\" :follow=\"followPlayback && playing\" @seek=\"seek\" /></div>",
+    "template": "<div class=\"chart-viewport\" :class=\"{ 'is-long': mode === 'long' }\" tabindex=\"0\" role=\"region\" aria-label=\"谱面画布\" @keydown=\"onCanvasKey\"><p class=\"chart-count chart-hud\"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if=\"mode === 'perspective'\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :position=\"trackPosition\" :speed=\"safeSpeed\" :effects=\"trackEffects\" :combo=\"trackCombo\" :combo-enabled=\"comboEnabled\" :demonstration-enabled=\"demonstrationEnabled\" @texture-status=\"trackTextures = $event\" /><ArchiveSongLongPreview v-else ref=\"longPreview\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :cursor=\"safeCursor\" :scale=\"scale\" :layout=\"longLayout\" :follow=\"followPlayback && playing\" @seek=\"seek\" /></div>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 22,
+    "line": 28,
+    "event": "@texture-status",
+    "handler": "trackTextures = $event",
+    "template": "<div class=\"chart-viewport\" :class=\"{ 'is-long': mode === 'long' }\" tabindex=\"0\" role=\"region\" aria-label=\"谱面画布\" @keydown=\"onCanvasKey\"><p class=\"chart-count chart-hud\"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if=\"mode === 'perspective'\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :position=\"trackPosition\" :speed=\"safeSpeed\" :effects=\"trackEffects\" :combo=\"trackCombo\" :combo-enabled=\"comboEnabled\" :demonstration-enabled=\"demonstrationEnabled\" @texture-status=\"trackTextures = $event\" /><ArchiveSongLongPreview v-else ref=\"longPreview\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :cursor=\"safeCursor\" :scale=\"scale\" :layout=\"longLayout\" :follow=\"followPlayback && playing\" @seek=\"seek\" /></div>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongChartPreview",
+    "file": "src/components/archive/ArchiveSongChartPreview.vue",
+    "line": 28,
     "event": "@seek",
     "handler": "seek",
-    "template": "<div class=\"chart-viewport\" :class=\"{ 'is-long': mode === 'long' }\" tabindex=\"0\" role=\"region\" aria-label=\"谱面画布\" @keydown=\"onCanvasKey\"><p class=\"chart-count chart-hud\"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if=\"mode === 'perspective'\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :position=\"trackPosition\" :speed=\"safeSpeed\" :effects=\"trackEffects\" :combo=\"trackCombo\" :combo-enabled=\"comboEnabled\" :demonstration-enabled=\"demonstrationEnabled\" /><ArchiveSongLongPreview v-else ref=\"longPreview\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :cursor=\"safeCursor\" :scale=\"scale\" :layout=\"longLayout\" :follow=\"followPlayback && playing\" @seek=\"seek\" /></div>",
+    "template": "<div class=\"chart-viewport\" :class=\"{ 'is-long': mode === 'long' }\" tabindex=\"0\" role=\"region\" aria-label=\"谱面画布\" @keydown=\"onCanvasKey\"><p class=\"chart-count chart-hud\"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if=\"mode === 'perspective'\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :position=\"trackPosition\" :speed=\"safeSpeed\" :effects=\"trackEffects\" :combo=\"trackCombo\" :combo-enabled=\"comboEnabled\" :demonstration-enabled=\"demonstrationEnabled\" @texture-status=\"trackTextures = $event\" /><ArchiveSongLongPreview v-else ref=\"longPreview\" :chart=\"chart\" :skin=\"skin\" :title=\"`${title} ${activeDifficulty.label}`\" :cursor=\"safeCursor\" :scale=\"scale\" :layout=\"longLayout\" :follow=\"followPlayback && playing\" @seek=\"seek\" /></div>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 24,
+    "line": 30,
     "event": "@loadedmetadata",
     "handler": "applyPendingSeek",
     "template": "<audio v-if=\"audioTrack?.url\" ref=\"audio\" :src=\"audioTrack.url\" preload=\"none\" aria-label=\"谱面同步完整混音\" @loadedmetadata=\"applyPendingSeek\" />",
@@ -8642,7 +8732,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 25,
+    "line": 31,
     "event": "@input",
     "handler": "seekSeconds(Number($event.target.value))",
     "template": "<div class=\"chart-timeline\"><span class=\"chart-time\">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value=\"currentSeconds\" type=\"range\" min=\"0\" :max=\"totalSeconds\" step=\"0.01\" aria-label=\"谱面时间轴\" @input=\"seekSeconds(Number($event.target.value))\" /><div v-if=\"maintainer\" class=\"tick-position\"><button v-if=\"!editingTick\" ref=\"tickButton\" type=\"button\" class=\"tick-readout\" aria-label=\"编辑谱面 tick 位置\" title=\"点击输入 tick 精确定位\" :data-tick=\"Math.round(safeCursor)\" @click=\"editTick\">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref=\"tickInput\" v-model=\"tickDraft\" type=\"number\" min=\"0\" :max=\"chart.maxTick\" step=\"1\" aria-label=\"轨道位置 tick\" @blur=\"commitTick()\" @keydown.enter.prevent=\"commitTick(true)\" @keydown.esc.stop.prevent=\"cancelTick(true)\" /> <span>/ {{ chart.maxTick }}</span></label>",
@@ -8652,7 +8742,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 25,
+    "line": 31,
     "event": "@click",
     "handler": "editTick",
     "template": "<div class=\"chart-timeline\"><span class=\"chart-time\">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value=\"currentSeconds\" type=\"range\" min=\"0\" :max=\"totalSeconds\" step=\"0.01\" aria-label=\"谱面时间轴\" @input=\"seekSeconds(Number($event.target.value))\" /><div v-if=\"maintainer\" class=\"tick-position\"><button v-if=\"!editingTick\" ref=\"tickButton\" type=\"button\" class=\"tick-readout\" aria-label=\"编辑谱面 tick 位置\" title=\"点击输入 tick 精确定位\" :data-tick=\"Math.round(safeCursor)\" @click=\"editTick\">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref=\"tickInput\" v-model=\"tickDraft\" type=\"number\" min=\"0\" :max=\"chart.maxTick\" step=\"1\" aria-label=\"轨道位置 tick\" @blur=\"commitTick()\" @keydown.enter.prevent=\"commitTick(true)\" @keydown.esc.stop.prevent=\"cancelTick(true)\" /> <span>/ {{ chart.maxTick }}</span></label>",
@@ -8662,7 +8752,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 25,
+    "line": 31,
     "event": "@blur",
     "handler": "commitTick()",
     "template": "<div class=\"chart-timeline\"><span class=\"chart-time\">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value=\"currentSeconds\" type=\"range\" min=\"0\" :max=\"totalSeconds\" step=\"0.01\" aria-label=\"谱面时间轴\" @input=\"seekSeconds(Number($event.target.value))\" /><div v-if=\"maintainer\" class=\"tick-position\"><button v-if=\"!editingTick\" ref=\"tickButton\" type=\"button\" class=\"tick-readout\" aria-label=\"编辑谱面 tick 位置\" title=\"点击输入 tick 精确定位\" :data-tick=\"Math.round(safeCursor)\" @click=\"editTick\">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref=\"tickInput\" v-model=\"tickDraft\" type=\"number\" min=\"0\" :max=\"chart.maxTick\" step=\"1\" aria-label=\"轨道位置 tick\" @blur=\"commitTick()\" @keydown.enter.prevent=\"commitTick(true)\" @keydown.esc.stop.prevent=\"cancelTick(true)\" /> <span>/ {{ chart.maxTick }}</span></label>",
@@ -8672,7 +8762,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 25,
+    "line": 31,
     "event": "@keydown.enter.prevent",
     "handler": "commitTick(true)",
     "template": "<div class=\"chart-timeline\"><span class=\"chart-time\">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value=\"currentSeconds\" type=\"range\" min=\"0\" :max=\"totalSeconds\" step=\"0.01\" aria-label=\"谱面时间轴\" @input=\"seekSeconds(Number($event.target.value))\" /><div v-if=\"maintainer\" class=\"tick-position\"><button v-if=\"!editingTick\" ref=\"tickButton\" type=\"button\" class=\"tick-readout\" aria-label=\"编辑谱面 tick 位置\" title=\"点击输入 tick 精确定位\" :data-tick=\"Math.round(safeCursor)\" @click=\"editTick\">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref=\"tickInput\" v-model=\"tickDraft\" type=\"number\" min=\"0\" :max=\"chart.maxTick\" step=\"1\" aria-label=\"轨道位置 tick\" @blur=\"commitTick()\" @keydown.enter.prevent=\"commitTick(true)\" @keydown.esc.stop.prevent=\"cancelTick(true)\" /> <span>/ {{ chart.maxTick }}</span></label>",
@@ -8682,7 +8772,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 25,
+    "line": 31,
     "event": "@keydown.esc.stop.prevent",
     "handler": "cancelTick(true)",
     "template": "<div class=\"chart-timeline\"><span class=\"chart-time\">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value=\"currentSeconds\" type=\"range\" min=\"0\" :max=\"totalSeconds\" step=\"0.01\" aria-label=\"谱面时间轴\" @input=\"seekSeconds(Number($event.target.value))\" /><div v-if=\"maintainer\" class=\"tick-position\"><button v-if=\"!editingTick\" ref=\"tickButton\" type=\"button\" class=\"tick-readout\" aria-label=\"编辑谱面 tick 位置\" title=\"点击输入 tick 精确定位\" :data-tick=\"Math.round(safeCursor)\" @click=\"editTick\">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref=\"tickInput\" v-model=\"tickDraft\" type=\"number\" min=\"0\" :max=\"chart.maxTick\" step=\"1\" aria-label=\"轨道位置 tick\" @blur=\"commitTick()\" @keydown.enter.prevent=\"commitTick(true)\" @keydown.esc.stop.prevent=\"cancelTick(true)\" /> <span>/ {{ chart.maxTick }}</span></label>",
@@ -8692,7 +8782,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 26,
+    "line": 32,
     "event": "@click",
     "handler": "seek(0)",
     "template": "<div class=\"chart-navigation\"><div class=\"chart-step\" role=\"group\" aria-label=\"谱面播放操作\"><button type=\"button\" aria-label=\"回到开头\" title=\"歌曲开头 · 0 秒\" @click=\"seek(0)\"><SkipBack :size=\"19\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"上一个音符\" title=\"上一个音符 · ←\" :disabled=\"!previousNote\" @click=\"step(-1)\"><ChevronLeft :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" class=\"chart-play\" :aria-label=\"starting || playing ? '暂停' : '播放'\" :disabled=\"!audioTrack?.url\" @click=\"togglePlayback\"><component :is=\"starting || playing ? Pause : Play\" :size=\"21\" aria-hidden=\"true\" />{{ starting || playing ? '暂停' : '播放' }}</button><button type=\"button\" aria-label=\"下一个音符\" title=\"下一个音符 · →\" :disabled=\"!nextNote\" @click=\"step(1)\"><ChevronRight :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"播放末尾\" title=\"播放末尾（含尾奏）\" @click=\"seekSeconds(totalSeconds)\"><SkipForw",
@@ -8702,7 +8792,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 26,
+    "line": 32,
     "event": "@click",
     "handler": "step(-1)",
     "template": "<div class=\"chart-navigation\"><div class=\"chart-step\" role=\"group\" aria-label=\"谱面播放操作\"><button type=\"button\" aria-label=\"回到开头\" title=\"歌曲开头 · 0 秒\" @click=\"seek(0)\"><SkipBack :size=\"19\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"上一个音符\" title=\"上一个音符 · ←\" :disabled=\"!previousNote\" @click=\"step(-1)\"><ChevronLeft :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" class=\"chart-play\" :aria-label=\"starting || playing ? '暂停' : '播放'\" :disabled=\"!audioTrack?.url\" @click=\"togglePlayback\"><component :is=\"starting || playing ? Pause : Play\" :size=\"21\" aria-hidden=\"true\" />{{ starting || playing ? '暂停' : '播放' }}</button><button type=\"button\" aria-label=\"下一个音符\" title=\"下一个音符 · →\" :disabled=\"!nextNote\" @click=\"step(1)\"><ChevronRight :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"播放末尾\" title=\"播放末尾（含尾奏）\" @click=\"seekSeconds(totalSeconds)\"><SkipForw",
@@ -8712,7 +8802,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 26,
+    "line": 32,
     "event": "@click",
     "handler": "togglePlayback",
     "template": "<div class=\"chart-navigation\"><div class=\"chart-step\" role=\"group\" aria-label=\"谱面播放操作\"><button type=\"button\" aria-label=\"回到开头\" title=\"歌曲开头 · 0 秒\" @click=\"seek(0)\"><SkipBack :size=\"19\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"上一个音符\" title=\"上一个音符 · ←\" :disabled=\"!previousNote\" @click=\"step(-1)\"><ChevronLeft :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" class=\"chart-play\" :aria-label=\"starting || playing ? '暂停' : '播放'\" :disabled=\"!audioTrack?.url\" @click=\"togglePlayback\"><component :is=\"starting || playing ? Pause : Play\" :size=\"21\" aria-hidden=\"true\" />{{ starting || playing ? '暂停' : '播放' }}</button><button type=\"button\" aria-label=\"下一个音符\" title=\"下一个音符 · →\" :disabled=\"!nextNote\" @click=\"step(1)\"><ChevronRight :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"播放末尾\" title=\"播放末尾（含尾奏）\" @click=\"seekSeconds(totalSeconds)\"><SkipForw",
@@ -8722,7 +8812,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 26,
+    "line": 32,
     "event": "@click",
     "handler": "step(1)",
     "template": "<div class=\"chart-navigation\"><div class=\"chart-step\" role=\"group\" aria-label=\"谱面播放操作\"><button type=\"button\" aria-label=\"回到开头\" title=\"歌曲开头 · 0 秒\" @click=\"seek(0)\"><SkipBack :size=\"19\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"上一个音符\" title=\"上一个音符 · ←\" :disabled=\"!previousNote\" @click=\"step(-1)\"><ChevronLeft :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" class=\"chart-play\" :aria-label=\"starting || playing ? '暂停' : '播放'\" :disabled=\"!audioTrack?.url\" @click=\"togglePlayback\"><component :is=\"starting || playing ? Pause : Play\" :size=\"21\" aria-hidden=\"true\" />{{ starting || playing ? '暂停' : '播放' }}</button><button type=\"button\" aria-label=\"下一个音符\" title=\"下一个音符 · →\" :disabled=\"!nextNote\" @click=\"step(1)\"><ChevronRight :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"播放末尾\" title=\"播放末尾（含尾奏）\" @click=\"seekSeconds(totalSeconds)\"><SkipForw",
@@ -8732,7 +8822,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 26,
+    "line": 32,
     "event": "@click",
     "handler": "seekSeconds(totalSeconds)",
     "template": "<div class=\"chart-navigation\"><div class=\"chart-step\" role=\"group\" aria-label=\"谱面播放操作\"><button type=\"button\" aria-label=\"回到开头\" title=\"歌曲开头 · 0 秒\" @click=\"seek(0)\"><SkipBack :size=\"19\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"上一个音符\" title=\"上一个音符 · ←\" :disabled=\"!previousNote\" @click=\"step(-1)\"><ChevronLeft :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" class=\"chart-play\" :aria-label=\"starting || playing ? '暂停' : '播放'\" :disabled=\"!audioTrack?.url\" @click=\"togglePlayback\"><component :is=\"starting || playing ? Pause : Play\" :size=\"21\" aria-hidden=\"true\" />{{ starting || playing ? '暂停' : '播放' }}</button><button type=\"button\" aria-label=\"下一个音符\" title=\"下一个音符 · →\" :disabled=\"!nextNote\" @click=\"step(1)\"><ChevronRight :size=\"23\" aria-hidden=\"true\" /></button><button type=\"button\" aria-label=\"播放末尾\" title=\"播放末尾（含尾奏）\" @click=\"seekSeconds(totalSeconds)\"><SkipForw",
@@ -8742,7 +8832,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 32,
+    "line": 39,
     "event": "@keydown",
     "handler": "onSettingsTabKey",
     "template": "<div v-if=\"!wide\" class=\"chart-settings-tabs\" role=\"tablist\" aria-label=\"谱面设置分组\" @keydown=\"onSettingsTabKey\"><button v-for=\"group in SETTINGS_GROUPS\" :id=\"`${uid}-tab-${group.id}`\" :key=\"group.id\" type=\"button\" role=\"tab\" :aria-selected=\"settingsTab === group.id\" :aria-controls=\"`${uid}-panel-${group.id}`\" :tabindex=\"settingsTab === group.id ? 0 : -1\" @click=\"settingsTab = group.id\">{{ group.label }}</button></div>",
@@ -8752,7 +8842,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 32,
+    "line": 39,
     "event": "@click",
     "handler": "settingsTab = group.id",
     "template": "<div v-if=\"!wide\" class=\"chart-settings-tabs\" role=\"tablist\" aria-label=\"谱面设置分组\" @keydown=\"onSettingsTabKey\"><button v-for=\"group in SETTINGS_GROUPS\" :id=\"`${uid}-tab-${group.id}`\" :key=\"group.id\" type=\"button\" role=\"tab\" :aria-selected=\"settingsTab === group.id\" :aria-controls=\"`${uid}-panel-${group.id}`\" :tabindex=\"settingsTab === group.id ? 0 : -1\" @click=\"settingsTab = group.id\">{{ group.label }}</button></div>",
@@ -8762,7 +8852,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 36,
+    "line": 43,
     "event": "@change",
     "handler": "speed = safeSpeed",
     "template": "<template v-if=\"mode === 'perspective'\"><GsRow label=\"音符速度\"><template #info>1.0–11.0，沿用原作设置刻度；越大落下越快。</template><input v-model.number=\"speed\" class=\"chart-number\" type=\"number\" min=\"1\" max=\"11\" step=\"0.1\" aria-label=\"轨道视觉配速\" @change=\"speed = safeSpeed\" /><input v-model.number=\"speed\" class=\"chart-range\" type=\"range\" min=\"1\" max=\"11\" step=\"0.1\" aria-label=\"轨道配速滑杆\" /></GsRow></template>",
@@ -8772,7 +8862,7 @@
   {
     "component": "ArchiveSongChartPreview",
     "file": "src/components/archive/ArchiveSongChartPreview.vue",
-    "line": 45,
+    "line": 52,
     "event": "@change",
     "handler": "noteTiming = Math.max(-30,Math.min(30,Math.round(Number(noteTiming)||0)))",
     "template": "<GsRow label=\"音符时机\"><template #info>{{ noteTimingMilliseconds }} ms · 原作刻度 -30～30，每格约 16.67ms。正值延后、负值提前谱面与打击音，0 为关闭；歌曲音频不变。</template><input v-model.number=\"noteTiming\" class=\"chart-number\" type=\"number\" min=\"-30\" max=\"30\" step=\"1\" aria-label=\"音符时机调整\" @change=\"noteTiming = Math.max(-30,Math.min(30,Math.round(Number(noteTiming)||0)))\" /></GsRow>",
@@ -9172,7 +9262,7 @@
   {
     "component": "ArchiveSongTrackPreview",
     "file": "src/components/archive/ArchiveSongTrackPreview.vue",
-    "line": 39,
+    "line": 41,
     "event": "@unavailable",
     "handler": "trackCanvasUnavailable = true",
     "template": "@unavailable=\"trackCanvasUnavailable = true\"",
@@ -9183,6 +9273,16 @@
     "component": "ArchiveSongTrackPreview",
     "file": "src/components/archive/ArchiveSongTrackPreview.vue",
     "line": 42,
+    "event": "@texture-status",
+    "handler": "emit('texture-status', $event)",
+    "template": "@texture-status=\"emit('texture-status', $event)\"",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongTrackPreview",
+    "file": "src/components/archive/ArchiveSongTrackPreview.vue",
+    "line": 45,
     "event": "@unavailable",
     "handler": "holdCanvasUnavailable = true",
     "template": "<ArchiveSongHoldMeshPreview v-if=\"audit?.mode !== 'A' && !holdCanvasUnavailable\" :holds=\"scene.holds\" :skin=\"skin\" :audit-frame=\"auditFrame\" @unavailable=\"holdCanvasUnavailable = true\" />",

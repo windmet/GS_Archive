@@ -15,9 +15,10 @@ const PARTICLE_VERTEX = `attribute vec3 position; attribute vec2 uv; attribute v
 const FRAGMENT = `precision mediump float; varying vec2 textureUV; varying vec4 tint; uniform sampler2D image;
   void main(){ gl_FragColor=texture2D(image,textureUV)*tint; }`
 
+const INTERNAL_TEXTURES = new Set(Object.values(TRACK_TEXTURES))
 const powerOfTwo = n => 2 ** Math.ceil(Math.log2(Math.max(1, n)))
 
-export function createSongTrackCanvasRenderer(canvas, { onTextureReady = () => {}, onLost = () => {} } = {}) {
+export function createSongTrackCanvasRenderer(canvas, { onTextureReady = () => {}, onTextureStatus = () => {}, onLost = () => {} } = {}) {
   const gl = canvas.getContext('webgl', { alpha: false, premultipliedAlpha: true, antialias: true, depth: false, stencil: false, preserveDrawingBuffer: false })
   if (!gl) return null
   let lost = false
@@ -71,23 +72,54 @@ export function createSongTrackCanvasRenderer(canvas, { onTextureReady = () => {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
     entry.ready = true
   }
-  // Decoded images are kept so the static surfaces can be repainted at a new size without refetching.
+  // Decoded images are kept so the static surfaces can be repainted at a new size without refetching. A failed
+  // image is fetched again after a growing pause (1, 2, 4, then every 8 s) instead of leaving a whole kind of note
+  // invisible on a track that otherwise plays; the counts reach the page through onTextureStatus.
+  const failed = new Map() // url -> { attempts, retryAt }
+  let reported = ''
+  function report() {
+    let pending = 0
+    for (const promise of loading.values()) if (promise.pending) pending++
+    const status = { pending, failed: failed.size }
+    if (`${status.pending}/${status.failed}` === reported) return
+    reported = `${status.pending}/${status.failed}`
+    onTextureStatus(status)
+  }
   function image(url) {
-    if (!loading.has(url)) loading.set(url, new Promise((resolve, reject) => {
-      const element = new Image()
-      element.onload = () => resolve(element)
-      element.onerror = reject
-      element.src = url
-    }))
+    const failure = failed.get(url)
+    if (failure && performance.now() < failure.retryAt) return null
+    if (!loading.has(url)) {
+      const promise = new Promise((resolve, reject) => {
+        const element = new Image()
+        element.onload = () => resolve(element)
+        element.onerror = reject
+        element.src = url
+      })
+      promise.pending = true
+      loading.set(url, promise)
+      promise.then(() => { promise.pending = false; failed.delete(url); report() }, () => {
+        promise.pending = false
+        loading.delete(url)
+        const attempts = (failed.get(url)?.attempts || 0) + 1, delay = 1000 * Math.min(8, 2 ** (attempts - 1))
+        failed.set(url, { attempts, retryAt: performance.now() + delay })
+        report()
+        // A paused track draws no next frame; ask for one once the pause is over.
+        setTimeout(() => { if (!lost) onTextureReady() }, delay)
+      })
+      report()
+    }
     return loading.get(url)
   }
   function texture(url) {
     const entry = textures.get(url)
     if (entry?.ready) return entry.texture
-    if (!entry) {
-      textures.set(url, { texture: gl.createTexture(), ready: false })
-      image(url).then(element => { if (!lost) { store(url, element); onTextureReady() } }, () => {})
-    }
+    // The painted surfaces (background, judgement band) are stored when painted, never fetched.
+    if (entry?.requested || INTERNAL_TEXTURES.has(url)) return null
+    const request = image(url)
+    if (!request) return null
+    if (!entry) textures.set(url, { texture: gl.createTexture(), ready: false })
+    textures.get(url).requested = true
+    request.then(element => { if (!lost) { store(url, element); onTextureReady() } }, () => { textures.get(url).requested = false })
     return null
   }
   const white = document.createElement('canvas')
@@ -98,13 +130,18 @@ export function createSongTrackCanvasRenderer(canvas, { onTextureReady = () => {
 
   // Static artwork the SVG used to draw: the lane field under everything, and the judgement line with its rings
   // between the middle nodes and the notes. Painted once per backing size at that size, so it stays sharp.
-  let staticKey = ''
+  let staticKey = '', staticRetryAt = 0
   async function paintStatic(scene, scale) {
     const key = `${canvas.width}x${canvas.height}`
-    if (staticKey === key) return
+    if (staticKey === key || performance.now() < staticRetryAt) return
     staticKey = key
-    const [gradation, judgeGradation, judgeLine] = await Promise.all([LANE_GRADATION, JUDGE_GRADATION, JUDGE_LINE].map(url => image(url).catch(() => null)))
+    const [gradation, judgeGradation, judgeLine] = await Promise.all([LANE_GRADATION, JUDGE_GRADATION, JUDGE_LINE].map(url => image(url)?.catch(() => null) ?? null))
     if (lost || staticKey !== key) return
+    // Paint what arrived; a missing piece is painted in on a later frame once its retry is due.
+    if (!gradation || !judgeGradation || !judgeLine) {
+      staticKey = ''
+      staticRetryAt = Math.max(...[LANE_GRADATION, JUDGE_GRADATION, JUDGE_LINE].map(url => failed.get(url)?.retryAt || 0))
+    }
     const { width, height, lanes, topY, judgeY, judges } = scene
     const background = document.createElement('canvas')
     background.width = canvas.width; background.height = canvas.height
