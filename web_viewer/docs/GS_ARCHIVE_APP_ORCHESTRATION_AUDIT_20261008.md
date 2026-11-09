@@ -1,5 +1,7 @@
 # App orchestration 专项审计
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-08。审计源码：Resource Status 收尾提交 `cc0aa069` 的 `web_viewer/src/App.vue`。本报告讨论职责，不以行数、文件数量或 composable 数量判断完成。
 
 ## 结论

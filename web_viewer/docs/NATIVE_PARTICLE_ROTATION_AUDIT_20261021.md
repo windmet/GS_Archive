@@ -1,5 +1,7 @@
 # 舞台粒子旋转方向复核：确认问题，尚未修正运行时
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 2026-10-21；舞台分支 `stage/20261020-native-followup`，运行时代码 HEAD `f3cab367`。核查时保留了另一个尚未提交的 ossshd 云雾晋升批次；本审计没有修改共用采样器、旋转数据或 ADV 分支。
 
 后续：[方向修复与验收](NATIVE_PARTICLE_ROTATION_FIX_20261021.md)已完成本次发现的角度/UV修正；本页保留修复前审计证据。

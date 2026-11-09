@@ -1,5 +1,7 @@
 # Combo 边界、315 特效及现有线路交接 V9
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入分支 `chart/20261024-autoplay-timeline` / `58304615`。工作目录 `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023/web_viewer`；继续同端口5231、同 `rm-release-20261022` candidate，未部署。用户要求先修 Combo 裁切并接315，再盘清现有线路，而非把评分/技能模拟扩成新的游戏系统。
 
 ## 本批来源和实现

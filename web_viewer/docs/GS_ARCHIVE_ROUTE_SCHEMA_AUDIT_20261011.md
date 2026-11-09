@@ -1,5 +1,7 @@
 # GS Archive per-view route schema 审计（只读）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-11。输入 HEAD：`26425444`（分支 `codex/portal-architecture-cleanup-20261004`）。本批只新增只读审计脚本 [audit-route-schema.mjs](../scripts/audit-route-schema.mjs) 与本文档；没有改变任何路由行为。应用回归与 Browser 均未运行（无行为变更）。
 
 ## 1. 方法与边界

@@ -1,5 +1,7 @@
 # A0 — Audit Infrastructure & Baseline Validation（2026-10-30）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 ## 结论
 
 可以开始 **A1 的人工监督审计**。当前工具已通过负向控制和 mutation 检查，适合采集、定位和复核；**不能作为全站自动化通过门禁**。实际页面输出 `REVIEW_REQUIRED` 或 `INCONCLUSIVE`，不输出产品 PASS。负向测试的 `testPassed` 仅表示检测器检出了预期控制样本。

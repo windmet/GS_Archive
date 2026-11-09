@@ -1,5 +1,7 @@
 # Cloudflare Pages / private R2 Preview
 
+> 已被 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md) §1 取代（2026-11-10）；以下保留为历史记录。
+
 This is a Preview-only deployment contract. Do not attach a production domain or
 interpret a Pages `master` build as production acceptance.
 
@@ -111,6 +113,8 @@ whole corpus is converted in one pass rather than split by class.
 
 ## Architecture
 
+> 已被 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md) §3 取代（2026-11-10）；以下保留为历史记录。
+
 - `npm run build:preview` compiles `index.html` and `/_app/*` into `dist`, then
   copies the Git-tracked JSON files under `public/translations` to
   `dist/translations`. It does not copy the full public resource corpus.
@@ -194,6 +198,8 @@ do not replace it with `sync` without a separately reviewed deletion plan.
 Pages 项目、两个环境（production / preview）、打包、部署、冒烟与回滚现在只由 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md) 规定；本文件保留 R2 导出与转换的细节，此前这里的 Git 集成与手改 `_headers` 步骤已被取代。
 
 ## Network acceptance
+
+> 已被 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md) §2 取代（2026-11-10）；以下保留为历史记录。
 
 After obtaining the branch Preview URL, run:
 

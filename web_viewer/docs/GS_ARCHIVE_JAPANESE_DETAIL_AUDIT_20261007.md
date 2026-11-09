@@ -1,5 +1,7 @@
 # 卡片与活动详情日文巡检（2026-10-07）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 工程交接 4.5 的两个漏扫入口已修复。`audit-visible-japanese.mjs` 改用生产组件的 `data-archive-focus-id` 卡片/活动按钮，并在扫描前确认详情路由及内容根节点。错误入口仍报失败，不再产生“没有日文”的假阳性。新增 `--pages` 可仅扫描指定页面；每次 Chromium profile 在 E 盘本检出的 `.analysis/visible-japanese-profiles` 下创建，退出后清理。
 
 ## 实际验证

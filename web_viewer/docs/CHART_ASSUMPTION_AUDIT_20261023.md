@@ -1,5 +1,7 @@
 # 谱面假设审计与原生链路核对
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-23。输入 `origin/master` / `2bdd3de44582ef3ce79cad1ec8c014f38118a6d9`；分支 `chart/20261023-native-projection`，LF worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023`。先建立台账，未修改运行时代码。范围仅谱面预览及其来源核查；无舞台修改、R2 上传或部署。
 
 当前进展：第一批已接基础读取时长，第二批已接原生坐标曲线与默认面板目标点，第三批已接普通音符的逐音符speed归一化与可见窗口，第四批已接原生音符四角与三皮肤贴图裁切，第五批已接给定绘图平面点的原生长条网格，第六批已接原生middle生成并核实判定核心谓词，第七批核实Special共用读取时长并修正非hold的伪尾点，第八/九批核实并接入flick效果根节点与默认prefab静态提示。首表保留输入提交的审计状态；完整窗口/按压/已判定节点调度、flick连线与完整粒子呈现仍开放，不把坐标合同通过写成原机渲染完成。

@@ -1,5 +1,7 @@
 # GS Archive 架构审计核实与后续交接
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-11。输入：用户提供的《当前分支现行代码架构审计》全文；本地分支 `codex/portal-architecture-cleanup-20261004`，核实 HEAD `47d76acca1c16184c7f0a5f6c813191b9dc90d76`。
 
 本轮只读源码、核对已有文档及路由账本，并新增本交接文档；没有修改实现、重启端口、构建、Browser 验收或部署。以下是结构性风险与建议方案，不能当作已复现的返回错误、播放故障或性能回归。行号均以输入 HEAD 为准，实施前重新定位符号。

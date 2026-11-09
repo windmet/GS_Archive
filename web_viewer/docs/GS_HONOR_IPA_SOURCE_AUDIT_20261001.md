@@ -1,5 +1,7 @@
 # 称号反查：原 IPA 直接读取与扩展检索
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入 HEAD `70a1cfc8`。用户询问是否读取 IPA 后，本轮直接读取 `E:/BaiduNetdiskDownload/SideM/サイスタ - 副本/サイスタ 2.6.10.ipa`，不再只依赖先前提取的 keyfiles。未完整解压媒体、未修改公开数据或前端。本轮新增的是证据和工作记录。
 
 ## 原包与已提取文件一致

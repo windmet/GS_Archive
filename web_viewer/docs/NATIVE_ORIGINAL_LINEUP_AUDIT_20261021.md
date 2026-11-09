@@ -1,5 +1,7 @@
 # 原曲成员载入与站位链路复核（2026-10-21）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入 `3a357bd0`，分支 `stage/20261020-native-followup`。本批只核对来源、消费者和现有行为，没有修改阵容实现、公共数据、read-model、端口或部署。
 
 ## 结论

@@ -1,5 +1,7 @@
 # 2D 舞台：现有反编译与当前接线审计
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-13。输入分支 `claude/native-runtime-fidelity-20261013`，输入 HEAD `39a9d89d`。
 
 本轮按“查看是否有可直接优化的地方”进行源码审计，没有修改运行时、导出资源或发布索引。结论：有，而且既有漏接，也有已接入但字段含义错误的情况。此前 RAW / prefab 审计保留的若干“方法体未知”边界，现在可以用工作区中的 IL2CPP 方法体进一步收窄。

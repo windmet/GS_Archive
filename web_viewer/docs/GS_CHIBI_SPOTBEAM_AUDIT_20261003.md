@@ -1,5 +1,7 @@
 # Not Alone 宽光带与地面光池接线
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 分支 `codex/chibi-stage-reconstruction-20261002`。输入舞台代码 HEAD `ba0ccd6b`；验收时其他窗口已提交歌曲控制台至 `cbb77489`。本批仅改变舞台粒子消费者、对应资源提取及回归。
 
 ## 原生证据

@@ -1,5 +1,7 @@
 # 本地语料检查体检（2026-10-07）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入 HEAD：`1d5dc248`；主检出挂载现有语料。按 `config/verifier-coverage.json` 的 `localOnly.corpus` 执行全部 38 项，每项 90 秒上限，超时终止所属进程树。未运行完整资源构建，也未上传或部署。
 
 ## 结果与边界
