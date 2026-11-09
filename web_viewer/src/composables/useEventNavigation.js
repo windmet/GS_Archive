@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { EntityNotFoundError, isEntityNotFound, notFoundRoute } from '../core/archiveNotFound.js'
 import { externalResourcesForEvent } from '../data/externalStoryResources.js'
 import { withStoryText } from '../localization/story/StoryTextReadiness.js'
 
@@ -141,7 +142,7 @@ export function useEventNavigation({
 
   async function loadEventDetail(id, options = navigation.getLoadOptions?.() || {}) {
     const row = (await loadEventCatalog(options)).find(entry => String(entry.id) === id)
-    if (!row) throw new Error(`Unavailable event: ${id}`)
+    if (!row) throw new EntityNotFoundError(`Unavailable event: ${id}`)
     const detail=await readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
       if (data.view?.schemaVersion !== 2 || String(data.view?.identity?.id) !== id || !Array.isArray(data.view?.episodes) ||
         !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.cast) ||
@@ -173,6 +174,7 @@ export function useEventNavigation({
         eventReadModelStatus.value = ''
       } catch (error) {
         if (!isCurrent()) return null
+        if (isEntityNotFound(error)) return notFoundRoute()
         console.error('[EventReadModel] Failed to restore event route:', error)
         eventReadModelStatus.value = '活动详情暂时无法读取，请稍后重试。'
         route = { view: 'story_catalog' }

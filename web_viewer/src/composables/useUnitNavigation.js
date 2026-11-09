@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { EntityNotFoundError, isEntityNotFound, notFoundRoute } from '../core/archiveNotFound.js'
 
 export function useUnitNavigation({
   unitReadModelCatalog, unitReadModelDetail, unitReadModelStatus, currentArchiveUnitCode,
@@ -125,7 +126,7 @@ export function useUnitNavigation({
   async function loadUnitDetail(unitCode, options = navigation.getLoadOptions?.() || {}) {
     const rows = await loadUnitCatalog(options)
     const row = rows.find(entry => entry.id === unitCode || entry.catalog.unit.unit_code === unitCode)
-    if (!row) throw new Error(`Unavailable unit: ${unitCode}`)
+    if (!row) throw new EntityNotFoundError(`Unavailable unit: ${unitCode}`)
     return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
       if (String(data.view?.entry?.unit?.unit_id) !== row.id ||
         !Array.isArray(data.view?.entry?.members) || !data.view?.entry?.cardStats ||
@@ -149,6 +150,7 @@ export function useUnitNavigation({
         unitReadModelStatus.value = ''
       } catch (error) {
         if (!isCurrent()) return null
+        if (isEntityNotFound(error)) return notFoundRoute()
         console.error('[UnitReadModel] Failed to restore unit route:', error)
         unitReadModelStatus.value = '组合暂时无法读取，请稍后重试。'
         route = { view: 'idols', category: 'idol' }
