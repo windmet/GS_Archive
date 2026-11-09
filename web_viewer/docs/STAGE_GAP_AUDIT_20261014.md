@@ -1,5 +1,7 @@
 # 舞台小人：缺口与未确认项（2026-10-14，合并后审计）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 当前排查入口：[2026-10-15遗留假设审计](STAGE_ASSUMPTION_AUDIT_20261015.md)。已重新核对实际舞台HEAD、原生方法体、RAW哈希与5212 Browser；本文粒子生命周期、背屏几何等未完成描述是历史状态，不再作为当前待办依据。
 
 输入：master 合并点之前的整合分支。包含 codex 舞台线 15 个提交（`5d73443c`…`b32d152b`）和 10-13 的 [接线审计](NATIVE_CHIBI_WIRING_AUDIT_20261013.md)。本文只对照源码、文档和消费者，没有改舞台代码，也没有做原片对照。

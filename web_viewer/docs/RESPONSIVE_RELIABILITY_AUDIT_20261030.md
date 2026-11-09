@@ -1,5 +1,7 @@
 # GS Archive Responsive Reliability Audit — 2026-10-30
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 ## 结论与证据边界
 
 审计基线 `c5efb7a0`（最新 origin/master，含 #150），分支 `portal/20261030-responsive-audit`。没有修改正式 UI / CSS、正式数据或 read-model；没有部署。发现两项实际布局缺陷和一项移动平台风险。**本报告不是全站响应式通过证书**：基础路由已采集，完整交互、全组件 worst-case 和物理设备覆盖尚未完成。未执行的项目明确列在后文，不以几何采集的零结果冒充通过。

@@ -2,34 +2,38 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-30（地址层代码基线 master `97b1a1ae`，R4 #139 已合入；其他条线保留各自交接记录，站点/R2 发布快照未重新验收）
+更新：2026-11-10（master `7123e47a`，含 #200；发布快照已按 2026-11-10 的 preview 部署重写；各条线表格仍是 10-30 前后的记录，逐行见下方说明）
 
 ## 开发基线
 
 | 项 | 值 |
 |---|---|
-| master | 代码基线 `97b1a1ae`（含 #131–#139；R4已合入，后续纯文档提交另计）。在 #98–#104 之上，又合入门户改造 #105–#119、#125，深链接 R1 #121、R2 #123、收口 #124、主干集成补验 #129，歌曲统计小修 #122，面包屑 #120 |
-| 谱面 | 无进行中分支。#98 原生投影、#100 自动演示 / 命中特效 / Combo·315 / 打击音已合入；最新交接 [Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md)，基线 [谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md) |
-| 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `1accd9d0aa698ec03ec6d0b80211939f914940abac105d51021b36a8fb321081`；data revision `2688ad94abf9bd93277ec844a6ada160131e6f0856e5fad891ceb69de72f83bc`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表下表站点已发布 |
-| 已有阶段 tag | `baseline/2026-10-20`（另保留 `baseline/2026-10-14`）；本轮未新增 master 基线 tag |
+| master | 代码基线 `7123e47a`（#200）。自上一版基线 `97b1a1ae`（#139）以来合入 #140–#200（按首父线），按主题：门户 / 布局减法 #140–#149、#153、#158–#159、#161、#163、#166、#169–#170、#176、#184–#185、#194、#197–#200；歌曲页与谱面 #150–#151、#156、#190–#193；阅读器 / 播放器 #152、#179–#181、#183、#186；舞台 #160、#177–#178、#187；翻译 #162、#167、#172、#174–#175、#188；发布与数据治理 #155、#157、#164–#165、#168、#195–#196（见 [发布契约](RELEASE_CONTRACT.md)、[加固方案](GS_ARCHIVE_RELEASE_HARDENING_PLAN_20261109.md)）；其他 #143、#154、#171、#173、#182、#189。分类是按分支名归并，细节看各 PR |
+| 谱面 | 无进行中分支。透视轨已是单 WebGL 画布（#192），沉浸锁定与纹理重试（#193）、主屏全屏（#194）已合；渲染审计见 [CHART_RENDER_PERFORMANCE_AUDIT_20261109.md](CHART_RENDER_PERFORMANCE_AUDIT_20261109.md)。早先的基线与交接：[谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)、[Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md) |
+| 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `a15e642d20f5003730751d6227d95b5248f908e473e598bcce5c48a10e0cc160`；data revision `d049f4fa79d4740bdef1f6dd53b59e20a41d030697c443ba2a082c58d7d5adee`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表线上版本（线上见下表） |
+| 启动预算 | 单一来源 `readmodels/contracts/startup-policy.json`；当前初始 JS gzip 估计约 197,440 B（上限 216,064 B）；启动守卫另有 `bootGuardGzipLimit` 2,112 B。旧文档里的 204,800 / 215,040 等数字已过时 |
+| 已有阶段 tag | `baseline/2026-10-20`（另保留 `baseline/2026-10-14`）；之后未新增 master 基线 tag（未核实 10-20 之后是否有人另打） |
 
-## 发布快照（历史记录，未重新验收）
+## 发布快照（2026-11-10）
 
-以下保留既有发布记录；不根据开发源码推定线上版本。新发布必须另行取得授权并记录实际目标验收。
+发布规则的唯一来源是 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)（两个环境、四道门、命令序列、例外发布、回滚、R2 规则）；本页只记事实快照。
 
-仓库里最新的预览候选分支是 `release/20261023-preview-rc`（`a33f0f7b`）。#106 之后的门户改造和深链接 R1 / R2 都没有部署；下表测试站一行早于该候选，也没有重验（10-29 核对）。
+Pages 项目 `gs-archive-preview` 同时承载 preview 与 production，共用 R2 桶 `sidem-archive-preview`。项目接了 GitHub，但 production 自动部署是关的，只有 `wrangler pages deploy` 上传的部署才会上线；判断线上是哪个版本，看项目的 `canonical_deployment` 加线上回执，不看部署列表里最新的一条。
 
-| 项 | 值 |
+| 环境 | 值 |
 |---|---|
-| read-model release | `2430ef3db583a07878f1967b45e039eb326212cda386b063f6c4f9f8d8a772c3`；候选目录 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261015` |
-| R2 data revision | `fda1a54c6df58cabc13e7a0d86b40ab14ff831270ca0d197fc9a7298279ec3ab`（worktree `.deploy/release-20261015`，6,397 个对象，已上传）。下一批的叠加链最新一项：worktree `.analysis/release-20261015/overlay-20261015.json` |
-| media epoch | `voice64-gzip-all-20260924` |
-| 正式站 | `gs-archive-preview.pages.dev`，仍是 10-12 的 `?view=` 版本（源码 `612f7519` 一线）。发布需用户授权 |
-| 测试站 | `preview.gs-archive.com` / `gs-architecture-device-test.gs-archive-preview.pages.dev`：源码 `126567c8`、release `2430ef3d`、data `fda1a54c`（2026-10-15）。部署记录见 [GS_ARCHIVE_TEST_DEPLOY_20261014.md](GS_ARCHIVE_TEST_DEPLOY_20261014.md) |
+| preview（分支 `gs-architecture-device-test`，`https://preview.gs-archive.com`） | 2026-11-10 部署源码 `7123e47a` → Pages 部署 `822161c6`（当天先部署过 `53c3737c` → `109adac3`），用新的 `scripts/prepare-pages-package.mjs --target preview` 打包。read-model release `a15e642d20f5003730751d6227d95b5248f908e473e598bcce5c48a10e0cc160`；data revision `d049f4fa79d4740bdef1f6dd53b59e20a41d030697c443ba2a082c58d7d5adee`；compiled revision `4afb61ee02808965c8149f335b2f246f3afe543423f65fd8b9afa5de2c02fbed`；译文 release `61c373ae`（1665 个包，逐字节比对通过）。`verify-deployed-site` 全 PASS，一条预期 WARN：缺失的 `/_app` chunk 会被 SPA 回退成 200 HTML |
+| production（分支 `master`，`https://gs-archive.com` 与 `gs-archive-preview.pages.dev`） | 目前是 2026-11-04 用户授权的例外发布：Pages 部署 `924c79bb`，源码 `ff69dc7b`；`gs-archive.com` 顶级域 CNAME 于 2026-11-09 生效。更早的正式站记录见 [PRODUCTION_RELEASE_20261012.md](PRODUCTION_RELEASE_20261012.md) |
 
-10-21 R2 后续批次（#75）：已按用户清单清理 6 个旧 versions 前缀（28,413 对象 / 864,334,155 B），并上传 manifest 7f82de33 的 8,540 个对象，新数据版本 d1486597。实际桶占用 7,688,943,418 B。站点与 read-model 绑定仍为上表值；本批未部署。最新新增批次及下一次 baseline overlay 的使用方式见 [R2 批次记录](GS_ARCHIVE_R2_RELEASE_20261021.md)。 下一次叠加链：seed → 10-04 `uploaded-baseline.json` → overlay-20261021（10-19 清理删掉了 10-04/10-06 批次 manifest，旧链加载不了）。
+production 新包 `pkg-production-7123e47a`（例外发布，站长原话“我授权你可以合并，等都做完之后部署”）已出，**尚未部署**：AI 执行部署被自动模式拦截，需站长亲手执行。命令、验收与回滚见 [2026-11-10 发布记录](PRODUCTION_RELEASE_20261110.md)。
+
+<!-- PRODUCTION-20261110: 部署后把上表 production 行改成新部署 -->
+
+R2 现状：桶用量、各 versions 前缀的清单与最近批次的叠加链未在本次核对（未核实）；批次记录见 [R2 批次记录](GS_ARCHIVE_R2_RELEASE_20261021.md)，上传流程见 [PREVIEW_DEPLOYMENT.md](PREVIEW_DEPLOYMENT.md)，R2 规则见契约第 7 节。部署前后的只读核对见 [RELEASE_PIPELINE_CHECKS_20261109.md](RELEASE_PIPELINE_CHECKS_20261109.md)。
 
 ## 各条线
+
+> 本表各行写于 2026-10-30 前后，分支、“未部署”和下一步多数已过时；最新进度以上方 master 摘要、对应 PR 与各线交接文档为准，逐行未重新核实。
 
 | 线 | 当前分支 | 下一步 |
 |---|---|---|
@@ -58,7 +62,7 @@ Smoke UV补证（输入 `f5f174a7`）：down两系统的1×12源网格经过原�
 - 主 checkout `E:/Web_build/SideM_Archived`，保存完整语料（public/assets）和 `.deploy` 历史批次。
 - 领域 worktree 在 `E:/Web_build/GS_Archive_Domain_Work/<名字>`，只需联接 `node_modules`，语料不拷不联接：dev 服务把 worktree `public/` 里没有的 `/assets`、`/data` 文件从主 checkout 的 `public/` 读（`scripts/lib/public-corpus-plugin.mjs`，两边都没有就是 404），源配置读主 checkout 的 `config/archive_sources.local.json`（JS 与 `data_pipeline/archive_paths.py` 同一规则）。旧 worktree 若 `web_viewer/public` 是联接，删 worktree 前先解联接。资产清单要加 `--follow-junctions`；`build:check` 在这里重写的 `config/resource-audit.json` 不要提交。
 - 本地验收服务：5177。不设 `SIDEM_READMODEL_CANDIDATE` 时，dev 服务在本地配置的 `readmodel_candidates_root`（本机为 `E:/Web_build/GS_Archive_Domain_Work`）里挑 release 与 `readmodels/bootstrap.inline.json` 相同的候选；找不到会在启动日志里警告，`/_catalog` 请求返回 404。要看别的候选仍可显式设置。
-- 谱面验收服务：5231，worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023/web_viewer`；bootstrap release `1accd9d0`。复用前仍核对进程和实际 HTTP 模块。
+- 谱面验收服务（10-24 记录，未核实）：5231，worktree `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023/web_viewer`；bootstrap release `1accd9d0`。复用前仍核对进程和实际 HTTP 模块。
 - 最近一轮舞台验收服务记录：5213，主 checkout `web_viewer`，候选 `rm-release-20261015`；5212 仍服务旧舞台 worktree。复用前检查实际 HTTP 模块和 bootstrap，不凭端口判断分支。
 - 复现 CI：`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录>`，`node_modules` 用联接；主 checkout 有语料又是 CRLF，会把 CI 红项跑绿。
 - 10-19 整理后的旧发布包、任务包、worktree 快照在 `E:/GS_Archive_cold/20261019/`。

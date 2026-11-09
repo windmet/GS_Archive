@@ -1,5 +1,7 @@
 # 类型5/6转动激光粒子与Animator接线
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入舞台 HEAD `a07981d1`，分支 `codex/chibi-stage-reconstruction-20261002`。验收时其他窗口已提交歌曲歌词至 `50e581cc`。未修改其工作文件。
 
 ## 来源与问题

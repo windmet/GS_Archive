@@ -1,5 +1,7 @@
 # 独立站位轨道与原生脚下阴影
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入 HEAD：4bebf276，分支 codex/chibi-stage-reconstruction-20261002。
 
 ## 站位故障

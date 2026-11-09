@@ -1,5 +1,7 @@
 # GS Archive 主门户 UI 审计与分批验收
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-03。初始 HEAD：`aa0ba5b1`，分支：`codex/chibi-stage-reconstruction-20261002`。
 
 ## 范围与约束

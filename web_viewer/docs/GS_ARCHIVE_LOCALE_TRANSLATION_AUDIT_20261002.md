@@ -1,5 +1,7 @@
 # 中日资料切换、通用校对批次与当前资源审计
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入 HEAD `aa595ddbd5c7088af29d6f72e0515e108b714ee8`，分支 `codex/story-interaction-v2-before-b002`。本轮不改变 RAW、剧情翻译状态、音频声部和舞台编排；没有新增媒体资源。
 
 ## 用户可见变化

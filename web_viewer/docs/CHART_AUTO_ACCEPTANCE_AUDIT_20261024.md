@@ -1,5 +1,7 @@
 # Auto Canvas 工作区验收与第二份审计交接
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 2026-10-24；输入为 `chart/20261024-autoplay-timeline` / `ad6808e1` 后的未提交 Canvas 改动，实查工作目录 `E:/Web_build/GS_Archive_Domain_Work/chart-native-projection-20261023/web_viewer`。本页接续[资源反查交接](CHART_AUTO_RESOURCE_HANDOFF_20261024.md)，不覆盖前一份的历史状态。
 
 ## 验收结论

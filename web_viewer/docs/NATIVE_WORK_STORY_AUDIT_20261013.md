@@ -1,5 +1,7 @@
 # 工作剧情组织与目录准确性核查
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 2026-10-13；输入 HEAD `a64249aa`。只读核查：不改前端、目录数据或资源，不构建、不重启 5212、不部署。
 
 ## 结论

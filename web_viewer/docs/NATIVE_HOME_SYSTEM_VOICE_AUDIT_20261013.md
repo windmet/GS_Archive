@@ -1,5 +1,7 @@
 # 原版首页通用、时段与季节语音链路核查
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 核查日期：2026-10-13。输入 HEAD：`de850b7e6af128f8920427ef5efa7d4f2382d8aa`，分支 `claude/native-runtime-fidelity-20261013`。本批只读核查并记录结论，不修改首页、编译数据或资源，不部署。
 
 ## 结论

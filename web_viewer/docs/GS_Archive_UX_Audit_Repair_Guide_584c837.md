@@ -1,5 +1,7 @@
 # UX 审计修复验收更新（2026-10-02）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 ## 最新：中日资料切换、校对批次与当前审计
 
 最新测试页：[fc8c1bb0 · 当前审计](https://fc8c1bb0.gs-archive-preview.pages.dev/?view=archive_status)，代码 `c6e4ec35`，已推送。线上资源状态已验；此前同批测试页完成剧情统计和日文道具/中文搜索，最终补修 Player 按钮可访问名称并完成实际菜单切换验收。只更新测试分支，早先地址与结论保留为历史证据。
