@@ -568,7 +568,7 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
 /* iOS starts a selection, its magnifier or the callout under several fingers or a long press; none of it belongs here. */
 .is-immersive, .is-immersive * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 .chart-lock-shield { position: absolute; z-index: 4; inset: 0; touch-action: none; }
-.chart-unlock { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: inline-flex; align-items: center; gap: var(--gs-space-2); height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 0.35); border-radius: 999px; background: rgb(0 0 0 / 0.55) linear-gradient(90deg, var(--gs-mint) 0 0) no-repeat left / 0 100%; color: var(--gs-stage-ink); opacity: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
+.chart-unlock { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: inline-flex; align-items: center; gap: var(--gs-space-2); height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 0.35); border-radius: var(--gs-radius-pill); background: rgb(0 0 0 / 0.55) linear-gradient(90deg, var(--gs-mint) 0 0) no-repeat left / 0 100%; color: var(--gs-stage-ink); opacity: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
 .chart-unlock.is-shown, .chart-unlock:focus-visible { opacity: 1; }
 /* The fill shows how long the press still has to last. */
 .chart-unlock.is-holding { background-size: 100% 100%; transition: opacity var(--gs-duration-base, 200ms) ease, background-size 800ms linear; }
