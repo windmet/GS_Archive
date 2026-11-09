@@ -84,8 +84,22 @@ try {
     delete env.ARCHIVE_GZIP_MODE
     await call(); assert.equal(heads.at(-1), key)
   }
+  // A throwing bucket must become a retryable 503, never an uncaught exception (Cloudflare error 1101).
+  for (const failing of ['head', 'get']) {
+    const env = { ARCHIVE_ASSETS: {
+      async head() { if (failing === 'head') throw new Error('R2 head fault'); return { size: 3, httpMetadata: { contentType: 'image/png' } } },
+      async get() { throw new Error('R2 get fault') },
+    } }
+    for (const method of failing === 'head' ? ['GET', 'HEAD'] : ['GET']) {
+      const response = await serveR2Resource({ env, prefix: 'assets', request: new Request('https://canary.test/assets/a.png', { method }) })
+      assert.equal(response.status, 503, `bucket.${failing}() throwing must answer 503 (${method})`)
+      assert.equal(response.headers.get('Retry-After'), '5')
+      assert.equal(response.headers.get('Cache-Control'), 'no-store')
+      assert.equal(response.headers.get('Content-Type'), 'text/plain; charset=utf-8')
+    }
+  }
   for (const key of ['assets/voice/a.m4a', 'data/reading/a.json', 'data/compiled-extra/a.json', 'assets/lipsync/a.png', 'assets/live-chibi/motions/a.json', 'data/compiled/../a.json']) {
     assert.equal(isPreviewGzipCandidate(key), false, `Unexpected gzip scope: ${key}`)
   }
 } finally { globalThis.Response = nativeResponse }
-console.log('Structured gzip routing verified: rollout, metadata, manual body, gzip/identity negotiation, GET/HEAD/304, ignored Range, binary motions, source drift')
+console.log('Structured gzip routing verified: rollout, metadata, manual body, gzip/identity negotiation, GET/HEAD/304, ignored Range, binary motions, source drift, bucket exceptions as 503')

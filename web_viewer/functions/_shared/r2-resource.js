@@ -47,6 +47,14 @@ function requestedRange(value, size) {
   return { start, end: Math.min(end, size - 1) }
 }
 
+// R2 can throw (binding fault, transient platform error). Uncaught, that surfaces as Cloudflare's 1101 page; a 503 with
+// Retry-After tells browsers and CDNs it is temporary and must not be cached.
+function unavailable() {
+  return new Response('Resource temporarily unavailable', {
+    status: 503, headers: { 'Retry-After': '5', 'Cache-Control': 'no-store', 'Content-Type': 'text/plain; charset=utf-8' },
+  })
+}
+
 export async function serveR2Resource({ request, env, prefix }) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } })
@@ -78,7 +86,8 @@ export async function serveR2Resource({ request, env, prefix }) {
     return new Response(null, { status: 406, headers: { Vary: 'Accept-Encoding', 'Cache-Control': 'no-store' } })
   }
   const bucket = env.ARCHIVE_ASSETS
-  const meta = await bucket.head(objectKey)
+  let meta
+  try { meta = await bucket.head(objectKey) } catch { return unavailable() }
   if (!meta) return new Response(null, { status: 404 })
   const etag = meta.httpEtag || (meta.etag ? `"${meta.etag}"` : undefined)
   // Fail closed on a bad upload instead of returning compressed bytes as JSON.
@@ -121,7 +130,8 @@ export async function serveR2Resource({ request, env, prefix }) {
     headers.set('Content-Length', String(range.end - range.start + 1))
   }
   if (request.method === 'HEAD') return new Response(null, { status: range ? 206 : 200, headers, encodeBody: 'manual' })
-  const object = await bucket.get(objectKey, range ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined)
+  let object
+  try { object = await bucket.get(objectKey, range ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined) } catch { return unavailable() }
   if (!object) return new Response(null, { status: 404 })
   return new Response(object.body, { status: range ? 206 : 200, headers, encodeBody: 'manual' })
 }

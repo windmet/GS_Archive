@@ -705,14 +705,17 @@ const storyViewerLoader = () => import('./core/StoryViewer.vue')
 const immersiveHomeLoader = () => import('./components/archive/ArchiveImmersiveHome.vue')
 const spineViewerLoader = () => import('./components/SpineViewer.vue')
 const chibiStageViewerLoader = () => import('./components/ChibiStageViewer.vue')
-const StoryViewer = defineAsyncComponent(storyViewerLoader)
+// A tab left open across a deploy asks for chunk hashes that no longer exist; the error component lets the viewer reload
+// instead of showing nothing (the page-level components below do the same).
+const defineArchivePage = loader => defineAsyncComponent({ loader, errorComponent: ArchivePageLoadError })
+const StoryViewer = defineArchivePage(storyViewerLoader)
 // Maintainer-only (?runtimeDebug=1): keep it out of the main bundle.
 const StoryReleaseSoakPanel = defineAsyncComponent(() => import('./components/player/StoryReleaseSoakPanel.vue'))
 // Only a first visit needs it.
-const ArchiveOnboarding = defineAsyncComponent(() => import('./components/archive/ArchiveOnboarding.vue'))
-const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
-const SpineViewer = defineAsyncComponent(spineViewerLoader)
-const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
+const ArchiveOnboarding = defineArchivePage(() => import('./components/archive/ArchiveOnboarding.vue'))
+const ArchiveImmersiveHome = defineArchivePage(immersiveHomeLoader)
+const SpineViewer = defineArchivePage(spineViewerLoader)
+const ChibiStageViewer = defineArchivePage(chibiStageViewerLoader)
 const archiveRouteLoaders = {
   event_catalog: () => import('./components/archive/ArchiveEventCatalog.vue'),
   collection_catalog: () => import('./components/archive/ArchiveCollectionCatalog.vue'),
@@ -745,7 +748,6 @@ const archiveRouteLoaders = {
   archive_status: () => import('./components/archive/ArchiveStatus.vue'),
   external_story_resources: () => import('./components/archive/ArchiveExternalStoryResources.vue'),
 }
-const defineArchivePage = loader => defineAsyncComponent({ loader, errorComponent: ArchivePageLoadError })
 const ArchiveStoryReader = defineArchivePage(archiveRouteLoaders.reader)
 const ArchiveEventDetail = defineArchivePage(archiveRouteLoaders.event_detail)
 const ArchiveEventCatalog = defineArchivePage(archiveRouteLoaders.event_catalog)
@@ -2657,13 +2659,15 @@ onMounted(async () => {
   if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   try {
     await restoreRoute(startup.route)
+    globalThis.__gsBoot?.mark('ready')
   } catch (error) {
     // A failed first read must not leave a blank page: the portal degrades gracefully offline.
     console.error('[ArchiveRoute] Failed to open the initial route:', error)
-    if (view.value !== '__boot__') return
+    if (view.value !== '__boot__') { globalThis.__gsBoot?.mark('ready'); return }
     loading.value = false
     userPreferenceNotice.value = '该页面暂时无法打开，已回到资料馆。'
     commitView('portal')
+    globalThis.__gsBoot?.mark('ready')
   }
 })
 
