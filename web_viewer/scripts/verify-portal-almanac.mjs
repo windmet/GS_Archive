@@ -3,7 +3,7 @@
 // ticket-pool evidence, with the month taken by
 // Intl in Asia/Tokyo (an independent route from the generator's offset arithmetic). Idol scopes carry no
 // almanac and the all-idol scope stays under its budget. The 运营轨迹 timeline it replaced is retired: the Portal
-// has no fallback, so prepare-readmodel-preview runs this before any release is packaged.
+// has no fallback, so prepare-pages-package runs this before any release is packaged.
 //   node scripts/verify-portal-almanac.mjs <read-model candidate root>
 import assert from 'node:assert/strict'
 import fs from 'node:fs'

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "note": "Core reader journeys a production package needs for its frozen source digest (docs/RELEASE_CONTRACT.md). Run them on the deployed preview of that package, never on a dev server. A results file lists one row per journey x required device: {journey, device, status: pass|fail, browser, evidence}. Parity and per-route device rows in routes.json stay progress, not release gates.",
+  "devices": [
+    { "id": "desktop-chrome", "label": "Desktop Chrome or Edge, current stable, 1280+ wide", "required": true },
+    { "id": "android-edge", "label": "Android phone, Chromium browser (K60 Ultra Edge over CDP)", "required": true },
+    { "id": "ios-safari", "label": "iPhone or iPad Safari on the deployed preview", "required": true },
+    { "id": "android-webview-floor", "label": "Oldest supported engine check (Nox WebView); records the floor behaviour", "required": false }
+  ],
+  "journeys": [
+    {
+      "id": "cold-start-portal",
+      "title": "冷启动首页",
+      "steps": ["Clear site data", "Open the origin root", "Wait for the Portal"],
+      "pass": "The Portal renders with idol scope and almanac; no permanent loading curtain, no console error, no failed same-origin request."
+    },
+    {
+      "id": "idol-to-card",
+      "title": "首页 → 偶像 → 卡片详情",
+      "steps": ["From the Portal open an idol", "Open one of the idol's cards", "Play one card voice"],
+      "pass": "Each page shows its title, images and data rows; the voice plays; the browser address is the public path."
+    },
+    {
+      "id": "deep-link-refresh",
+      "title": "深链接与刷新",
+      "steps": ["Open /idols/<id>/ and /cards/<resource_id>/ directly", "Refresh each", "Share-link preview shows the page title"],
+      "pass": "Both open the same page after refresh; canonical points at the release origin; no fallback to the Portal."
+    },
+    {
+      "id": "history-back-forward",
+      "title": "返回 / 前进",
+      "steps": ["Portal → song catalog → song detail → back → back → forward"],
+      "pass": "Every step restores the previous page, scroll position and filters without a blank frame."
+    },
+    {
+      "id": "story-reader",
+      "title": "剧情阅读器",
+      "steps": ["Open a main story collection", "Open the reader for one episode", "Switch translation on and off"],
+      "pass": "Text, speaker names and translation render; the table of contents navigates within the episode."
+    },
+    {
+      "id": "story-player",
+      "title": "剧情播放器（语音）",
+      "steps": ["Start the player from a story", "Advance several lines with voice", "Leave the player"],
+      "pass": "Background, characters and voice play in sync; leaving returns to the story page; no resource-failure notice."
+    },
+    {
+      "id": "song-audition",
+      "title": "歌曲试听",
+      "steps": ["Open a song detail", "Start the audition", "Switch the track"],
+      "pass": "Audio plays and switches without the layout growing; the play state is visible."
+    },
+    {
+      "id": "song-chart",
+      "title": "谱面",
+      "steps": ["Open /songs/<code>/chart", "Play for 20 seconds", "Change difficulty"],
+      "pass": "Notes move in sync with the audio; changing difficulty keeps playing; the track texture is present."
+    },
+    {
+      "id": "stage-2d",
+      "title": "2D 舞台",
+      "steps": ["From LIVE open 2D舞台 for one song", "Play 20 seconds", "Exit"],
+      "pass": "Performers, lights and audio play; exit returns to the previous page."
+    },
+    {
+      "id": "photo-studio",
+      "title": "摄影工坊",
+      "steps": ["Open the studio", "Pick a background and an idol", "Save the picture"],
+      "pass": "The composition renders and the saved image matches the canvas."
+    },
+    {
+      "id": "search-filter",
+      "title": "搜索与筛选",
+      "steps": ["Search an idol name on the Portal", "Filter the card catalog by rarity and attribute"],
+      "pass": "Results update for both; the filter state survives a refresh through the address."
+    }
+  ]
+}
