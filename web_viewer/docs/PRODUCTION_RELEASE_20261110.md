@@ -28,20 +28,32 @@
 
 ## production
 
-<!-- PRODUCTION-DEPLOY: 部署后补 Pages 部署号、canonical 与冒烟结果 -->
+| 项目 | 值 |
+| --- | --- |
+| Pages 部署 | `0416f1f5-caeb-4bb1-976c-58ad62ca875d`（ad_hoc，commit `7123e47a`，创建于 2026-11-09T23:30:28Z，即北京时间 11-10 07:30） |
+| 执行人 | 站长亲手执行。AI 执行同一命令被 Claude Code 自动模式拦截（Production Deploy 类别），没有绕过 |
+| `canonical_deployment` | 从 `924c79bb` 换成 `0416f1f5`（Cloudflare API 只读核实） |
+| 上传 | 共 7601 个文件：新传 1526 个，6075 个已在 |
 
-状态：**包已出，未部署**。AI 执行 `wrangler pages deploy … --branch master` 被 Claude Code 的自动模式拦截（Production Deploy 类别），需要站长亲手执行：
+执行的命令：
 
 ```bash
 cd E:/Web_build/GS_Archive_Domain_Work/release-20261110/web_viewer/.deploy/pkg-production-7123e47a
 npx wrangler pages deploy dist --project-name gs-archive-preview --branch master --commit-hash 7123e47af3fcf7071644f53ad37ccab0dae1e3cd
 ```
 
-之后在 `web_viewer` 下跑 `NODE_USE_ENV_PROXY=1 node scripts/verify-deployed-site.mjs https://gs-archive.com --package .deploy/pkg-production-7123e47a --with-translations`，并确认项目 `canonical_deployment` 已从 `924c79bb` 换成新部署。
+部署后冒烟（`NODE_USE_ENV_PROXY=1 node scripts/verify-deployed-site.mjs <origin> --package .deploy/pkg-production-7123e47a`）：
+
+- `https://gs-archive.com --with-translations`：全 PASS。回执为 production、源码 `7123e47a`、release `a15e642d`，与包一致；无 `X-Robots-Tag`；7 个外壳的 canonical 都指向 `https://gs-archive.com`；robots 正确；sitemap 1524 个 URL；`r2-samples` 6 个键；译文 `61c373ae` 1665 包逐字节一致。只有 preview 上同样出现的那条预期 WARN（missing-chunk）。
+- `https://gs-archive-preview.pages.dev`：同上全 PASS（没跑译文核对）。
+- 浏览器复核（chrome-headless-shell，390 宽）：`/about/` 启动守卫到 `ready`，无面板，无 error；品牌标、站长头像、QQ 群码都加载成功。未知路径回到门户，显示提示并带 noindex。
+- `preview.gs-archive.com` 仍返回 preview 回执（`7123e47a`），没有受影响。
+
+部署后 production 项目变量是 `ARCHIVE_COMPILED_REVISION`、`ARCHIVE_DATA_REVISION`、`ARCHIVE_GZIP_MODE`、`ARCHIVE_SEASONAL_READING_RELEASE`。
 
 包内容：`production-receipt.json` 为 `user-authorized-production-exception`，`approval`/`exception` 记录上面的原话与日期 2026-11-10；无 `X-Robots-Tag`；`robots.txt` 允许收录并指向 sitemap；`sitemap.xml` 1524 个 URL；本地 `--local` 检查通过。
 
-包内 `wrangler.jsonc` 不再带 `ARCHIVE_WORK_BACKFILL_RELEASE`：`/_work-backfill` 在 `7056fe97` 已退役，作品剧情从 R2 快照读取（preview 自 11-06 起如此）。部署后 production 项目变量会少这一项，属预期。
+包内 `wrangler.jsonc` 不再带 `ARCHIVE_WORK_BACKFILL_RELEASE`：`/_work-backfill` 在 `7056fe97` 已退役，作品剧情从 R2 快照读取（preview 自 11-06 起如此）。部署后 production 项目变量少了这一项，属预期。
 
 ## 门 4：核心旅程（在 preview `109adac3` 上）
 

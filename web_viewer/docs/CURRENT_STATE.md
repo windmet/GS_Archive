@@ -2,7 +2,7 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-11-10（master `7123e47a`，含 #200；发布快照已按 2026-11-10 的 preview 部署重写；各条线表格仍是 10-30 前后的记录，逐行见下方说明）
+更新：2026-11-10（master `7123e47a`，含 #200；发布快照已按 2026-11-10 的 preview 与 production 部署重写；各条线表格仍是 10-30 前后的记录，逐行见下方说明）
 
 ## 开发基线
 
@@ -23,11 +23,7 @@ Pages 项目 `gs-archive-preview` 同时承载 preview 与 production，共用 R
 | 环境 | 值 |
 |---|---|
 | preview（分支 `gs-architecture-device-test`，`https://preview.gs-archive.com`） | 2026-11-10 部署源码 `7123e47a` → Pages 部署 `822161c6`（当天先部署过 `53c3737c` → `109adac3`），用新的 `scripts/prepare-pages-package.mjs --target preview` 打包。read-model release `a15e642d20f5003730751d6227d95b5248f908e473e598bcce5c48a10e0cc160`；data revision `d049f4fa79d4740bdef1f6dd53b59e20a41d030697c443ba2a082c58d7d5adee`；compiled revision `4afb61ee02808965c8149f335b2f246f3afe543423f65fd8b9afa5de2c02fbed`；译文 release `61c373ae`（1665 个包，逐字节比对通过）。`verify-deployed-site` 全 PASS，一条预期 WARN：缺失的 `/_app` chunk 会被 SPA 回退成 200 HTML |
-| production（分支 `master`，`https://gs-archive.com` 与 `gs-archive-preview.pages.dev`） | 目前是 2026-11-04 用户授权的例外发布：Pages 部署 `924c79bb`，源码 `ff69dc7b`；`gs-archive.com` 顶级域 CNAME 于 2026-11-09 生效。更早的正式站记录见 [PRODUCTION_RELEASE_20261012.md](PRODUCTION_RELEASE_20261012.md) |
-
-production 新包 `pkg-production-7123e47a`（例外发布，站长原话“我授权你可以合并，等都做完之后部署”）已出，**尚未部署**：AI 执行部署被自动模式拦截，需站长亲手执行。命令、验收与回滚见 [2026-11-10 发布记录](PRODUCTION_RELEASE_20261110.md)。
-
-<!-- PRODUCTION-20261110: 部署后把上表 production 行改成新部署 -->
+| production（分支 `master`，`https://gs-archive.com` 与 `gs-archive-preview.pages.dev`） | 2026-11-10 用户授权的例外发布（站长原话“我授权你可以合并，等都做完之后部署”；部署由站长亲手执行）：源码 `7123e47a` → Pages 部署 `0416f1f5`，与 preview 同一 source digest，read-model / data / compiled / 译文 revision 同上行；`canonical_deployment` 已核实。两个 origin 的 `verify-deployed-site` 都全 PASS（gs-archive.com 含 1665 包译文逐字节核对），WARN 同上。回滚目标 `924c79bb`（11-04，源码 `ff69dc7b`）。`gs-archive.com` 顶级域 CNAME 于 2026-11-09 生效。详见 [2026-11-10 发布记录](PRODUCTION_RELEASE_20261110.md)；更早的记录见 [PRODUCTION_RELEASE_20261012.md](PRODUCTION_RELEASE_20261012.md) |
 
 R2 现状：桶用量、各 versions 前缀的清单与最近批次的叠加链未在本次核对（未核实）；批次记录见 [R2 批次记录](GS_ARCHIVE_R2_RELEASE_20261021.md)，上传流程见 [PREVIEW_DEPLOYMENT.md](PREVIEW_DEPLOYMENT.md)，R2 规则见契约第 7 节。部署前后的只读核对见 [RELEASE_PIPELINE_CHECKS_20261109.md](RELEASE_PIPELINE_CHECKS_20261109.md)。
 
