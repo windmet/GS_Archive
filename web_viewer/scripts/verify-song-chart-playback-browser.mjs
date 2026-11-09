@@ -61,7 +61,7 @@ try {
       play: () => document.querySelector('.chart-play').click(),
       playing: () => { const a = document.querySelector('.chart-transport audio'); return Boolean(a && !a.paused) },
       audio: () => document.querySelector('.chart-transport audio'),
-      tick: () => Number(document.querySelector('.track-svg title')?.textContent.match(/tick (\\d+(?:\\.\\d+)?)/)?.[1]),
+      tick: () => Number(document.querySelector('.track-preview')?.dataset.tick),
       seek: seconds => { const input = document.querySelector('.chart-timeline input[type=range]'); input.value = String(seconds); input.dispatchEvent(new Event('input', { bubbles: true })) },
       sample: ms => new Promise(resolve => {
         const rows = [], start = performance.now()

@@ -1,5 +1,5 @@
 <template>
-  <section ref="previewRoot" class="chart-preview" :class="{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && !controlsShown }" aria-label="谱面查看器" @keydown.esc="immersive && leaveImmersive()" @pointerdown="immersive && revealControls()">
+  <section ref="previewRoot" class="chart-preview" :class="{ 'is-long': mode === 'long', 'is-immersive': immersive, 'controls-hidden': immersive && (locked || !controlsShown), 'is-locked': locked }" aria-label="谱面查看器" @keydown.esc="onEscape" @pointerdown="immersive && !locked && revealControls()">
     <button v-if="!opened" type="button" class="chart-open" @click="opened = true">打开谱面预览</button>
     <template v-else>
       <header class="chart-toolbar">
@@ -8,6 +8,7 @@
         <GsSegmented class="chart-modes" v-model="mode" :options="MODE_OPTIONS" aria-label="谱面视图" />
         <button v-if="mode === 'long'" type="button" :aria-pressed="followPlayback" @click="followPlayback = !followPlayback">跟随播放</button>
         <button v-if="chart && !immersive" type="button" class="chart-immersive-enter" @click="enterImmersive"><Maximize :size="15" aria-hidden="true" />沉浸查看</button>
+        <button v-if="immersive" type="button" class="chart-immersive-lock" @click="lockControls"><Lock :size="15" aria-hidden="true" />锁定</button>
         <button v-if="immersive" type="button" class="chart-immersive-exit" @click="leaveImmersive"><Minimize :size="15" aria-hidden="true" />退出沉浸</button>
         <div class="chart-actions"><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><slot name="actions" /><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
       </header>
@@ -19,12 +20,18 @@
       <GsLoadingIndicator v-if="loading" variant="text" message="正在加载谱面…" />
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
-        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" :effects="trackEffects" :combo="trackCombo" :combo-enabled="comboEnabled" :demonstration-enabled="demonstrationEnabled" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
+        <!-- 锁定: a shield over the whole view takes every touch, so a recorded or watched run cannot be paused, seeked or
+             scrolled by accident. Touching it only shows the unlock button, which needs a long press. -->
+        <div v-if="locked" class="chart-lock-shield" data-chart-lock-shield @pointerdown="showUnlock">
+          <button type="button" class="chart-unlock" :class="{ 'is-shown': unlockShown, 'is-holding': unlockHolding }" aria-label="长按解锁" @pointerdown.stop="startUnlock" @pointerup="cancelUnlock" @pointercancel="cancelUnlock" @pointerleave="cancelUnlock" @click.prevent @keydown.enter.prevent="unlockControls" @keydown.space.prevent="unlockControls"><LockOpen :size="17" aria-hidden="true" />长按解锁</button>
+        </div>
+        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" :effects="trackEffects" :combo="trackCombo" :combo-enabled="comboEnabled" :demonstration-enabled="demonstrationEnabled" @texture-status="trackTextures = $event" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase" :data-sound-set="soundSet" :data-sound-scheduled="soundStats.scheduled" :data-sound-active="soundStats.active" :data-sound-decoded="soundStats.decoded" :data-sound-context="soundStats.context">
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div v-if="maintainer" class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
           <div class="chart-navigation"><div class="chart-step" role="group" aria-label="谱面播放操作"><button type="button" aria-label="回到开头" title="歌曲开头 · 0 秒" @click="seek(0)"><SkipBack :size="19" aria-hidden="true" /></button><button type="button" aria-label="上一个音符" title="上一个音符 · ←" :disabled="!previousNote" @click="step(-1)"><ChevronLeft :size="23" aria-hidden="true" /></button><button type="button" class="chart-play" :aria-label="starting || playing ? '暂停' : '播放'" :disabled="!audioTrack?.url" @click="togglePlayback"><component :is="starting || playing ? Pause : Play" :size="21" aria-hidden="true" />{{ starting || playing ? '暂停' : '播放' }}</button><button type="button" aria-label="下一个音符" title="下一个音符 · →" :disabled="!nextNote" @click="step(1)"><ChevronRight :size="23" aria-hidden="true" /></button><button type="button" aria-label="播放末尾" title="播放末尾（含尾奏）" @click="seekSeconds(totalSeconds)"><SkipForward :size="19" aria-hidden="true" /></button></div></div>
           <p v-if="assetsProgress || clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ assetsProgress ? `正在加载特效与 Combo 贴图 ${assetsProgress.done}/${assetsProgress.total}…` : clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
+          <p v-if="mode === 'perspective' && trackTextures.failed" class="chart-position-status" role="status" data-track-textures-failed>{{ trackTextures.failed }} 张轨道贴图加载失败，正在重试…</p>
           <p v-if="maintainer && demonstrationEnabled && demonstrationState" class="chart-demonstration chart-position-status" aria-label="自动演示事件统计" :data-count="demonstrationState.count" :data-total="demonstrationState.total" :data-epoch="demonstrationState.epoch" :data-seconds="demonstrationState.seconds">演示事件 {{ demonstrationState.count }} / {{ demonstrationState.total }} <span>· 持续长条 {{ demonstrationState.holds.length }}</span><span v-for="hold in demonstrationState.holds" :key="hold.sourceIndex" :data-hold-source="hold.sourceIndex" :data-lane="hold.lane"> · 轨位 {{ (hold.lane + 1).toFixed(1) }}</span></p>        </footer>
       </template>
       </div>
@@ -61,8 +68,9 @@ import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import { computed, getCurrentInstance, inject, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import { ChevronLeft, ChevronRight, Download, Info, Maximize, Minimize, Pause, Play, SkipBack, SkipForward, X } from '@lucide/vue'
+import { ChevronLeft, ChevronRight, Download, Info, Lock, LockOpen, Maximize, Minimize, Pause, Play, SkipBack, SkipForward, X } from '@lucide/vue'
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js'
+import { useImmersiveTouchGuard } from '../../composables/useImmersiveTouchGuard.js'
 import { playableSongChart, validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
 import { createSongChartPlaybackCadence } from '../../presentation/SongChartPlaybackCadence.js'
@@ -109,11 +117,59 @@ function enterImmersive() {
 }
 function leaveImmersive() {
   immersive.value = false
+  locked.value = false
   clearTimeout(controlsTimer)
   try { screen.orientation?.unlock?.() } catch { /* unsupported */ }
   if (fullscreenActive.value) void leaveFullscreen()
 }
 watch(fullscreenActive, (active, was) => { if (was && !active) immersive.value = false })
+// The page behind stays put and the screen awake for as long as the view is immersive.
+const touchGuard = useImmersiveTouchGuard()
+watch(immersive, on => { if (on) touchGuard.attach(previewRoot.value); else { touchGuard.detach(); locked.value = false } }, { flush: 'post' })
+// Locked: the controls stay hidden and no touch reaches them. The unlock button appears for three seconds after a
+// touch and unlocks after a 0.8 s press; Esc or Enter on it unlock from a keyboard.
+const locked = ref(false), unlockShown = ref(false), unlockHolding = ref(false)
+const UNLOCK_PRESS_MS = 800
+let unlockShownTimer = 0, unlockPressTimer = 0
+function lockControls() {
+  locked.value = true
+  clearTimeout(controlsTimer)
+  showUnlock()
+}
+function showUnlock() {
+  unlockShown.value = true
+  clearTimeout(unlockShownTimer)
+  unlockShownTimer = setTimeout(() => { if (!unlockHolding.value) unlockShown.value = false }, 3000)
+}
+function startUnlock() {
+  showUnlock()
+  unlockHolding.value = true
+  clearTimeout(unlockPressTimer)
+  unlockPressTimer = setTimeout(() => {
+    // The click that follows lifting the finger would land on 退出沉浸 under the vanished shield.
+    const swallow = event => { event.preventDefault(); event.stopPropagation() }
+    window.addEventListener('click', swallow, { capture: true, once: true })
+    setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 600)
+    unlockControls()
+  }, UNLOCK_PRESS_MS)
+}
+function cancelUnlock() {
+  if (!unlockHolding.value) return
+  unlockHolding.value = false
+  clearTimeout(unlockPressTimer)
+  showUnlock()
+}
+function unlockControls() {
+  clearTimeout(unlockPressTimer); clearTimeout(unlockShownTimer)
+  unlockHolding.value = false; unlockShown.value = false
+  locked.value = false
+  revealControls()
+}
+function onEscape() {
+  if (locked.value) unlockControls()
+  else if (immersive.value) leaveImmersive()
+}
+onBeforeUnmount(() => { clearTimeout(unlockShownTimer); clearTimeout(unlockPressTimer) })
 const uid = `chart-viewer-${getCurrentInstance().uid}`
 // Start on the difficulty the song page asked for when this song has it, otherwise the first.
 const startDifficulty = props.difficulties.some(d => d.type === props.initialDifficulty) ? props.initialDifficulty : props.difficulties[0]?.type || 1
@@ -238,6 +294,8 @@ watch(volume, value => { if (audio.value) audio.value.volume = value * masterVol
 // the view or a switch changes; playback waits only for those (see togglePlayback), and each press of
 // play retries any that failed. Cached ones settle at once.
 const assetsProgress = ref(null)
+// Note, hold and track images the canvas could not load; it keeps retrying them.
+const trackTextures = ref({ pending: 0, failed: 0 })
 let assetsRequest = 0
 function loadTrackAssets() {
   const request = ++assetsRequest
@@ -352,6 +410,7 @@ async function togglePlayback() {
   } catch (e) { if (current === playGeneration) { starting.value = false; if (e.name !== 'AbortError') audioError.value = '无法播放歌曲，请点击播放重试。' } }
 }
 function onCanvasKey(event) {
+  if (locked.value) return
   if (!['ArrowLeft','ArrowRight','Home','End',' '].includes(event.key)) return
   event.preventDefault()
   if (event.key === ' ') void togglePlayback()
@@ -503,7 +562,16 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
 .is-immersive .chart-time, .is-immersive .chart-time small { color: inherit; }
 .is-immersive.controls-hidden .chart-toolbar, .is-immersive.controls-hidden .chart-transport { opacity: 0; pointer-events: none; }
 .is-immersive .chart-lead, .is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
-.is-immersive .chart-immersive-exit { display: inline-flex; height: var(--gs-control-touch); margin-left: auto; }
+.is-immersive .chart-immersive-exit { display: inline-flex; height: var(--gs-control-touch); }
+.chart-immersive-lock { display: none; }
+.is-immersive .chart-immersive-lock { display: inline-flex; height: var(--gs-control-touch); margin-left: auto; }
+/* iOS starts a selection, its magnifier or the callout under several fingers or a long press; none of it belongs here. */
+.is-immersive, .is-immersive * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.chart-lock-shield { position: absolute; z-index: 4; inset: 0; touch-action: none; }
+.chart-unlock { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: inline-flex; align-items: center; gap: var(--gs-space-2); height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 0.35); border-radius: var(--gs-radius-pill); background: rgb(0 0 0 / 0.55) linear-gradient(90deg, var(--gs-mint) 0 0) no-repeat left / 0 100%; color: var(--gs-stage-ink); opacity: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
+.chart-unlock.is-shown, .chart-unlock:focus-visible { opacity: 1; }
+/* The fill shows how long the press still has to last. */
+.chart-unlock.is-holding { background-size: 100% 100%; transition: opacity var(--gs-duration-base, 200ms) ease, background-size 800ms linear; }
 .is-immersive .chart-navigation { margin-top: var(--gs-space-1); }
 @media (max-height: 500px) {
   .is-immersive .chart-difficulties button { height: var(--gs-control-normal); }

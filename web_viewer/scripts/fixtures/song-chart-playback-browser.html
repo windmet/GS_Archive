@@ -52,7 +52,7 @@ async function seek(seconds) {
 }
 function positions() {
   return { control: Number(document.querySelector('.tick-readout')?.dataset.tick),
-    track: Number(document.querySelector('.track-svg title')?.textContent.split('tick ')[1]) }
+    track: Number(document.querySelector('.track-preview')?.dataset.tick) }
 }
 async function mount(code) {
   app?.unmount(); frames.clear(); media.currentTime = 0; media.paused = true

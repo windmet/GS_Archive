@@ -1,7 +1,9 @@
 ﻿<template>
-  <div class="track-preview">
+  <!-- The cursor is an attribute, not part of the svg <title>: rewriting the title every frame patched an svg that the
+       canvas covers. -->
+  <div class="track-preview" :data-tick="safeCursor">
     <svg class="track-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" :aria-label="`${title} 五轨透视预览`">
-      <title>{{ title }} · 五轨 · 原始 tick {{ safeCursor }}</title>
+      <title>{{ title }} · 五轨</title>
       <defs>
         <clipPath :id="`${uid}-lane`"><polygon :points="laneOutline" /></clipPath>
         <template v-if="holdCanvasUnavailable"><template v-for="hold in scene.holds" :key="hold.id"><clipPath v-for="(mesh, i) in hold.triangles" :id="`${uid}-${hold.id}-${i}`" :key="i"><polygon :points="mesh.points" /></clipPath></template></template>
@@ -37,6 +39,7 @@
       :hold-effects="holds"
       :audit-frame="auditFrame"
       @unavailable="trackCanvasUnavailable = true"
+      @texture-status="emit('texture-status', $event)"
     />
     <template v-else>
     <ArchiveSongHoldMeshPreview v-if="audit?.mode !== 'A' && !holdCanvasUnavailable" :holds="scene.holds" :skin="skin" :audit-frame="auditFrame" @unavailable="holdCanvasUnavailable = true" />
@@ -105,6 +108,7 @@ const props = defineProps({
   demonstrationEnabled: { type: Boolean, default: false },
 })
 
+const emit = defineEmits(['texture-status'])
 const audit = inject('song-chart-audit', null)
 const auditFrame = computed(() => props.position.auditFrame?.value ?? null)
 const uid = `track-${getCurrentInstance().uid}`
