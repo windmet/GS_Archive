@@ -17,6 +17,8 @@
     :data-holds-count="holdEffects.length"
     :data-assets-pending="assetsPending"
     :data-assets-failed="assetsFailed"
+    :data-textures-pending="texturesPending"
+    :data-textures-failed="texturesFailed"
   />
 </template>
 
@@ -39,11 +41,11 @@ const props = defineProps({
   holdEffects: { type: Array, default: () => [] },
   auditFrame: { type: Object, default: null },
 })
-const emit = defineEmits(['unavailable'])
+const emit = defineEmits(['unavailable', 'texture-status'])
 const audit = inject('song-chart-audit', null)
 const canvasRef = ref(null)
 const vertexCount = ref(0), particleCount = ref(0)
-const assetsPending = ref(0), assetsFailed = ref(0)
+const assetsPending = ref(0), assetsFailed = ref(0), texturesPending = ref(0), texturesFailed = ref(0)
 const build = createSongTrackCanvasFrameBuilder()
 const effectImages = new Map(), effectStatus = new Map(), subscriptions = []
 let renderer = null, resizeObserver = null, redrawQueued = 0, disposed = false
@@ -81,7 +83,11 @@ function unavailable() {
 }
 
 onMounted(() => {
-  try { renderer = createSongTrackCanvasRenderer(canvasRef.value, { onTextureReady: redrawSoon, onLost: unavailable }) } catch { renderer = null }
+  const onTextureStatus = status => {
+    texturesPending.value = status.pending; texturesFailed.value = status.failed
+    emit('texture-status', status)
+  }
+  try { renderer = createSongTrackCanvasRenderer(canvasRef.value, { onTextureReady: redrawSoon, onTextureStatus, onLost: unavailable }) } catch { renderer = null }
   if (!renderer) { unavailable(); return }
   for (const asset of [...Object.values(hitEffectsConfig.assets), hitEffectsConfig.evaluation.sprite]) {
     subscriptions.push(subscribeEffectTexture(asset.pathId, asset.url, entry => {
