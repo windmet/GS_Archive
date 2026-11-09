@@ -35,6 +35,82 @@
       @media (max-height: 420px) { .gs-boot { padding: 12px; } }
       @media (prefers-reduced-motion: reduce) { .gs-boot-badge circle + circle { animation: none; transform: rotate(24deg); } }
     </style>
+    <!-- Boot guard: classic ES5 script ahead of the module entry, no dependencies, under bootGuardGzipLimit
+         (readmodels/contracts/startup-policy.json). Exposes window.__gsBoot (mark html>entry>mounted>ready, fail,
+         state). Shows a fixed diagnostic panel when the app has not mounted in 12 s or is not ready in 30 s, when
+         the browser lacks a required feature, or at once with ?diag=1; reloads once per 60 s on vite:preloadError
+         (a stale tab asking for a chunk hash the deploy replaced). Verified by verify-boot-guard.mjs. -->
+    <script>
+(function (w, d) {
+ var N = ['html', 'entry', 'mounted', 'ready'], H = ['入口脚本未执行（下载中、被拦截或失败）', '应用未挂载（脚本可能报错）', '首个页面未返回', '就绪'];
+ var T = Date.now(), s = 0, a = 0, last, bad = [], el, pre, old, f = /[?&]diag=1(&|$)/.test(location.search);
+ var cap = { hasOwn: !!Object.hasOwn, at: !![].at, structuredClone: !!w.structuredClone, has: sup('selector(:has(*))'), container: sup('container-type: inline-size') };
+ function sup(q) { try { return CSS.supports(q); } catch (e) {} }
+ for (var k in cap) if (!cap[k]) old = 1;
+ function state() {
+  var seen = '', out = [], i, n, u;
+  try { n = performance.getEntriesByType('resource'); for (i = 0; i < n.length; i++) seen += n[i].name + ' '; } catch (e) {}
+  n = d.querySelectorAll('script[type=module],link[rel=modulepreload]');
+  for (i = 0; i < n.length; i++) { u = n[i].src || n[i].href; if (u && seen.indexOf(u) < 0) out.push(u); }
+  return { stage: N[s], waited: (Date.now() - T) / 1000 | 0, missing: out, failed: bad, error: last, ua: navigator.userAgent, caps: cap };
+ }
+ function text() {
+  return (old ? '浏览器版本过旧：需 Chrome/Edge 105+、Safari 16+\n' : '') + H[s] + '\n' + JSON.stringify(state(), 0, 1);
+ }
+ function note(x, u) { x = x || 0; last = { name: x.name || 'Error', message: x.message || '' + x, src: u }; }
+ function close() { el && el.parentNode.removeChild(el); el = 0; }
+ function go() {
+  location.search = location.search.replace(/[?&]_r=\d+/, '') + '&_r=' + Date.now();
+ }
+ function copy(e) {
+  var t = text(), c = navigator.clipboard;
+  function ok() { e.textContent = '已复制'; }
+  function fb() { var x = d.createElement('textarea'); x.value = t; d.body.appendChild(x); x.select(); d.execCommand('copy'); ok(); d.body.removeChild(x); }
+  c ? c.writeText(t).then(ok, fb) : fb();
+ }
+ function show() {
+  if (el) return;
+  if (!d.body) return d.addEventListener('DOMContentLoaded', show);
+  el = d.createElement('div');
+  el.id = 'gs-boot-guard';
+  el.setAttribute('style', 'position:fixed;inset:0;z-index:2e9;overflow:auto;padding:16px;background:#f5f6f8;color:#13213a');
+  el.innerHTML = '<h2>启动诊断</h2><pre style="white-space:pre-wrap;word-break:break-all;font-size:12px"></pre><button style="min-height:44px">重新加载</button> <button style="min-height:44px">绕缓存重载</button> <button style="min-height:44px">复制诊断信息</button> <button style="min-height:44px">继续等待</button>';
+  pre = el.getElementsByTagName('pre')[0];
+  el.addEventListener('click', function (e) {
+   var i = [].indexOf.call(el.getElementsByTagName('button'), e.target);
+   !i ? location.reload() : i == 1 ? go() : i == 2 ? copy(e.target) : i > 2 && close();
+  });
+  d.body.appendChild(el); pre.textContent = text();
+ }
+ function onerr(e) {
+  var t = e.target, u = t && (t.src || t.href);
+  if (t && t.tagName) { if (u && 'SCRIPT LINK'.indexOf(t.tagName) > -1) { bad.push(u); note({ name: 'ResourceError', message: '加载失败' }, u); } return; }
+  note(e.error || e.reason || e, e.filename);
+ }
+ addEventListener('error', onerr, true);
+ addEventListener('unhandledrejection', onerr);
+ addEventListener('vite:preloadError', function (e) {
+  try {
+   var g = sessionStorage, n = Date.now();
+   if (n - +g.getItem('gs-boot-reload') < 6e4) return;
+   g.setItem('gs-boot-reload', n);
+   e.preventDefault(); location.reload();
+  } catch (x) {}
+ });
+ w.__gsBoot = {
+  mark: function (n) { n = N.indexOf(n); if (n > s) { s = n; if (n > 2 && !f && !old) close(); } },
+  fail: note,
+  state: state
+ };
+ setInterval(function () {
+  var k = (Date.now() - T) / 1000;
+  k = k >= 30 ? 3 : k >= 12 ? 2 : 0;
+  if (k > a) { a = k; if (s < k) show(); }
+  if (el) pre.textContent = text();
+ }, 1000);
+ if (f || old) show();
+})(window, document);
+    </script>
   </head>
   <body>
     <div id="app"><div class="gs-boot" role="status"><div class="gs-boot-brand" aria-hidden="true"><span><img src="/assets/brand/image_logo_imas_M_mark.png" alt="" width="52" height="40" /><span><strong>GROWING STARS</strong><small>SideM 资料馆</small></span></span><em>《偶像大师 SideM GROWING STARS》非官方资料馆</em><i></i><b>2021.10.06 — 2023.07.31</b></div><div class="gs-boot-load"><div class="gs-boot-badge" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><circle cx="24" cy="24" r="18" pathLength="100" /></svg>Now Loading</div><p>正在打开资料馆…</p></div></div></div>
