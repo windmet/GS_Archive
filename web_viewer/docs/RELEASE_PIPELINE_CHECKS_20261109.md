@@ -37,9 +37,9 @@
 | `924c79bb` | 2026-11-03 | `ff69dc7b` | `ARCHIVE_DATA_REVISION=d049f4fa…`、`ARCHIVE_COMPILED_REVISION=4afb61ee…`、`ARCHIVE_GZIP_MODE=all`、`ARCHIVE_SEASONAL_READING_RELEASE=seasonal-reading-v1`、`ARCHIVE_WORK_BACKFILL_RELEASE=2026-09-28-story-work-text-backfill-001` |
 | `6ba4c547` | 2026-10-11 | `51535058` | `ARCHIVE_DATA_REVISION=854190ad…`、`ARCHIVE_GZIP_MODE=all`、`ARCHIVE_SEASONAL_READING_RELEASE=seasonal-reading-v1`、`ARCHIVE_WORK_BACKFILL_RELEASE=…`（**没有** `ARCHIVE_COMPILED_REVISION`） |
 
-两个对象的变量不同，说明变量确实随部署固化，而不是读取项目的当前值。最新的 production 部署 `bfae916c`（2026-11-09，源 `203eb830`）的变量与 `924c79bb` 相同。
+两个对象的变量不同，说明变量确实随部署固化，而不是读取项目的当前值。
 
-另外发现：production 列表里还有 `bfae916c`（11-09）等多个比 `924c79bb` 更新的部署，所以“现在在线的 production 部署”并不是 `924c79bb`。回滚目标应以列表和回执为准，不要靠记忆。
+另外：production 列表里比 `924c79bb` 新的条目（如 `bfae916c`，源 `203eb830`）都是 GitHub 推送触发的 `github:push` 部署，状态全部是 `queued/idle`，从未构建，也没有上线。项目的 `canonical_deployment` 仍是 `924c79bb`，`https://gs-archive.com/production-receipt.json` 也是它（源 `ff69dc7b`）。判断线上版本只看 canonical deployment 和线上回执，不看列表顺序。（验收时更正：子 agent 初稿误以为 `bfae916c` 已上线。）
 
 对回滚的含义：
 

@@ -13,6 +13,8 @@ Cloudflare Pages 项目 `gs-archive-preview` 同时承载两个环境，并共�
 
 两个环境读同一个桶，所以对桶的任何写入都同时影响两边（见第 7 节）。
 
+项目接了 GitHub（`windmet/GS_Archive`），但 production 自动部署是关的（`production_deployments_enabled: false`）。每次 push 只会在部署列表里留下一条 `github:push` 的 `queued/idle` 记录，preview 分支的推送也一样，从不构建、也不上线；真正生效的只有 `wrangler pages deploy` 上传的部署（`ad_hoc`）。因此：合并到 master 不等于上线；判断线上是哪个部署，只看项目的 `canonical_deployment` 和线上回执，不看列表里最新的一条；不要打开 Git 自动构建，CI 环境里没有语料和读模型候选，构建出来的包是残缺的。
+
 ## 2. 四道门
 
 每道门只证明它能证明的事，没有一道能替代另一道。
