@@ -57,7 +57,7 @@ jobs:
         id: install
         run: npm ci
 
-      - name: Verify read-model tools and assembler rejection contracts
+      - name: Verify read-model tools and route-ledger contracts
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:source --prefix readmodels
       - name: Verify engineering lifecycle, stage intent and collection route regressions

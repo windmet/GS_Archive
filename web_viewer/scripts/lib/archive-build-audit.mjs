@@ -163,6 +163,8 @@ export async function readBuildAudit(bundleRoot) {
   assert(acceptance.routes?.counts?.routes === VALID_VIEWS.size && Array.isArray(acceptance.routes.unfinished), 'Missing public-route summary')
   const migrated = acceptance.routes.unfinished.every(row => row.reasons.every(reason => reason === 'device'))
   assert(acceptance.allPublicRoutesMigrated === migrated, 'Cutover gate missing: route conclusion disagrees with residuals')
+  assert(acceptance.routes.publicRoutesReady === (acceptance.routes.counts.publicRoutes > 0 && acceptance.routes.publicBlocking.length === 0),
+    'Public-route conclusion disagrees with its blocking list')
   assert(!acceptance.deviceReviewAccepted || acceptance.routes.counts.deviceAccepted === VALID_VIEWS.size,
     'Device conclusion disagrees with accepted route count')
   return { budget, acceptance }

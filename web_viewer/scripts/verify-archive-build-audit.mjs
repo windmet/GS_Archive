@@ -9,10 +9,13 @@ import { VALID_VIEWS } from '../src/core/archiveRoute.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const args = process.argv.slice(2)
-assert(args.every(arg => !arg.startsWith('--') || ['--progress', '--entry', '--final'].includes(arg)), 'Unknown build-audit option')
-assert(args.filter(arg=>['--progress','--entry','--final'].includes(arg)).length<=1,'Choose one audit mode')
+// --release (the default) is the code half of the release gate in docs/RELEASE_CONTRACT.md: committed source, a clean entry
+// and every public route ready. Parity and device rows stay progress; the packager adds journeys or an exception.
+assert(!args.includes('--final'), '--final was retired with the all-views device gate; use --release')
+assert(args.every(arg => !arg.startsWith('--') || ['--progress', '--entry', '--release'].includes(arg)), 'Unknown build-audit option')
+assert(args.filter(arg=>['--progress','--entry','--release'].includes(arg)).length<=1,'Choose one audit mode')
 const dirs = args.filter(arg => !arg.startsWith('--'))
-assert(dirs.length <= 1, 'Usage: verify-archive-build-audit.mjs [bundle] [--progress|--entry|--final]')
+assert(dirs.length <= 1, 'Usage: verify-archive-build-audit.mjs [bundle] [--progress|--entry|--release]')
 const bundle = path.resolve(dirs[0] || path.join(root, '.analysis/build-check'))
 const { budget, acceptance } = await readBuildAudit(bundle)
 const policyText = await fs.readFile(path.join(root, 'readmodels/contracts/startup-policy.json'), 'utf8')
@@ -34,16 +37,17 @@ assert(JSON.stringify(routes) === JSON.stringify(acceptance.routes), 'Route summ
 assert(acceptance.allPublicRoutesMigrated === routes.allPublicRoutesMigrated &&
   acceptance.deviceReviewAccepted === (routes.deviceReviewAccepted && ledger.reviewedSourceDigest === budget.sourceDigest), 'Cutover conclusion disagrees with route ledger')
 assert(budget.initialJsGzipEstimate <= policy.initialJsGzipLimit, 'Startup JS budget exceeded')
-const report = { mode: args.includes('--progress') ? 'progress' : args.includes('--entry') ? 'entry' : 'final', sourceRevision: budget.sourceRevision,
+const report = { mode: args.includes('--progress') ? 'progress' : args.includes('--entry') ? 'entry' : 'release', sourceRevision: budget.sourceRevision,
   sourceDirty: budget.sourceDirty, release: budget.release, initialChunks: budget.initialChunks,
   initialJsGzipEstimate: budget.initialJsGzipEstimate, forbiddenModules: budget.forbiddenModules,
   productionLegacyModules: budget.productionLegacyModules, legacyCallSites: budget.legacyCallSites,
   globalArchiveLoadRemoved: acceptance.globalArchiveLoadRemoved, allPublicRoutesMigrated: acceptance.allPublicRoutesMigrated,
-  deviceReviewAccepted: acceptance.deviceReviewAccepted, routeCounts: routes.counts }
+  deviceReviewAccepted: acceptance.deviceReviewAccepted, publicRoutesReady: routes.publicRoutesReady, publicBlocking: routes.publicBlocking,
+  routeCounts: routes.counts }
 console.log(auditJson(report))
 if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, `\nArchive cutover audit (progress is not release approval)\n\n\`\`\`json\n${auditJson(report)}\`\`\`\n`)
 if (args.includes('--entry')) assert(!budget.forbiddenModules.length && !budget.productionLegacyModules.length &&
   !budget.legacyCallSites.length && acceptance.globalArchiveLoadRemoved, 'Entry gate blocked: forbidden or global legacy modules remain')
 if (!args.includes('--progress') && !args.includes('--entry')) assert(!budget.sourceDirty && !budget.forbiddenModules.length &&
-  acceptance.globalArchiveLoadRemoved && acceptance.allPublicRoutesMigrated && acceptance.deviceReviewAccepted,
-  'Final cutover blocked: inspect the generated residual/route/device report')
+  acceptance.globalArchiveLoadRemoved && routes.publicRoutesReady,
+  `Release gate blocked: ${budget.sourceDirty ? 'uncommitted source; ' : ''}${routes.publicBlocking.map(row => `${row.view} (${row.reasons.join(', ')})`).join('; ')}`)

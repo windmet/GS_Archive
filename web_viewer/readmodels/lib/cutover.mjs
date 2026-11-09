@@ -3,6 +3,9 @@ import path from 'node:path';
 import { assert } from './common.mjs';
 
 export const migrationDimensions = ['entry', 'data', 'actions'];
+// What a view is to a reader decides what a release needs from it (docs/RELEASE_CONTRACT.md). Only public views
+// gate a release; internal, experimental, alias and boot-state views keep their progress rows.
+export const routeClasses = ['public', 'internal', 'experimental', 'alias', 'boot-state'];
 const implemented = state => state === 'migrated' || state === 'not-applicable';
 
 // Reviewed implementation claims do not automatically prove full parity.
@@ -14,8 +17,8 @@ export function summarizeRoutes(ledger, expectedViews) {
   assert(Array.isArray(ledger.routes), 'Missing routes array');
   const expected = new Set(expectedViews), seen = new Set();
   const counts = { routes: 0, entryMigrated: 0, dataMigrated: 0, actionsMigrated: 0, componentReady: 0,
-    playerReady: 0, parityPassed: 0, localBrowserEvidence: 0, deviceAccepted: 0 };
-  const unfinished = [];
+    playerReady: 0, parityPassed: 0, localBrowserEvidence: 0, deviceAccepted: 0, publicRoutes: 0 };
+  const unfinished = [], publicBlocking = [];
   for (const route of ledger.routes) {
     assert(expected.has(route.view) && !seen.has(route.view), `Unknown/duplicate route: ${route.view}`);
     seen.add(route.view); counts.routes++;
@@ -28,6 +31,18 @@ export function summarizeRoutes(ledger, expectedViews) {
       assert(Array.isArray(route[key].evidence) && route[key].evidence.length > 0, `${route.view}: ${key} needs evidence or a pending-work reference`);
     }
     assert(typeof route.component.module === 'string' && route.component.module.startsWith('src/'), `${route.view}: missing component module`);
+    assert(routeClasses.includes(route.class), `${route.view}: invalid class`);
+    assert(Array.isArray(route.classEvidence) && route.classEvidence.length > 0, `${route.view}: class needs evidence`);
+    // A feature-local data domain (stage timelines) is a declared boundary, not an unmigrated public read.
+    assert(route.featureLocal === undefined || (typeof route.featureLocal?.reason === 'string' && route.featureLocal.reason.length > 20 &&
+      Array.isArray(route.featureLocal.evidence) && route.featureLocal.evidence.length > 0), `${route.view}: featureLocal needs a reason and evidence`);
+    if (route.class === 'public') {
+      counts.publicRoutes++;
+      const blocking = [];
+      if (route.entry.status !== 'migrated') blocking.push('entry');
+      if (route.data.status !== 'migrated' && !route.featureLocal) blocking.push('data');
+      if (blocking.length) publicBlocking.push({ view: route.view, reasons: blocking });
+    }
     assert(Array.isArray(route.legacyRemaining) && Array.isArray(route.blockedReasons), `${route.view}: missing residual/blocked inventory`);
     assert(Array.isArray(route.browserEvidence) && route.browserEvidence.every(item => item.kind === 'local-browser' && item.path && item.scope), `${route.view}: invalid local Browser evidence`);
     assert(['pending', 'accepted'].includes(route.device?.status) && Array.isArray(route.device.evidence), `${route.view}: invalid device status`);
@@ -53,7 +68,8 @@ export function summarizeRoutes(ledger, expectedViews) {
     }
   }
   assert(expected.size === seen.size, 'Some public routes disappeared');
-  return { counts, unfinished,
+  return { counts, unfinished, publicBlocking,
+    publicRoutesReady: counts.publicRoutes > 0 && publicBlocking.length === 0,
     allPublicRoutesMigrated: unfinished.every(row => row.reasons.every(reason => reason === 'device')),
     deviceReviewAccepted: counts.deviceAccepted === counts.routes };
 }
@@ -67,6 +83,7 @@ export async function validateRouteEvidence(ledger, root) {
   };
   for (const route of ledger.routes) {
     for (const key of [...migrationDimensions, 'player', 'component', 'parity']) for (const evidence of route[key].evidence) await read(evidence);
+    for (const evidence of [...route.classEvidence, ...(route.featureLocal?.evidence || [])]) await read(evidence);
     await read(route.component.module);
     for (const item of route.browserEvidence) await read(item.path);
     for (const item of route.device.evidence) {
