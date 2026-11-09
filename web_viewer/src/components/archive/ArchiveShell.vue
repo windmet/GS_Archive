@@ -603,8 +603,9 @@ onBeforeUnmount(() => navObserver?.disconnect())
  .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:left;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) .archive-heading {grid-column:2;}
  /* One line, left-aligned after the back arrow (线框减法册 L1): a long entity name ends in an ellipsis;
-    the full name is the page's own heading below the bar. */
- .is-compact-mobile .archive-topbar h1 {display:block;font-size:var(--gs-text-subtitle);line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+    the full name is the page's own heading below the bar. The heading is a flex-start column (narrow rule
+    above), so the title needs its own cap or a nowrap name keeps its full width and runs under the switch. */
+ .is-compact-mobile .archive-topbar h1 {display:block;max-width:100%;font-size:var(--gs-text-subtitle);line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
  .is-compact-mobile .archive-heading {align-self:center;}
  .is-compact-mobile .archive-heading :deep(.archive-breadcrumb),.is-compact-mobile :deep(.archive-back span) {display:none;}
  .is-compact-mobile .archive-topbar :deep(.archive-back) {width:44px;padding:0;}
