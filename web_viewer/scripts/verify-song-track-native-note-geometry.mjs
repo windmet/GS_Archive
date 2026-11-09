@@ -31,7 +31,20 @@ for (const skin of Object.values(spec.skins)) for (const sprite of Object.values
   assert.ok(sprite.uv.left >= 0 && sprite.uv.right <= sprite.pngWidth)
   assert.ok(sprite.uv.top >= 0 && sprite.uv.bottom <= sprite.pngHeight)
   assert.ok(sprite.textureWidth > 0 && sprite.textureHeight > 0)
+  // The track draws the whole PNG unclipped, so the atlas crop must stay invisible.
+  const crop = Math.max(sprite.uv.left, sprite.uv.top, sprite.pngWidth - sprite.uv.right, sprite.pngHeight - sprite.uv.bottom)
+  assert.ok(crop < .1, `${sprite.url} UV crop ${crop} texels needs a static clip`)
 }
+// A clipPath that moves every frame is painted out of step with its image on Android Chrome.
+function assertUnclippedTrackNotes(vue) {
+  const layer = vue.slice(vue.indexOf('class="track-layer"'), vue.indexOf('</svg>', vue.indexOf('class="track-layer"')))
+  assert.ok(layer.includes('n.image.transform'), 'track note layer found')
+  assert.doesNotMatch(layer, /clip-?path/i, 'track note images must not be clipped per frame')
+}
+const trackVue = readFileSync(new URL('../src/components/archive/ArchiveSongTrackPreview.vue', import.meta.url), 'utf8')
+assertUnclippedTrackNotes(trackVue)
+assert.throws(() => assertUnclippedTrackNotes(trackVue.replace('<image :href="n.image.url"', '<image :clip-path="`url(#${uid}-note-${n.id})`" :href="n.image.url"')),
+  /must not be clipped/, 'reintroduced note clip must fail')
 assert.notEqual(spec.skins.Note3SpriteAtlas.normal.textureWidth, spec.skins.Note3SpriteAtlas.normal.pngWidth,
   'native packed rect fractions must survive extraction')
 let maximumAdapterError = 0

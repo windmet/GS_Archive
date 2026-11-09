@@ -38,7 +38,7 @@ export function laneAt(points, subtick) {
 
 // A native note quad is a parallelogram apart from float32 rounding. One
 // affine bitmap avoids a double-alpha seam along a two-triangle SVG clip.
-// Clip to all four native vertices and retain the fractional atlas UV crop.
+// The bitmap is not clipped: the atlas UV crop is under a tenth of a texel.
 export function songTrackNoteImage(role, skin, lane, fraction) {
   const sprite = nativeNotes.skins[skin]?.[role]
   if (!sprite) throw new Error('Unknown native track sprite')
@@ -58,7 +58,6 @@ export function songTrackNoteImage(role, skin, lane, fraction) {
   const bounds = noteRendering.skins[skin][role].displayBounds
   return { url: sprite.url, pngWidth: sprite.pngWidth, pngHeight: sprite.pngHeight,
     matrix, transform: `matrix(${matrix.join(' ')})`, vertices, nativeVertices: quad.vertices,
-    points: vertices.map(p => `${p.x},${p.y}`).join(' '),
     visibleWidth: quad.width * (bounds[2] - bounds[0]) / (right - left) }
 }
 
