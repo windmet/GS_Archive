@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href="/assets/brand/image_chara_icon_producer.png" />
+    <!-- Opened from the Home Screen the site runs without browser bars: iPhone Safari has no element fullscreen, so
+         this is how 沉浸查看 gets the whole screen there. Vite emits the manifest under _app/ with the code. -->
+    <link rel="manifest" href="/src/site.webmanifest" />
+    <link rel="apple-touch-icon" href="/assets/brand/image_chara_icon_producer.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="GS 资料馆" />
+    <meta name="theme-color" content="#f5f6f8" />
     <title>GROWING STARS 资料馆 · 偶像大师 SideM</title>
     <link rel="preload" as="font" type="font/woff2" href="/src/styles/fonts/barlow-semi-condensed-700-italic-latin.woff2" crossorigin />
     <!-- Shown from the HTML alone until the app mounts over it (the entry script takes seconds on a slow

@@ -191,20 +191,7 @@ do not replace it with `sync` without a separately reviewed deletion plan.
 
 ## Pages project
 
-Use Git integration for `windmet/GS_Archive`, root directory `web_viewer`, build
-command `npm run build:preview`, output `dist`. Select `master` as the reserved
-production branch, disable automatic production branch deployments, and limit
-automatic Preview deployments to `codex/p1-effect-texture-deps`. Cloudflare may
-run an initial production-branch build while the project is being created;
-leave it without a production R2 binding and without a custom domain. It is
-not an accepted release. In Preview settings, bind R2 bucket
-`sidem-archive-preview` as `ARCHIVE_ASSETS`, then redeploy the Preview branch so
-the binding is available to Functions.
-
-Do not create a Direct Upload Pages project as a shortcut: it cannot later be
-switched to Git integration. Do not put R2 S3 credentials into Git, Pages build
-variables, prompts, or logs. The R2 S3 key only uploads objects; it is not a
-Pages administration login.
+Pages 项目、两个环境（production / preview）、打包、部署、冒烟与回滚现在只由 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md) 规定；本文件保留 R2 导出与转换的细节，此前这里的 Git 集成与手改 `_headers` 步骤已被取代。
 
 ## Network acceptance
 
