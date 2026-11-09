@@ -2659,15 +2659,15 @@ onMounted(async () => {
   if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   try {
     await restoreRoute(startup.route)
-    window.__gsBoot?.mark('ready')
+    globalThis.__gsBoot?.mark('ready')
   } catch (error) {
     // A failed first read must not leave a blank page: the portal degrades gracefully offline.
     console.error('[ArchiveRoute] Failed to open the initial route:', error)
-    if (view.value !== '__boot__') { window.__gsBoot?.mark('ready'); return }
+    if (view.value !== '__boot__') { globalThis.__gsBoot?.mark('ready'); return }
     loading.value = false
     userPreferenceNotice.value = '该页面暂时无法打开，已回到资料馆。'
     commitView('portal')
-    window.__gsBoot?.mark('ready')
+    globalThis.__gsBoot?.mark('ready')
   }
 })
 
