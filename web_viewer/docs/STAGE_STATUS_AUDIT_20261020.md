@@ -1,5 +1,7 @@
 # 舞台线状态审计（2026-10-20 晚）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 给接手 `stage/20261020-native-followup` 的人：先看本页，再按链接读各批文档。本页的结论都在 2026-10-20 晚重新核实过；没有重新核实的会写明。
 
 ## 位置

@@ -1,5 +1,7 @@
 # Take 结尾暴露的通用灯光与背屏缺口
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 2026-10-03，首批输入 HEAD `98c2c788`，分支 `codex/chibi-stage-reconstruction-20261002`。下文先保留该批来源审计；第二批接线与验收结果见文末。新悬灯已有基础消费者，旋转标志仍未接入。
 
 ## 结论

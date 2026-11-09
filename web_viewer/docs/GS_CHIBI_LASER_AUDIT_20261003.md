@@ -1,5 +1,7 @@
 # 激光原生粒子输入与验收边界
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 输入 HEAD `707970d6`，分支 `codex/chibi-stage-reconstruction-20261002`。
 
 ## 来源与改变

@@ -1,5 +1,7 @@
 # 测试页发布核验清单（2026-10-07）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 交给执行上传的窗口用。目标：把 10-06 发布之后的内容上测试分支 `gs-architecture-device-test`。**不发布 Production。** 每一步写了「期望」；结果对不上就停下来回报，不要绕过门禁。
 
 ---
@@ -122,6 +124,8 @@ git commit -m "chore: bind the 2026-10-07 read-model release"
 
 ## 4. 代码包与 Pages 部署
 
+> 已被 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md) §3 取代（2026-11-10）；以下保留为历史记录。
+
 ```
 npm run build:check
 node scripts/verify-archive-build-audit.mjs --progress
@@ -140,6 +144,8 @@ node scripts/prepare-readmodel-preview.mjs --models <暂存目录>/rm-20261007 \
 ---
 
 ## 5. 线上核验（用 hash 子域）
+
+> 已被 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md) §2 取代（2026-11-10）；以下保留为历史记录。
 
 自动 HTTP：
 ```

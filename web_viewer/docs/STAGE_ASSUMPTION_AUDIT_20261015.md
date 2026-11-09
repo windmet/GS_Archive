@@ -1,5 +1,7 @@
 # 舞台遗留假设审计：当前消费者与原生证据
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-15。输入 `stage/20261014-native-fidelity` / `1f87fc77`，工作树 `E:/Web_build/GS_Archive_Domain_Work/stage-native-fidelity-20261014/web_viewer`。本批只审计、复验与更新记录，没有修改 runtime、导出器或 public 语料。
 
 后续：[人物原生尺度批次](NATIVE_CHARACTER_GEOMETRY_20261016.md) 已沿实际六槽位绑定替换人物经验尺度；并证明旧地面公式与原生360原点等价，保留位置、校正来源说明。下表对应两项是本审计时的历史状态。动作mix也须区分已有的普通命令显式.15s与默认.12s/队列配置；其余动作时基缺口保留。

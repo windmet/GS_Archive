@@ -1,5 +1,7 @@
 # 深链接 Browser 验收清单（批次 F 之前的基线）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 目的：确认已合并的导航上下文、返回决策、locator parent 兜底在真实环境里的行为，作为 Reader URL 瘦身前的基线。
 `<host>` 为被测环境。每条记录：实际落点 URL、是否通过、异常截图。
 

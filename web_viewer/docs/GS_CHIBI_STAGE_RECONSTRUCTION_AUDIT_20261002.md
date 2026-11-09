@@ -1,5 +1,7 @@
 # Chibi 舞台复刻：RAW 来源与实现缺口审计
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 日期：2026-10-02。输入 HEAD：`c975d36e57b2dee9ed10bdc4317f6f3ba2767502`。
 研究分支：`codex/chibi-stage-reconstruction-20261002`。
 

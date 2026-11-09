@@ -1,5 +1,7 @@
 # 全站翻译覆盖盘点 · 2026-10-31
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 本轮在最新远端 master `a2c07d169a3d9e3251cb424209de4166d4fee798`（#151）上新开 `i18n/20261031-coverage-audit`，固定语料基线，只盘点、校验和建立待办。原主工作区仍为 `portal/20261025-costume-filters` / `0f1e7356`，其未提交文件未带入、未修改。`CURRENT_STATE.md` 的文字基线较旧，本轮实际以 fetch 后的 Git 与文件为准。
 
 没有生成新翻译批次、导入旧输出、提升 reviewed/final、修改 UI 或发布站点。Reader #152 的未合入改动不在本轮基线内。

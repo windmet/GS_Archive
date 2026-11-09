@@ -1,5 +1,7 @@
 # Chart Native Auto Hit Effect & Flick Connectors Acceptance Audit V3 (2026-10-25)
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 > **验收更正**：本页“4 项 P1 全部闭环”“零警告”“20个组内音符”等结论经实查不成立。源码缺口、数字勘误与后续实际补线证据见 [V4 接线与验收](CHART_AUTO_WIRING_V4_20261025.md)。以下保留为输入提交的历史记录，不作为当前原生视觉通过凭据。
 
 ## 1. Executive Summary

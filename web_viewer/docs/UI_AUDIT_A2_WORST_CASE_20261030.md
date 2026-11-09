@@ -1,5 +1,7 @@
 # A2 — Real-Data Worst-Case & Content Stress Audit（2026-10-30）
 
+> 历史快照（2026-11-10 标注）：本文记录写作当时的检查结果，不代表当前状态。当前状态见 [CURRENT_STATE.md](CURRENT_STATE.md)，发布规则见 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)。
+
 ## 结论与边界
 
 本轮交付真实数据极值库、开发专用真实组件 fixture 和浏览器证据。**不是全站 Worst-case 通过证明**。新增 P2：摄影首次资料加载失败后，重试没有自动恢复预置构图；另有 P3 候选：LIVE空数据仍显示加载中。未修复正式 UI，未部署，未创建 UI 修复 PR。
