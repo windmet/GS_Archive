@@ -579,7 +579,6 @@ import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.
 import ArchivePageLoadError from './components/archive/ArchivePageLoadError.vue'
 import ArchiveLoadNotice from './components/archive/ArchiveLoadNotice.vue'
 import ArchiveLanguageSwitch from './components/archive/ArchiveLanguageSwitch.vue'
-import { eventResources } from './data/eventResourceGraph.js'
 import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
