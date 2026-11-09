@@ -15,7 +15,8 @@ const chart=await(await fetch('/data/song_charts/brndnf-4.json')).json()
 const age=ref(.3),speed=ref(11),position={tick:ref(127790)},state=ref(null)
 function update(){state.value={hits:[0,2,4].map(lane=>({hitType:0,pathId:14650,targetLane:lane,age:age.value,sourceIndex:lane,instanceId:'reference-'+lane})),holds:[],autoEval:{active:true,age:.1},laneAlphas:[0,0,0,0,0]}}
 update()
-createApp({setup:()=>()=>h(Track,{chart,title:'BRAND NEW FIELD EXPERT · fixed reference checkpoint',speed:speed.value,position,effects:{state},demonstrationEnabled:true})}).mount('#app')
+// Pixel checks read the separate hold and effects canvases of the SVG fallback.
+createApp({setup:()=>()=>h(Track,{chart,title:'BRAND NEW FIELD EXPERT · fixed reference checkpoint',speed:speed.value,position,effects:{state},demonstrationEnabled:true})}).provide('song-track-renderer','svg').mount('#app')
 document.querySelector('#age').oninput=e=>{age.value=+e.target.value;update()}
 document.querySelector('#speed').onchange=e=>speed.value=+e.target.value
 const status=document.querySelector('[role=status]')

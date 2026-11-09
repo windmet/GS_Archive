@@ -37,7 +37,7 @@ function layerTotals(values) {
 function summarize(sample) {
   const rows = [...sample.frames.values()]
   const layer = name => rows.flatMap(frame => frame[name] ? [frame[name]] : [])
-  const hold = layer('hold'), effect = layer('effect')
+  const hold = layer('hold'), effect = layer('effect'), canvas = layer('canvas')
   const intervals = sample.raf.slice(1).map((time, i) => time - sample.raf[i])
   return {
     mode: sample.mode,
@@ -56,16 +56,20 @@ function summarize(sample) {
       particles: summary(effect.map(v => v.particles)), canvas2dFrames: effect.filter(v => v.renderer === 'canvas2d-fallback').length,
       observedLostFrames: effect.filter(v => v.contextLost).length,
     },
+    canvas: { ...layerTotals(canvas), ms: summary(canvas.map(v => v.ms)), vertices: summary(canvas.map(v => v.vertices)), particles: summary(canvas.map(v => v.particles)) },
     sync: {
       // A missing submission means the sampled id was not recorded by an expected layer.
       missingSvg: rows.filter(v => !v.svg).length,
       expectedHold: rows.filter(v => v.svg?.holdExpected).length,
       missingHold: rows.filter(v => v.svg?.holdExpected && !v.hold).length,
       holdSvgFallbackFrames: rows.filter(v => v.svg?.holdFallback).length,
+      expectedCanvas: rows.filter(v => v.svg?.canvas).length,
+      missingCanvas: rows.filter(v => v.svg?.canvas && !v.canvas).length,
       expectedEffect: rows.filter(v => v.svg?.effectExpected).length,
       missingEffect: rows.filter(v => v.svg?.effectExpected && !v.effect).length,
       holdSubmitAfterSvgMs: summary(rows.flatMap(v => v.svg && v.hold ? [v.hold.at - v.svg.at] : [])),
       effectSubmitAfterSvgMs: summary(rows.flatMap(v => v.svg && v.effect ? [v.effect.at - v.svg.at] : [])),
+      canvasSubmitAfterSvgMs: summary(rows.flatMap(v => v.svg && v.canvas ? [v.canvas.at - v.svg.at] : [])),
     },
     events: sample.events,
     warnings: sample.warnings,

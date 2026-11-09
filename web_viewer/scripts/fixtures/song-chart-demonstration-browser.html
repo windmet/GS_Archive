@@ -159,8 +159,9 @@ run.onclick=async()=>{
       media.time=150;media.ended=true;media.paused=true;audio.dispatchEvent(new Event('ended'));await settle()
       check(Number(state().dataset.count)===events.length,'ended must consume final chart events')
       check(!document.querySelector('[data-hold-fx]'),'ended retires holds')
-      check(!document.querySelector('[data-track-note]'),'ended removes final note body')
-      check(!document.querySelector('[data-hold-middle]'),'ended removes final middle')
+      const trackCanvas=document.querySelector('[data-track-canvas]')
+      check(!document.querySelector('[data-track-note]')&&(!trackCanvas||trackCanvas.dataset.noteCount==='0'),'ended removes final note body')
+      check(!document.querySelector('[data-hold-middle]')&&(!trackCanvas||trackCanvas.dataset.middleCount==='0'),'ended removes final middle')
       check(!document.querySelector('[data-direction-hint]'),'ended removes final arrow')
       const milestoneSeconds=[...events].sort((a,b)=>a.seconds-b.seconds)[314]?.seconds
       if(milestoneSeconds!=null) {

@@ -67,6 +67,8 @@ async function mount(code) {
     if (name === 'ArchiveSongTrackPreview') counts.track++
     if (name === 'ArchiveSongHoldMeshPreview') counts.holds++
   } })
+  // Note identity is read from the SVG layer; the WebGL frame is checked by verify-song-track-canvas-frame.
+  app.provide('song-track-renderer', 'svg')
   app.mount('#app')
   for (let i = 0; i < 200 && !document.querySelector('.track-svg'); i++) await new Promise(r => setTimeout(r, 10))
   check(document.querySelector('.track-svg'), 'real chart failed to load')

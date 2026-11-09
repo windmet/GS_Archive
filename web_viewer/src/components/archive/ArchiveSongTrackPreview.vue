@@ -9,7 +9,7 @@
       <rect width="1280" height="720" fill="#162b36" />
       <image href="/assets/song-chart-track/live_lane_gradation.png" x="0" y="0" width="1280" height="720" preserveAspectRatio="none" :clip-path="`url(#${uid}-lane)`" />
       <polygon :points="laneOutline" fill="#07151b" opacity=".25" />
-      <g v-if="demonstrationEnabled && laneAlphas.some(a => a > 0)" class="track-lane-flashes" pointer-events="none">
+      <g v-if="!canvasMode && demonstrationEnabled && laneAlphas.some(a => a > 0)" class="track-lane-flashes" pointer-events="none">
         <polygon
           v-for="i in 5"
           :key="`lane-flash-${i - 1}`"
@@ -26,6 +26,19 @@
     </svg>
     <!-- Every layer is a sibling box of the same size, not a foreignObject: WebKit does not scale a canvas inside one
          with the svg's viewBox, which moved the long notes and effects off the lanes on iPad. -->
+    <!-- Everything that moves is one WebGL frame. As separate SVG and canvas layers, Android Chrome presented the
+         notes, holds, links and particles from different frames, so parts slid off each other during playback. -->
+    <ArchiveSongTrackCanvas
+      v-if="canvasMode"
+      :scene="scene"
+      :skin="skin"
+      :lane-alphas="demonstrationEnabled ? laneAlphas : null"
+      :hits="hits"
+      :hold-effects="holds"
+      :audit-frame="auditFrame"
+      @unavailable="trackCanvasUnavailable = true"
+    />
+    <template v-else>
     <ArchiveSongHoldMeshPreview v-if="audit?.mode !== 'A' && !holdCanvasUnavailable" :holds="scene.holds" :skin="skin" :audit-frame="auditFrame" @unavailable="holdCanvasUnavailable = true" />
     <!-- Note images carry no clip-path: the affine image already lands on the native quad, and a clipPath whose
          polygon moves every frame was painted out of step with its image on Android Chrome, cutting notes in half. -->
@@ -53,6 +66,7 @@
       :judge-y="scene.judgeY"
       :audit-frame="auditFrame"
     />
+    </template>
     <svg class="track-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" aria-hidden="true">
       <ArchiveSongAutoEvaluationPreview v-if="demonstrationEnabled" :state="autoEval" />
       <g v-if="demonstrationEnabled && holds.length" class="track-hold-effects" pointer-events="none" aria-hidden="true">
@@ -73,6 +87,7 @@ import { buildSongChartTiming } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackNativeTiming.js'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
+import ArchiveSongTrackCanvas from './ArchiveSongTrackCanvas.vue'
 import ArchiveSongHoldMeshPreview from './ArchiveSongHoldMeshPreview.vue'
 import ArchiveSongHitEffectPreview from './ArchiveSongHitEffectPreview.vue'
 import ArchiveSongAutoEvaluationPreview from './ArchiveSongAutoEvaluationPreview.vue'
@@ -94,6 +109,10 @@ const audit = inject('song-chart-audit', null)
 const auditFrame = computed(() => props.position.auditFrame?.value ?? null)
 const uid = `track-${getCurrentInstance().uid}`
 const holdCanvasUnavailable = ref(false)
+// The SVG layers stay as the fallback for a browser without WebGL, for audit mode A, which measures them, and for
+// fixtures that check the SVG layer contract (they provide 'song-track-renderer' = 'svg').
+const trackCanvasUnavailable = ref(inject('song-track-renderer', 'canvas') === 'svg')
+const canvasMode = computed(() => !trackCanvasUnavailable.value && audit?.mode !== 'A')
 // The media clock continues through the outro. Clamping to maxTick leaves the
 // final note sitting exactly on its inclusive draw boundary forever.
 const safeCursor = computed(() => Math.max(0, props.position.tick.value))
@@ -127,10 +146,11 @@ if (audit) {
   let updateStart
   const recordSvg = () => audit.record(auditFrame.value, 'svg', {
     ms: updateStart === undefined ? null : performance.now() - updateStart,
-    holdExpected: audit.mode !== 'A' && !holdCanvasUnavailable.value,
+    canvas: canvasMode.value,
+    holdExpected: !canvasMode.value && audit.mode !== 'A' && !holdCanvasUnavailable.value,
     holdFallback: holdCanvasUnavailable.value,
     combo315: props.comboEnabled && props.combo?.state?.value?.specialAge != null,
-    effectExpected: props.demonstrationEnabled && Boolean(hits.value.length || holds.value.length || autoEval.value.active),
+    effectExpected: !canvasMode.value && props.demonstrationEnabled && Boolean(hits.value.length || holds.value.length || autoEval.value.active),
   })
   onBeforeUpdate(() => { updateStart = performance.now() })
   onMounted(recordSvg)

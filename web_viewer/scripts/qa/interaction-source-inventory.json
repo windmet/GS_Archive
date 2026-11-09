@@ -8984,8 +8984,8 @@
     "file": "src/components/archive/ArchiveSongHoldMeshPreview.vue",
     "line": 2,
     "event": "@webglcontextlost.prevent",
-    "handler": "emit('unavailable')",
-    "template": "<canvas ref=\"canvas\" width=\"1280\" height=\"720\" aria-hidden=\"true\" data-native-hold-canvas :data-hold-count=\"holds.length\" :data-flick-count=\"holds.filter(h => h.flickConnector).length\" :data-vertex-count=\"vertexCount\" @webglcontextlost.prevent=\"emit('unavailable')\" />",
+    "handler": "contextLost",
+    "template": "<canvas ref=\"canvas\" width=\"1280\" height=\"720\" aria-hidden=\"true\" data-native-hold-canvas :data-hold-count=\"holds.length\" :data-flick-count=\"holds.filter(h => h.flickConnector).length\" :data-vertex-count=\"vertexCount\" @webglcontextlost.prevent=\"contextLost\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -9172,10 +9172,20 @@
   {
     "component": "ArchiveSongTrackPreview",
     "file": "src/components/archive/ArchiveSongTrackPreview.vue",
-    "line": 29,
+    "line": 39,
+    "event": "@unavailable",
+    "handler": "trackCanvasUnavailable = true",
+    "template": "@unavailable=\"trackCanvasUnavailable = true\"",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveSongTrackPreview",
+    "file": "src/components/archive/ArchiveSongTrackPreview.vue",
+    "line": 42,
     "event": "@unavailable",
     "handler": "holdCanvasUnavailable = true",
-    "template": "<ArchiveSongHoldMeshPreview v-if=\"!holdCanvasUnavailable\" :holds=\"scene.holds\" :skin=\"skin\" @unavailable=\"holdCanvasUnavailable = true\" />",
+    "template": "<ArchiveSongHoldMeshPreview v-if=\"audit?.mode !== 'A' && !holdCanvasUnavailable\" :holds=\"scene.holds\" :skin=\"skin\" :audit-frame=\"auditFrame\" @unavailable=\"holdCanvasUnavailable = true\" />",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
