@@ -130,6 +130,16 @@ try {
       const { value, ms } = await waitFor(panelText, 5000, 'the old-browser panel')
       assert.ok(value.includes('浏览器版本过旧') && value.includes('Chrome/Edge 105+') && value.includes('Safari 16+'), 'panel states the minimum versions')
       assert.equal((await guardState()).caps.hasOwn, false)
+      // The app keeps mounting behind the panel (WebView 92 reached its portal error); the panel must cover it. On
+      // 11-10 the panel's z-index was the invalid 2e9 and the portal painted over it. A modal <dialog> (the first-visit
+      // onboarding) is in the browser's top layer, above any z-index: the visitor dismisses it first, then sees the
+      // panel. That order is accepted, so the check runs after closing it.
+      await sleep(4000)
+      await evaluate("document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close())")
+      await sleep(500)
+      const covered = await evaluate(`[[0.5, 0.5], [0.15, 0.2], [0.85, 0.8], [0.5, 0.03]].filter(([x, y]) =>
+        !document.elementFromPoint(innerWidth * x, innerHeight * y)?.closest('#gs-boot-guard')).length`)
+      assert.equal(covered, 0, 'the old-browser panel covers the app once it has mounted behind it')
       await screenshot('d-old-browser')
       return `old-browser panel after ${ms} ms`
     },
