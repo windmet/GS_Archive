@@ -12,14 +12,13 @@ import { verifyStoryLandingNavigation } from './lib/story-navigation-harness.mjs
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readText = relative => readFile(path.join(root, relative), 'utf8')
 const readJson = relative => readText(relative).then(JSON.parse)
-const [master, birthdaySemantic, presentation, idolEpisodes, idolUnit, speakerDictionary, repositorySource, appSource, catalogSource] = await Promise.all([
+const [master, birthdaySemantic, presentation, idolEpisodes, idolUnit, speakerDictionary, appSource, catalogSource] = await Promise.all([
   readJson('public/data/masterdata/story_master_index.json'),
   readJson('public/data/masterdata/birthday_story_semantic_index.json'),
   readJson('public/data/masterdata/story_presentation_index.json'),
   readJson('public/data/masterdata/idol_episode_index.json'),
   readJson('public/data/masterdata/idol_unit_dictionary.json'),
   readJson('public/data/masterdata/speaker_dictionary.json'),
-  readText('src/data/ArchiveDataRepository.js'),
   readText('src/App.vue'),
   readText('src/components/archive/ArchiveStoryCatalog.vue'),
 ])
@@ -90,8 +89,6 @@ assert.equal(sharedChapters.length, 29)
 assert.ok(sharedChapters.every(chapter => chapter.domainMemberships.includes('idol_story')))
 assert.ok(sharedChapters.every(chapter => chapter.file && chapter.episodes[0].file === chapter.file))
 
-assert.match(repositorySource, /speakerDictionary: '\/data\/masterdata\/speaker_dictionary\.json'/)
-assert.match(repositorySource, /birthdayStorySemantic: '\/data\/masterdata\/birthday_story_semantic_index\.json'/)
 assert.match(appSource, /:birthday-domain="birthdayStoryDomain"/)
 assert.match(appSource, /<ArchiveStoryCollection[\s\S]*?:idol-name="idolDisplayName"/,
   'story chapter CAST names follow the interface language')

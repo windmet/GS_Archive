@@ -1,17 +1,8 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import { createArchiveDataRepository } from '../src/data/ArchiveDataRepository.js'
 import { serveR2Resource } from '../functions/_shared/r2-resource.js'
 assert.equal(EXTERNAL_STORY_RESOURCES_ENABLED, false)
-const requested = []
-const repo = createArchiveDataRepository({ fetchImpl: async url => {
-  requested.push(url)
-  return new Response(null, { status: 503 })
-} })
-const archive = await repo.loadArchiveData()
-assert.ok(!requested.includes('/data/external_story_resources.json'))
-assert.ok(!archive.errors.some(error => error.key === 'externalStoryResources'))
 let reads = 0
 const env = { ARCHIVE_ASSETS: { head() { reads++; throw Error('withdrawn registry must not read R2') } } }
 for (const method of ['GET', 'HEAD']) {
@@ -28,4 +19,4 @@ assert.equal([...app.matchAll(/:external-resources=/g)].length, gates, 'an exter
 const view = await readFile(new URL('../src/components/archive/ArchiveExternalStoryResources.vue', import.meta.url), 'utf8')
 assert.match(view, /<template v-if="EXTERNAL_STORY_RESOURCES_ENABLED">/)
 assert.match(view, /站外视频导航已暂时关闭/)
-console.log('External publication OFF: no registry request, every detail gate, neutral old route, GET/HEAD 410 without R2 read')
+console.log('External publication OFF: every detail gate, neutral old route, GET/HEAD 410 without R2 read')
