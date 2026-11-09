@@ -43,3 +43,21 @@ test('A small entry still fails forbidden-module policy; route labels do not exe
   assert.deepEqual(forbiddenInitialModules(modules, policy, ledger), modules.slice(1).sort());
   assert.deepEqual(forbiddenInitialModules(['src/main.js', 'src/components/archive/ArchiveShell.vue'], policy, ledger), []);
 });
+test('Release gate counts public routes only, and a feature-local boundary must be declared', () => {
+  const result = summarizeRoutes(ledger, VALID_VIEWS);
+  assert.equal(result.publicRoutesReady, true);
+  assert.ok(result.counts.publicRoutes > 0 && result.publicBlocking.length === 0);
+  const undeclared = structuredClone(ledger);
+  delete undeclared.routes.find(route => route.view === 'chibi_stage').featureLocal;
+  const blocked = summarizeRoutes(undeclared, VALID_VIEWS);
+  assert.equal(blocked.publicRoutesReady, false);
+  assert.deepEqual(blocked.publicBlocking, [{ view: 'chibi_stage', reasons: ['data'] }]);
+  const entry = structuredClone(ledger);
+  entry.routes.find(route => route.class === 'public').entry.status = 'partial';
+  assert.equal(summarizeRoutes(entry, VALID_VIEWS).publicRoutesReady, false);
+  const none = structuredClone(ledger);
+  for (const route of none.routes) route.class = 'internal';
+  assert.equal(summarizeRoutes(none, VALID_VIEWS).publicRoutesReady, false, 'no public route is not a ready release');
+  const unclassified = structuredClone(ledger); delete unclassified.routes[0].class;
+  assert.throws(() => summarizeRoutes(unclassified, VALID_VIEWS), /invalid class/);
+});
