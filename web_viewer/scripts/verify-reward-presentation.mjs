@@ -4,13 +4,20 @@ import path from 'node:path';
 import {ReadModelClient} from '../readmodels/runtime/ReadModelClient.mjs';
 import {DomainRepository} from '../readmodels/runtime/DomainRepository.mjs';
 import {lookupCollectionEntry,createCollectionPreview} from '../readmodels/runtime/CollectionPreview.mjs';
-import {rewardConditions,rewardCondition,rewardCollectionKey,rewardProductName,rewardProductLabel} from '../src/components/archive/DomainPresentation.mjs';
+import {rewardConditions,rewardCondition,rewardCollectionKey,rewardProductName,rewardProductLabel,rankText,acquisitionSummary,campaignPeriod,historicalPeriodNote} from '../src/components/archive/DomainPresentation.mjs';
 
 assert.deepEqual(rewardConditions({intervalPoint:100000,offsetPoint:0,limitPoint:1000000}),['每 100,000 PT','起点 0 PT','上限 1,000,000 PT']);
 assert.equal(rewardCondition({upperRank:1,lowerRank:100,sectionId:2}),'第 1–100 名 · 阅读对应章节');
 assert.deepEqual(rewardConditions({dayCount:0,sumFanAmount:2000}),['第 0 天','累计粉丝 2,000']);
 assert.deepEqual(rewardConditions({relation:'event-material'}),['活动所用材料']);
-assert.deepEqual(rewardConditions({}),['条件未完整收录']);
+assert.deepEqual(rewardConditions({}),[]); // unknown conditions print nothing instead of a placeholder
+assert.equal(rankText(2,2),'第 2 名');assert.equal(rankText(1,3),'第 1–3 名');assert.equal(rankText(undefined,5),'第 5 名');
+assert.equal(acquisitionSummary({events:[{totalAmount:100000},{totalAmount:100000}],totalAmount:200000}),'2 场活动 · 每场 100,000');
+assert.equal(acquisitionSummary({events:[{totalAmount:1},{totalAmount:2}],totalAmount:3}),'2 场活动 · 共 3');
+assert.equal(acquisitionSummary({totalAmount:900,levelRange:[2,600]}),'共 900 · Lv.2–600');
+assert.equal(campaignPeriod({openAt:1656428400,closeAt:1657551600}),'2022年6月29日 — 7月12日');
+assert.equal(campaignPeriod({openAt:1656428400,closeAt:4102412400}),'2022年6月29日 起');
+assert.equal(historicalPeriodNote({term:{openAt:946652400,closeAt:4102412400},termInfo:{open:{sentinelCandidate:true},close:{sentinelCandidate:true}}}),'');
 for(const kind of ['item','honor']) {
   const product={kind,referenceStatus:'resolved-entity',entityKey:`${kind}:42`};
   assert.equal(rewardCollectionKey(product),`${kind}:42`);
