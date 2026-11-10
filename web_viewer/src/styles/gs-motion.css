@@ -36,6 +36,14 @@
   }
 }
 
+/* Default focus ring for anything a keyboard can reach. :where() keeps it at zero specificity, so the focus rules components
+   already carry (inset rings on scrolling rails, a ring on dark chrome) still win; a component that forgot one gets this
+   instead of the browser's default outline. :focus-visible sits in its own :where() so the whole selector stays at zero specificity. */
+:where(button, a[href], summary, input, select, textarea, [role="button"], [role="tab"], [role="option"], [tabindex]:not([tabindex="-1"])):where(:focus-visible) {
+  outline: var(--gs-focus-ring) solid var(--gs-mint);
+  outline-offset: var(--gs-focus-offset);
+}
+
 /* Images arrive instead of painting in strips. presentation/imageReveal.js marks every image that
    finished (or failed, so alt text and fallbacks still show); until then it is transparent and its
    box shows the surface beneath. Layout is untouched: the image keeps its size while hidden. */
