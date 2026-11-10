@@ -4,7 +4,7 @@ import {archiveGeneralText, archiveBackgroundLabel} from '../../presentation/Arc
 import translationRelease from '../../../config/translation-release.json' with {type:'json'};
 import {createBoundedTextTransport} from '../../utils/BoundedTextTransport.js';
 import {cardLineShardFile,cardLineShardKey,validateCardLineShard} from '../../presentation/CardLineShards.mjs';
-import {flowForLocale} from '../../../shared/reading/ReadingTypography.js';
+import {flowForLocale,flowVoiceText} from '../../../shared/reading/ReadingTypography.js';
 import {presentProducerAddressingText} from '../../presentation/ProducerAddressingText.js';
 
 // Shell titles and catalogue search need these names without eagerly loading metadata.
@@ -94,6 +94,8 @@ export const archiveNamedTranslation=(kind,source,field='name')=>{
 // stays Japanese. Callers start loadArchiveNames(domain) once in setup; card lines fetch the line's
 // shard on first lookup instead (pending until it arrives), so a page loads only what it shows.
 // Operational voice cues (scout change etc.) repeat card lines and touch voices word for word.
+// Spoken lines keep the translator's breaks that close a clause (flowVoiceText); every other translation reflows.
+const VOICE_KINDS=new Set(['home-voice','card-touch']);
 export const ANY_CARD_LINE=Object.freeze([['card-line','extra'],['card-line','normal'],['card-line','awakened'],['card-touch','text'],['card-voice','text']]);
 // locale: the language to show this line in; defaults to the archive's A-level language (the home dialogue box passes its own).
 export function archiveLineText(domain,keys,source,locale=uiLocale.value) {
@@ -108,7 +110,10 @@ export function archiveLineText(domain,keys,source,locale=uiLocale.value) {
   } else if(status.value[domain] === 'loading') return {...original,pending:true};
   for(const [kind,field] of keys) {
     const translated=archiveGeneralText(entries.value,kind,text,field,'zh-CN');
-    if(translated && translated !== text) return {text:flowForLocale(presentProducerAddressingText(translated,'zh-CN'),'zh-CN'),lang:'zh-CN',pending:false};
+    if(translated && translated !== text) {
+      const shown=presentProducerAddressingText(translated,'zh-CN');
+      return {text:VOICE_KINDS.has(kind) ? flowVoiceText(shown) : flowForLocale(shown,'zh-CN'),lang:'zh-CN',pending:false};
+    }
   }
   return original;
 }
