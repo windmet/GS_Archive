@@ -5,8 +5,7 @@
       <span>{{ filtered.length }} 条</span>
     </div>
     <ol v-if="filtered.length" class="domain-reward-list" :aria-label="sources ? '已知来源与用途' : '奖励明细'">
-      <li v-for="(row,i) in visible" :key="row.key || `${page}:${i}`" class="domain-reward-entry"
-        :class="{ 'is-card': !sources && row.product?.kind === 'card' && row.product.referenceStatus === 'resolved-entity' }">
+      <li v-for="(row,i) in visible" :key="row.key || `${page}:${i}`" class="domain-reward-entry">
         <div class="domain-reward-heading">
           <div class="domain-reward-conditions">
             <small>{{ rewardRelationLabel(row) }}</small>

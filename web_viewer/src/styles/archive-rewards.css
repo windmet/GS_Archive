@@ -1,8 +1,6 @@
 .domain-rewards { container-type:inline-size; }
 .domain-reward-list { display:grid; gap:0; margin:0; padding:0; list-style:none; color:var(--gs-ink); font-size:14px; }
 .domain-reward-entry { display:grid; grid-template-columns:minmax(150px,.8fr) minmax(0,2fr) auto; align-items:center; gap:12px; min-width:0; padding:12px 0; border-bottom:1px solid var(--gs-line); }
-/* Card rewards keep a mint rule on the leading edge; the row itself stays unfilled. */
-.domain-reward-entry.is-card { padding-left:12px; box-shadow:inset 2px 0 0 var(--gs-selected-line); }
 .domain-reward-heading { display:contents; }
 .domain-reward-conditions { grid-column:1; grid-row:1; min-width:0; }
 .domain-reward-conditions > small { display:block; color:var(--gs-ink-3); font-size:var(--gs-text-caption); margin-bottom:6px; }

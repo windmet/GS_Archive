@@ -511,7 +511,6 @@ button.episode-main { cursor: pointer; }
 .detail-section :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .general-reward-section :deep(.domain-reward-list) { gap: 0; font-size: var(--gs-text-body); }
 .general-reward-section :deep(.domain-reward-entry) { gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: transparent; }
-.general-reward-section :deep(.domain-reward-entry.is-card) { border-left: 0; background: transparent; }
 .general-reward-section :deep(.domain-reward-icon) { border: 0; border-radius: 0; background: transparent; }
 .detail-section :deep(.domain-reward-conditions > small) { margin-bottom: var(--gs-space-3); font-size: var(--gs-text-meta); }
 .detail-section :deep(.domain-reward-conditions > div) { gap: var(--gs-space-2); }
