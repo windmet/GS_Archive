@@ -11595,7 +11595,7 @@
     "line": 50,
     "event": "@click",
     "handler": "draft.background.sceneId = scene.id",
-    "template": "<button v-for=\"scene in scenes\" :key=\"scene.id\" type=\"button\" :aria-pressed=\"draft.background.sceneId === scene.id\" @click=\"draft.background.sceneId = scene.id\">{{ materialName('scenes', scene) }}</button>",
+    "template": "<button v-for=\"scene in scenes\" :key=\"scene.id\" type=\"button\" :aria-pressed=\"draft.background.sceneId === scene.id\" @click=\"draft.background.sceneId = scene.id\">{{ sceneLabels.get(scene.id) }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -11955,7 +11955,7 @@
     "line": 210,
     "event": "@click",
     "handler": "draft.background.sceneId = scene.id",
-    "template": "<button v-for=\"scene in scenes\" :key=\"scene.id\" type=\"button\" :aria-pressed=\"draft.background.sceneId === scene.id\" @click=\"draft.background.sceneId = scene.id\">{{ materialName('scenes', scene) }}</button>",
+    "template": "<button v-for=\"scene in scenes\" :key=\"scene.id\" type=\"button\" :aria-pressed=\"draft.background.sceneId === scene.id\" @click=\"draft.background.sceneId = scene.id\">{{ sceneLabels.get(scene.id) }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },

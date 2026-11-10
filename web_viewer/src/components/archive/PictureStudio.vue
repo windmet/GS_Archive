@@ -47,7 +47,7 @@
                 <div v-else class="studio-spot-scenes" role="group" :aria-label="`${currentSpotName}的场景`">
                   <span>{{ currentSpotName }} · {{ scenes.length }} 个场景</span>
                   <div class="studio-chips">
-                    <button v-for="scene in scenes" :key="scene.id" type="button" :aria-pressed="draft.background.sceneId === scene.id" @click="draft.background.sceneId = scene.id">{{ materialName('scenes', scene) }}</button>
+                    <button v-for="scene in scenes" :key="scene.id" type="button" :aria-pressed="draft.background.sceneId === scene.id" @click="draft.background.sceneId = scene.id">{{ sceneLabels.get(scene.id) }}</button>
                   </div>
                 </div>
               </template>
@@ -207,7 +207,7 @@
         <section v-else-if="inspectingBackground && materials" class="studio-layer-editor" aria-label="编辑背景">
           <h3 class="studio-selected-title">{{ currentSpotName || '背景' }}<small>背景</small></h3>
           <div v-if="scenes.length > 1" class="studio-prop-stack"><span>场景</span><div class="studio-chips">
-            <button v-for="scene in scenes" :key="scene.id" type="button" :aria-pressed="draft.background.sceneId === scene.id" @click="draft.background.sceneId = scene.id">{{ materialName('scenes', scene) }}</button>
+            <button v-for="scene in scenes" :key="scene.id" type="button" :aria-pressed="draft.background.sceneId === scene.id" @click="draft.background.sceneId = scene.id">{{ sceneLabels.get(scene.id) }}</button>
           </div></div>
           <label class="studio-zoom">背景缩放<span><input type="range" min="1" max="3" step=".05" aria-label="背景缩放" :value="draft.background.zoom ?? 1" @input="draft.background.zoom = Number($event.target.value)" /><output>{{ Math.round((draft.background.zoom ?? 1) * 100) }}%</output></span></label>
           <button type="button" class="studio-text-action" @click="showMaterials('spots')">更换地点 ›</button>
@@ -295,7 +295,7 @@ import { studioPresetPresentation } from '../../presentation/studio-preset-label
 import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue';
 import { PHOTO_STICKER_GROUPS, photoStickerGroup } from '../../presentation/photoStickerGroups.js';
-import { photoBackgroundThumbnailUrl as thumbnail, photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
+import { photoBackgroundThumbnailUrl as thumbnail, photoSceneLabels, photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
 import { STUDIO_LIMITS } from '../../core/StudioDocument.mjs';
 import { studioFilterCss } from '../../core/PictureStudioPolicy.mjs';
 import "../../styles/archive-domains.css";
@@ -456,6 +456,7 @@ const transformFields = [
 const currentSpot = computed(() => materials.value?.spots.find((row) => row.id === draft.value.background.spotId) || null);
 const currentSpotName = computed(() => materialName("spots", currentSpot.value));
 const scenes = computed(() => photoSpotScenes(materials.value, currentSpot.value));
+const sceneLabels = computed(() => photoSceneLabels(scenes.value, (scene) => materialName('scenes', scene)));
 const currentSceneName = computed(() => { const scene = scenes.value.find((row) => row.id === draft.value.background.sceneId); return scenes.value.length > 1 && scene ? `${currentSpotName.value} · ${materialName('scenes', scene)}` : currentSpotName.value; });
 const barSubtitle = computed(() => selected.value ? objectName(selected.value) : currentSpot.value ? currentSceneName.value : '点选对象后拖动');
 // A thumbnail that fails to load is replaced once by the full picture.

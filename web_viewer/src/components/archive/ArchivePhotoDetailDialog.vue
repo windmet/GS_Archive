@@ -42,6 +42,7 @@ import { Camera, ImageOff } from '@lucide/vue';
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue';
 import DomainMediaPreview from './DomainMediaPreview.vue';
 import { archiveText } from './useArchivePhotoText.js';
+import { photoSceneLabels } from '../../presentation/photoSpotScenes.js';
 const props = defineProps({
   open: Boolean, kind: String, entry: { type: Object, required: true }, binding: Object,
   name: String, spotName: String, description: String, resourceDescription: Boolean,
@@ -58,15 +59,7 @@ const studioKey = computed(() => sceneKey.value || `${props.kind}:${props.entry.
 const previewBinding = computed(() => props.kind === 'stickers' && activeBinding.value?.full?.url ? activeBinding.value.full : activeBinding.value?.image);
 const frameLayers = computed(() => Array.isArray(props.binding?.layers) ? props.binding.layers : []);
 const baseSceneName = scene => archiveText('photo-scenes', scene.name) || `场景 ${scene.id}`;
-// A spot can carry two scenes of the same name (two 日中 backgrounds); number the repeats.
-const sceneNames = computed(() => {
-  const seen = new Map()
-  return new Map(props.scenes.map(scene => {
-    const base = baseSceneName(scene), count = (seen.get(base) || 0) + 1
-    seen.set(base, count)
-    return [scene.id, count > 1 ? `${base} ${count}` : base]
-  }))
-});
+const sceneNames = computed(() => photoSceneLabels(props.scenes, baseSceneName));
 const sceneName = scene => sceneNames.value.get(scene.id) || baseSceneName(scene);
 </script>
 <style scoped>

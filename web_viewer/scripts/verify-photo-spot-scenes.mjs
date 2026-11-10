@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync, existsSync } from 'node:fs'
-import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants, photoSceneSpot, photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants, photoVariantKey } from '../src/presentation/photoSpotScenes.js'
+import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants, photoSceneSpot, photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants, photoVariantKey, photoSceneLabels } from '../src/presentation/photoSpotScenes.js'
 import { STUDIO_WEB_FILTERS, studioFilterCss } from '../src/core/PictureStudioPolicy.mjs'
 
 // Spots own their scenes. The photo catalogue and the studio's material picker read that structure
@@ -36,6 +36,15 @@ assert.equal(photoVariantKey('通常2'), '通常')
 // 昼 (indoor sets) and 日中 (outdoor) are one daytime chip, not 白天 beside 白昼.
 assert.equal(photoVariantKey('昼'), '日中')
 assert.ok(!homeVariants.some(row => row.id === '昼') && homeVariants.some(row => row.id === '日中'), 'home scene chips carry one daytime filter')
+// Both read 白天 now, so a spot holding both (アリーナ客席) numbers the second; the catalogue and the studio share the labels.
+const zh = JSON.parse(read('public/translations/zh-CN/archive-general/photos.json')).entries['photo-scenes'].name
+assert.equal(zh['昼'], zh['日中'], '昼 and 日中 read the same')
+const arena = materials.spots.find(spot => { const names = photoSpotScenes(materials, spot).map(row => row.name); return names.includes('昼') && names.includes('日中') })
+assert.ok(arena, 'a spot carries both 昼 and 日中')
+const labels = [...photoSceneLabels(photoSpotScenes(materials, arena), scene => zh[scene.name] || scene.name).values()]
+assert.equal(new Set(labels).size, labels.length, 'scene labels in one spot are distinct')
+for (const file of ['src/components/archive/ArchivePhotoDetailDialog.vue', 'src/components/archive/PictureStudio.vue'])
+  assert.match(read(file), /photoSceneLabels\(/, `${file} numbers repeated scene names through photoSceneLabels`)
 
 const variants = photoSpotVariants(materials)
 assert.ok(variants.length >= 3 && variants.every(row => row.count > 1), 'shared variants only')
