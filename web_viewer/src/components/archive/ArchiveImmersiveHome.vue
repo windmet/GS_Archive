@@ -164,15 +164,16 @@
         <button type="button" class="home-producer-settings" @click="emit('settings')"><span>制作人设置</span><small>{{ producerName ? `${producerName} P · 称呼与担当` : '设置称呼与担当' }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
         <fieldset v-if="homeMode === 'spine'" class="settings-backgrounds">
           <legend>首页场景</legend>
-          <p>{{ preferences.background === 'cue' ? '跟随台词所在的场景，多数台词在事务所。' : `固定为「${fixedBackgroundName}」，换人、换装或切换台词都不变。` }}</p>
-          <div class="background-actions">
-            <button type="button" class="background-more" :aria-expanded="backgroundPickerOpen" @click="toggleBackgroundPicker">{{ backgroundPickerOpen ? '收起场景列表' : '选择固定场景' }}</button>
-            <button v-if="preferences.background !== 'cue'" type="button" class="background-more" @click="preferences.background = 'cue'">改回跟随台词</button>
+          <!-- One row says what the stage shows now; the list opens only to change it. -->
+          <div class="background-current">
+            <span><strong>{{ preferences.background === 'cue' ? '跟随台词' : fixedBackgroundName }}</strong><small>{{ preferences.background === 'cue' ? '多为事务所' : '固定场景' }}</small></span>
+            <button v-if="preferences.background !== 'cue'" type="button" @click="preferences.background = 'cue'">跟随台词</button>
+            <button type="button" :aria-expanded="backgroundPickerOpen" @click="toggleBackgroundPicker">{{ backgroundPickerOpen ? '收起' : '更换' }}</button>
           </div>
-          <GsLoadingIndicator v-if="backgroundLoading" variant="text" message="正在读取已收录场景…" />
+          <GsLoadingIndicator v-if="backgroundLoading" variant="text" message="正在读取场景…" />
           <p v-if="backgroundError" role="status">{{ backgroundError }} <button type="button" @click="loadBackgroundCatalogue(true)">重试</button></p>
-          <p v-if="backgroundUnavailable" role="status">之前选择的背景当前不可用，暂用台词背景；请重新选择。</p>
-          <template v-if="backgroundPickerOpen"><label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
+          <p v-if="backgroundUnavailable" role="status">已选场景不可用，暂时跟随台词。</p>
+          <template v-if="backgroundPickerOpen"><input v-model="backgroundQuery" class="background-search" type="search" placeholder="搜索场景" aria-label="搜索场景" />
           <div v-if="backgroundVariants.length" class="background-variants" role="group" aria-label="按时段与天气筛选">
             <button type="button" :aria-pressed="!backgroundVariant" @click="backgroundVariant = ''">全部</button>
             <button v-for="entry in backgroundVariants" :key="entry.id" type="button" :aria-pressed="backgroundVariant === entry.id" @click="backgroundVariant = entry.id">{{ entry.label }} <small>{{ entry.count }}</small></button>
@@ -183,8 +184,7 @@
               <strong>{{ archiveNamedBackground(background.label) }}</strong>
             </button>
           </div>
-          <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多场景</button>
-          <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small></template>
+          <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多<small>还有 {{ filteredBackgrounds.length - backgroundLimit }} 个</small></button></template>
         </fieldset>
 
         <fieldset class="settings-segment">

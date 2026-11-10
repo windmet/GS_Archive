@@ -6192,27 +6192,27 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 169,
-    "event": "@click",
-    "handler": "toggleBackgroundPicker",
-    "template": "<button type=\"button\" class=\"background-more\" :aria-expanded=\"backgroundPickerOpen\" @click=\"toggleBackgroundPicker\">{{ backgroundPickerOpen ? '收起场景列表' : '选择固定场景' }}</button>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveImmersiveHome",
-    "file": "src/components/archive/ArchiveImmersiveHome.vue",
     "line": 170,
     "event": "@click",
     "handler": "preferences.background = 'cue'",
-    "template": "<button v-if=\"preferences.background !== 'cue'\" type=\"button\" class=\"background-more\" @click=\"preferences.background = 'cue'\">改回跟随台词</button>",
+    "template": "<button v-if=\"preferences.background !== 'cue'\" type=\"button\" @click=\"preferences.background = 'cue'\">跟随台词</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 173,
+    "line": 171,
+    "event": "@click",
+    "handler": "toggleBackgroundPicker",
+    "template": "<button type=\"button\" :aria-expanded=\"backgroundPickerOpen\" @click=\"toggleBackgroundPicker\">{{ backgroundPickerOpen ? '收起' : '更换' }}</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveImmersiveHome",
+    "file": "src/components/archive/ArchiveImmersiveHome.vue",
+    "line": 174,
     "event": "@click",
     "handler": "loadBackgroundCatalogue(true)",
     "template": "<p v-if=\"backgroundError\" role=\"status\">{{ backgroundError }} <button type=\"button\" @click=\"loadBackgroundCatalogue(true)\">重试</button></p>",
@@ -6222,7 +6222,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 177,
+    "line": 178,
     "event": "@click",
     "handler": "backgroundVariant = ''",
     "template": "<button type=\"button\" :aria-pressed=\"!backgroundVariant\" @click=\"backgroundVariant = ''\">全部</button>",
@@ -6232,7 +6232,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 178,
+    "line": 179,
     "event": "@click",
     "handler": "backgroundVariant = entry.id",
     "template": "<button v-for=\"entry in backgroundVariants\" :key=\"entry.id\" type=\"button\" :aria-pressed=\"backgroundVariant === entry.id\" @click=\"backgroundVariant = entry.id\">{{ entry.label }} <small>{{ entry.count }}</small></button>",
@@ -6242,7 +6242,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 181,
+    "line": 182,
     "event": "@click",
     "handler": "preferences.background = background.id",
     "template": "<button v-for=\"background in visibleBackgrounds\" :key=\"background.id\" type=\"button\" :aria-pressed=\"preferences.background === background.id\" @click=\"preferences.background = background.id\">",
@@ -6252,7 +6252,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 182,
+    "line": 183,
     "event": "@error",
     "handler": "backgroundThumbnailFailed($event, background)",
     "template": "<img v-if=\"background.url || background.thumbnail\" :src=\"photoBackgroundThumbnailUrl(background.url) || background.thumbnail\" alt=\"\" loading=\"lazy\" decoding=\"async\" @error=\"backgroundThumbnailFailed($event, background)\" />",
@@ -6262,10 +6262,10 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 186,
+    "line": 187,
     "event": "@click",
     "handler": "backgroundLimit += 12",
-    "template": "<button v-if=\"filteredBackgrounds.length > backgroundLimit\" type=\"button\" class=\"background-more\" @click=\"backgroundLimit += 12\">显示更多场景</button>",
+    "template": "<button v-if=\"filteredBackgrounds.length > backgroundLimit\" type=\"button\" class=\"background-more\" @click=\"backgroundLimit += 12\">显示更多<small>还有 {{ filteredBackgrounds.length - backgroundLimit }} 个</small></button></template>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
