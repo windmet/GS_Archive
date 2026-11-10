@@ -4,7 +4,7 @@
     <button class="filter-sheet-trigger" type="button" :aria-expanded="open" @click="open = true">
       <SlidersHorizontal :size="17" aria-hidden="true" />筛选<small v-if="activeCount">{{ activeCount }}</small>
     </button>
-    <ArchiveTerminalDialog class="filter-sheet" :open="open" :title="title" :title-id="titleId" @close="open = false">
+    <ArchiveTerminalDialog class="filter-sheet" swipe-dismiss :open="open" :title="title" :title-id="titleId" @close="open = false">
       <div class="filter-sheet-body"><slot /></div>
       <button class="filter-sheet-done" type="button" @click="open = false">完成</button>
     </ArchiveTerminalDialog>

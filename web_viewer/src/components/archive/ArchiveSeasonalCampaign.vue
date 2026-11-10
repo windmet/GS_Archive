@@ -151,6 +151,7 @@ import { BookOpen, ChevronRight, Gift, Heart, Play, Users, X } from '@lucide/vue
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { useReaderTitles } from './useReaderTitles.js'
+import { useSheetDrag } from '../../composables/useSheetDrag.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { SEASONAL_SEASON_LABEL } from '../../../shared/reading/ReadingCatalog.js'
 import '../../styles/archive-story.css'
@@ -235,6 +236,8 @@ const close = () => emit('select-participant', '')
 // Drawer surface contract: focus moves in, Tab stays inside, the page behind is inert, and focus
 // returns to the opener when it closes.
 const drawerElement = ref(null), closeButton = ref(null)
+// On phones the drawer is a bottom sheet: pulling it down closes it the same way the close button does.
+useSheetDrag(drawerElement, { handle: '.drawer-head', onClose: close })
 let opener = null, background = null, wasInert = false
 watch(() => Boolean(drawer.value), async isOpen => {
   if (isOpen) {

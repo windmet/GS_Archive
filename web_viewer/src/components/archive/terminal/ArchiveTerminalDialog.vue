@@ -10,9 +10,12 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { X } from '@lucide/vue'
-const props = defineProps({ open: Boolean, title: String, titleId: { type: String, required: true } })
+import { useSheetDrag } from '../../../composables/useSheetDrag.js'
+// swipeDismiss: the dialog is a bottom sheet on phones, so pulling it down closes it (composables/useSheetDrag.js). Only a bottom-form sheet reacts.
+const props = defineProps({ open: Boolean, title: String, titleId: { type: String, required: true }, swipeDismiss: Boolean })
 const emit = defineEmits(['close'])
 const dialog = ref(null)
+useSheetDrag(dialog, { handle: '.terminal-dialog-header', onClose: () => emit('close'), enabled: () => props.swipeDismiss })
 // The body stays mounted while the dialog fades out (gs-motion.css, 120ms), so it never collapses
 // to an empty frame on its way out; it unmounts once the exit is over.
 const EXIT_MS = 160

@@ -283,6 +283,7 @@ import {archiveText} from './useArchiveCostumeText.js'
 import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
 import {costumeFilterView} from '../../presentation/CostumeCategories.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
+import { useSheetDrag } from '../../composables/useSheetDrag.js'
 import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
 import { archiveText as photoText } from './useArchivePhotoText.js'
 import {
@@ -347,6 +348,8 @@ function closeSettings() {
 const cueIndexOpen = ref(false), cueIndexRef = ref(null), cueIndexBody = ref(null)
 const cueQuery = ref(''), cueRarity = ref(''), cueSource = ref('')
 let cueIndexReturnFocus = null
+// On phones the line directory is a bottom sheet: pulling it down closes it through closeCueIndex.
+useSheetDrag(cueIndexRef, { handle: 'header', onClose: () => closeCueIndex() })
 function closeCueIndex() {
   cueIndexRef.value?.close()
   cueIndexOpen.value = false
