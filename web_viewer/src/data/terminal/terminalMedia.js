@@ -1,24 +1,7 @@
 /** Lightweight presentation metadata only. Never import Home, Player or a master index here. */
-export const TERMINAL_PREFERENCES_KEY = 'sidem:archive-terminal-preferences'
 const CARD_KEY = /^[a-z0-9_]+:(base|p)$/
 const BG_ID = /^bg[a-z0-9_]+$/i
 const cache = new Map()
-export function normalizeTerminalPreferences(value) {
-  return { version: 1, wallpaperKey: value?.version === 1 && CARD_KEY.test(value.wallpaperKey || '') ? value.wallpaperKey : '' }
-}
-export function readTerminalPreferences(storage) {
-  try { const target = storage === undefined ? globalThis.localStorage : storage; return normalizeTerminalPreferences(JSON.parse(target?.getItem(TERMINAL_PREFERENCES_KEY) || 'null')) }
-  catch { return normalizeTerminalPreferences(null) }
-}
-export function writeTerminalPreferences(wallpaperKey, storage) {
-  const preferences = normalizeTerminalPreferences({ version: 1, wallpaperKey })
-  try {
-    const target = storage === undefined ? globalThis.localStorage : storage
-    if (!target?.setItem) throw Error('Storage unavailable')
-    target.setItem(TERMINAL_PREFERENCES_KEY, JSON.stringify(preferences))
-    return { preferences, persisted: true, notice: '' }
-  } catch { return { preferences, persisted: false, notice: '本次选择已生效；浏览器未能保存，下次打开需重新选择。' } }
-}
 const safeImage = url => typeof url === 'string' && /^\/assets\/(?:card-art|terminal|bg)\/[a-zA-Z0-9_./-]+\.(?:png|webp|jpg)$/.test(url) && !url.includes('..')
 export function validateTerminalManifest(value, kind) {
   if (!['wallpapers', 'backgrounds'].includes(kind)) throw Error('未知展示目录')

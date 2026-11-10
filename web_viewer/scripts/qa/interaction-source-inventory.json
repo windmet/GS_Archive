@@ -13370,16 +13370,6 @@
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
-    "component": "ArchiveTerminalBackdrop",
-    "file": "src/components/archive/terminal/ArchiveTerminalBackdrop.vue",
-    "line": 5,
-    "event": "@error",
-    "handler": "failImage",
-    "template": "<img :src=\"wallpaper.landscape.url\" alt=\"\" decoding=\"async\" :style=\"positionStyle\" @error=\"failImage\" />",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
     "component": "ArchiveTerminalDialog",
     "file": "src/components/archive/terminal/ArchiveTerminalDialog.vue",
     "line": 2,
@@ -13426,56 +13416,6 @@
     "event": "@click",
     "handler": "emit('close')",
     "template": "<button class=\"terminal-icon-button\" type=\"button\" aria-label=\"关闭\" @click=\"emit('close')\"><X :size=\"20\" /></button>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveWallpaperPicker",
-    "file": "src/components/archive/terminal/ArchiveWallpaperPicker.vue",
-    "line": 2,
-    "event": "@close",
-    "handler": "emit('close')",
-    "template": "<ArchiveTerminalDialog class=\"wallpaper-picker\" :open=\"open\" title=\"SSR 卡面壁纸\" title-id=\"wallpaper-title\" @close=\"emit('close')\">",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveWallpaperPicker",
-    "file": "src/components/archive/terminal/ArchiveWallpaperPicker.vue",
-    "line": 4,
-    "event": "@click",
-    "handler": "choose('')",
-    "template": "<div class=\"wallpaper-picker-tools\"><p class=\"wallpaper-help\">选一张喜欢的卡面作为背景。</p><button type=\"button\" class=\"wallpaper-text-button\" :aria-pressed=\"!preferences.wallpaperKey\" @click=\"choose('')\">使用默认背景</button></div>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveWallpaperPicker",
-    "file": "src/components/archive/terminal/ArchiveWallpaperPicker.vue",
-    "line": 6,
-    "event": "@click",
-    "handler": "load(true)",
-    "template": "<div v-else-if=\"error\" role=\"status\">{{ error }} <button type=\"button\" class=\"wallpaper-text-button\" @click=\"load(true)\">重试</button></div>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveWallpaperPicker",
-    "file": "src/components/archive/terminal/ArchiveWallpaperPicker.vue",
-    "line": 15,
-    "event": "@click",
-    "handler": "choose(entry.id)",
-    "template": "<button v-for=\"entry in visible\" :key=\"entry.id\" type=\"button\" :aria-pressed=\"preferences.wallpaperKey === entry.id\" :aria-label=\"`${cardLabel(entry.label)}，${idolLabel(entry)}，${entry.variantLabel}`\" :title=\"`${cardLabel(entry.label)} · ${idolLabel(entry)} · ${entry.variantLabel}`\" @click=\"choose(entry.id)\">",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveWallpaperPicker",
-    "file": "src/components/archive/terminal/ArchiveWallpaperPicker.vue",
-    "line": 21,
-    "event": "@click",
-    "handler": "limit += PAGE_SIZE",
-    "template": "<button v-if=\"matches.length > limit\" type=\"button\" class=\"wallpaper-more\" @click=\"limit += PAGE_SIZE\">继续浏览 · 还有 {{ matches.length - visible.length }} 张</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   }

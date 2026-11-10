@@ -8,10 +8,13 @@ const values=new Map([['unrelated','preserved'],['sidem-story-read-history','pro
 const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)}
 const settings=defaultArchiveSettings()
 settings.startup.preferredIdol='040ren';settings.startup.startupIdol='007kei';settings.startup.portalDefaultScope='all';settings.startup.startupPage='portal';settings.startup.onboardingComplete=true
-settings.player.producer_name='验收制作人';settings.player.volumes.master=.23;settings.player.volumes.voice=.4;settings.home.autoVoice=true;settings.wallpaper.wallpaperKey='040ren_ssr01:p'
+settings.player.producer_name='验收制作人';settings.player.volumes.master=.23;settings.player.volumes.voice=.4;settings.home.autoVoice=true
+values.set('sidem:archive-terminal-preferences',JSON.stringify({version:1,wallpaperKey:'040ren_ssr01:p'}))
 applyArchiveSettings(settings,storage)
 const backup=exportArchiveSettings(storage),restore=validateArchiveSettingsBackup(JSON.parse(JSON.stringify(backup)),['040ren','007kei'])
 assert.deepEqual(restore,settings)
+assert.ok(!Object.hasOwn(backup.settings,'wallpaper')&&!values.has('sidem:archive-terminal-preferences'),'the retired wallpaper is neither exported nor left in storage')
+assert.deepEqual(validateArchiveSettingsBackup({...structuredClone(backup),settings:{...structuredClone(backup.settings),wallpaper:{version:1,wallpaperKey:'040ren_ssr01:p'}}},['040ren','007kei']),settings,'older backups with a wallpaper still import')
 applyArchiveSettings(defaultArchiveSettings(),storage)
 assert.equal(values.get('unrelated'),'preserved');assert.equal(values.get('sidem-story-read-history'),'progress')
 applyArchiveSettings(restore,storage)

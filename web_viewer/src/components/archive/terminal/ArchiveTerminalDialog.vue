@@ -35,7 +35,7 @@ onBeforeUnmount(() => { clearTimeout(releaseTimer); dialog.value?.close(); resto
 </script>
 <style>
 /* Dialog L: a floating surface with a fixed header and a scrolling body. The class names are a
-   contract: Chibi, photo, song and wallpaper dialogs restyle these parts with :deep(). */
+   contract: Chibi, photo and song dialogs restyle these parts with :deep(). */
 .terminal-dialog { --dialog-block-gap: max(24px, var(--gs-safe-top), var(--gs-safe-bottom)); --dialog-inline-gap: max(16px, var(--gs-safe-left), var(--gs-safe-right)); box-sizing: border-box; width: min(var(--gs-surface-selector-width), calc(100% - var(--dialog-inline-gap) - var(--dialog-inline-gap))); max-height: calc(100% - var(--dialog-block-gap) - var(--dialog-block-gap)); padding: 0; overflow: hidden; border: 0; border-radius: var(--gs-radius-panel); background: var(--gs-surface); color: var(--gs-ink); font-family: var(--gs-font-body); box-shadow: var(--gs-shadow-float); }
 .terminal-dialog *, .terminal-dialog *::before, .terminal-dialog *::after { box-sizing: border-box; }
 .terminal-dialog[open] { display: flex; flex-direction: column; }
