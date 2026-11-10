@@ -4,7 +4,7 @@
     <p v-if="errorScope==='catalog'" role="alert">{{ error }}<button @click="load">重试</button></p>
     <section v-if="rows.length" class="collection-directory" aria-label="资料目录">
       <div class="collection-filters">
-        <label class="collection-search"><span>搜索</span><input type="search" aria-label="搜索藏品" :value="query" :placeholder="placeholder" @input="emit('query',$event.target.value)" /></label>
+        <label v-if="rows.length>=SEARCH_MIN_ROWS" class="collection-search"><span>搜索</span><input type="search" aria-label="搜索藏品" :value="query" :placeholder="placeholder" @input="emit('query',$event.target.value)" /></label>
         <template v-if="owned">
           <ArchivePersonPicker v-model="idol" :idols="personIdols" :idol-name="personName" label="偶像" allow-all />
           <GsFilterMenu v-model="unit" label="组合" :options="unitOptions" neutral="" />
@@ -20,15 +20,16 @@
         <button v-for="row in visible" :key="row.id" type="button" :class="kind==='items'?itemAttribute(row):''" :aria-label="entryName(row)" :title="entryName(row)" :aria-describedby="tooltipRow===row?tooltipId:undefined" :aria-pressed="detailOpen&&String(row.id)===selectedId" @pointerenter="showTooltip(row,$event)" @pointerleave="hideTooltip" @focus="showTooltip(row,$event)" @blur="hideTooltip" @keydown.esc="hideTooltip" @click="select(row)">
           <span v-if="kind==='items' && collectionItemVariant(row.nameJa)" class="collection-variant">{{ collectionItemVariant(row.nameJa) }}</span>
           <span class="collection-card-art"><img v-if="rowImage(row)?.url&&!failedThumbnails.has(`${kind}:${row.id}`)" :src="rowImage(row).url" alt="" loading="lazy" decoding="async" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])" /><component :is="({honors:Medal,currencies:Coins,costumes:Shirt})[kind]||Box" v-else :size="25" /></span>
-          <span class="collection-card-copy"><strong>{{ entryName(row) }}</strong><template v-if="kind==='honors'"><small v-if="honorSourceLabel(row,bootstrap.release)">{{ honorSourceLabel(row,bootstrap.release) }}</small><span class="collection-badge">{{ ownerName(honorIdol(row)) || honorLabels[honorGroup(row)] }}</span></template><template v-else-if="kind==='costumes'"><small v-if="!row.nameJa" class="collection-model-code">{{ row.id }}</small><span class="collection-badge">{{ ownerName(costumeOwner(row)) }}</span></template></span>
+          <span class="collection-card-copy"><strong>{{ entryName(row) }}</strong><template v-if="kind==='honors'"><small v-if="honorSourceLabel(row,bootstrap.release)">{{ honorSourceLabel(row,bootstrap.release) }}</small><span class="collection-badge">{{ ownerName(honorIdol(row)) || honorLabels[honorGroup(row)] }}</span></template><template v-else-if="kind==='costumes'"><span class="collection-badge">{{ ownerName(costumeOwner(row)) }}</span></template></span>
 
         </button>
       </div>
       <p v-if="!filtered.length">没有匹配的藏品。</p>
       <nav v-if="pages>1" class="domain-pagination" aria-label="目录分页"><button type="button" :disabled="page===0" @click="page--">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type="button" :disabled="page+1>=pages" @click="page++">下一页</button></nav>
     </section>
+    <p v-if="rows.length" class="collection-data-note">图鉴资料来自游戏内数据。商店商品、任务条件、排行榜等由服务器下发的内容不在收录范围内。</p>
     <ArchiveFloatingTooltip :anchor="tooltipAnchor" :id="tooltipId" @dismiss="hideTooltip">
-      <template v-if="tooltipRow"><strong>{{ entryName(tooltipRow) }}</strong><span v-if="entryName(tooltipRow)!==tooltipRow.nameJa" lang="ja" class="collection-original">{{ tooltipRow.nameJa }}</span><span>{{ summary(tooltipRow)?.description?archiveText('item',summary(tooltipRow).description,'description'):itemBrowseGroup(tooltipRow.itemType).label }}</span><small>编号 {{ tooltipRow.id }} · 点击查看来源</small></template>
+      <template v-if="tooltipRow"><strong>{{ entryName(tooltipRow) }}</strong><span v-if="entryName(tooltipRow)!==tooltipRow.nameJa" lang="ja" class="collection-original">{{ tooltipRow.nameJa }}</span><span>{{ summary(tooltipRow)?.description?archiveText('item',summary(tooltipRow).description,'description'):itemBrowseGroup(tooltipRow.itemType).label }}</span><small>点击查看详情</small></template>
     </ArchiveFloatingTooltip>
     <CollectionDetailPanel v-if="detailOpen" :detail="detail" :kind="kind" :display-idol-name="displayIdolName" :busy="catalogBusy||detailBusy" :error="errorScope==='detail'?error:''" modal @close="emit('entity','')" @retry="load" @open-event="emit('open-event',$event)" @open-gasha="emit('open-gasha',$event)" @open-card="emit('open-card',$event)" @open-idol="emit('open-idol',$event)" />
   </article>
@@ -57,6 +58,8 @@ import '../../styles/archive-collection.css'
 const props=defineProps({client:Object,bootstrap:Object,displayIdolName:{type:Function,default:()=>''},entity:{type:String,default:''},query:{type:String,default:''},browseState:{type:Object,default:()=>({kind:'items',page:0})}})
 const emit=defineEmits(['query','entity','browse','open-event','open-gasha','open-card','open-idol'])
 const repository=new DomainRepository(props.client,props.bootstrap)
+// A short list (the seven currencies) reads at a glance; search only earns its row once the catalog is long.
+const SEARCH_MIN_ROWS=20
 const kind=computed(()=>props.browseState.kind),rows=shallowRef([]),detail=shallowRef(null),catalogBusy=ref(false),detailBusy=ref(false),selectedId=ref(''),error=ref(''),errorScope=ref('')
 function filterModel(key){return computed({get:()=>props.browseState[key] ?? (key==='page'?0:''),set:value=>emit('browse',{...props.browseState,[key]:value,...(key==='page'?{}:{page:0})})})}
 const page=filterModel('page'),category=filterModel('category'),idol=filterModel('idol'),unit=filterModel('unit'),attribute=filterModel('attribute'),detailOpen=computed(()=>Boolean(props.entity)),failedThumbnails=shallowRef(new Set())
@@ -74,7 +77,7 @@ const honorLabels={idol:'偶像称号',event:'活动称号',normal:'普通称号
 const costumeLabels={live:'Live 与剧情衣装','story-only':'仅剧情衣装'}
 const groups=computed(()=>kind.value==='items'?itemBrowseGroups:Object.entries(({honors:honorLabels,costumes:costumeLabels})[kind.value] || {}).map(([key,label])=>({key,label})))
 const owned=computed(()=>['honors','costumes'].includes(kind.value))
-const placeholder=computed(()=>({items:'搜索道具名称…',honors:'搜索称号或已知条件…',currencies:'搜索货币或资源…',costumes:'搜索衣装名称或模型编号…'})[kind.value])
+const placeholder=computed(()=>({items:'搜索道具名称…',honors:'搜索称号或已知条件…',currencies:'搜索货币或资源…',costumes:'搜索衣装名称…'})[kind.value])
 const costumeOwner=row=>collectionIdols.find(entry=>entry.id===row.idolCode) || null
 const entityType=computed(()=>COLLECTION_KINDS[kind.value]?.type || 'item')
 const units=Object.entries(UNIT_CODE_TO_NAME).map(([id,name])=>({id,name}))
@@ -111,3 +114,6 @@ function select(row){hideTooltip();const key=`${entityType.value}:${row.id}`;if(
 watch(()=>[props.entity,kind.value],()=>{void load()},{immediate:true})
 watch(pages,total=>{if(total>0&&page.value>=total)page.value=total-1})
 </script>
+<style scoped>
+.collection-data-note { margin:var(--gs-space-6,20px) 0 0; color:var(--gs-ink-3); font-size:var(--gs-text-meta,12px); line-height:1.6; }
+</style>

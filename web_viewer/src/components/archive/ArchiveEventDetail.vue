@@ -148,7 +148,7 @@
     </section>
 
     <section v-if="view.rewards" class="detail-section general-reward-section" aria-labelledby="event-general-rewards">
-      <div class="section-heading"><div><h3 id="event-general-rewards">{{ view.identity.kind==='collection' ? '活动兑换道具' : '奖励明细与藏品' }}</h3><p>{{ exchangeRewards ? '通过演唱会与工作收集道具，用于兑换活动报酬。完整兑换清单见上方 Wikiwiki 补录。' : '历史客户端配置。兑换商店明细与实时排行榜尚未收录。' }}</p></div></div>
+      <div class="section-heading"><div><h3 id="event-general-rewards">{{ view.identity.kind==='collection' ? '活动兑换道具' : '奖励明细与藏品' }}</h3><p v-if="exchangeRewards">通过演唱会与工作收集道具，用于兑换活动报酬。完整兑换清单见上方 Wikiwiki 补录。</p></div></div>
       <nav v-if="view.rewards.materials?.length" class="event-materials" aria-label="活动材料"><div v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" class="event-material"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/><button type="button" @click="openQuick(`item:${item.itemId}`)">{{ item.nameJa }}</button></div></nav>
       <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="openQuick" @open-target="emit('open-target',$event)" />
     </section>
@@ -172,7 +172,6 @@
     <ArchiveImageLightbox :open="galleryIndex >= 0" :items="gallery" :initial-index="Math.max(galleryIndex, 0)" @close="galleryIndex = -1" />
 
     <ArchiveTechnicalDetails :key="event.event_id" :evidence="{ provenance: view.provenance, file: event.file, classification: event.classification_source }">
-      <p>活动信息、累计 PT 报酬与剧情阅读报酬均来自游戏内主数据，未经改写。</p>
     </ArchiveTechnicalDetails>
   </article>
 </template>
@@ -520,7 +519,7 @@ button.episode-main { cursor: pointer; }
 .detail-section :deep(.domain-reward-product) { gap: var(--gs-space-4); }
 .detail-section :deep(.domain-reward-name) { gap: var(--gs-space-3); padding: var(--gs-space-2) 0; font-family: inherit; font-size: var(--gs-text-body); border-radius: var(--gs-radius-control); }
 .detail-section :deep(.domain-reward-name strong) { font-weight: var(--gs-weight-semibold); }
-.detail-section :deep(.domain-reward-name small), .detail-section :deep(.domain-reward-unresolved), .detail-section :deep(.domain-reward-campaigns) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.detail-section :deep(.domain-reward-name small), .detail-section :deep(.domain-reward-campaigns) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .detail-section :deep(.domain-table-controls) { flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-5); font-size: var(--gs-text-meta); }
 .detail-section :deep(.domain-table-controls label) { flex: 1 1 220px; gap: var(--gs-space-3); min-width: 0; font-size: var(--gs-text-ui); }
 .detail-section :deep(.domain-table-controls select) { flex: 1; box-sizing: border-box; min-width: 0; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); border-radius: var(--gs-radius-field); }

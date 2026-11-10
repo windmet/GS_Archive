@@ -2,26 +2,26 @@
   <section class="domain-panel collection-entry-details">
     <DomainMediaPreview :binding="kind==='costumes' ? costumeImage(detail.entry?.id,detail.media?.image) : detail.media?.image" :effect-status="detail.media?.effectStatus" :name="name" />
     <div class="domain-detail-title"><h3 :title="detail.entry.nameJa">{{ name }}</h3><p v-if="name !== detail.entry.nameJa" lang="ja" class="collection-original">{{ detail.entry.nameJa }}</p></div>
-    <p class="domain-description"><DomainInlineText :text="description" /></p>
+    <p v-if="description" class="domain-description"><DomainInlineText :text="description" /></p>
     <dl class="domain-meta">
-      <div><dt>种类</dt><dd>{{ kindLabel }}</dd></div>
+      <div v-if="kind!=='currencies'"><dt>种类</dt><dd>{{ kindLabel }}</dd></div>
       <!-- An idol honor's id names its idol (HonorIdentity), and a costume's model names its wearer, so both link back to the idol. -->
       <div v-if="ownerIdol"><dt>所属偶像</dt><dd><button v-if="linkIdol" type="button" class="collection-idol-link" :data-archive-focus-id="`collection-${domain}-idol:${detail.entry.id}`" @click="emit('open-idol',ownerIdol.code)"><ArchiveIdolAvatar :idol-code="ownerIdol.code" :size="24" decorative />{{ ownerIdol.name }}<ChevronRight :size="15" aria-hidden="true" /></button><template v-else>{{ ownerIdol.name }}</template></dd></div>
       <div v-if="honorIdol?.kind.startsWith('fes-')"><dt>对应 FES</dt><dd>{{ fesHonorMonth(detail.entry) }} FES 限定卡</dd></div>
-      <div v-if="detail.entry.term"><dt>历史配置期</dt><dd>{{ historicalPeriod(detail.entry) }}</dd></div>
-      <div v-if="kind === 'costumes' && releaseDate"><dt>配置时间</dt><dd>{{ releaseDate }}</dd></div>
-      <div v-if="kind === 'items'"><dt>持有上限</dt><dd>{{ detail.entry.maxAmount === undefined ? '未记录' : number(detail.entry.maxAmount) }}</dd></div>
-      <div v-if="detail.entry.hasPrefab"><dt>原始效果</dt><dd>原配置含 Prefab，当前展示静态图片。</dd></div>
+      <div v-if="detail.entry.term && period"><dt>开放期间</dt><dd>{{ period }}</dd></div>
+      <div v-if="kind === 'costumes' && releaseDate"><dt>实装时间</dt><dd>{{ releaseDate }}</dd></div>
+      <div v-if="kind === 'items' && Number.isFinite(detail.entry.maxAmount) && detail.entry.maxAmount !== DEFAULT_MAX_AMOUNT"><dt>持有上限</dt><dd>{{ number(detail.entry.maxAmount) }}</dd></div>
+      <div v-if="maintainer && detail.entry.hasPrefab"><dt>原始效果</dt><dd>原配置含 Prefab，当前展示静态图片。</dd></div>
     </dl>
     <section v-if="usageCards.length" class="collection-card-usage" :aria-label="usageHeading">
       <h4>{{ usageHeading }} <small>{{ usageCards.length }} 张</small></h4>
-      <p class="collection-usage-note">{{ kind === 'costumes' ? '依据卡片的 Live 与剧情衣装配置；主页衣装选择不计入。' : '依据卡片的突破素材配置；不代表获得来源或解锁条件。' }}</p>
+      <p v-if="kind !== 'costumes'" class="collection-usage-note">依据卡片的突破素材；不代表获得来源或解锁条件。</p>
       <ul class="collection-usage-list">
         <li v-for="card in usageCards" :key="card.resource_id">
           <button type="button" class="collection-usage-card" :data-archive-focus-id="`collection-card:${domain}:${detail.entry.id}:${card.resource_id}`" @click="emit('open-card',card)">
             <span class="collection-usage-image" aria-hidden="true"><img v-if="card.image?.url && !failedCardImages.has(card.image.url)" :src="card.image.url" alt="" loading="lazy" @error="failedCardImages.add(card.image.url)" /><ImageOff v-else :size="20" /></span>
             <span class="collection-usage-copy">
-            <span class="collection-usage-identity"><small v-if="card.rarity">{{ card.rarity }}</small><span>{{ cardIdolName(card) }}</span></span>
+            <span class="collection-usage-identity"><small v-if="card.rarity">{{ card.rarity }}</small><span v-if="cardIdolName(card)">{{ cardIdolName(card) }}</span></span>
             <strong>{{ cardTitle(card.title) }}</strong>
             <span v-if="card.slots?.length" class="collection-usage-slots">{{ card.slots.map(slot => costumeSlotLabels[slot] || slot).join(' · ') }}</span>
             </span>
@@ -30,15 +30,16 @@
         </li>
       </ul>
     </section>
-    <details class="collection-source-meta"><summary>原始资料</summary><dl class="domain-meta"><div><dt>编号</dt><dd>{{ detail.entry.id }}</dd></div><div v-if="detail.entry.resourceId"><dt>资源键</dt><dd>{{ detail.entry.resourceId }}</dd></div><div v-if="detail.entry.costumeIds?.length"><dt>衣装 ID</dt><dd>{{ detail.entry.costumeIds.join(' / ') }}</dd></div><div v-if="detail.entry.productType"><dt>奖励类型码</dt><dd>{{ detail.entry.productType }}</dd></div><div><dt>原文名称</dt><dd>{{ detail.entry.nameJa || '未命名' }}</dd></div></dl></details>
-    <p class="domain-muted">{{ footnote }}</p>
+    <details class="collection-source-meta"><summary>原始资料</summary><dl class="domain-meta"><div><dt>编号</dt><dd>{{ detail.entry.id }}</dd></div><div v-if="maintainer && detail.entry.resourceId"><dt>资源键</dt><dd>{{ detail.entry.resourceId }}</dd></div><div v-if="maintainer && detail.entry.costumeIds?.length"><dt>衣装 ID</dt><dd>{{ detail.entry.costumeIds.join(' / ') }}</dd></div><div v-if="maintainer && detail.entry.productType"><dt>奖励类型码</dt><dd>{{ detail.entry.productType }}</dd></div><div><dt>原文名称</dt><dd>{{ detail.entry.nameJa || '未命名' }}</dd></div></dl></details>
+    <p v-if="footnote" class="domain-muted">{{ footnote }}</p>
   </section>
 </template>
 <script setup>
 import {number,itemBrowseGroup} from './DomainPresentation.mjs'
 import {computed,ref,watch} from 'vue'
 import {ChevronRight,ImageOff} from '@lucide/vue'
-import {historicalDate,historicalPeriod} from './DomainPresentation.mjs'
+import {historicalPeriodNote,knownHistoricalDate} from './DomainPresentation.mjs'
+import {isMaintainerMode} from '../../core/maintainerMode.js'
 import {archiveText as costumeText} from './useArchiveCostumeText.js'
 import {COLLECTION_KINDS} from '../../core/CollectionRouteState.js'
 import {costumeImage,costumeName,costumeSlotLabels,costumeUseLabel} from '../../presentation/CostumeCollection.js'
@@ -52,6 +53,10 @@ import DomainInlineText from './DomainInlineText.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 const props=defineProps({detail:{type:Object,required:true},kind:{type:String,required:true},displayIdolName:{type:Function,default:()=>''},linkIdol:Boolean})
 const emit=defineEmits(['open-card','open-idol'])
+// Engineering fields (resource keys, type codes, costume ids, Prefab notes) are for the maintainer view only.
+const maintainer=isMaintainerMode()
+const DEFAULT_MAX_AMOUNT=999999
+const period=computed(()=>historicalPeriodNote(props.detail.entry))
 const honorIdol=computed(()=>props.kind==='honors' ? honorIdolOf(props.detail.entry,props.displayIdolName) : null)
 const honorKindLabel=computed(()=>({tantou:'担当称号',catchphrase:'专属台词称号','fes-change':'FES 成就 · 换装','fes-limitbreak':'FES 成就 · 满破'})[honorIdol.value?.kind] || '称号')
 const failedCardImages=ref(new Set())
@@ -59,8 +64,10 @@ watch(()=>props.detail.entry.key,()=>{failedCardImages.value=new Set()})
 const domain=computed(()=>COLLECTION_KINDS[props.kind]?.type || 'item')
 const name=computed(()=>props.kind==='honors' ? honorTitle(props.detail.entry,props.displayIdolName) :
   props.kind==='costumes' ? costumeName(props.detail.entry) : archiveText(domain.value,props.detail.entry.nameJa))
-const description=computed(()=>(props.kind==='costumes' ? costumeText('costume',props.detail.entry.descriptionJa,'description') :
-  archiveText(domain.value,props.detail.entry.descriptionText?.plain ?? props.detail.entry.descriptionJa,'description')) || '尚未收录说明。')
+// The game text hard-wraps its sentences; single newlines are layout, blank lines are real paragraph breaks.
+const unwrap=text=>String(text || '').replace(/(?<!\n)\n(?!\n)/g,'')
+const description=computed(()=>unwrap(props.kind==='costumes' ? costumeText('costume',props.detail.entry.descriptionJa,'description') :
+  archiveText(domain.value,props.detail.entry.descriptionText?.plain ?? props.detail.entry.descriptionJa,'description')))
 const costumeIdol=computed(()=>{
   const code=props.kind==='costumes' ? props.detail.entry.idolCode : ''
   const source=IDOL_ID_TO_NAME[code] || ''
@@ -69,27 +76,23 @@ const costumeIdol=computed(()=>{
 const ownerIdol=computed(()=>honorIdol.value || costumeIdol.value)
 const kindLabel=computed(()=>props.kind==='honors' ? (honorIdol.value ? honorKindLabel.value : '称号') :
   props.kind==='currencies' ? '货币' : props.kind==='costumes' ? costumeUseLabel(props.detail.entry) : itemBrowseGroup(props.detail.entry.itemType).label)
-const releaseDate=computed(()=>{const value=historicalDate(props.detail.entry.releaseAt);return ['未记录','配置占位日期'].includes(value) ? '' : value})
+const releaseDate=computed(()=>knownHistoricalDate(props.detail.entry.releaseAt))
 const usageCards=computed(()=>{
   const cards=props.kind==='items' ? props.detail.usageCards : props.kind==='costumes' ? props.detail.cards : null
   return Array.isArray(cards) ? cards : []
 })
 const usageHeading=computed(()=>props.kind==='costumes' ? '穿着此衣装的卡片' : '使用此道具的卡片')
-// Unnamed models carry a site label, and models without a usable client icon show a site render.
-const costumeFootnote=computed(()=>{
+// Only what the site made itself is credited: a site-given name or a site-rendered thumbnail.
+const footnote=computed(()=>{
+  if(props.kind!=='costumes')return ''
   const entry=props.detail.entry || {}
-  const name=entry.nameJa ? '衣装名称与说明来自客户端衣装配置' : '客户端未给此衣装命名，名称为本站按模型外观整理的称呼'
-  const binding=costumeImage(entry.id,props.detail.media?.image)
-  const image=binding?.status!=='site-render' ? '缩略图为客户端衣装图标' : `缩略图为本站从 spine 模型渲染（${binding.replacesIcon ? '客户端图标画的是另一套衣装' : '客户端没有对应的衣装图标'}）`
-  return `${name}；${image}。`
+  const parts=[]
+  if(!entry.nameJa)parts.push('名称')
+  if(costumeImage(entry.id,props.detail.media?.image)?.status==='site-render')parts.push('缩略图')
+  return parts.length ? `${parts.join(' / ')}为本站整理` : ''
 })
-const footnote=computed(()=>({
-  honors:'以下是已知来源，不代表完整的解锁条件。',
-  currencies:'历史配置不代表当前可获得。客户端只保存奖励配置；商店价格与兑换内容由服务端下发，尚未完整收录。',
-  costumes:costumeFootnote.value,
-})[props.kind] || '历史配置不代表当前可获得。用途分类为阅读整理标签；兑换商店和任务来源尚未完整收录。')
 const cardTitle=source=>cardText('card',source,'title')
-function cardIdolName(card){const source=IDOL_ID_TO_NAME[card.character_id] || '';return props.displayIdolName(card.character_id,source) || source || '姓名待确认'}
+function cardIdolName(card){const source=IDOL_ID_TO_NAME[card.character_id] || '';return props.displayIdolName(card.character_id,source) || source || ''}
 </script>
 <style scoped>
 .domain-detail-title { display:block; }
