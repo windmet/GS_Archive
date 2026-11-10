@@ -40,13 +40,12 @@ assert.deepEqual(costumeCategoryCounts([{modelId:'unknown'}]).map(row=>row.id),[
 const home=fs.readFileSync(new URL('../src/components/archive/ArchiveImmersiveHome.vue',import.meta.url),'utf8')
 const studio=fs.readFileSync(new URL('../src/components/archive/PictureStudio.vue',import.meta.url),'utf8')
 const consolePanel=fs.readFileSync(new URL('../src/components/archive/ArchiveHomeConsole.vue',import.meta.url),'utf8')
-// The 事务所 console (desktop panel and phone sheet are one component) draws the same exact-model categories as chips;
-// the scene settings keep the select. Both read the shared helpers, and both keep the current model visibly pinned.
-assert.equal((home.match(/<CostumeCategoryFilter /g)||[]).length,1,'scene settings keep the shared filter')
+// The 事务所 console (desktop panel and phone sheet are one component) draws the same exact-model categories as chips
+// and keeps the current model visibly pinned. Scene settings no longer repeat idol / costume / card pickers (11-10).
+assert.equal((home.match(/<CostumeCategoryFilter /g)||[]).length,0,'scene settings do not repeat the console costume picker')
 assert.match(consolePanel,/costumeCategoryCounts\(props\.activeIdol\.costumes\)/,'console chips use the shared category counts')
 assert.match(consolePanel,/@click="emit\('update:costumeCategory', group\.id\)"/)
 assert.match(home,/:filtered-costumes="filteredCostumes"/,'console rows come from the shared filter view')
-assert.equal((home.match(/v-if="filteredCostumes.pinned"/g)||[]).length,1,'current model remains visibly pinned in the settings picker')
 assert.match(consolePanel,/v-if="filteredCostumes\.pinned"/,'current model remains visibly pinned in the console')
 assert(studio.includes('label="摄影服装类别"') && studio.includes('v-if="filteredCostumes.pinned"'))
 // The phone sheet stands on the shell's mobile nav (it used to sit under it, hiding the last rows); the inset

@@ -33,6 +33,9 @@ for (const spot of materials.spots) {
   assert.equal(photoSpotScene(materials, spot, '__none__')?.id ?? null, scenes[0]?.id ?? null, `spot ${spot.id} falls back to its first scene`)
 }
 assert.equal(photoVariantKey('通常2'), '通常')
+// 昼 (indoor sets) and 日中 (outdoor) are one daytime chip, not 白天 beside 白昼.
+assert.equal(photoVariantKey('昼'), '日中')
+assert.ok(!homeVariants.some(row => row.id === '昼') && homeVariants.some(row => row.id === '日中'), 'home scene chips carry one daytime filter')
 
 const variants = photoSpotVariants(materials)
 assert.ok(variants.length >= 3 && variants.every(row => row.count > 1), 'shared variants only')

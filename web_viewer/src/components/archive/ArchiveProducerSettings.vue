@@ -41,7 +41,7 @@
 
       <section class="settings-group" aria-labelledby="settings-backup">
         <h2 id="settings-backup">本地备份</h2>
-        <p class="settings-note">设置只保存在当前浏览器。配置文件包含姓名、担当、启动与显示、事务所、声音和壁纸偏好，换设备后可导入恢复；不包含游戏资源、阅读进度或收藏。</p>
+        <p class="settings-note">设置只保存在当前浏览器。配置文件包含姓名、担当、启动与显示、事务所和声音偏好，换设备后可导入恢复；不包含游戏资源、阅读进度或收藏。</p>
         <div class="settings-actions">
           <button type="button" class="settings-button" @click="download"><Download :size="16" />导出配置</button>
           <label class="settings-button import-control"><Upload :size="16" />导入配置<input type="file" accept=".json,application/json" aria-label="导入配置文件" @change="readImport" /></label>
@@ -50,8 +50,8 @@
       </section>
     </div>
     <ArchiveTerminalDialog :open="favoriteOpen" title="选择担当" title-id="settings-favorite-title" @close="favoriteOpen=false"><ArchiveIdolPickerPanel :idols="preferredIdols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferences.preferredIdol || ''" @update:model-value="emit('save-preferred',$event);favoriteOpen=false" /><button type="button" class="settings-text-button" @click="emit('save-preferred','');favoriteOpen=false">暂不设置担当</button></ArchiveTerminalDialog>
-    <ArchiveTerminalDialog :open="Boolean(pendingImport)" title="恢复配置" title-id="settings-import-title" @close="pendingImport=null"><p>将恢复姓名、担当、启动、事务所、语言、声音与壁纸偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class="settings-button settings-primary" type="button" @click="restore(pendingImport)">确认恢复</button></ArchiveTerminalDialog>
-    <ArchiveTerminalDialog :open="resetOpen" title="重置本站偏好" title-id="settings-reset-title" @close="resetOpen=false"><p>姓名、担当、启动、语言、声音、事务所和壁纸偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class="settings-button settings-primary" type="button" @click="restore(defaultArchiveSettings())">确认重置偏好</button></ArchiveTerminalDialog>
+    <ArchiveTerminalDialog :open="Boolean(pendingImport)" title="恢复配置" title-id="settings-import-title" @close="pendingImport=null"><p>将恢复姓名、担当、启动、事务所、语言与声音偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class="settings-button settings-primary" type="button" @click="restore(pendingImport)">确认恢复</button></ArchiveTerminalDialog>
+    <ArchiveTerminalDialog :open="resetOpen" title="重置本站偏好" title-id="settings-reset-title" @close="resetOpen=false"><p>姓名、担当、启动、语言、声音和事务所偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class="settings-button settings-primary" type="button" @click="restore(defaultArchiveSettings())">确认重置偏好</button></ArchiveTerminalDialog>
   </section>
 </template>
 <script setup>

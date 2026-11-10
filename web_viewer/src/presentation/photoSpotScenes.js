@@ -27,8 +27,10 @@ export function photoSpotScenes(materials, spot) {
 
 export const photoSceneSpot = (materials, sceneId) => index(materials)?.owners.get(Number(sceneId)) || null
 
-// "通常1"/"通常2" are both 通常 for filtering.
-export const photoVariantKey = (name) => String(name || '').replace(/\d+$/, '')
+// "通常1"/"通常2" are both 通常 for filtering. 昼 (indoor sets) and 日中 (outdoor) both mean daytime and no scene carries
+// both, so they filter as one chip instead of 白天 next to 白昼.
+const VARIANT_ALIASES = { 昼: '日中' }
+export const photoVariantKey = (name) => { const key = String(name || '').replace(/\d+$/, ''); return VARIANT_ALIASES[key] || key }
 
 export const photoSpotVariantKeys = (materials, spot) => [...new Set(photoSpotScenes(materials, spot).map((row) => photoVariantKey(row.name)))]
 

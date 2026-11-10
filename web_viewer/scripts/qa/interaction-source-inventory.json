@@ -6182,7 +6182,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 162,
+    "line": 164,
     "event": "@click",
     "handler": "emit('settings')",
     "template": "<button type=\"button\" class=\"home-producer-settings\" @click=\"emit('settings')\"><span>制作人设置</span><small>{{ producerName ? `${producerName} P · 称呼与担当` : '设置称呼与担当' }}</small><ChevronRight :size=\"16\" aria-hidden=\"true\" /></button>",
@@ -6192,17 +6192,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 163,
-    "event": "@change",
-    "handler": "emit('update:homeMode', $event.target.value)",
-    "template": "<label class=\"settings-field\"><span>首页样式</span><select aria-label=\"首页样式\" :value=\"homeMode\" @change=\"emit('update:homeMode', $event.target.value)\"><option value=\"card\">卡面主页</option><option value=\"spine\">立绘主页</option></select></label>",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveImmersiveHome",
-    "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 172,
+    "line": 169,
     "event": "@click",
     "handler": "toggleBackgroundPicker",
     "template": "<button type=\"button\" class=\"background-more\" :aria-expanded=\"backgroundPickerOpen\" @click=\"toggleBackgroundPicker\">{{ backgroundPickerOpen ? '收起场景列表' : '选择固定场景' }}</button>",
@@ -6212,7 +6202,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 173,
+    "line": 170,
     "event": "@click",
     "handler": "preferences.background = 'cue'",
     "template": "<button v-if=\"preferences.background !== 'cue'\" type=\"button\" class=\"background-more\" @click=\"preferences.background = 'cue'\">改回跟随台词</button>",
@@ -6222,7 +6212,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 176,
+    "line": 173,
     "event": "@click",
     "handler": "loadBackgroundCatalogue(true)",
     "template": "<p v-if=\"backgroundError\" role=\"status\">{{ backgroundError }} <button type=\"button\" @click=\"loadBackgroundCatalogue(true)\">重试</button></p>",
@@ -6232,7 +6222,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 180,
+    "line": 177,
     "event": "@click",
     "handler": "backgroundVariant = ''",
     "template": "<button type=\"button\" :aria-pressed=\"!backgroundVariant\" @click=\"backgroundVariant = ''\">全部</button>",
@@ -6242,7 +6232,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 181,
+    "line": 178,
     "event": "@click",
     "handler": "backgroundVariant = entry.id",
     "template": "<button v-for=\"entry in backgroundVariants\" :key=\"entry.id\" type=\"button\" :aria-pressed=\"backgroundVariant === entry.id\" @click=\"backgroundVariant = entry.id\">{{ entry.label }} <small>{{ entry.count }}</small></button>",
@@ -6252,7 +6242,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 184,
+    "line": 181,
     "event": "@click",
     "handler": "preferences.background = background.id",
     "template": "<button v-for=\"background in visibleBackgrounds\" :key=\"background.id\" type=\"button\" :aria-pressed=\"preferences.background === background.id\" @click=\"preferences.background = background.id\">",
@@ -6262,7 +6252,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 185,
+    "line": 182,
     "event": "@error",
     "handler": "backgroundThumbnailFailed($event, background)",
     "template": "<img v-if=\"background.url || background.thumbnail\" :src=\"photoBackgroundThumbnailUrl(background.url) || background.thumbnail\" alt=\"\" loading=\"lazy\" decoding=\"async\" @error=\"backgroundThumbnailFailed($event, background)\" />",
@@ -6272,7 +6262,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 189,
+    "line": 186,
     "event": "@click",
     "handler": "backgroundLimit += 12",
     "template": "<button v-if=\"filteredBackgrounds.length > backgroundLimit\" type=\"button\" class=\"background-more\" @click=\"backgroundLimit += 12\">显示更多场景</button>",
@@ -6282,17 +6272,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 203,
-    "event": "@change",
-    "handler": "emit('update:selectedCostume', $event.target.value)",
-    "template": "<select :value=\"activeCostume?.modelId || ''\" @change=\"emit('update:selectedCostume', $event.target.value)\">",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveImmersiveHome",
-    "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 214,
+    "line": 193,
     "event": "@click",
     "handler": "preferences.dialogueOrder = 'sequential'",
     "template": "<button type=\"button\" :class=\"{ active: preferences.dialogueOrder === 'sequential' }\" :aria-pressed=\"preferences.dialogueOrder === 'sequential'\" @click=\"preferences.dialogueOrder = 'sequential'\">顺序</button>",
@@ -6302,7 +6282,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 215,
+    "line": 194,
     "event": "@click",
     "handler": "preferences.dialogueOrder = 'random'",
     "template": "<button type=\"button\" :class=\"{ active: preferences.dialogueOrder === 'random' }\" :aria-pressed=\"preferences.dialogueOrder === 'random'\" @click=\"preferences.dialogueOrder = 'random'\">随机</button>",
@@ -6312,7 +6292,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 239,
+    "line": 218,
     "event": "@click",
     "handler": "resetPreferences",
     "template": "<button class=\"settings-reset\" type=\"button\" @click=\"resetPreferences\">",
@@ -6322,7 +6302,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 243,
+    "line": 222,
     "event": "@click",
     "handler": "closeSettings",
     "template": "<button class=\"settings-done\" type=\"button\" @click=\"closeSettings\">",
@@ -7865,7 +7845,7 @@
     "line": 53,
     "event": "@close",
     "handler": "pendingImport=null",
-    "template": "<ArchiveTerminalDialog :open=\"Boolean(pendingImport)\" title=\"恢复配置\" title-id=\"settings-import-title\" @close=\"pendingImport=null\"><p>将恢复姓名、担当、启动、事务所、语言、声音与壁纸偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(pendingImport)\">确认恢复</button></ArchiveTerminalDialog>",
+    "template": "<ArchiveTerminalDialog :open=\"Boolean(pendingImport)\" title=\"恢复配置\" title-id=\"settings-import-title\" @close=\"pendingImport=null\"><p>将恢复姓名、担当、启动、事务所、语言与声音偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(pendingImport)\">确认恢复</button></ArchiveTerminalDialog>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -7875,7 +7855,7 @@
     "line": 53,
     "event": "@click",
     "handler": "restore(pendingImport)",
-    "template": "<ArchiveTerminalDialog :open=\"Boolean(pendingImport)\" title=\"恢复配置\" title-id=\"settings-import-title\" @close=\"pendingImport=null\"><p>将恢复姓名、担当、启动、事务所、语言、声音与壁纸偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(pendingImport)\">确认恢复</button></ArchiveTerminalDialog>",
+    "template": "<ArchiveTerminalDialog :open=\"Boolean(pendingImport)\" title=\"恢复配置\" title-id=\"settings-import-title\" @close=\"pendingImport=null\"><p>将恢复姓名、担当、启动、事务所、语言与声音偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(pendingImport)\">确认恢复</button></ArchiveTerminalDialog>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -7885,7 +7865,7 @@
     "line": 54,
     "event": "@close",
     "handler": "resetOpen=false",
-    "template": "<ArchiveTerminalDialog :open=\"resetOpen\" title=\"重置本站偏好\" title-id=\"settings-reset-title\" @close=\"resetOpen=false\"><p>姓名、担当、启动、语言、声音、事务所和壁纸偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(defaultArchiveSettings())\">确认重置偏好</button></ArchiveTerminalDialog>",
+    "template": "<ArchiveTerminalDialog :open=\"resetOpen\" title=\"重置本站偏好\" title-id=\"settings-reset-title\" @close=\"resetOpen=false\"><p>姓名、担当、启动、语言、声音和事务所偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(defaultArchiveSettings())\">确认重置偏好</button></ArchiveTerminalDialog>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -7895,7 +7875,7 @@
     "line": 54,
     "event": "@click",
     "handler": "restore(defaultArchiveSettings())",
-    "template": "<ArchiveTerminalDialog :open=\"resetOpen\" title=\"重置本站偏好\" title-id=\"settings-reset-title\" @close=\"resetOpen=false\"><p>姓名、担当、启动、语言、声音、事务所和壁纸偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(defaultArchiveSettings())\">确认重置偏好</button></ArchiveTerminalDialog>",
+    "template": "<ArchiveTerminalDialog :open=\"resetOpen\" title=\"重置本站偏好\" title-id=\"settings-reset-title\" @close=\"resetOpen=false\"><p>姓名、担当、启动、语言、声音和事务所偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class=\"settings-button settings-primary\" type=\"button\" @click=\"restore(defaultArchiveSettings())\">确认重置偏好</button></ArchiveTerminalDialog>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },

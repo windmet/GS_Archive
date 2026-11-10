@@ -158,13 +158,10 @@
       </header>
 
       <div class="settings-body">
+        <!-- Who is on stage, what they wear, the card and 立绘/卡面 all live in the 人物与衣装 console above; this sheet keeps
+             only how the home behaves. -->
         <!-- First in the sheet: the stage has no producer button of its own. -->
         <button type="button" class="home-producer-settings" @click="emit('settings')"><span>制作人设置</span><small>{{ producerName ? `${producerName} P · 称呼与担当` : '设置称呼与担当' }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
-        <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
-        <label v-if="homeMode === 'card'" class="settings-field"><span>首页卡面</span>
-          <select v-model="preferences.cardKey" aria-label="首页卡面"><option value="">使用当前偶像的默认卡面</option><option v-for="card in idolCards" :key="card.id" :value="card.id">{{ card.label }} · {{ card.variantLabel }}</option></select>
-          <small>此选择独立于资料馆壁纸，切换偶像时优先使用该偶像的卡面。</small>
-        </label>
         <fieldset v-if="homeMode === 'spine'" class="settings-backgrounds">
           <legend>首页场景</legend>
           <p>{{ preferences.background === 'cue' ? '跟随台词所在的场景，多数台词在事务所。' : `固定为「${fixedBackgroundName}」，换人、换装或切换台词都不变。` }}</p>
@@ -189,24 +186,6 @@
           <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多场景</button>
           <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small></template>
         </fieldset>
-
-        <label class="settings-field">
-          <span>首页偶像</span>
-          <select v-model="selectedId">
-            <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option>
-          </select>
-        </label>
-
-        <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="服装类别" />
-        <label v-if="homeMode === 'spine'" class="settings-field settings-costume-field">
-          <span>服装</span>
-          <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
-            <option v-if="filteredCostumes.pinned" :value="filteredCostumes.pinned.modelId">当前：{{ archiveText('costume', filteredCostumes.pinned.name) }}（分类外）</option>
-            <option v-for="costume in filteredCostumes.rows" :key="costume.modelId" :value="costume.modelId">
-              {{ archiveText('costume',costume.name) }}
-            </option>
-          </select>
-        </label>
 
         <fieldset class="settings-segment">
           <legend>台词切换</legend>
@@ -283,7 +262,6 @@ import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js
 import { producerName, uiLocale } from '../../utils/LanguageStore.js'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 import {archiveText} from './useArchiveCostumeText.js'
-import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
 import {costumeFilterView} from '../../presentation/CostumeCategories.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { useSheetDrag } from '../../composables/useSheetDrag.js'
