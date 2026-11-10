@@ -7912,7 +7912,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 22,
+    "line": 21,
     "event": "@click",
     "handler": "openProduct(row.product)",
     "template": "<button v-if=\"rewardCollectionKey(row.product) || row.product?.target\" type=\"button\" class=\"domain-reward-name\" @click=\"openProduct(row.product)\">",
@@ -7922,7 +7922,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 29,
+    "line": 28,
     "event": "@click",
     "handler": "emit('open-event',row.event)",
     "template": "<button v-if=\"row.event\" type=\"button\" class=\"domain-reward-name\" @click=\"emit('open-event',row.event)\"><span><strong>{{ row.event.title }}</strong><small>查看关联活动</small></span><ChevronRight :size=\"16\" /></button>",
@@ -7932,7 +7932,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 36,
+    "line": 35,
     "event": "@click",
     "handler": "page--",
     "template": "<nav v-if=\"pages>1\" class=\"domain-pagination\" aria-label=\"奖励分页\"><button type=\"button\" :disabled=\"page===0\" @click=\"page--\">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type=\"button\" :disabled=\"page+1>=pages\" @click=\"page++\">下一页</button></nav>",
@@ -7942,7 +7942,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 36,
+    "line": 35,
     "event": "@click",
     "handler": "page++",
     "template": "<nav v-if=\"pages>1\" class=\"domain-pagination\" aria-label=\"奖励分页\"><button type=\"button\" :disabled=\"page===0\" @click=\"page--\">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type=\"button\" :disabled=\"page+1>=pages\" @click=\"page++\">下一页</button></nav>",
