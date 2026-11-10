@@ -39,7 +39,6 @@ const props = defineProps({
 })
 // The producer settings page (opened from the archive) or the idol picker for a page that needs one.
 // The first-run mode chooser is retired: new visitors start in the archive with ArchiveOnboarding.
-// The SSR wallpaper lives on the portal; this page is plain paper.
 const emit = defineEmits(['cancel', 'choose-idol', 'save-startup', 'save-preferred', 'settings-applied'])
 const heading = ref(null)
 const selectedIdol = ref(props.preferences.startupIdol || props.preferences.preferredIdol || ''), setPreferred = ref(!props.preferences.preferredIdol)

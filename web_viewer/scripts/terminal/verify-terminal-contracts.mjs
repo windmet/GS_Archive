@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { normalizeTerminalPreferences, readTerminalPreferences, writeTerminalPreferences, validateTerminalManifest, loadTerminalManifest, resolveHomeBackground } from '../../src/data/terminal/terminalMedia.js'
+import { validateTerminalManifest, loadTerminalManifest, resolveHomeBackground } from '../../src/data/terminal/terminalMedia.js'
 import { loadArchiveHomePreferences, saveArchiveHomePreferences, ARCHIVE_HOME_PREFERENCES_KEY } from '../../src/data/archiveHomePreferences.js'
 import { resolveArchiveStartup } from '../../src/core/archiveStartup.js'
 import { ARCHIVE_NAVIGATION } from '../../src/core/archiveRoute.js'
@@ -25,10 +25,6 @@ for (const [name, mutate] of [
 ]) test(name, () => { const r=structuredClone(record);mutate(r);assert.throws(()=>validateTerminalManifest(menu([r]),'wallpapers')) })
 test('duplicate rejection', () => assert.throws(()=>validateTerminalManifest(menu([record,record]),'wallpapers')))
 test('scene publication contract',()=>assert.throws(()=>validateTerminalManifest({schemaVersion:1,kind:'backgrounds',entries:[{id:'bg001',label:'x',url:'/assets/bg/bg001.png',published:false}]},'backgrounds')))
-test('storage accepts only valid version/key',()=>{assert.equal(normalizeTerminalPreferences({version:99,wallpaperKey:record.id}).wallpaperKey,'');assert.equal(normalizeTerminalPreferences({version:1,wallpaperKey:'javascript:a'}).wallpaperKey,'')})
-test('storage round trip',()=>{const s=mem();assert.ok(writeTerminalPreferences(record.id,s).persisted);assert.equal(readTerminalPreferences(s).wallpaperKey,record.id)})
-test('denied storage keeps session result',()=>assert.equal(writeTerminalPreferences(record.id,{setItem(){throw Error('denied')}}).preferences.wallpaperKey,record.id))
-test('denied global getter cannot throw',()=>{const old=Object.getOwnPropertyDescriptor(globalThis,'localStorage');Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw Error('denied')}});try{assert.equal(readTerminalPreferences().wallpaperKey,'');assert.equal(writeTerminalPreferences(record.id).persisted,false)}finally{if(old)Object.defineProperty(globalThis,'localStorage',old);else delete globalThis.localStorage}})
 test('night v1 migrates all non-theme preferences',()=>{const s=mem();s.setItem(ARCHIVE_HOME_PREFERENCES_KEY,JSON.stringify({version:1,preferences:{theme:'night',background:'bg047_arena_out_03',dialogueOrder:'random',autoVoice:true,focusMode:true,interfaceOpacity:76}}));const p=loadArchiveHomePreferences(s);assert.deepEqual(p,{background:'bg047_arena_out_03',dialogueOrder:'random',autoVoice:true,cardKey:'',interfaceOpacity:76});const saved=JSON.parse(s.getItem(ARCHIVE_HOME_PREFERENCES_KEY));assert.equal(saved.version,2);assert.ok(!('theme' in saved.preferences))})
 test('migration survives denied writes',()=>{const p=loadArchiveHomePreferences({getItem:()=>JSON.stringify({version:1,preferences:{theme:'night',background:'bg001',autoVoice:true}}),setItem(){throw Error('denied')}});assert.equal(p.background,'bg001');assert.equal(p.autoVoice,true);assert.ok(!('theme' in p))})
 test('unknown version returns safe defaults',()=>assert.equal(loadArchiveHomePreferences({getItem:()=>'{"version":99}'}).background,'cue'))

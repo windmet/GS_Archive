@@ -66,16 +66,15 @@ import {producerName,saveArchiveLocale,uiLocale,setStoryLanguagePreferences} fro
 import {loadArchiveHomePreferences,saveArchiveHomePreferences} from '../../data/archiveHomePreferences.js'
 import {PlayerPreferencesRepository} from '../../core/story-runtime/PlayerPreferencesRepository.js'
 import {applyArchiveSettings,defaultArchiveSettings,exportArchiveSettings,validateArchiveSettingsBackup} from '../../data/archiveSettingsBackup.js'
-import {useTerminalWallpaper} from '../../data/terminal/useTerminalWallpaper.js'
 const props=defineProps({preferences:{type:Object,required:true},idols:{type:Array,default:()=>[]},preferredIdols:{type:Array,default:()=>[]},idolName:{type:Function,default:()=>''},idolSearch:{type:Function,default:()=>''},notice:String})
 const emit=defineEmits(['cancel','save-startup','save-preferred','settings-applied'])
-const heading=ref(null),favoriteOpen=ref(false),resetOpen=ref(false),pendingImport=ref(null),status=ref(''),home=ref(loadArchiveHomePreferences()),repository=new PlayerPreferencesRepository(),player=ref(repository.load()),wallpaper=useTerminalWallpaper()
+const heading=ref(null),favoriteOpen=ref(false),resetOpen=ref(false),pendingImport=ref(null),status=ref(''),home=ref(loadArchiveHomePreferences()),repository=new PlayerPreferencesRepository(),player=ref(repository.load())
 const favorite=computed(()=>props.preferredIdols.find(row=>row.id===props.preferences.preferredIdol))
 const displayName=idol=>idol?(props.idolName(idol.id)||idol.name):''
 function savePlayer(patch){player.value=repository.update(patch);setStoryLanguagePreferences(player.value)}
 function download(){try{const url=URL.createObjectURL(new Blob([JSON.stringify(exportArchiveSettings(),null,2)],{type:'application/json'}));const anchor=document.createElement('a');anchor.href=url;anchor.download='sidem-producer-settings.json';document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);status.value='已请求下载配置文件。'}catch{status.value='无法导出配置，请检查浏览器存储权限。'}}
 async function readImport(event){const file=event.target.files?.[0];event.target.value='';if(!file)return;try{if(file.size>65536)throw Error('配置文件不能超过 64 KiB。');pendingImport.value=validateArchiveSettingsBackup(JSON.parse(await file.text()),props.preferredIdols.map(row=>row.id));status.value=''}catch(error){status.value=error.message||'无法读取配置文件。'}}
-function restore(settings){try{applyArchiveSettings(settings);player.value=repository.load();home.value=loadArchiveHomePreferences();setStoryLanguagePreferences(player.value);wallpaper.refreshPreferences();emit('settings-applied');pendingImport.value=null;resetOpen.value=false;status.value='设置已保存到此浏览器。'}catch(error){status.value=error.message;pendingImport.value=null;resetOpen.value=false}}
+function restore(settings){try{applyArchiveSettings(settings);player.value=repository.load();home.value=loadArchiveHomePreferences();setStoryLanguagePreferences(player.value);emit('settings-applied');pendingImport.value=null;resetOpen.value=false;status.value='设置已保存到此浏览器。'}catch(error){status.value=error.message;pendingImport.value=null;resetOpen.value=false}}
 onMounted(()=>heading.value?.focus({preventScroll:true}))
 </script>
 <style scoped>
