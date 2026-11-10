@@ -107,11 +107,11 @@
 
 | PR | 批次 | 依赖 | 预计改动 | 视觉变化 | 状态 |
 |---|---|---|---|---|---|
-| A | M0 守卫 + M1 令牌收口 | — | 2 个验证脚本、约 10 个组件 | 无或 ≤40ms | #204 已开，CI 通过，待合 |
-| B | M2 触屏细节 + M3 输入字号 | A（棘轮基线） | GsInfo、约 10 个高频组件、layout-integrity | 只在触屏 | #205（叠在 #204 上），CI 通过，待合；K60 已验收，iPad 未测 |
-| C | M4 首页对话框 + M5 焦点环 | A | ArchiveImmersiveHome、gs-motion.css | 首页两个对话框有进出场 | #206（叠在 #205 上），CI 通过，待合 |
-| D | D1 底部抽屉下滑关闭 | C（台词目录先接入共享动效） | 一个共用组合式函数，接入各底部抽屉 | 只在手机底部抽屉 | #207（叠在 #206 上），待合；K60 实测后补了一个提交（见「K60 实机验收」） |
-| E | D3 播放器进度条与对白框 | — | `PlayerTopBar.vue`、`StoryViewer.vue` | 播放器 | #208：进度条不过渡；对白框改为只淡 alpha（用户 11-10 授权，见下） |
+| A | M0 守卫 + M1 令牌收口 | — | 2 个验证脚本、约 10 个组件 | 无或 ≤40ms | #204 已合并 |
+| B | M2 触屏细节 + M3 输入字号 | A（棘轮基线） | GsInfo、约 10 个高频组件、layout-integrity | 只在触屏 | #205 已合并；K60 已验收，iPad 未测 |
+| C | M4 首页对话框 + M5 焦点环 | A | ArchiveImmersiveHome、gs-motion.css | 首页两个对话框有进出场 | #206 已合并（只含 M4）；M5 焦点环拆到 #209，待站长手测 |
+| D | D1 底部抽屉下滑关闭 | C（台词目录先接入共享动效） | 一个共用组合式函数，接入各底部抽屉 | 只在手机底部抽屉 | #207 已合并（含 K60 实测后的追加提交） |
+| E | D3 播放器进度条与对白框 | — | `PlayerTopBar.vue`、`StoryViewer.vue` | 播放器 | #208 已合并：进度条不过渡，对白框只淡 alpha |
 
 通用验证（每个 PR 都跑）：`npm run build:check`（**不要直接跑 `vite build`**，会把语料拷进 dist）、`npm run verify:archive-motion`、`npm run verify:design-tokens`、`npm run verify:source-batch`；合并前在 LF worktree 里跑 `npm run gate:source`（`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录> <分支>`）。新加或改动的断言要做变异测试：把修复改回坏版本，确认验证器失败，再还原。
 
