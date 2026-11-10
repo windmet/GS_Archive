@@ -1620,31 +1620,14 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   font: 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
   cursor: pointer;
 }
-.adv-dialogue-fade-enter-active,
-.adv-dialogue-fade-leave-active {
-  transition:
-    opacity 280ms ease,
-    transform 280ms ease,
-    filter 280ms ease;
-}
+/* The dialogue box comes and goes with its alpha only, as the native panel does (AdventureBalloonTextPanel.UpdateAlpha /
+   FadeInText / FadeOutText; their timings are not decompiled). It leaves faster than it arrives so it never holds up the
+   next scene; no blur, which is costly over a full-width box and smears the text. */
+.adv-dialogue-fade-enter-active { transition: opacity var(--player-motion-base) var(--player-ease-standard); }
+.adv-dialogue-fade-leave-active { transition: opacity var(--player-motion-fast) ease-in; }
 .adv-dialogue-fade-enter-from,
 .adv-dialogue-fade-leave-to {
   opacity: 0;
-  transform: translateY(14px);
-  filter: blur(2px);
-}
-.adv-dialogue-fade-enter-to,
-.adv-dialogue-fade-leave-from {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
-}
-@media (prefers-reduced-motion: reduce) {
-  .adv-dialogue-fade-enter-from,
-  .adv-dialogue-fade-leave-to {
-    transform: none;
-    filter: none;
-  }
 }
 .icon-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 4px; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
 .icon-btn.dark { border-color: #d8e0e3; background: #fff; color: #26343c; }
