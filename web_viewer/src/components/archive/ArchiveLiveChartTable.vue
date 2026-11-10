@@ -264,4 +264,6 @@ const rows = computed(() => {
   .chart-row-diff { grid-column: 2; grid-row: 1; align-self: end; text-align: right; }
   .chart-row-level { grid-column: 2; grid-row: 2; align-self: start; text-align: right; }
 }
+/* iOS zooms the page when a focused input is under 16px; iPad is wider than the phone tier, so this follows the pointer. */
+@media (pointer: coarse) { .chart-table-search input { font-size: var(--gs-text-subtitle); } }
 </style>
