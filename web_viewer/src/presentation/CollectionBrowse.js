@@ -26,7 +26,7 @@ export function honorSourceLabel(row,release) {
   const summary=collectionSummary(row,'honors',release)
   if(!summary)return ''
   const source=summary.sources[0]
-  if(!source)return '来源未收录'
+  if(!source)return ''
   const label=source.event?.title || rewardRelationLabel(source)
-  return `${label} · ${rewardCondition(source)}`
+  return [label,rewardCondition(source)].filter(Boolean).join(' · ')
 }

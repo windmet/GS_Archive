@@ -4475,7 +4475,7 @@
     "line": 7,
     "event": "@input",
     "handler": "emit('query',$event.target.value)",
-    "template": "<label class=\"collection-search\"><span>搜索</span><input type=\"search\" aria-label=\"搜索藏品\" :value=\"query\" :placeholder=\"placeholder\" @input=\"emit('query',$event.target.value)\" /></label>",
+    "template": "<label v-if=\"rows.length>=SEARCH_MIN_ROWS\" class=\"collection-search\"><span>搜索</span><input type=\"search\" aria-label=\"搜索藏品\" :value=\"query\" :placeholder=\"placeholder\" @input=\"emit('query',$event.target.value)\" /></label>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -4602,7 +4602,7 @@
   {
     "component": "ArchiveCollectionCatalog",
     "file": "src/components/archive/ArchiveCollectionCatalog.vue",
-    "line": 30,
+    "line": 31,
     "event": "@dismiss",
     "handler": "hideTooltip",
     "template": "<ArchiveFloatingTooltip :anchor=\"tooltipAnchor\" :id=\"tooltipId\" @dismiss=\"hideTooltip\">",
@@ -4612,7 +4612,7 @@
   {
     "component": "ArchiveCollectionCatalog",
     "file": "src/components/archive/ArchiveCollectionCatalog.vue",
-    "line": 33,
+    "line": 34,
     "event": "@close",
     "handler": "emit('entity','')",
     "template": "<CollectionDetailPanel v-if=\"detailOpen\" :detail=\"detail\" :kind=\"kind\" :display-idol-name=\"displayIdolName\" :busy=\"catalogBusy||detailBusy\" :error=\"errorScope==='detail'?error:''\" modal @close=\"emit('entity','')\" @retry=\"load\" @open-event=\"emit('open-event',$event)\" @open-gasha=\"emit('open-gasha',$event)\" @open-card=\"emit('open-card',$event)\" @open-idol=\"emit('open-idol',$event)\" />",
@@ -4622,7 +4622,7 @@
   {
     "component": "ArchiveCollectionCatalog",
     "file": "src/components/archive/ArchiveCollectionCatalog.vue",
-    "line": 33,
+    "line": 34,
     "event": "@retry",
     "handler": "load",
     "template": "<CollectionDetailPanel v-if=\"detailOpen\" :detail=\"detail\" :kind=\"kind\" :display-idol-name=\"displayIdolName\" :busy=\"catalogBusy||detailBusy\" :error=\"errorScope==='detail'?error:''\" modal @close=\"emit('entity','')\" @retry=\"load\" @open-event=\"emit('open-event',$event)\" @open-gasha=\"emit('open-gasha',$event)\" @open-card=\"emit('open-card',$event)\" @open-idol=\"emit('open-idol',$event)\" />",
@@ -4632,7 +4632,7 @@
   {
     "component": "ArchiveCollectionCatalog",
     "file": "src/components/archive/ArchiveCollectionCatalog.vue",
-    "line": 33,
+    "line": 34,
     "event": "@open-event",
     "handler": "emit('open-event',$event)",
     "template": "<CollectionDetailPanel v-if=\"detailOpen\" :detail=\"detail\" :kind=\"kind\" :display-idol-name=\"displayIdolName\" :busy=\"catalogBusy||detailBusy\" :error=\"errorScope==='detail'?error:''\" modal @close=\"emit('entity','')\" @retry=\"load\" @open-event=\"emit('open-event',$event)\" @open-gasha=\"emit('open-gasha',$event)\" @open-card=\"emit('open-card',$event)\" @open-idol=\"emit('open-idol',$event)\" />",
@@ -4642,7 +4642,7 @@
   {
     "component": "ArchiveCollectionCatalog",
     "file": "src/components/archive/ArchiveCollectionCatalog.vue",
-    "line": 33,
+    "line": 34,
     "event": "@open-gasha",
     "handler": "emit('open-gasha',$event)",
     "template": "<CollectionDetailPanel v-if=\"detailOpen\" :detail=\"detail\" :kind=\"kind\" :display-idol-name=\"displayIdolName\" :busy=\"catalogBusy||detailBusy\" :error=\"errorScope==='detail'?error:''\" modal @close=\"emit('entity','')\" @retry=\"load\" @open-event=\"emit('open-event',$event)\" @open-gasha=\"emit('open-gasha',$event)\" @open-card=\"emit('open-card',$event)\" @open-idol=\"emit('open-idol',$event)\" />",
@@ -4652,7 +4652,7 @@
   {
     "component": "ArchiveCollectionCatalog",
     "file": "src/components/archive/ArchiveCollectionCatalog.vue",
-    "line": 33,
+    "line": 34,
     "event": "@open-card",
     "handler": "emit('open-card',$event)",
     "template": "<CollectionDetailPanel v-if=\"detailOpen\" :detail=\"detail\" :kind=\"kind\" :display-idol-name=\"displayIdolName\" :busy=\"catalogBusy||detailBusy\" :error=\"errorScope==='detail'?error:''\" modal @close=\"emit('entity','')\" @retry=\"load\" @open-event=\"emit('open-event',$event)\" @open-gasha=\"emit('open-gasha',$event)\" @open-card=\"emit('open-card',$event)\" @open-idol=\"emit('open-idol',$event)\" />",
@@ -4662,7 +4662,7 @@
   {
     "component": "ArchiveCollectionCatalog",
     "file": "src/components/archive/ArchiveCollectionCatalog.vue",
-    "line": 33,
+    "line": 34,
     "event": "@open-idol",
     "handler": "emit('open-idol',$event)",
     "template": "<CollectionDetailPanel v-if=\"detailOpen\" :detail=\"detail\" :kind=\"kind\" :display-idol-name=\"displayIdolName\" :busy=\"catalogBusy||detailBusy\" :error=\"errorScope==='detail'?error:''\" modal @close=\"emit('entity','')\" @retry=\"load\" @open-event=\"emit('open-event',$event)\" @open-gasha=\"emit('open-gasha',$event)\" @open-card=\"emit('open-card',$event)\" @open-idol=\"emit('open-idol',$event)\" />",
@@ -7922,17 +7922,17 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 28,
+    "line": 27,
     "event": "@click",
     "handler": "emit('open-event',row.event)",
-    "template": "<button v-if=\"row.event\" type=\"button\" class=\"domain-reward-name\" @click=\"emit('open-event',row.event)\"><span><strong>{{ row.event.title }}</strong><small>查看关联活动</small></span><ChevronRight :size=\"16\" /></button>",
+    "template": "<button type=\"button\" class=\"domain-reward-name\" @click=\"emit('open-event',row.event)\"><span><strong>{{ row.event.title }}</strong><small>查看关联活动</small></span><ChevronRight :size=\"16\" /></button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 35,
+    "line": 32,
     "event": "@click",
     "handler": "page--",
     "template": "<nav v-if=\"pages>1\" class=\"domain-pagination\" aria-label=\"奖励分页\"><button type=\"button\" :disabled=\"page===0\" @click=\"page--\">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type=\"button\" :disabled=\"page+1>=pages\" @click=\"page++\">下一页</button></nav>",
@@ -7942,7 +7942,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 35,
+    "line": 32,
     "event": "@click",
     "handler": "page++",
     "template": "<nav v-if=\"pages>1\" class=\"domain-pagination\" aria-label=\"奖励分页\"><button type=\"button\" :disabled=\"page===0\" @click=\"page--\">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type=\"button\" :disabled=\"page+1>=pages\" @click=\"page++\">下一页</button></nav>",
@@ -11275,7 +11275,7 @@
     "line": 11,
     "event": "@click",
     "handler": "emit('open-gasha',link)",
-    "template": "<section v-if=\"gashaLinks.length\" class=\"domain-panel\"><h3 class=\"collection-inferred-head\">对应卡池<span class=\"collection-inferred\">推定关联</span><GsInfo label=\"推定关联：说明\">依据此道具的原文名称关联；不代表已确认卡片范围。</GsInfo></h3><p v-if=\"gashaLinks.some(link=>link.ambiguous)\" class=\"domain-muted\">券名对应同名卡池，尚不能区分具体公告。</p><ul class=\"collection-gasha-links\"><li v-for=\"link in gashaLinks\" :key=\"link.id\"><button type=\"button\" @click=\"emit('open-gasha',link)\"><span>{{ gashaText(link.display_name) }}<small v-if=\"link.ambiguous && link.start_at\">{{ gashaTicketPeriodLabel(link.start_at) }}</small></span><ChevronRight :size=\"16\" aria-hidden=\"true\"/></button></li></ul></section>",
+    "template": "<section v-if=\"gashaLinks.length\" class=\"domain-panel\"><h3 class=\"collection-inferred-head\">对应卡池<span class=\"collection-inferred\">同名卡池</span><GsInfo label=\"同名卡池：说明\">依据此道具的原文名称关联；不代表已确认卡片范围。</GsInfo></h3><p v-if=\"gashaLinks.some(link=>link.ambiguous)\" class=\"domain-muted\">券名对应同名卡池，尚不能区分具体公告。</p><ul class=\"collection-gasha-links\"><li v-for=\"link in gashaLinks\" :key=\"link.id\"><button type=\"button\" @click=\"emit('open-gasha',link)\"><span>{{ gashaText(link.display_name) }}<small v-if=\"link.ambiguous && link.start_at\">{{ gashaTicketPeriodLabel(link.start_at) }}</small></span><ChevronRight :size=\"16\" aria-hidden=\"true\"/></button></li></ul></section>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -11305,7 +11305,7 @@
     "line": 13,
     "event": "@open-event",
     "handler": "emit('open-event',$event)",
-    "template": "<section v-else-if=\"kind!=='costumes'\" class=\"domain-panel\"><h3>已知来源与用途</h3><p v-if=\"bond\" class=\"domain-description\">偶像羁绊 Lv.{{ bond.level }} 称号。<small class=\"domain-muted\">用户补充来源。</small></p><ArchiveRewardTable v-if=\"detail.sources?.length || !bond\" :rows=\"detail.sources\" sources @open-event=\"emit('open-event',$event)\"/></section>",
+    "template": "<section v-else-if=\"kind!=='costumes' && (bond || detail.sources?.length)\" class=\"domain-panel\"><h3>已知来源与用途</h3><p v-if=\"bond\" class=\"domain-description\">偶像羁绊 Lv.{{ bond.level }} 称号。</p><ArchiveRewardTable v-if=\"detail.sources?.length\" :rows=\"detail.sources\" sources @open-event=\"emit('open-event',$event)\"/></section>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -11442,7 +11442,7 @@
   {
     "component": "CurrencyDetailSections",
     "file": "src/components/archive/CurrencyDetailSections.vue",
-    "line": 16,
+    "line": 15,
     "event": "@click",
     "handler": "emit('open-gasha',{id:gasha.gashaId,display_name:gasha.titleJa})",
     "template": "<ul class=\"currency-links\"><li v-for=\"gasha in group.gashas\" :key=\"gasha.gashaId\"><button type=\"button\" @click=\"emit('open-gasha',{id:gasha.gashaId,display_name:gasha.titleJa})\">{{ gashaText(gasha.titleJa) }}<ChevronRight :size=\"15\" aria-hidden=\"true\" /></button></li></ul>",
@@ -11452,10 +11452,10 @@
   {
     "component": "CurrencyDetailSections",
     "file": "src/components/archive/CurrencyDetailSections.vue",
-    "line": 27,
+    "line": 25,
     "event": "@click",
     "handler": "emit('open-event',row)",
-    "template": "<ul class=\"currency-links\"><li v-for=\"row in group.events\" :key=\"row.event_id\"><button type=\"button\" @click=\"emit('open-event',row)\"><span>{{ row.title }}</span><small>{{ number(row.count) }} 条 · 合计 {{ number(row.totalAmount) }}</small><ChevronRight :size=\"15\" aria-hidden=\"true\" /></button></li></ul>",
+    "template": "<ul class=\"currency-links\"><li v-for=\"row in group.events\" :key=\"row.event_id\"><button type=\"button\" @click=\"emit('open-event',row)\"><span>{{ row.title }}</span><small>{{ number(row.totalAmount) }}</small><ChevronRight :size=\"15\" aria-hidden=\"true\" /></button></li></ul>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },

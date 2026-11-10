@@ -9,6 +9,11 @@ export function historicalDate(seconds) {
   if (date.getUTCFullYear()<=2000 || date.getUTCFullYear()>=2099) return '配置占位日期';
   return new Intl.DateTimeFormat('zh-CN',{dateStyle:'medium',timeZone:'Asia/Tokyo'}).format(date);
 }
+// '' when the date is missing or only a placeholder, so callers can hide the row.
+export function knownHistoricalDate(seconds) {
+  const text=historicalDate(seconds);
+  return text==='未记录' || text==='配置占位日期' ? '' : text;
+}
 export function historicalPeriod(entry) {
   const open = entry.termInfo?.open, close = entry.termInfo?.close;
   const from = open?.sentinelCandidate ? null : entry.term?.openAt;
@@ -18,10 +23,45 @@ export function historicalPeriod(entry) {
   if (to == null) return `${historicalDate(from)} 起`;
   return `${historicalDate(from)} — ${historicalDate(to)}`;
 }
+// One rank prints as "第 2 名"; a real range as "第 1–3 名". Shared by reward rows and idol honor labels.
+export const rankText=(upper,lower)=>{
+  const from=upper ?? lower, to=lower ?? upper;
+  return from===to ? `第 ${number(from)} 名` : `第 ${number(from)}–${number(to)} 名`;
+};
+// Permanent entries have no period worth printing; callers hide the row on ''.
+export function historicalPeriodNote(entry) {
+  const text=historicalPeriod(entry);
+  return text==='未限定配置期' ? '' : text;
+}
+// "2022年6月29日 — 7月12日": the close drops its year when it repeats the open's.
+export function campaignPeriod(term) {
+  const parts=seconds=>{
+    if (!Number.isFinite(seconds) || seconds<=0) return null;
+    const date=new Date(seconds*1000);
+    if (date.getUTCFullYear()<=2000 || date.getUTCFullYear()>=2099) return null;
+    const jst=new Date(seconds*1000+9*3600*1000);
+    return {year:jst.getUTCFullYear(),month:jst.getUTCMonth()+1,day:jst.getUTCDate()};
+  };
+  const open=parts(term?.openAt), close=parts(term?.closeAt);
+  if (!open) return '';
+  const full=value=>`${value.year}年${value.month}月${value.day}日`;
+  if (!close) return `${full(open)} 起`;
+  return `${full(open)} — ${close.year===open.year ? `${close.month}月${close.day}日` : full(close)}`;
+}
+// A group of event rewards reads "30 场活动 · 每场 100,000" when every event pays the same, else "… · 共 3,000,000".
+export function acquisitionSummary(group) {
+  const events=group.events || [];
+  if (!events.length) {
+    const range=group.levelRange ? ` · Lv.${group.levelRange[0]}–${group.levelRange[1]}` : '';
+    return `共 ${number(group.totalAmount)}${range}`;
+  }
+  const same=events.every(row=>row.totalAmount===events[0].totalAmount);
+  return `${events.length} 场活动 · ${same ? `每场 ${number(events[0].totalAmount)}` : `共 ${number(group.totalAmount)}`}`;
+}
 export function rewardConditions(row) {
   const values=[];
   if (row.totalPoint!==undefined) values.push(`${number(row.totalPoint)} PT`);
-  if (row.upperRank!==undefined || row.lowerRank!==undefined) values.push(`第 ${number(row.upperRank ?? row.lowerRank)}–${number(row.lowerRank ?? row.upperRank)} 名`);
+  if (row.upperRank!==undefined || row.lowerRank!==undefined) values.push(rankText(row.upperRank,row.lowerRank));
   if (row.level!==undefined) values.push(`等级 ${row.level}`);
   if (row.intervalPoint!==undefined) values.push(`每 ${number(row.intervalPoint)} PT`);
   if (row.offsetPoint!==undefined) values.push(`起点 ${number(row.offsetPoint)} PT`);
@@ -31,14 +71,14 @@ export function rewardConditions(row) {
   if (row.sumFanAmount!==undefined) values.push(`累计粉丝 ${number(row.sumFanAmount)}`);
   if (row.episodeId) values.push('阅读对应分段');
   if (row.sectionId) values.push('阅读对应章节');
-  return values.length ? values : [row.relation==='event-material' ? '活动所用材料' : row.relation==='card-awakening-cost' ? '卡片觉醒消耗' : '条件未完整收录'];
+  return values.length ? values : row.relation==='event-material' ? ['活动所用材料'] : row.relation==='card-awakening-cost' ? ['卡片觉醒消耗'] : [];
 }
 export const rewardCondition=row=>rewardConditions(row).join(' · ');
 export const rewardProductName=product=>product?.presentation?.name || product?.nameJa || product?.typeNameJa || `未解析奖励 ${product?.productId ?? ''}`;
-export const rewardRelationLabel=row=>rewardScopeLabels[row.scope] || (row.relation==='card-awakening-cost'?'觉醒消耗':row.relation==='event-material'?'活动材料':sourceDomainLabels[row.sourceTable] || '其他客户端来源');
+export const rewardRelationLabel=row=>rewardScopeLabels[row.scope] || (row.relation==='card-awakening-cost'?'觉醒消耗':row.relation==='event-material'?'活动材料':sourceDomainLabels[row.sourceTable] || '其他');
 export function rewardProductLabel(product) {
   if (product?.kind==='scalar' && product.currencyKey) return '货币';
-  return ({item:'道具',honor:'称号',card:'卡片',cardFragment:'卡片碎片',photoFilter:'摄影滤镜',photoSticker:'摄影贴纸',photoSpot:'摄影地点',photoScene:'摄影场景',photoFrame:'摄影相框'})[product?.kind] || product?.typeNameJa || '种类待确认';
+  return ({item:'道具',honor:'称号',card:'卡片',cardFragment:'卡片碎片',photoFilter:'摄影滤镜',photoSticker:'摄影贴纸',photoSpot:'摄影地点',photoScene:'摄影场景',photoFrame:'摄影相框'})[product?.kind] || product?.typeNameJa || '其他';
 }
 // A product-type reward (Star Gems, Money) opens its currency entry; items and honors open their own.
 export const rewardCollectionKey=product=>product?.kind==='scalar' ? (/^currency:[a-z]+(?:-[a-z]+)*$/.test(product.currencyKey || '') ? product.currencyKey : '') :

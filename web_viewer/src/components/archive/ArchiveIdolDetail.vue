@@ -135,6 +135,7 @@ import { fesHonorMonth } from '../../presentation/HonorIdentity.mjs'
 import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import { formatIdolAge } from '../../data/idolPage.js'
 import { honorBondSource } from '../../presentation/HonorBondSource.mjs'
+import { rankText as rankRangeText } from '../../presentation/DomainPresentation.mjs'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
@@ -193,7 +194,7 @@ const HONOR_NOTES = {
   fes: '称号原名就是达成条件：让该偶像的 FES 限定卡换装，或突破至最大上限。称号牌上印有对应的卡名。',
   ranking: '活动期间该偶像排行榜的名次奖励，按游戏内的排名配置关联到偶像。情人节活动（VDCP）另有送出巧克力数量的达成称号，称号编号对应偶像与数量。',
 }
-const rankText = source => source.upperRank === source.lowerRank ? `第 ${source.upperRank} 名` : `第 ${source.upperRank}–${source.lowerRank} 名`
+const rankText = source => rankRangeText(source.upperRank, source.lowerRank)
 // Captions add only what neither the plate nor the group heading says: "担当 · Lv.50",
 // "<translation> · Lv.100", "限定换装 · 2022.12". Ranking plates print their rank, so they carry
 // no caption; the rank stays in the accessible name.
