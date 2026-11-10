@@ -1,7 +1,7 @@
 <template>
   <article class="unused-page" data-archive-scroll-container>
     <header class="unused-intro">
-      <p>偶像、卡片与剧情页之外的游戏语音，共 {{ total }} 条，按在游戏里听到的地方分为事务所、登录、LIVE 与摄影，每组标出使用状态。没有文字的按原始编号列出，可以直接试听。</p>
+      <p>偶像、卡片与剧情页之外的游戏语音，共 {{ total }} 条，按在游戏里听到的地方分为事务所、登录、LIVE 与摄影，每组标出使用状态。没有文字的语音也可以直接试听。</p>
     </header>
     <nav class="unused-places" aria-label="语音分类">
       <button v-for="entry in PLACES" :key="entry.id" type="button" :data-unused-place="entry.id" :aria-pressed="entry.id === place.id" @click="select(entry.shelves[0].id)">{{ entry.label }}</button>
@@ -13,8 +13,9 @@
       <template v-for="(family, index) in families" :key="family.id">
         <header class="unused-family" :data-unused-family="family.id">
           <h3>{{ family.label }} <span class="unused-status-tag" :data-status="family.status">{{ STATUS[family.status] }}</span></h3>
-          <p class="unused-meta">{{ family.count }} {{ family.id === OFFICE.id ? '句' : '条' }} · 编号 {{ family.prefix || family.id }}_…</p>
+          <p class="unused-meta">{{ family.count }} 句<template v-if="maintainer"> · 编号 {{ family.prefix || family.id }}_…</template></p>
           <p class="unused-note">{{ family.note }}</p>
+          <p v-if="maintainer && family.maintainerNote" class="unused-note">{{ family.maintainerNote }}</p>
         </header>
         <div v-if="family.id === OFFICE.id" class="office-scenes">
           <div class="unused-speaker">
@@ -24,6 +25,7 @@
           <section v-for="scene in OFFICE_VOICES.scenes" :key="scene.id" class="office-scene" :data-office-scene="scene.id">
             <h4>{{ scene.label }} <small>{{ scene.lines.length }} 句</small></h4>
             <p class="unused-note">{{ scene.note }}</p>
+            <p v-if="maintainer && scene.maintainerNote" class="unused-note">{{ scene.maintainerNote }}</p>
             <ol class="unused-lines">
               <li v-for="line in scene.lines" :key="line.cue" :data-office-cue="line.cue">
                 <button type="button" class="unused-play" :aria-pressed="playing === line.cue" :aria-label="`播放 ${scene.label} ${line.cue}`" @click="play(line.cue)"><component :is="playing === line.cue ? Pause : Play" :size="18" aria-hidden="true" /></button>
@@ -35,10 +37,10 @@
         </div>
         <ol v-else-if="family.speakers.length === 1" class="unused-lines">
           <template v-for="speaker in family.speakers" :key="speaker.code">
-            <li v-for="line in speaker.cues" :key="line.cue" :data-unused-cue="line.cue">
+            <li v-for="(line, index) in speaker.cues" :key="line.cue" :data-unused-cue="line.cue">
               <button type="button" class="unused-play" :aria-pressed="playing === line.cue" :aria-label="`播放 ${speakerName(speaker.code)} ${line.cue}`" @click="play(line.cue)"><component :is="playing === line.cue ? Pause : Play" :size="18" aria-hidden="true" /></button>
               <span v-if="line.text" class="unused-text gs-flow" :lang="lineText(line).lang" :class="{ 'is-pending': lineText(line).pending }">{{ lineText(line).text }}</span>
-              <span v-else class="unused-text is-voice-only">{{ line.cue }} · 无文字</span>
+              <span v-else class="unused-text is-voice-only" :title="line.cue">第 {{ index + 1 }} 句 · 无文字</span>
             </li>
           </template>
         </ol>
@@ -69,16 +71,20 @@ import ARCHIVE from '../../data/unusedVoiceArchive.json'
 import OFFICE_VOICES from '../../data/officeSystemVoices.json'
 import { archiveLineText } from './useArchiveNamedText.js'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
+import { isMaintainerMode } from '../../core/maintainerMode.js'
 // `shelf` is the address's ?voices=; an empty or unknown id opens the first shelf.
 const props = defineProps({ idolName: { type: Function, default: () => '' }, shelf: { type: String, default: '' } })
 const emit = defineEmits(['preview-office-voice', 'shelf'])
 // The office staff are not archive idols; their names come from the source.
 const STAFF = { '101ken': '山村 賢', '102sha': '齋藤 孝司' }
+// Cue prefixes and research notes are for the maintainer view; readers get where the voice is heard.
+const maintainer = isMaintainerMode()
 const STATUS = { used: '已使用', unreleased: '未上线', unconfirmed: '用途未确认' }
 // Yamamura's login-bonus and work-menu lines: scripted ADV steps (model, faces, lip curves), so each can
 // open in the story player like a card touch voice.
 const OFFICE = { id: 'office', prefix: '4_1_101', label: '事务所系统语音', status: 'used', count: OFFICE_VOICES.scenes.reduce((sum, scene) => sum + scene.lines.length, 0),
-  note: '登录奖励与工作画面里山村贤的提示语音。原始脚本带有模型、表情动作与口型数据，可以用「演出预览」在剧情播放器里观看。' }
+  note: '登录奖励与工作画面里山村贤的提示语音，可以用「演出预览」在剧情播放器里观看。',
+  maintainerNote: '原始脚本带有模型、表情动作与口型数据。' }
 const FAMILY = Object.fromEntries([OFFICE, ...ARCHIVE.families].map(family => [family.id, family]))
 // Shelved by where a voice is heard; whether it is used is a tag on the family, not a place. A `merge` shelf lists
 // each idol once, with one button per family.
@@ -147,17 +153,15 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 .office-scenes { display: grid; gap: var(--gs-space-3); }
 .office-scene { display: grid; gap: 6px; padding-top: var(--gs-space-3); }
 .office-scene h4 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-ui); }
-.office-scene h4 small { margin-left: 4px; color: var(--gs-ink-3); font-weight: 400; }
+.office-scene h4 small { margin-left: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 /* Play and stage preview are 44px icons on the line row, not boxes on its rule. */
 .voice-preview-btn { flex: none; display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); margin: -6px 0; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
-.voice-preview-btn:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
 .unused-speakers { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
 .unused-speakers > li { display: grid; align-content: start; gap: 8px; padding: 10px; border-radius: var(--gs-radius-control); background: var(--gs-paper); }
 .unused-speaker { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: var(--gs-text-ui); }
 .unused-speaker strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .unused-cues { display: flex; flex-wrap: wrap; gap: 6px; }
 .unused-chip { display: inline-flex; align-items: center; gap: 4px; min-width: 44px; min-height: 30px; padding: 0 8px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; cursor: pointer; }
-.unused-chip:hover, .unused-play:hover { border-color: var(--gs-mint-ink); color: var(--gs-mint-ink); }
 .unused-chip[aria-pressed='true'], .unused-play[aria-pressed='true'] { border-color: var(--gs-mint-ink); background: var(--gs-mint-wash); color: var(--gs-mint-ink); }
 .unused-lines { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .unused-lines li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 4px; border-top: 1px solid var(--gs-line); }
@@ -178,5 +182,9 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
   /* Numbered calls (at most 7 per idol) share one row of equal columns, so every idol's 01–07 line up. */
   .is-numbered .unused-cues { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
   .is-numbered .unused-chip { justify-content: center; gap: 2px; min-width: 0; padding: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .voice-preview-btn:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
+  .unused-chip:hover, .unused-play:hover { border-color: var(--gs-mint-ink); color: var(--gs-mint-ink); }
 }
 </style>

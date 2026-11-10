@@ -1,6 +1,6 @@
 <template>
   <article class="domain-page photo-page" data-archive-scroll-container :aria-busy="busy">
-    <p class="domain-intro">查阅摄影地点（含各时段场景）和偶像的表情、动作配置。</p>
+    <p class="domain-intro">查阅摄影地点（含各时段场景）和偶像的表情与动作。</p>
     <nav ref="tabsElement" class="domain-tabs" aria-label="摄影分类">
       <button
         v-for="tab in visibleTabs"
@@ -23,7 +23,7 @@
             >搜索<input
               ref="searchElement"
               :value="query"
-              placeholder="名称或编号"
+              placeholder="名称"
               @input="emit('query', $event.target.value)"
             />
           </label>
@@ -486,18 +486,17 @@ watch(
 .photo-grid>button{display:flex;flex-direction:column;align-items:stretch;align-self:start;gap:8px;min-width:0;min-height:44px;padding:0;border:0;border-radius:0;background:none;color:var(--gs-ink);text-align:left;cursor:pointer;}
 .photo-grid>button[aria-pressed=true]{border-color:var(--gs-selected-line);background:var(--gs-mint-wash);}
 .photo-grid>button:active{background:var(--gs-mint-wash);}
-.photo-card-art{display:grid;place-items:center;width:100%;aspect-ratio:1;background:var(--gs-paper);border-radius:5px;color:var(--gs-ink-3);overflow:hidden;}
+.photo-card-art{display:grid;place-items:center;width:100%;aspect-ratio:1;background:var(--gs-paper);border-radius:var(--gs-radius-segment);color:var(--gs-ink-3);overflow:hidden;}
 .photo-card-art.is-transparent{background:repeating-conic-gradient(var(--gs-line) 0% 25%,var(--gs-surface) 0% 50%) 50%/12px 12px;}
 .photo-card-art img{display:block;width:100%;height:100%;object-fit:contain;}
 .photo-grid.is-backgrounds>button{padding:0 0 10px;}
-.photo-grid.is-backgrounds .photo-card-art{aspect-ratio:16/9;border-radius:8px 8px 0 0;}
+.photo-grid.is-backgrounds .photo-card-art{aspect-ratio:16/9;border-radius:var(--gs-radius-control) var(--gs-radius-control) 0 0;}
 .photo-grid.is-backgrounds .photo-card-copy{padding-inline:10px;}
 .photo-grid.is-frames .photo-card-art{aspect-ratio:16/9;}
 .photo-grid.is-filters .photo-card-art{height:56px;aspect-ratio:auto;background:var(--gs-mint-wash);}
 .photo-card-copy{min-width:0;}
-.photo-card-copy strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:13px;line-height:1.55;font-weight:var(--gs-weight-semibold,600);overflow-wrap:anywhere;}
-.photo-grid.is-backgrounds .photo-card-copy strong{font-size:14px;}
-.photo-card-copy small{display:block;margin-top:3px;font-size:12px;line-height:1.5;color:var(--gs-ink-3);overflow-wrap:anywhere;}
+.photo-card-copy strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:var(--gs-text-ui);line-height:1.55;font-weight:var(--gs-weight-semibold,600);overflow-wrap:anywhere;}
+.photo-card-copy small{display:block;margin-top:var(--gs-space-1);font-size:var(--gs-text-meta);line-height:1.5;color:var(--gs-ink-3);overflow-wrap:anywhere;}
 .photo-page .domain-pagination{gap:var(--gs-space-4);margin-top:var(--gs-space-5);font-size:var(--gs-text-ui);}
 @media(hover:hover) and (pointer:fine){.photo-grid>button:hover{border-color:var(--gs-selected-line);background:var(--gs-mint-wash);}}
 @media(max-width:760px), (pointer:coarse){
@@ -505,6 +504,6 @@ watch(
  .photo-variants button,.photo-page .domain-tabs button{min-height:var(--gs-control-touch);}
 }
 @media(max-width:760px){.photo-variants{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * var(--gs-space-4));padding-inline:var(--gs-space-4);}.photo-variants button{flex:none;}}
-@media(max-width:760px){.photo-page .domain-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;}.photo-page .domain-tabs button{flex:none;}.photo-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}.photo-grid>button{padding:6px;gap:6px;}.photo-grid.is-backgrounds,.photo-grid.is-frames{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.photo-grid.is-filters{grid-template-columns:repeat(2,minmax(0,1fr));}.photo-card-copy strong{font-size:12px;}.photo-page .domain-tools{margin-bottom:12px;}}
+@media(max-width:760px){.photo-page .domain-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;}.photo-page .domain-tabs button{flex:none;}.photo-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}.photo-grid>button{padding:6px;gap:6px;}.photo-grid.is-backgrounds,.photo-grid.is-frames{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.photo-grid.is-filters{grid-template-columns:repeat(2,minmax(0,1fr));}.photo-page .domain-tools{margin-bottom:12px;}}
 @media(max-width:360px){.photo-grid:not(.is-backgrounds):not(.is-frames):not(.is-filters){grid-template-columns:repeat(3,minmax(0,1fr));}}
 </style>
