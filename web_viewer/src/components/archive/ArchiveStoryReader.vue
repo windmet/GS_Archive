@@ -171,7 +171,7 @@ button:focus-visible { outline: 3px solid var(--reader-accent-text); outline-off
 .reader-feedback details { margin-top: 18px; overflow-wrap: anywhere; }
 .reader-feedback summary { cursor: pointer; }
 @media (max-width:760px) { .reader-search { padding:12px; } .reader-search label { display:block; white-space:normal; } .reader-search input { box-sizing:border-box; margin-top:8px; } .reader-body { padding:16px 14px calc(100px + env(safe-area-inset-bottom,0px)); } }
-.reader-loading { margin-block:18px; min-height:200px; color:var(--reader-text-sub); font-size:13px; animation:reader-loading-reveal 1ms 180ms both; }
+.reader-loading { margin-block:18px; min-height:200px; color:var(--reader-text-sub); font-size:13px; animation:reader-loading-reveal 1ms 180ms both; /* pending delay is 180ms here, not --gs-pending-delay (140ms): keep until a feel check */ }
 .reader-loading-lines { display:grid; gap:16px; margin-top:24px; }
 .reader-loading-lines i { height:12px; background:var(--reader-border); border-radius:6px; opacity:.45; }
 .reader-loading-lines i:last-child { width:65%; }

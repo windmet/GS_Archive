@@ -18,7 +18,7 @@ function walk(dir) {
   })
 }
 
-const METRICS = ['raw', 'tiny', 'hex', 'radius', 'breakpoint', 'nestedWhite', 'select', 'checkbox']
+const METRICS = ['raw', 'tiny', 'hex', 'radius', 'breakpoint', 'nestedWhite', 'hoverUngated', 'motionLiteral', 'select', 'checkbox']
 // Viewport tiers: phone <=760 (where the sidebar becomes the bottom nav), middle 761-1100,
 // wide >1100. Anything finer belongs to the component as an @container query.
 const TIER_WIDTHS = { max: ['760', '1100'], min: ['761', '1101'] }
@@ -43,7 +43,52 @@ export function nestedWhite(source) {
   return whites.filter(tokens => tokens.slice(0, -1).some(ancestor => owners.has(ancestor))).length
 }
 
-export function measure(source) {
+// Input rule (docs/GS_UI_MOTION_INTERACTION_AUDIT_20261110, 2.1): a :hover rule that only changes the look belongs in
+// @media (hover: hover). Touch devices keep :hover after a tap, which reads as "selected". Counted per rule, walking a
+// brace stack so the ancestors' at-rules are known; only <style> blocks of .vue files are read (offsets masked, not cut).
+const HOVER_GATE = /@media[^{]*\(\s*(?:any-)?hover\s*:\s*hover\s*\)/
+export function hoverUngated(source, isVue) {
+  let text = source
+  if (isVue) {
+    const styles = [...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+    if (!styles.length) return 0
+    text = source.replace(/[^\n]/g, ' ')
+    for (const style of styles) {
+      const start = style.index + style[0].indexOf(style[1])
+      text = text.slice(0, start) + style[1] + text.slice(start + style[1].length)
+    }
+  }
+  text = text.replace(/\/\*[\s\S]*?\*\//g, comment => comment.replace(/[^\n]/g, ' '))
+  const stack = []
+  let buffer = '', count = 0
+  for (const char of text) {
+    if (char === '{') {
+      const prelude = buffer.trim()
+      stack.push(prelude)
+      if (/:hover/.test(prelude) && !prelude.startsWith('@') && !stack.some(entry => HOVER_GATE.test(entry))) count++
+      buffer = ''
+    } else if (char === '}') { stack.pop(); buffer = '' }
+    else if (char === ';') buffer = ''
+    else buffer += char
+  }
+  return count
+}
+
+// Motion ladder (gs-motion.css): a transition or animation takes its duration and curve from the --gs-motion-* /
+// --gs-ease-* tokens. A literal duration or a bare ease/linear keyword is drift. steps() and 0s are not durations.
+// gs-motion.css is the ladder itself; TitleUI.vue is the native title sequence, timed by its own --duration.
+const MOTION_LITERAL_EXEMPT = new Set(['src/styles/gs-motion.css', 'src/components/TitleUI.vue'])
+export function motionLiteral(source, relative = '') {
+  if (MOTION_LITERAL_EXEMPT.has(relative)) return 0
+  let count = 0
+  for (const [, value] of source.matchAll(/(?:^|[;{\s])(?:transition|animation)(?:-duration|-timing-function)?\s*:\s*([^;}]*)/g)) {
+    const text = value.replace(/steps\([^)]*\)/g, '').replace(/cubic-bezier\([^)]*\)/g, '')
+    if (/(?<![\w.-])(?:\d*\.\d*[1-9]\d*|[1-9]\d*\.?\d*)m?s\b/.test(text) || /(?<![\w-])(?:ease|ease-in|ease-out|ease-in-out|linear)(?![\w-])/.test(text)) count++
+  }
+  return count
+}
+
+export function measure(source, relative = '') {
   let raw = 0, tiny = 0, radius = 0, breakpoint = 0
   for (const [, value] of source.matchAll(/font-size\s*:\s*([^;}\n]+)/g)) {
     const text = value.trim()
@@ -64,7 +109,7 @@ export function measure(source) {
     const widths = [...prelude.matchAll(/\((max|min)-width\s*:\s*([^)]+)\)/g)]
     if (widths.some(([, kind, value]) => !TIER_WIDTHS[kind].includes(value.trim().replace(/px$/, '')))) breakpoint++
   }
-  return { raw, tiny, hex, radius, breakpoint, nestedWhite: nestedWhite(source) }
+  return { raw, tiny, hex, radius, breakpoint, nestedWhite: nestedWhite(source), hoverUngated: hoverUngated(source, relative.endsWith('.vue')), motionLiteral: motionLiteral(source, relative) }
 }
 
 // Native controls in the archive UI (components/archive, Chibi*): a <select> becomes the person picker, filter chips or the
@@ -95,9 +140,16 @@ assert.equal(nestedWhite('<style>.panel{background:var(--gs-surface)}.cell{backg
 assert.equal(nestedWhite('<style>.a{background:var(--gs-surface)}.b .c{background:var(--gs-paper-2)}@media (max-width:760px){.a .d{background:var(--gs-current-bg)}}</style>'), 1)
 assert.equal(nestedWhite('<style>.a{background:var(--gs-surface)}.b{background:var(--gs-surface)}</style>'), 0)
 assert.equal(nestedWhite('<template><div style="background:#fff"></div></template>'), 0)
-assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--gs-text-meta)}d{font-size:13px}e{font-size:inherit}'), { raw: 3, tiny: 2, hex: 0, radius: 0, breakpoint: 0, nestedWhite: 0 })
-assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2, breakpoint: 0, nestedWhite: 0 })
+assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--gs-text-meta)}d{font-size:13px}e{font-size:inherit}'), { raw: 3, tiny: 2, hex: 0, radius: 0, breakpoint: 0, nestedWhite: 0, hoverUngated: 0, motionLiteral: 0 })
+assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2, breakpoint: 0, nestedWhite: 0, hoverUngated: 0, motionLiteral: 0 })
 assert.deepEqual(measure('@media (max-width: 760px), (pointer:coarse){}@media(min-width:761px) and (max-width:1100px){}@media (max-height: 600px){}@container (max-width: 520px){}@media (max-width: 700px){}@media (min-width:1101px) and (max-width:40em){}').breakpoint, 2)
+
+// Hover and motion counters: gated rules, other at-rules and comments must not count; literals must.
+assert.equal(hoverUngated('a:hover{color:red}@media (hover: hover) and (pointer: fine){b:hover{color:red}@supports (x:y){c:hover{x:y}}}@media (max-width:760px){d:hover{x:y}}/* e:hover{x:y} */'), 2)
+assert.equal(hoverUngated('<template><a class="x:hover"></a></template><style>.a:hover{x:y}@media (any-hover: hover){.b:hover{x:y}}</style>', true), 1)
+assert.equal(hoverUngated('<template>a:hover{x:y}</template>', true), 0)
+assert.equal(motionLiteral('a{transition: opacity 120ms var(--gs-ease-out)}b{transition: color var(--gs-motion-feedback) var(--gs-ease-out)}c{animation: x .4s ease}d{transition: transform var(--t, 200ms) ease}e{animation: x var(--gs-motion-enter) steps(4) 0s}f{animation-timing-function: linear}g{transition: opacity var(--gs-motion-enter) cubic-bezier(.2,.7,.2,1)}'), 4)
+assert.equal(motionLiteral('a{transition: opacity 120ms ease}', 'src/styles/gs-motion.css'), 0)
 
 // 线框减法册 rule 2: a segmented switch holds at most three values (more go to GsTabs or GsFilterMenu). The options are
 // an inline array or a same-file `const NAME = [...]` / `computed(() => [...])`; anything else cannot be counted and fails.
@@ -137,7 +189,7 @@ for (const file of walk(path.join(root, 'src'))) {
   const relative = path.relative(root, file).replaceAll('\\', '/')
   if (relative === 'src/styles/GS_UI_TOKENS.css') continue // the palette itself
   const source = readFileSync(file, 'utf8')
-  const counts = { ...measure(source), ...nativeControls(source, relative) }
+  const counts = { ...measure(source, relative), ...nativeControls(source, relative) }
   if (METRICS.some(key => counts[key])) current[relative] = counts
   for (const property of inkFills(source)) inkMisuse.push(`${relative}: ${property}`)
   for (const overflow of segmentedOverflow(source)) segmentedMisuse.push(`${relative}: ${overflow}`)
@@ -163,5 +215,5 @@ if (update) {
   }
   assert.deepEqual(regressions, [], `Use the GS_UI_TOKENS palette, type ladder (floor ${FLOOR_PX}px) and radius roles:\n${regressions.join('\n')}`)
   const total = Object.values(current).reduce((sum, c) => Object.fromEntries(METRICS.map(key => [key, sum[key] + c[key]])), zero)
-  console.log(`Design tokens: ${total.raw} literal font sizes (${total.tiny} below ${FLOOR_PX}px), ${total.hex} hex colors, ${total.radius} literal radii, ${total.breakpoint} off-tier breakpoints remain; none added${improved ? ` (${improved} files improved; run --update to lock in)` : ''}`)
+  console.log(`Design tokens: ${total.raw} literal font sizes (${total.tiny} below ${FLOOR_PX}px), ${total.hex} hex colors, ${total.radius} literal radii, ${total.breakpoint} off-tier breakpoints, ${total.hoverUngated} ungated :hover rules, ${total.motionLiteral} literal motion declarations remain; none added${improved ? ` (${improved} files improved; run --update to lock in)` : ''}`)
 }

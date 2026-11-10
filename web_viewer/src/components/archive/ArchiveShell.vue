@@ -555,7 +555,7 @@ onBeforeUnmount(() => navObserver?.disconnect())
 /* The chip is its own card (GsLoadingIndicator inline); no second card around it. */
 .archive-pending-layer > * {
   max-width: 100%; pointer-events: none;
-  animation: gs-archive-pending-in 120ms ease-out 140ms both;
+  animation: gs-archive-pending-in 120ms ease-out var(--gs-pending-delay) both;
 }
 .archive-shell.is-home .archive-pending-layer,
 .archive-shell.is-portal .archive-pending-layer { grid-row: 1 / 3; }

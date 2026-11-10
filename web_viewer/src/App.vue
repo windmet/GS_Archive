@@ -2790,7 +2790,7 @@ html, body { background: var(--gs-paper); }
 .archive-route-pending-fallback {
   position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
   z-index: 1000; max-width: calc(100% - 32px); pointer-events: none;
-  animation: gs-route-feedback-in 120ms ease-out 140ms both;
+  animation: gs-route-feedback-in 120ms ease-out var(--gs-pending-delay) both;
 }
 @keyframes gs-route-feedback-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
