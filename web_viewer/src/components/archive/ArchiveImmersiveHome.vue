@@ -104,7 +104,7 @@
 
     <!-- A side drawer (bottom sheet on phones) over the stage's side, so the idol stays in view while
          lines are auditioned; it stays open on a pick. A backdrop click closes it. -->
-    <dialog v-if="cueIndexOpen" ref="cueIndexRef" class="scene-settings cue-index" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex" @click="$event.target === cueIndexRef && closeCueIndex()">
+    <dialog v-if="cueIndexMounted" ref="cueIndexRef" class="scene-settings cue-index gs-dialog-motion" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex" @click="$event.target === cueIndexRef && closeCueIndex()">
       <header>
         <div>
           <h3 id="cue-index-title">台词目录</h3>
@@ -146,7 +146,7 @@
       </div>
     </dialog>
 
-    <dialog v-if="settingsOpen" ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
+    <dialog v-if="settingsMounted" ref="sceneSettingsRef" class="scene-settings gs-dialog-motion" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
       <header>
         <div>
           <h3 id="scene-settings-title">场景设置</h3>
@@ -326,6 +326,11 @@ let homeDisposed = false
 const settingsOpen = ref(false)
 const sceneSettingsRef = ref(null)
 let settingsReturnFocus = null
+// A <dialog> animates out only while it is still in the DOM: it stays mounted for EXIT_MS (longer than --gs-motion-exit)
+// after close(), the same pattern as ArchiveTerminalDialog. The open flags below keep meaning "open"; the mounted flags only gate v-if.
+const EXIT_MS = 160
+const settingsMounted = ref(false), cueIndexMounted = ref(false)
+let settingsReleaseTimer = 0, cueIndexReleaseTimer = 0
 function restoreSettingsFocus() {
   if (settingsReturnFocus?.isConnected) settingsReturnFocus.focus({ preventScroll: true })
   settingsReturnFocus = null
@@ -334,6 +339,8 @@ function closeSettings() {
   sceneSettingsRef.value?.close()
   settingsOpen.value = false
   restoreSettingsFocus()
+  clearTimeout(settingsReleaseTimer)
+  settingsReleaseTimer = setTimeout(() => { if (!settingsOpen.value) settingsMounted.value = false }, EXIT_MS)
 }
 // Line directory: grouped in source order (rarity, then card), filtered by rarity and by the shown
 // or source text / card title. Choosing a line jumps there and plays it.
@@ -345,6 +352,8 @@ function closeCueIndex() {
   cueIndexOpen.value = false
   if (cueIndexReturnFocus?.isConnected) cueIndexReturnFocus.focus({ preventScroll: true })
   cueIndexReturnFocus = null
+  clearTimeout(cueIndexReleaseTimer)
+  cueIndexReleaseTimer = setTimeout(() => { if (!cueIndexOpen.value) cueIndexMounted.value = false }, EXIT_MS)
 }
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
@@ -582,7 +591,9 @@ async function openSettings() {
   if (settingsOpen.value) return
   settingsReturnFocus = document.activeElement
   costumePickerOpen.value = false
+  clearTimeout(settingsReleaseTimer)
   settingsOpen.value = true
+  settingsMounted.value = true
   await nextTick()
   if (!homeDisposed && settingsOpen.value) sceneSettingsRef.value?.showModal()
   if (props.homeMode === 'spine') loadBackgroundCatalogue()
@@ -623,7 +634,9 @@ async function openCueIndex() {
   costumePickerOpen.value = false
   closeSettings()
   cueQuery.value = ''; cueRarity.value = ''; cueSource.value = ''
+  clearTimeout(cueIndexReleaseTimer)
   cueIndexOpen.value = true
+  cueIndexMounted.value = true
   await nextTick()
   if (homeDisposed || !cueIndexOpen.value) return
   cueIndexRef.value?.showModal()
@@ -796,6 +809,8 @@ onBeforeUnmount(() => {
   sceneSettingsRef.value?.close()
   cueIndexRef.value?.close()
   restoreSettingsFocus()
+  clearTimeout(settingsReleaseTimer)
+  clearTimeout(cueIndexReleaseTimer)
   delete document.documentElement.dataset.archiveHomeTheme
   queuedVoiceAbort?.abort()
   stageTapAbort?.abort()
@@ -838,14 +853,11 @@ button.dialogue-card { cursor:pointer; }
 @media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
 @media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { height:calc(4 * 1.7em);font-size:var(--gs-text-body); } }
 @media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
-.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in var(--gs-motion-enter) var(--gs-ease-out); }
+.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);--gs-dialog-travel:translateX(32px); }
 .scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
 .scene-settings.cue-index > header { background:transparent; }
-@keyframes cue-drawer-in { from { transform:translateX(32px);opacity:0; } }
-@keyframes cue-sheet-in { from { transform:translateY(100%);opacity:0; } }
-@keyframes cue-fade-in { from { opacity:0; } }
 @media (max-width:760px) {
-  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);animation-name:cue-sheet-in;animation-duration:var(--gs-motion-sheet); }
+  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);--gs-dialog-travel:translateY(100%);--gs-dialog-duration:var(--gs-motion-sheet); }
 }
 .cue-index-filters { flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 18px;border-bottom:1px solid var(--gs-line); }
 .cue-index-search { display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);color:var(--gs-ink-3); }
@@ -869,7 +881,6 @@ button.dialogue-card { cursor:pointer; }
 .cue-index-now.is-playing i:nth-child(3) { animation-delay:-.6s; }
 @keyframes cue-now { 0%, 100% { transform:scaleY(0.3); } 50% { transform:scaleY(1); } }
 @media (prefers-reduced-motion: reduce) {
-  .scene-settings.cue-index { animation-name:cue-fade-in; }
   .cue-index-now.is-playing i { animation:none;transform:scaleY(0.6); }
 }
 .cue-index-number { flex:none;min-width:24px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;line-height:1.65; }
