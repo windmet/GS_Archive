@@ -886,6 +886,12 @@ button.dialogue-card { cursor:pointer; }
 .dialogue-head:has(.dialogue-status) .dialogue-status { margin-left:auto; }
 .dialogue-head:has(.dialogue-status) .home-language-switch { margin-left:var(--gs-space-3); }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
+/* A short landscape screen has no room for the pill under the name: the dialogue box starts right below it. The pill sits
+   beside the name instead, on the 查看资料 line; 返回资料馆 keeps its own row above. */
+@media (max-height:540px) and (orientation:landscape) {
+  .home-masthead { flex-flow:row wrap; align-items:end; max-width:60%; }
+  .home-masthead > .home-return:not(.home-office) { flex-basis:100%; width:max-content; flex-grow:0; }
+}
 .home-office { margin-bottom:0;pointer-events:auto;cursor:pointer; }
 @media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }
 </style>
