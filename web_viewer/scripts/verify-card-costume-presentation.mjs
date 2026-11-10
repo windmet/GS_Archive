@@ -243,7 +243,7 @@ const imports = {
 }
 const { descriptor } = parse(read('src/components/archive/ArchiveCardDetail.vue'))
 const source = compileScript(descriptor, { id: 'card-costume-contract', inlineTemplate: true }).content
-const context = vm.createContext({ console, Intl })
+const context = vm.createContext({ console, Intl, setTimeout, clearTimeout })
 const module = new vm.SourceTextModule(source, { context })
 await module.link(specifier => {
   assert.ok(Object.hasOwn(imports, specifier), `unexpected production dependency: ${specifier}`)
