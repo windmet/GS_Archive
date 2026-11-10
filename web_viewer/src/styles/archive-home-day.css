@@ -53,7 +53,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .home-producer-settings svg { color: var(--gs-ink-3); }
 .settings-backgrounds { margin: 0; padding: 0 0 17px; border: 0; border-bottom: 1px solid var(--gs-line); }
 .settings-backgrounds legend { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }.settings-backgrounds p { font-size: var(--gs-text-meta); line-height: 1.65; color: var(--gs-ink-2); }
-.settings-backgrounds small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.65; margin-top: 9px; }
+.settings-backgrounds > small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.65; margin-top: 9px; }
+.background-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.background-actions .background-more { margin-bottom: 0; }
 .background-auto, .background-more { min-height: 44px; padding: 7px 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); margin-bottom: 12px; }
 .background-auto[aria-pressed=true] { background: var(--gs-selected-bg); border-color: var(--gs-selected-line); color: var(--gs-selected-ink); }
 .background-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }

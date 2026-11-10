@@ -99,4 +99,14 @@ assert.deepEqual(groupConsoleIdols(roster, shown, '没有'), [])
   assert.equal(tiers.unitSongCount, 3)
   assert.deepEqual(groupSongTiers([], () => 'fixed_unit'), { featured: [], units: [], unitSongCount: 0, special: [] })
 }
+// A filter list opened inside a modal <dialog> (the home scene settings) must live in that dialog: in body it sits under the
+// top layer and the page around the dialog is inert, so it neither shows nor takes taps.
+{
+  const menu = readFileSync(path.join(dir, 'GsFilterMenu.vue'), 'utf8')
+  assert.match(menu, /<Teleport :to="layer">/, 'GsFilterMenu teleports to a computed layer, not to body')
+  assert.match(menu, /layer\.value = root\.value\?\.closest\('dialog'\) \|\| 'body'/, 'the layer is the enclosing dialog when there is one')
+  // The settings note rule once reached the count inside the time-of-day chips and pushed the number onto its own line.
+  const day = readFileSync(path.join(root, 'src/styles/archive-home-day.css'), 'utf8')
+  assert.doesNotMatch(day, /\.settings-backgrounds small\s*\{[^}]*display:\s*block/, 'the scene note rule stays off the chip counts')
+}
 console.log(`GS primitives: ${V2_TOKENS.length} v2 tokens, ${files.length} components, keyboard model ok`)

@@ -166,13 +166,16 @@
           <small>此选择独立于资料馆壁纸，切换偶像时优先使用该偶像的卡面。</small>
         </label>
         <fieldset v-if="homeMode === 'spine'" class="settings-backgrounds">
-          <legend>背景来源</legend>
-          <p>{{ backgroundSource === 'cue' ? '背景随台词所在的场景变化。' : '固定场景不会随换人、换装或切换台词改变。' }}</p>
-          <GsSegmented class="background-source" :model-value="backgroundSource" :options="BACKGROUND_SOURCES" aria-label="背景来源" @update:model-value="chooseBackgroundSource" />
+          <legend>首页场景</legend>
+          <p>{{ preferences.background === 'cue' ? '跟随台词所在的场景，多数台词在事务所。' : `固定为「${fixedBackgroundName}」，换人、换装或切换台词都不变。` }}</p>
+          <div class="background-actions">
+            <button type="button" class="background-more" :aria-expanded="backgroundPickerOpen" @click="toggleBackgroundPicker">{{ backgroundPickerOpen ? '收起场景列表' : '选择固定场景' }}</button>
+            <button v-if="preferences.background !== 'cue'" type="button" class="background-more" @click="preferences.background = 'cue'">改回跟随台词</button>
+          </div>
           <GsLoadingIndicator v-if="backgroundLoading" variant="text" message="正在读取已收录场景…" />
           <p v-if="backgroundError" role="status">{{ backgroundError }} <button type="button" @click="loadBackgroundCatalogue(true)">重试</button></p>
           <p v-if="backgroundUnavailable" role="status">之前选择的背景当前不可用，暂用台词背景；请重新选择。</p>
-          <template v-if="backgroundSource === 'fixed'"><label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
+          <template v-if="backgroundPickerOpen"><label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
           <div v-if="backgroundVariants.length" class="background-variants" role="group" aria-label="按时段与天气筛选">
             <button type="button" :aria-pressed="!backgroundVariant" @click="backgroundVariant = ''">全部</button>
             <button v-for="entry in backgroundVariants" :key="entry.id" type="button" :aria-pressed="backgroundVariant === entry.id" @click="backgroundVariant = entry.id">{{ entry.label }} <small>{{ entry.count }}</small></button>
@@ -188,13 +191,13 @@
         </fieldset>
 
         <label class="settings-field">
-          <span>首页偶像 · 选择后记住，下次首页沿用</span>
+          <span>首页偶像</span>
           <select v-model="selectedId">
             <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option>
           </select>
         </label>
 
-        <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="场景设置服装类别" />
+        <CostumeCategoryFilter v-if="homeMode === 'spine'" v-model="costumeCategory" :costumes="activeIdol.costumes" label="服装类别" />
         <label v-if="homeMode === 'spine'" class="settings-field settings-costume-field">
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
@@ -440,16 +443,18 @@ const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry 
   archiveNamedBackgroundSearch(entry.label).toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
 const visibleBackgrounds = computed(() => filteredBackgrounds.value.slice(0, backgroundLimit.value))
 watch([backgroundQuery, backgroundVariant], () => { backgroundLimit.value = 12 })
-const BACKGROUND_SOURCES = [{ value: 'cue', label: '随台词变化' }, { value: 'fixed', label: '固定场景' }]
-// The segmented control is its own state: choosing 固定场景 opens the list while the line-following background keeps
-// showing until a scene is picked, and a saved fixed scene opens on 固定场景.
-const backgroundSource = ref(preferences.background === 'cue' ? 'cue' : 'fixed')
-watch(() => preferences.background, value => { if (value !== 'cue') backgroundSource.value = 'fixed' })
-function chooseBackgroundSource(value) {
-  backgroundSource.value = value
-  if (value === 'cue') preferences.background = 'cue'
-  else loadBackgroundCatalogue()
+// Most lines play in the office, so following the line is the default and needs no choice; a fixed scene is an extra the
+// list opens for. Going back to the line's scene closes the list.
+const backgroundPickerOpen = ref(false)
+watch(() => preferences.background, value => { if (value === 'cue') backgroundPickerOpen.value = false })
+function toggleBackgroundPicker() {
+  backgroundPickerOpen.value = !backgroundPickerOpen.value
+  if (backgroundPickerOpen.value) loadBackgroundCatalogue()
 }
+const fixedBackgroundName = computed(() => {
+  const entry = backgroundEntries.value.find(item => item.id === preferences.background)
+  return entry ? archiveNamedBackground(entry.label) : '已选场景'
+})
 const backgroundUnavailable = computed(() => backgroundReady.value && preferences.background !== 'cue' && !backgroundEntries.value.some(entry => entry.id === preferences.background))
 const selectedBackground = computed(() => resolveHomeBackground(preferences.background, backgroundEntries.value,
   activeCue.value?.background || activeIdol.value?.representativeBg || '', backgroundReady.value))
