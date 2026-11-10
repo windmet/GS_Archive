@@ -11,6 +11,7 @@
   --gs-ease-out: cubic-bezier(.16, 1, .3, 1);   /* fast arrival, soft stop */
   --gs-page-from: .3;             /* a page never starts from nothing: paper flashing through reads as a blink */
   --gs-ease-in: cubic-bezier(.4, 0, 1, 1);
+  --gs-pending-delay: 140ms;      /* a wait indicator appears only after this; a faster load shows none (docs/GS_LOADING_SYSTEM_20261103.md) */
 }
 
 /* Press feedback. Pointer devices already answer with hover; touch has no hover, so a press dims

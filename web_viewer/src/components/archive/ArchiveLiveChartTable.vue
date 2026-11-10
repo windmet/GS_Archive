@@ -249,7 +249,7 @@ const rows = computed(() => {
   .chart-table-search { max-width: none; }
   .chart-grid { grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--gs-space-4); }
   .chart-row > .col-combo, .chart-row > .col-bpm, .chart-row > .col-time, .chart-row > .col-stage { display: none; }
-  .chart-row-actions { position: relative; z-index: 1; display: grid; grid-column: 1 / -1; grid-template-rows: 0fr; transition: grid-template-rows var(--gs-duration-base, 200ms) ease; }
+  .chart-row-actions { position: relative; z-index: 1; display: grid; grid-column: 1 / -1; grid-template-rows: 0fr; transition: grid-template-rows var(--gs-motion-enter) var(--gs-ease-out); }
   .chart-row-actions.is-open { grid-template-rows: 1fr; }
   .chart-row-actions-inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gs-space-3); min-height: 0; overflow: hidden; }
   .chart-row-actions.is-open .chart-row-actions-inner { padding: var(--gs-space-3) 0 var(--gs-space-4); }

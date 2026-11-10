@@ -824,7 +824,7 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 /* The box keeps the height of three lines and the text starts at the top, so stepping between lines never moves the frame or the controls. A fourth line grows it instead of clipping. */
 .home-dialogue .dialogue-text { height:calc(3 * 1.7em);overflow-y:auto;scrollbar-width:thin;font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
 .home-dialogue .dialogue-line { flex:1;min-width:0;margin:0;padding:2px 2px 4px;font-size:inherit;line-height:1.7; }
-.dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity .12s ease; }
+.dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity var(--gs-motion-feedback) var(--gs-ease-out); }
 .dialogue-fade-enter-from,.dialogue-fade-leave-to { opacity:0; }
 @media (prefers-reduced-motion:reduce) { .dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:none; } }
 .home-dialogue .is-pending { visibility:hidden; }

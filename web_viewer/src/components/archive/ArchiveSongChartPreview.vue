@@ -23,7 +23,7 @@
         <!-- 锁定: a shield over the whole view takes every touch, so a recorded or watched run cannot be paused, seeked or
              scrolled by accident. Touching it only shows the unlock button, which needs a long press. -->
         <div v-if="locked" class="chart-lock-shield" data-chart-lock-shield @pointerdown="showUnlock">
-          <button type="button" class="chart-unlock" :class="{ 'is-shown': unlockShown, 'is-holding': unlockHolding }" aria-label="长按解锁" @pointerdown.stop="startUnlock" @pointerup="cancelUnlock" @pointercancel="cancelUnlock" @pointerleave="cancelUnlock" @click.prevent @keydown.enter.prevent="unlockControls" @keydown.space.prevent="unlockControls"><LockOpen :size="17" aria-hidden="true" />长按解锁</button>
+          <button type="button" class="chart-unlock" :class="{ 'is-shown': unlockShown, 'is-holding': unlockHolding }" aria-label="长按解锁" :style="{ '--unlock-press': `${UNLOCK_PRESS_MS}ms` }" @pointerdown.stop="startUnlock" @pointerup="cancelUnlock" @pointercancel="cancelUnlock" @pointerleave="cancelUnlock" @click.prevent @keydown.enter.prevent="unlockControls" @keydown.space.prevent="unlockControls"><LockOpen :size="17" aria-hidden="true" />长按解锁</button>
         </div>
         <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>最大 Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :position="trackPosition" :speed="safeSpeed" :effects="trackEffects" :combo="trackCombo" :combo-enabled="comboEnabled" :demonstration-enabled="demonstrationEnabled" @texture-status="trackTextures = $event" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase" :data-sound-set="soundSet" :data-sound-scheduled="soundStats.scheduled" :data-sound-active="soundStats.active" :data-sound-decoded="soundStats.decoded" :data-sound-context="soundStats.context">
@@ -555,7 +555,7 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
 .is-immersive .chart-layout, .is-immersive .chart-main { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; }
 .is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; border: 0; container-type: size; }
 .is-immersive .chart-viewport :deep(.track-preview) { width: min(100cqw, calc(100cqh * 16 / 9)); }
-.is-immersive .chart-toolbar, .is-immersive .chart-transport { position: absolute; z-index: 3; left: 0; right: 0; margin: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
+.is-immersive .chart-toolbar, .is-immersive .chart-transport { position: absolute; z-index: 3; left: 0; right: 0; margin: 0; transition: opacity var(--gs-motion-enter) var(--gs-ease-out); }
 .is-immersive .chart-toolbar { top: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-4) max(12px, env(safe-area-inset-left)); background: linear-gradient(rgb(0 0 0 / 0.6), transparent); }
 .is-immersive .chart-transport { bottom: 0; padding: var(--gs-space-4) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: linear-gradient(transparent, rgb(0 0 0 / 0.6)); }
 .is-immersive .chart-transport { color: var(--gs-stage-ink); }
@@ -568,10 +568,10 @@ section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; d
 /* iOS starts a selection, its magnifier or the callout under several fingers or a long press; none of it belongs here. */
 .is-immersive, .is-immersive * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 .chart-lock-shield { position: absolute; z-index: 4; inset: 0; touch-action: none; }
-.chart-unlock { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: inline-flex; align-items: center; gap: var(--gs-space-2); height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 0.35); border-radius: var(--gs-radius-pill); background: rgb(0 0 0 / 0.55) linear-gradient(90deg, var(--gs-mint) 0 0) no-repeat left / 0 100%; color: var(--gs-stage-ink); opacity: 0; transition: opacity var(--gs-duration-base, 200ms) ease; }
+.chart-unlock { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: inline-flex; align-items: center; gap: var(--gs-space-2); height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid rgb(255 255 255 / 0.35); border-radius: var(--gs-radius-pill); background: rgb(0 0 0 / 0.55) linear-gradient(90deg, var(--gs-mint) 0 0) no-repeat left / 0 100%; color: var(--gs-stage-ink); opacity: 0; transition: opacity var(--gs-motion-enter) var(--gs-ease-out); }
 .chart-unlock.is-shown, .chart-unlock:focus-visible { opacity: 1; }
 /* The fill shows how long the press still has to last. */
-.chart-unlock.is-holding { background-size: 100% 100%; transition: opacity var(--gs-duration-base, 200ms) ease, background-size 800ms linear; }
+.chart-unlock.is-holding { background-size: 100% 100%; transition: opacity var(--gs-motion-enter) var(--gs-ease-out), background-size var(--unlock-press) linear; }
 .is-immersive .chart-navigation { margin-top: var(--gs-space-1); }
 @media (max-height: 500px) {
   .is-immersive .chart-difficulties button { height: var(--gs-control-normal); }
