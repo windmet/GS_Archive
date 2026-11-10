@@ -111,7 +111,7 @@
 | B | M2 触屏细节 + M3 输入字号 | A（棘轮基线） | GsInfo、约 10 个高频组件、layout-integrity | 只在触屏 | 未开始 |
 | C | M4 首页对话框 + M5 焦点环 | A | ArchiveImmersiveHome、gs-motion.css | 首页两个对话框有进出场 | 未开始 |
 | D | D1 底部抽屉下滑关闭 | C（台词目录先接入共享动效） | 一个共用组合式函数，接入各底部抽屉 | 只在手机底部抽屉 | 未开始 |
-| E | D3 播放器进度条与对白框 | — | 、 | 播放器 | 未开始 |
+| E | D3 播放器进度条与对白框 | — | `PlayerTopBar.vue`、`StoryViewer.vue` | 播放器 | 未开始 |
 
 通用验证（每个 PR 都跑）：`npm run build:check`（**不要直接跑 `vite build`**，会把语料拷进 dist）、`npm run verify:archive-motion`、`npm run verify:design-tokens`、`npm run verify:source-batch`；合并前在 LF worktree 里跑 `npm run gate:source`（`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录> <分支>`）。新加或改动的断言要做变异测试：把修复改回坏版本，确认验证器失败，再还原。
 
