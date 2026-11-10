@@ -34,7 +34,8 @@
 .studio-bar-title strong { overflow: hidden; color: var(--gs-chrome-ink-active); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); white-space: nowrap; text-overflow: ellipsis; }
 .studio-bar-title small { overflow: hidden; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); white-space: nowrap; text-overflow: ellipsis; }
 .studio-bar button.studio-bar-icon { display: inline-grid; place-items: center; flex: none; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-chrome-ink); cursor: pointer; }
-.studio-bar button.studio-bar-icon:not(:disabled):hover, .studio-bar button.studio-bar-icon[aria-expanded=true] { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
+.studio-bar button.studio-bar-icon[aria-expanded=true] { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
+@media (hover: hover) and (pointer: fine) { .studio-bar button.studio-bar-icon:not(:disabled):hover { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); } }
 .studio-header-language { flex: none; margin-left: var(--gs-space-2); }
 
 .studio-notices { grid-area: stage; align-self: start; z-index: 3; display: grid; gap: var(--gs-space-2); margin: var(--gs-space-3); pointer-events: none; }
@@ -52,7 +53,7 @@
 /* 素材 tabs: 拍摄 (地点 · 人物) | 装饰 (贴纸 · 相框 · 滤镜), underlined, counts beneath. */
 .studio-material-tabs { display: flex; align-items: stretch; flex: none; padding: 0 var(--gs-space-2); border-bottom: 1px solid var(--gs-line); }
 .studio-material-tabs button { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 0; min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-2) 0; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--gs-ink-3); cursor: pointer; white-space: nowrap; }
-.studio-material-tabs button:hover { color: var(--gs-ink); }
+@media (hover: hover) and (pointer: fine) { .studio-material-tabs button:hover { color: var(--gs-ink); } }
 .studio-material-tabs button[aria-pressed=true] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .studio-material-tabs small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
 .studio-tab-rule { flex: none; width: 1px; margin: var(--gs-space-4) var(--gs-space-2); background: var(--gs-line); }
@@ -89,7 +90,7 @@
 .studio-material-heading { margin: var(--gs-space-4) 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .studio-sticker-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-3); }
 .studio-page .studio-sticker-grid button { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; min-height: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-paper); color: var(--gs-ink-3); cursor: pointer; }
-.studio-page .studio-sticker-grid button:not(:disabled):hover { background: var(--gs-paper-2); }
+@media (hover: hover) and (pointer: fine) { .studio-page .studio-sticker-grid button:not(:disabled):hover { background: var(--gs-paper-2); } }
 /* Out of flow: a percentage height on an in-flow image resolves to its intrinsic height, and the
    square's automatic minimum then grows to fit a tall chibi, leaving the rows ragged. */
 .studio-sticker-grid img { position: absolute; inset: var(--gs-space-2); width: calc(100% - 2 * var(--gs-space-2)); height: calc(100% - 2 * var(--gs-space-2)); object-fit: contain; }
@@ -108,18 +109,18 @@
 .studio-canvas-selection, .studio-canvas-view { display: flex; align-items: center; gap: var(--gs-space-1); min-width: 0; }
 .studio-canvas-selection { flex: 1 1 320px; }
 .studio-canvas-selection > button, .studio-canvas-view > button { display: inline-flex; align-items: center; justify-content: center; gap: var(--gs-space-2); flex: none; min-width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-stage-ink); cursor: pointer; }
-.studio-canvas-selection > button:not(:disabled):hover, .studio-canvas-view > button:not(:disabled):hover { background: var(--gs-stage-track); }
+@media (hover: hover) and (pointer: fine) { .studio-canvas-selection > button:not(:disabled):hover, .studio-canvas-view > button:not(:disabled):hover { background: var(--gs-stage-track); } }
 .studio-canvas-bar button.studio-selection-name { flex: 1; min-width: 0; justify-content: space-between; padding: 0 var(--gs-space-3); background: var(--gs-stage-raise); text-align: left; }
 .studio-selection-name > span { display: grid; min-width: 0; }
 .studio-selection-name strong { overflow: hidden; font-weight: var(--gs-weight-semibold); white-space: nowrap; text-overflow: ellipsis; }
 .studio-selection-name small { color: var(--gs-stage-ink-2); font-size: var(--gs-text-caption); }
 .studio-selection-chevron { display: none; flex: none; color: var(--gs-stage-ink-2); }
 .studio-canvas-bar button.studio-delete:not(:disabled) { color: var(--gs-stage-ink); }
-.studio-canvas-bar button.studio-delete:not(:disabled):hover { color: var(--gs-chrome-ink-active); }
+@media (hover: hover) and (pointer: fine) { .studio-canvas-bar button.studio-delete:not(:disabled):hover { color: var(--gs-chrome-ink-active); } }
 .studio-canvas-bar .studio-play[aria-pressed=true] { background: var(--gs-stage-thumb); }
 .studio-snap-toggle { display: inline-flex; flex: none; white-space: nowrap; align-items: center; gap: var(--gs-space-3); min-height: var(--gs-control-touch); padding: 0 var(--gs-space-2); color: var(--gs-stage-ink); }
 .studio-canvas-view .gs-info-button { color: var(--gs-stage-ink-2); }
-.studio-canvas-view .gs-info-button:hover { background: var(--gs-stage-track); color: var(--gs-stage-ink); }
+@media (hover: hover) and (pointer: fine) { .studio-canvas-view .gs-info-button:hover { background: var(--gs-stage-track); color: var(--gs-stage-ink); } }
 .studio-stage-status { flex: 1 0 100%; min-height: 1.5em; margin: 0; overflow: hidden; color: var(--gs-stage-ink-2); font-size: var(--gs-text-meta); white-space: nowrap; text-overflow: ellipsis; }
 
 /* 检查器: layers first (front on top), then the selection's properties. */
@@ -131,7 +132,7 @@
 .studio-object-row.is-selected { background: var(--gs-selected-bg); }
 .studio-object-row.is-drop-target { box-shadow: inset 0 2px var(--gs-selected-line); }
 .studio-object-row > button { display: inline-grid; place-items: center; flex: none; min-width: var(--gs-control-normal); min-height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); cursor: pointer; }
-.studio-object-row > button:not(:disabled):hover { background: var(--gs-hover); color: var(--gs-ink); }
+@media (hover: hover) and (pointer: fine) { .studio-object-row > button:not(:disabled):hover { background: var(--gs-hover); color: var(--gs-ink); } }
 .studio-object-row > button[aria-pressed=true]:not(.studio-object-select) { color: var(--gs-selected-ink); }
 .studio-object-row .studio-layer-grip { min-width: 24px; cursor: grab; touch-action: none; }
 .studio-object-row .studio-layer-grip:active { cursor: grabbing; }
@@ -145,7 +146,7 @@
 .studio-background-layer small { margin-left: auto; font-size: var(--gs-text-caption); }
 .studio-page .studio-background-layer.is-button { width: 100%; border-width: 0 0 1px; background: transparent; color: var(--gs-ink-2); text-align: left; cursor: pointer; }
 .studio-background-layer.is-button span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.studio-background-layer.is-button:hover { background: var(--gs-hover); }
+@media (hover: hover) and (pointer: fine) { .studio-background-layer.is-button:hover { background: var(--gs-hover); } }
 .studio-background-layer.is-button[aria-pressed=true] { background: var(--gs-selected-bg); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .studio-layer-empty { margin: var(--gs-space-3) 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
 .studio-inspector-empty { margin-top: var(--gs-space-6); }
@@ -162,14 +163,14 @@
 .studio-current-variant { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .studio-variant-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gs-space-2); }
 .studio-variant-grid button { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--gs-space-2); min-width: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
-.studio-variant-grid button:hover { background: var(--gs-hover); }
+@media (hover: hover) and (pointer: fine) { .studio-variant-grid button:hover { background: var(--gs-hover); } }
 .studio-variant-grid button[aria-pressed=true] { background: var(--gs-selected-bg); box-shadow: inset 0 0 0 2px var(--gs-selected-line); color: var(--gs-ink); }
 .studio-variant-grid img { width: 100%; height: 64px; object-fit: contain; }
 .studio-variant-grid span { font-size: var(--gs-text-meta); line-height: 1.4; overflow-wrap: anywhere; }
 .studio-variant-grid small { position: absolute; top: var(--gs-space-2); left: var(--gs-space-2); padding: 0 var(--gs-space-2); border-radius: var(--gs-radius-media); background: var(--gs-surface); color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-caption); }
 .studio-costume-list { display: grid; border-top: 1px solid var(--gs-line); }
 .studio-costume-list button { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-3); min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-2); border: 0; border-bottom: 1px solid var(--gs-line); background: transparent; color: var(--gs-ink-2); text-align: left; overflow-wrap: anywhere; cursor: pointer; }
-.studio-costume-list button:hover { background: var(--gs-hover); }
+@media (hover: hover) and (pointer: fine) { .studio-costume-list button:hover { background: var(--gs-hover); } }
 .studio-costume-list button[aria-pressed=true] { background: var(--gs-selected-bg); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .studio-costume-list button svg { flex: none; color: var(--gs-selected-ink); }
 .studio-costume-list small { flex: none; color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
@@ -202,7 +203,7 @@
 .studio-files-group h4 { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .studio-files-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gs-space-2); }
 .studio-files-actions button, .studio-files .studio-primary { display: inline-flex; align-items: center; justify-content: center; gap: var(--gs-space-2); min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-2); cursor: pointer; }
-.studio-files-actions button:not(:disabled):hover { background: var(--gs-hover); }
+@media (hover: hover) and (pointer: fine) { .studio-files-actions button:not(:disabled):hover { background: var(--gs-hover); } }
 .studio-files .studio-primary { width: 100%; border: 0; background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
 .studio-files-actions a { align-self: center; color: var(--gs-mint-ink); font-weight: var(--gs-weight-semibold); }
 .studio-document-files summary { padding: var(--gs-space-3) 0; color: var(--gs-ink-2); cursor: pointer; }
@@ -251,3 +252,5 @@
 @media (max-width: 400px) {
   .studio-bar-title small { display: none; }
 }
+/* iOS zooms the page when a focused input is under 16px (RR-03); iPad is wider than the phone tier, so this follows the pointer. */
+@media (pointer: coarse) { .studio-page input:not([type=range], [type=checkbox], [type=radio], [type=color], [type=file]), .studio-page select, .studio-page textarea, .studio-transform input[type=number] { font-size: var(--gs-text-subtitle); } }

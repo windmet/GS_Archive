@@ -272,7 +272,7 @@ function cycleFocus(event) {
 .seasonal-ledger thead th { padding: 0; border-bottom: 1px solid var(--gs-rule); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); text-align: left; vertical-align: bottom; }
 .seasonal-ledger .who-head { padding: var(--gs-space-3) 0; }
 .campaign-head { display: grid; gap: var(--gs-space-1); width: 100%; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-bottom: 2px solid transparent; background: none; color: var(--gs-ink-2); cursor: pointer; font: inherit; text-align: left; transition: color var(--gs-motion-feedback) var(--gs-motion-ease); }
-.campaign-head:hover { color: var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) { .campaign-head:hover { color: var(--gs-mint-ink); } }
 .campaign-head[aria-pressed=true] { border-bottom-color: var(--gs-selected-line); }
 .campaign-year { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; line-height: 1.2; }
 .campaign-name { display: inline-flex; align-items: center; gap: var(--gs-space-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
@@ -282,7 +282,7 @@ function cycleFocus(event) {
 .seasonal-ledger tbody th { padding-left: 0; font-weight: var(--gs-weight-regular); }
 .seasonal-ledger td.focused, .seasonal-ledger th.focused { background: var(--gs-selected-bg); }
 .ledger-row { cursor: pointer; }
-.ledger-row:hover .who-name { color: var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) { .ledger-row:hover .who-name { color: var(--gs-mint-ink); } }
 .ledger-row.selected > * { background: var(--gs-selected-bg); }
 .group-row th { padding: var(--gs-space-6) 0 var(--gs-space-2); border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); text-align: left; }
 
@@ -323,7 +323,7 @@ function cycleFocus(event) {
 .drawer-identity h2 { margin: 0; overflow-wrap: anywhere; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); line-height: 1.3; }
 .drawer-identity small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .drawer-close { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-2); cursor: pointer; }
-.drawer-close:hover { color: var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) { .drawer-close:hover { color: var(--gs-mint-ink); } }
 .drawer-body { overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--gs-space-5) var(--gs-space-5); }
 .drawer-year h3 { margin: var(--gs-space-6) 0 var(--gs-space-2); font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
 .drawer-campaign { padding: var(--gs-space-3) 0 var(--gs-space-2); border-top: 1px solid var(--gs-line); }
@@ -337,7 +337,7 @@ function cycleFocus(event) {
 .drawer-episode { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-3); width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-2) 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; text-align: left; }
 .drawer-episode:not(:has(.part-mark)) { grid-template-columns: minmax(0, 1fr) auto; }
 .drawer-episode > svg { color: var(--gs-ink-3); }
-.drawer-episode:hover:not(:disabled) strong, .drawer-episode:hover:not(:disabled) > svg { color: var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) { .drawer-episode:hover:not(:disabled) strong, .drawer-episode:hover:not(:disabled) > svg { color: var(--gs-mint-ink); } }
 .drawer-episode:disabled { cursor: default; opacity: .45; }
 .drawer-episode-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
 .drawer-episode-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-medium); line-height: 1.5; }
