@@ -51,13 +51,21 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .home-producer-settings span { font-weight: var(--gs-weight-semibold); }
 .home-producer-settings small { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
 .home-producer-settings svg { color: var(--gs-ink-3); }
-.settings-backgrounds { margin: 0; padding: 0 0 17px; border: 0; border-bottom: 1px solid var(--gs-line); }
-.settings-backgrounds legend { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }.settings-backgrounds p { font-size: var(--gs-text-meta); line-height: 1.65; color: var(--gs-ink-2); }
-.settings-backgrounds > small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.65; margin-top: 9px; }
-.background-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.background-actions .background-more { margin-bottom: 0; }
-.background-auto, .background-more { min-height: 44px; padding: 7px 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); margin-bottom: 12px; }
-.background-auto[aria-pressed=true] { background: var(--gs-selected-bg); border-color: var(--gs-selected-line); color: var(--gs-selected-ink); }
+/* 首页场景 reads like the other settings: a quiet legend, then one row with the current scene and text actions. */
+.settings-backgrounds { min-width: 0; margin: 0; padding: 0; border: 0; }
+.settings-backgrounds legend { padding: 0 0 7px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.settings-backgrounds p { margin: 8px 0 0; font-size: var(--gs-text-meta); line-height: 1.65; color: var(--gs-ink-2); }
+.background-current { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 4px 0 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); }
+.background-current > span { display: flex; flex: 1 1 auto; align-items: baseline; gap: 8px; min-width: 0; }
+.background-current strong { overflow: hidden; color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.background-current small { flex: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.background-current button { flex: none; min-height: 40px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.background-search { box-sizing: border-box; width: 100%; min-height: 44px; margin-top: 12px; padding: 8px 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+@media (pointer: coarse) { .background-search { font-size: var(--gs-text-subtitle); } }
+/* More: a quiet full-width text row set apart from the grid, saying how many are left. */
+.background-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 40px; margin-top: 12px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
+.background-more small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+@media (hover: hover) { .background-current button:hover, .background-more:hover { background: var(--gs-hover); } }
 .background-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }
 .background-variants { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .background-variants button { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font-size: var(--gs-text-meta); cursor: pointer; }

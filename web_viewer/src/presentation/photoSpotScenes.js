@@ -27,8 +27,10 @@ export function photoSpotScenes(materials, spot) {
 
 export const photoSceneSpot = (materials, sceneId) => index(materials)?.owners.get(Number(sceneId)) || null
 
-// "通常1"/"通常2" are both 通常 for filtering.
-export const photoVariantKey = (name) => String(name || '').replace(/\d+$/, '')
+// "通常1"/"通常2" are both 通常 for filtering. 昼 (mostly indoor sets) and 日中 both mean daytime and read 白天, so they
+// filter as one chip.
+const VARIANT_ALIASES = { 昼: '日中' }
+export const photoVariantKey = (name) => { const key = String(name || '').replace(/\d+$/, ''); return VARIANT_ALIASES[key] || key }
 
 export const photoSpotVariantKeys = (materials, spot) => [...new Set(photoSpotScenes(materials, spot).map((row) => photoVariantKey(row.name)))]
 
@@ -46,6 +48,17 @@ export const photoSpotVariants = (materials, label) =>
 
 // Raw scene variants ("通常1", "夜") to the keys chips filter by.
 export const photoVariantKeys = (variants = []) => [...new Set(variants.map(photoVariantKey))]
+
+// A spot can carry two scenes of the same shown name (アリーナ客席 has 昼 and 日中, both 白天); number the repeats so
+// every scene button in a spot reads differently. Returns Map(scene.id -> label).
+export function photoSceneLabels(scenes = [], nameOf = (scene) => scene.name) {
+  const seen = new Map()
+  return new Map(scenes.map((scene) => {
+    const base = nameOf(scene), count = (seen.get(base) || 0) + 1
+    seen.set(base, count)
+    return [scene.id, count > 1 ? `${base} ${count}` : base]
+  }))
+}
 
 // The scene a spot opens on: the one for the active variant if it has one, else its first.
 export function photoSpotScene(materials, spot, variant = '') {
