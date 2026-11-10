@@ -48,6 +48,11 @@ assert.ok(!/img\[data-gs-failed\][^}]*(?:opacity|visibility|display)/.test(motio
 // Progress values never lag the real position: the player's step bar is driven by a step number, so it jumps and does not ease.
 const topBar = read('src/components/player/PlayerTopBar.vue')
 assert.ok(/\.progress-fill \{[^}]*transform-origin: left/.test(topBar) && !/\.progress-fill \{[^}]*transition/.test(topBar), 'the player progress fill has no transition')
+// The dialogue box: alpha only, out faster than in, on the player's own timings (no blur, no travel).
+const viewer = read('src/core/StoryViewer.vue')
+assert.ok(viewer.includes('.adv-dialogue-fade-enter-active { transition: opacity var(--player-motion-base) var(--player-ease-standard); }'))
+assert.ok(viewer.includes('.adv-dialogue-fade-leave-active { transition: opacity var(--player-motion-fast) ease-in; }'))
+assert.ok(!/\.adv-dialogue-fade[^{]*\{[^}]*(?:blur|transform)/.test(viewer), 'the dialogue box fade has no blur or travel')
 
 const main = read('src/main.js')
 assert.ok(main.includes("import './styles/gs-motion.css'"), 'motion styles load with the tokens')
