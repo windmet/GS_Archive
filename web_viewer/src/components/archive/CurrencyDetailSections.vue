@@ -44,7 +44,8 @@ const acquisitionLabels={'event-point':'活动累计点数奖励','event-ranking
   'producer-level':'制作人等级奖励','producer-rank':'制作人阶级奖励','main-story':'主线剧情奖励','idol-story':'偶像剧情奖励','episode-zero-story':'Episode 0 剧情奖励','home-story':'主页剧情奖励',
   'login-bonus':'登录奖励','campaign-login-bonus':'企划登录奖励'}
 // Client strings inline their icons as <emoji>name</emoji>; the quote names the icon instead.
-const quoteText=text=>String(text).replace(/<emoji>([a-z_]+)<\/emoji>/g,(_,name)=>name==='stamina'?'ST':`[${name}]`)
+// Format slots ({0}, {1}) are filled by the game at run time; the quote shows them as ○.
+const quoteText=text=>String(text).replace(/<emoji>([a-z_]+)<\/emoji>/g,(_,name)=>name==='stamina'?'ST':`[${name}]`).replace(/\{\d+\}/g,'○')
 const acquisitionLabel=source=>acquisitionLabels[source] || '其他'
 function gashaLineLabel(line){
   if(line.kind==='gasha-exchange')return '可在这些卡池兑换卡片'

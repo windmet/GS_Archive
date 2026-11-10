@@ -26,8 +26,8 @@ const tabs = computed(() => Object.entries(COUNT_KEYS).map(([id, key]) => {
 .collection-tabs::-webkit-scrollbar { display: none; }
 .collection-tab { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 0 var(--gs-space-1); border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
 .collection-tab small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
-.collection-tab:hover { color: var(--gs-ink); }
 .collection-tab[aria-current='page'] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .collection-tab:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) { .collection-tab:hover { color: var(--gs-ink); } }
 @media (max-width: 760px) { .collection-tabs { gap: var(--gs-space-6); padding: 0 var(--gs-space-5); } }
 </style>

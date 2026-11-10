@@ -55,22 +55,6 @@ function cycleFocus(event){
 }
 </script>
 <style scoped>
-.collection-inspector {
-  font-family: var(--gs-font-directory);
-  font-size: var(--gs-text-body, 14px);
-  font-weight: var(--gs-weight-regular, 400);
-}
-.collection-inspector-header h2 { font-weight: var(--gs-weight-bold, 700); }
-.collection-inspector-body :deep(.domain-panel > h3) {
-  font-size: var(--gs-text-section, 18px);
-  font-weight: var(--gs-weight-bold, 700);
-}
-.collection-inspector-body :deep(.collection-entry-details .domain-detail-title h3) {
-  font-size: var(--gs-text-title, 22px);
-  font-weight: var(--gs-weight-bold, 700);
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
 .collection-inspector-body :deep(.domain-panel > h3.collection-inferred-head) { display: flex; align-items: center; gap: var(--gs-space-3); }
 /* C 级 status mark: not a control, a thin outline beside the heading; the ⓘ says what it rests on. */
 .collection-inferred { flex: none; padding: 1px var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); white-space: nowrap; }
@@ -78,13 +62,8 @@ function cycleFocus(event){
 .collection-gasha-links { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--gs-rule); }
 .collection-gasha-links li { border-bottom: 1px solid var(--gs-line); }
 .collection-gasha-links button { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-3); width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; background: none; color: var(--gs-ink); text-align: left; font-weight: var(--gs-weight-semibold); }
-.collection-gasha-links button:hover { color: var(--gs-mint-ink); }
 .collection-gasha-links span { display: grid; gap: var(--gs-space-1); min-width: 0; overflow-wrap: anywhere; }
 .collection-gasha-links small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .collection-gasha-links svg { flex: none; color: var(--gs-ink-3); }
-.collection-inspector-body :deep(.domain-description) { font-size: var(--gs-text-body, 14px); }
-.collection-inspector-body :deep(.domain-meta),
-.collection-inspector-body :deep(.collection-source-meta),
-.collection-inspector-body :deep(.collection-original),
-.collection-inspector-body :deep(.domain-media-preview figcaption) { font-size: var(--gs-text-meta, 12px); }
+@media (hover: hover) and (pointer: fine) { .collection-gasha-links button:hover { color: var(--gs-mint-ink); } }
 </style>

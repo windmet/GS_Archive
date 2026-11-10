@@ -39,7 +39,7 @@ function cycleFocus(event) {
 }
 </script>
 <style scoped>
-.collection-quick-backdrop { position: fixed; inset: 0; z-index: 3000; background: #152b4373; display: flex; justify-content: flex-end; }
+.collection-quick-backdrop { position: fixed; inset: 0; z-index: 3000; background: rgb(11 20 36 / 18%); display: flex; justify-content: flex-end; }
 .domain-page.collection-quick-dialog {
   --quick-safe-top: var(--gs-safe-top, env(safe-area-inset-top, 0px));
   --quick-safe-right: var(--gs-safe-right, env(safe-area-inset-right, 0px));
@@ -52,7 +52,7 @@ function cycleFocus(event) {
   box-sizing: border-box;
   padding: var(--gs-space-5) max(var(--gs-space-5), var(--quick-safe-right)) calc(var(--gs-space-5) + var(--quick-safe-bottom)) max(var(--gs-space-5), var(--quick-safe-left));
   overscroll-behavior: contain;
-  box-shadow: -12px 0 50px #102a4033;
+  box-shadow: var(--gs-shadow-float);
   font-family: var(--gs-font-directory);
   font-size: var(--gs-text-body);
   font-weight: var(--gs-weight-regular);
@@ -66,13 +66,13 @@ function cycleFocus(event) {
   /* Keep the entire header inside the scrollport after it sticks. */
   top: 0;
   z-index: 2;
-  background: #f1f7fc;
+  background: var(--gs-paper);
   padding: calc(var(--gs-space-4) + var(--quick-safe-top)) 0 var(--gs-space-4);
   margin-bottom: var(--gs-space-4);
 }
-/* The existing 20px window title is distinct from the 22px entity title. */
-.collection-quick-dialog > header h2 { min-width: 0; margin: 0; font-size: 20px; font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
-.collection-quick-dialog > header button { display: grid; place-items: center; width: var(--gs-control-touch); min-height: var(--gs-control-touch); flex: none; border: 1px solid #c5dfd6; border-radius: var(--gs-radius-field); background: #fff; color: #08745b; }
+/* Same scale as the 图鉴 drawer: window title 16/700, entry name 20/700. */
+.collection-quick-dialog > header h2 { min-width: 0; margin: 0; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
+.collection-quick-dialog > header button { display: grid; place-items: center; width: var(--gs-control-touch); min-height: var(--gs-control-touch); flex: none; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-mint-ink); }
 .collection-quick-full { max-width: 100%; min-height: var(--gs-control-touch); margin: var(--gs-space-5) 0 var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); gap: var(--gs-space-3); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.6; text-align: left; overflow-wrap: anywhere; }
 .collection-quick-full svg { flex: 0 0 auto; }
 .collection-quick-dialog > .domain-error { padding: var(--gs-space-5); border-radius: var(--gs-radius-field); }
@@ -81,7 +81,7 @@ function cycleFocus(event) {
 /* Local roles for the existing shared entry; media geometry remains unchanged. */
 .collection-quick-dialog :deep(.collection-entry-details) { padding: var(--gs-space-6); border-radius: var(--gs-radius-panel); }
 .collection-quick-dialog :deep(.domain-detail-title) { gap: var(--gs-space-5); margin-bottom: var(--gs-space-6); }
-.collection-quick-dialog :deep(.collection-entry-details .domain-detail-title h3) { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; overflow-wrap: anywhere; }
+.collection-quick-dialog :deep(.collection-entry-details .domain-detail-title h3) { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); line-height: 1.45; overflow-wrap: anywhere; }
 .collection-quick-dialog :deep(.collection-original) { margin: var(--gs-space-3) 0; font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
 .collection-quick-dialog :deep(.domain-description) { margin: 0 0 var(--gs-space-5); font-size: var(--gs-text-body); }
 .collection-quick-dialog :deep(.domain-meta) { margin: var(--gs-space-6) 0; }
@@ -96,7 +96,7 @@ function cycleFocus(event) {
 .collection-quick-dialog :deep(.domain-media-preview button) { min-height: var(--gs-control-normal); padding: var(--gs-space-3) var(--gs-space-4); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .collection-quick-dialog button:focus-visible,
 .collection-quick-dialog :deep(.collection-entry-details button:focus-visible),
-.collection-quick-dialog :deep(.collection-source-meta > summary:focus-visible) { outline: var(--gs-focus-ring) solid #048a6d; outline-offset: var(--gs-focus-offset); }
+.collection-quick-dialog :deep(.collection-source-meta > summary:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (max-width: 760px) {
   .collection-quick-dialog :deep(.collection-entry-details) { padding: var(--gs-space-5); }
   .collection-quick-dialog :deep(.domain-meta > div) { gap: var(--gs-space-3); }

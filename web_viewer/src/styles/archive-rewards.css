@@ -1,28 +1,45 @@
+/* Reward and source rows, shared by event pages and the collection drawer. This file is the only place they are
+   styled: pages do not reach in with :deep overrides. */
 .domain-rewards { container-type:inline-size; }
-.domain-reward-list { display:grid; gap:0; margin:0; padding:0; list-style:none; color:var(--gs-ink); font-size:14px; }
-.domain-reward-entry { display:grid; grid-template-columns:minmax(150px,.8fr) minmax(0,2fr) auto; align-items:center; gap:12px; min-width:0; padding:12px 0; border-bottom:1px solid var(--gs-line); }
+.domain-rewards .domain-table-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--gs-space-3) var(--gs-space-5); margin-bottom:var(--gs-space-5); color:var(--gs-ink-3); font-size:var(--gs-text-meta); }
+.domain-reward-list { display:grid; gap:0; margin:0; padding:0; list-style:none; color:var(--gs-ink); font-size:var(--gs-text-body); }
+/* A run of rows from the same source (累计点数, 排名奖励…) is named once, above its first row. */
+.domain-reward-group { padding:var(--gs-space-5) 0 0; color:var(--gs-ink-3); font-size:var(--gs-text-meta); font-weight:var(--gs-weight-medium); }
+.domain-reward-group:first-child { padding-top:0; }
+.domain-reward-entry { display:grid; grid-template-columns:minmax(150px,.8fr) minmax(0,2fr) auto; align-items:center; gap:var(--gs-space-4); min-width:0; padding:var(--gs-space-4) 0; border-bottom:1px solid var(--gs-line); }
 .domain-reward-heading { display:contents; }
-.domain-reward-conditions { grid-column:1; grid-row:1; min-width:0; }
-.domain-reward-conditions > small { display:block; color:var(--gs-ink-3); font-size:var(--gs-text-caption); margin-bottom:6px; }
-.domain-reward-conditions > div { display:flex; flex-wrap:wrap; gap:5px; }
-.domain-reward-condition { display:inline-block; padding:4px 7px; border-radius:6px; background:var(--gs-mint-wash); color:var(--gs-mint-ink); font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.domain-reward-quantity { grid-column:3; grid-row:1; white-space:nowrap; font-size:16px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--gs-mint-ink); }
-.domain-reward-product { grid-column:2; grid-row:1; display:grid; grid-template-columns:48px minmax(0,1fr); align-items:center; gap:10px; min-width:0; }
+.domain-reward-conditions { grid-column:1; grid-row:1; display:flex; flex-wrap:wrap; gap:var(--gs-space-2); min-width:0; position:relative; }
+/* Screen readers still hear the source on every row; the positioned parent keeps it from scrolling the page. */
+.domain-reward-relation { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.domain-reward-condition { color:var(--gs-ink-2); font-size:var(--gs-text-body); font-weight:var(--gs-weight-medium); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.domain-reward-condition + .domain-reward-condition::before { content:'·'; margin-right:var(--gs-space-2); color:var(--gs-ink-3); }
+.domain-reward-quantity { grid-column:3; grid-row:1; color:var(--gs-mint-ink); font-size:var(--gs-text-subtitle); font-weight:var(--gs-weight-semibold); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.domain-reward-product { grid-column:2; grid-row:1; display:grid; grid-template-columns:48px minmax(0,1fr); align-items:center; gap:var(--gs-space-4); min-width:0; }
 .domain-reward-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:var(--gs-radius-media); color:var(--gs-ink-3); }
 .domain-reward-icon .domain-media-compact { margin:0; padding:0; }
 .domain-reward-icon .domain-media-preview img { min-height:0; }
-.domain-reward-name { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; min-height:48px; padding:5px 0; color:inherit; text-align:left; background:transparent; border:0; text-decoration:none; line-height:1.5; }
-button.domain-reward-name { width:100%; border-radius:6px; }
-button.domain-reward-name:hover { background:var(--gs-mint-wash); color:var(--gs-mint-ink); }
+.domain-reward-name { display:flex; align-items:center; justify-content:space-between; gap:var(--gs-space-3); min-width:0; min-height:48px; padding:var(--gs-space-2) 0; border:0; background:transparent; color:inherit; font:inherit; text-align:left; text-decoration:none; line-height:1.5; }
+/* Rows without a page to open keep the chevron's width, so every name wraps at the same edge. */
+div.domain-reward-name { padding-right:calc(16px + var(--gs-space-3)); }
+button.domain-reward-name { width:100%; border-radius:var(--gs-radius-control); cursor:pointer; }
 .domain-reward-name > span { min-width:0; }
-.domain-reward-name strong { display:block; font-weight:600; overflow-wrap:anywhere; }
-.domain-reward-name small { display:inline-block; margin-top:4px; color:var(--gs-ink-3); font-size:var(--gs-text-caption); }
+.domain-reward-name strong { display:block; font-weight:var(--gs-weight-semibold); overflow-wrap:anywhere; }
+.domain-reward-name small { display:inline-block; margin-top:var(--gs-space-1); color:var(--gs-ink-3); font-size:var(--gs-text-meta); }
 .domain-reward-name svg { flex:none; color:var(--gs-mint-ink); }
 .domain-reward-source { grid-column:2; grid-row:1; min-width:0; }
-.domain-reward-campaigns { grid-column:1/-1; display:grid; gap:4px; color:var(--gs-ink-3); font-size:var(--gs-text-caption); line-height:1.6; }
-@container(max-width:600px) {
-  .domain-reward-entry { grid-template-columns:minmax(0,1fr); gap:9px; padding:12px 0; }
-  .domain-reward-heading { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.domain-reward-campaigns { grid-column:1/-1; display:grid; gap:var(--gs-space-1); color:var(--gs-ink-3); font-size:var(--gs-text-meta); line-height:1.6; }
+.domain-rewards .domain-pagination { flex-wrap:wrap; gap:var(--gs-space-4); margin-top:var(--gs-space-6); font-size:var(--gs-text-meta); }
+.domain-rewards .domain-pagination button { min-height:var(--gs-control-normal); padding:var(--gs-space-3) var(--gs-space-4); border-radius:var(--gs-radius-control); font-size:var(--gs-text-ui); font-weight:var(--gs-weight-semibold); }
+/* Touch keeps :hover after a tap, which would read as a selected row; only a real pointer gets the wash. */
+@media (hover:hover) and (pointer:fine) {
+  button.domain-reward-name:hover { background:var(--gs-mint-wash); color:var(--gs-mint-ink); }
+}
+@media (max-width:760px), (pointer:coarse) {
+  .domain-rewards .domain-pagination button { min-height:var(--gs-control-touch); }
+}
+@container (max-width:600px) {
+  .domain-reward-entry { grid-template-columns:minmax(0,1fr); gap:var(--gs-space-3); }
+  .domain-reward-heading { display:flex; flex-wrap:wrap; align-items:center; gap:var(--gs-space-3); }
   .domain-reward-conditions { flex:1 1 170px; }
   .domain-reward-quantity { margin-left:auto; }
   .domain-reward-product,.domain-reward-source { grid-column:1; grid-row:2; }
