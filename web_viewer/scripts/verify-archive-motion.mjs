@@ -78,6 +78,11 @@ assert.match(motion, /:where\(#story-viewer, body > :not\(#app\)\) :where\(img:n
 assert.match(motion, /:where\(img\[data-gs-failed\]\) \{ background-color: var\(--gs-paper-2\); \}/, 'a failed image shows the placeholder tone, never hidden')
 assert.ok(!/img\[data-gs-failed\][^}]*(?:opacity|visibility|display)/.test(motion), 'alt text and fallbacks of a failed image stay visible')
 
+// Default focus ring: zero specificity (the :focus-visible state sits in its own :where()), so every component rule still wins.
+assert.match(motion, /^:where\(button, a\[href\], summary, input, select, textarea, \[role="button"\], \[role="tab"\], \[role="option"\], \[tabindex\]:not\(\[tabindex="-1"\]\)\):where\(:focus-visible\) \{\n  outline: var\(--gs-focus-ring\) solid var\(--gs-mint\);\n  outline-offset: var\(--gs-focus-offset\);/m)
+assert.ok(!/:focus-visible/.test(motion.replace(/\/\*[\s\S]*?\*\//g, '').replace(/:where\(:focus-visible\)/g, '')), 'gs-motion.css adds no focus rule above zero specificity')
+assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(read('src/components/LoadingScreen.vue').match(/\.load-cancel:focus-visible[^}]*\}/)?.[0] || '#'), 'the loading curtain focus ring uses the tokens')
+
 // Progress values never lag the real position: the player's step bar is driven by a step number, so it jumps and does not ease.
 const topBar = read('src/components/player/PlayerTopBar.vue')
 assert.ok(/\.progress-fill \{[^}]*transform-origin: left/.test(topBar) && !/\.progress-fill \{[^}]*transition/.test(topBar), 'the player progress fill has no transition')
