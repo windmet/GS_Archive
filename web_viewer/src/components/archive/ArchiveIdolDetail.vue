@@ -323,7 +323,7 @@ function formatDate(timestamp) {
 .idol-hero-name { margin: 0; padding-left: var(--gs-space-4); border-left: 3px solid var(--gs-idol); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.25; overflow-wrap: anywhere; }
 /* 落款, wide screens: the autograph beside the name block, sized with the page (signatures run both
    tall and wide, so the box is square and the mark is contained in it). */
-.idol-hero-sign { position: absolute; left: calc(100% + var(--gs-space-5)); top: 50%; width: clamp(84px, 11cqi, 136px); aspect-ratio: 1; translate: 0 -50%; background: var(--gs-idol-ink); -webkit-mask: var(--hero-sign) center / contain no-repeat; mask: var(--hero-sign) center / contain no-repeat; mask-mode: luminance; animation: idol-sign-write 1.1s var(--gs-motion-ease) .2s backwards; }
+.idol-hero-sign { position: absolute; left: calc(100% + var(--gs-space-5)); top: 50%; width: clamp(84px, 11cqi, 136px); aspect-ratio: 1; translate: 0 -50%; background: var(--gs-idol-ink); -webkit-mask: var(--hero-sign) center / contain no-repeat; mask: var(--hero-sign) center / contain no-repeat; mask-mode: luminance; animation: idol-sign-write 1.1s cubic-bezier(.2, .7, .2, 1) .2s backwards; /* D2: the signature keeps its original curve */ }
 @keyframes idol-sign-write { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @media (prefers-reduced-motion: reduce) { .idol-hero-sign { animation: none; } }
 .idol-hero-copy p { margin: 0; padding-left: calc(var(--gs-space-4) + 3px); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }

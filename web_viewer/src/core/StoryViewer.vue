@@ -1564,7 +1564,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   left: max(var(--player-edge), env(safe-area-inset-left, 0px));
   max-width: calc(100% - max(var(--player-edge), env(safe-area-inset-left, 0px)) - max(var(--player-edge), env(safe-area-inset-right, 0px)));
   pointer-events: none;
-  animation: gs-step-feedback-in 100ms ease-out 160ms both;
+  animation: gs-step-feedback-in 100ms ease-out 160ms both; /* pending delay is 160ms here, not --gs-pending-delay (140ms): the player has its own pacing; unify only after a feel check */
 }
 @keyframes gs-step-feedback-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .local-buffering { animation: none; } }
@@ -1696,8 +1696,6 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-mint-ink);
   box-shadow: var(--gs-shadow-float); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; white-space: nowrap;
 }
-.menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
-.menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 
 /* A curtain over the player: the same corner as LoadingScreen's player curtain it follows. */
 .story-data-loading {

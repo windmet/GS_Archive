@@ -38,6 +38,39 @@ for (const file of walk(path.join(root, 'src'))) {
   assert.ok(!/--gs-(?:enter|dialog)-from\s*:/.test(source), `${path.relative(root, file)} sets --gs-*-travel, not --gs-*-from`)
 }
 
+// Tokens must exist: a var(--gs-motion-*) / --gs-ease-* / --gs-duration-* nobody declares silently falls back to its
+// literal (--gs-duration-base ran on 200ms and a bare ease for as long as it was written).
+// Loops: an infinite animation only expresses a continuing state (loading, playing, the other side typing, waiting for a
+// tap). Each loop file is listed here and keeps a reduced-motion rule; AdvUI is reduced by player-motion.css (#story-viewer).
+const LOOP_FILES = new Set(['src/components/GsLoadingIndicator.vue', 'src/components/archive/ArchiveImmersiveHome.vue', 'src/components/mobile/MobileTypingIndicator.vue', 'src/components/AdvUI.vue'])
+const LOOP_REDUCED_ELSEWHERE = new Set(['src/components/AdvUI.vue'])
+const LOOPS = /animation[a-z-]*\s*:[^;}]*\binfinite\b/
+export function undeclaredTokens(files) {
+  const declared = new Set(), used = new Map()
+  for (const [file, source] of files) {
+    for (const [, name] of source.matchAll(/(--gs-(?:motion|ease|duration)-[a-z-]+)\s*:/g)) declared.add(name)
+    for (const [, name] of source.matchAll(/var\((--gs-(?:motion|ease|duration)-[a-z-]+)/g)) if (!used.has(name)) used.set(name, file)
+  }
+  return [...used].filter(([name]) => !declared.has(name)).map(([name, file]) => `${name} (${file})`)
+}
+export function loopViolations(files) {
+  const found = []
+  for (const [file, source] of files) {
+    if (!LOOPS.test(source)) continue
+    if (!LOOP_FILES.has(file)) found.push(`${file}: infinite animation outside the loop whitelist`)
+    else if (!LOOP_REDUCED_ELSEWHERE.has(file) && !source.includes('prefers-reduced-motion')) found.push(`${file}: loop without a prefers-reduced-motion rule`)
+  }
+  return found
+}
+assert.deepEqual(undeclaredTokens([['a.css', ':root{--gs-motion-x: 1ms}'], ['b.vue', 'a{transition: var(--gs-motion-x) var(--gs-duration-base, 1ms)}']]), ['--gs-duration-base (b.vue)'])
+assert.deepEqual(loopViolations([['src/x.vue', 'a{animation: spin 1s linear infinite}'], ['src/components/AdvUI.vue', 'a{animation: b 1s infinite}'], ['src/components/GsLoadingIndicator.vue', 'a{animation: b 1s infinite}']]), ['src/x.vue: infinite animation outside the loop whitelist', 'src/components/GsLoadingIndicator.vue: loop without a prefers-reduced-motion rule'])
+{
+  const sources = walk(path.join(root, 'src')).map(file => [path.relative(root, file).replaceAll('\\', '/'), readFileSync(file, 'utf8')])
+  assert.deepEqual(undeclaredTokens(sources), [], 'every motion token a component uses is declared in gs-motion.css or GS_UI_TOKENS.css')
+  assert.deepEqual(loopViolations(sources), [])
+  assert.deepEqual([...LOOP_FILES].filter(file => !LOOPS.test(sources.find(([name]) => name === file)?.[1] || '')), [], 'a whitelisted loop file really loops (drop it from the list when the loop goes)')
+}
+
 // Press feedback and image reveal stay at zero specificity so components keep the last word.
 assert.match(motion, /^:where\(button, a\[href\], summary, \[role="button"\], \[role="tab"\], \[role="option"\]\) \{\n  transition:/m)
 assert.match(motion, /@media \(hover: none\) \{\n  :where\(button[^{]*:where\(:active:not\(:disabled, \[aria-disabled="true"\]\)\) \{\n    transform: scale\(\.97\);\n    filter: brightness\(\.92\);/)
@@ -53,6 +86,18 @@ const viewer = read('src/core/StoryViewer.vue')
 assert.ok(viewer.includes('.adv-dialogue-fade-enter-active { transition: opacity var(--player-motion-base) var(--player-ease-standard); }'))
 assert.ok(viewer.includes('.adv-dialogue-fade-leave-active { transition: opacity var(--player-motion-fast) ease-in; }'))
 assert.ok(!/\.adv-dialogue-fade[^{]*\{[^}]*(?:blur|transform)/.test(viewer), 'the dialogue box fade has no blur or travel')
+// The home page dialogs: shared dialog motion (no private keyframes), a side drawer on wide screens and a bottom sheet on phones,
+// and both stay mounted while they fade out, as ArchiveTerminalDialog does.
+const home = read('src/components/archive/ArchiveImmersiveHome.vue')
+assert.ok(home.includes('<dialog v-if="cueIndexMounted" ref="cueIndexRef" class="scene-settings cue-index gs-dialog-motion"'))
+assert.ok(home.includes('<dialog v-if="settingsMounted" ref="sceneSettingsRef" class="scene-settings gs-dialog-motion"'))
+assert.ok(home.includes('--gs-dialog-travel:translateX(32px)') && home.includes('--gs-dialog-travel:translateY(100%);--gs-dialog-duration:var(--gs-motion-sheet);'), 'line directory: drawer on wide screens, bottom sheet on phones')
+assert.ok(!/@keyframes cue-(?:drawer|sheet|fade)-in/.test(home) && !/animation(?:-name)?\s*:\s*cue-(?:drawer|sheet|fade)/.test(home), 'the line directory has no private enter keyframes')
+assert.ok(Number(home.match(/const EXIT_MS = (\d+)/)?.[1]) > exit, 'the home dialogs unmount only after the exit fade')
+assert.match(home, /function closeSettings\(\) \{(?:(?!\n\})[\s\S])*?settingsReleaseTimer = setTimeout\(\(\) => \{ if \(!settingsOpen\.value\) settingsMounted\.value = false \}, EXIT_MS\)/)
+assert.match(home, /function closeCueIndex\(\) \{(?:(?!\n\})[\s\S])*?cueIndexReleaseTimer = setTimeout\(\(\) => \{ if \(!cueIndexOpen\.value\) cueIndexMounted\.value = false \}, EXIT_MS\)/)
+assert.match(home, /clearTimeout\(settingsReleaseTimer\)\n  settingsOpen\.value = true\n  settingsMounted\.value = true/)
+assert.match(home, /clearTimeout\(cueIndexReleaseTimer\)\n  cueIndexOpen\.value = true\n  cueIndexMounted\.value = true/)
 
 const main = read('src/main.js')
 assert.ok(main.includes("import './styles/gs-motion.css'"), 'motion styles load with the tokens')
@@ -104,7 +149,7 @@ const reader = read('src/components/archive/ReaderWorkspaceControls.vue')
 assert.ok(reader.includes('class="reader-sheet gs-dialog-motion"') && reader.includes('--gs-dialog-travel:translateY(100%)'))
 assert.ok(reader.includes("v-if=\"shownPanel === 'directory' || shownPanel === 'chapters'\"") && !/<template v-if="panel ===/.test(reader), 'a closing reader sheet keeps showing its panel')
 assert.ok(Number(reader.match(/SHEET_EXIT_MS = (\d+)/)?.[1]) > exit)
-assert.ok(read('src/components/archive/ArchiveFilterSheet.vue').includes('--gs-dialog-travel: translateY(100%); --gs-dialog-duration: var(--gs-motion-sheet);'), 'the phone filter sheet rises from the bottom edge')
+assert.ok(read('src/components/archive/terminal/ArchiveTerminalDialog.vue').includes('--gs-dialog-travel: translateY(100%); --gs-dialog-duration: var(--gs-motion-sheet);'), 'the phone filter sheet rises from the bottom edge')
 assert.ok(read('src/components/archive/ArchiveOnboarding.vue').includes('class="onboarding gs-dialog-motion"'))
 const seasonal = read('src/components/archive/ArchiveSeasonalCampaign.vue')
 assert.match(seasonal, /<Transition name="gs-overlay">\n\s+<div v-if="drawer" class="seasonal-drawer-backdrop gs-enter-backdrop"/)
@@ -114,4 +159,4 @@ assert.ok(read('src/components/archive/CollectionQuickView.vue').includes('colle
 assert.ok(read('src/components/archive/CollectionDetailPanel.vue').includes("'gs-enter-panel':modal"))
 assert.ok(read('src/components/archive/ArchivePortalOverview.vue').includes('class="overview-search-results gs-enter-popover"'))
 
-console.log(`Archive motion: ${exit}/${page}/${enter}/${sheet}ms ladder, reduced motion, zero-specificity press and image reveal, opacity-only page change, nine layers wired (six also leave with a fade, keeping their content) passed. Source/contract evidence; feel on real touch devices is separate.`)
+console.log(`Archive motion: ${exit}/${page}/${enter}/${sheet}ms ladder, reduced motion, zero-specificity press and image reveal, opacity-only page change, eleven layers wired (eight also leave with a fade, keeping their content) passed. Source/contract evidence; feel on real touch devices is separate.`)

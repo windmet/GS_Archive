@@ -369,7 +369,7 @@ const filteredSongs = computed(() => {
   cursor: pointer;
   text-align: left;
   font: inherit;
-  transition: background .15s ease;
+  transition: background-color var(--gs-motion-feedback) var(--gs-ease-out);
 }
 .song-card:focus-visible, .song-filters button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint-ink); outline-offset: calc(-1 * var(--gs-focus-ring)); }
 .song-card-code {

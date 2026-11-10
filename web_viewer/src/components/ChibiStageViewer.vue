@@ -517,7 +517,7 @@
       <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
       </template>
     </ArchiveTerminalDialog>
-    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(pendingQuality)">
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" swipe-dismiss :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(pendingQuality)">
       <div class="quality-options" role="radiogroup" aria-label="舞台加载方式">
         <button type="button" role="radio" :aria-checked="pendingQuality === 'lite'" @click="pendingQuality = 'lite'"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、应援棒、演出镜头与歌词。不开启光束和动态物件，手机与平板更流畅。</span></button>
         <button type="button" role="radio" :aria-checked="pendingQuality === 'full'" @click="pendingQuality = 'full'"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
@@ -4643,7 +4643,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .shortcut-list > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; align-items: center; }
 .shortcut-list dd { margin: 0; }
 kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inherit; }
-.pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity 160ms ease-out; }
+.pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity var(--gs-motion-enter) var(--gs-ease-out); }
 .pure-peek:hover, .pure-peek:has(:focus-visible) { opacity: 1; }
 /* Pseudo-fullscreen hint: portrait only, gone after a few seconds or once the phone is turned. */
 .pure-rotate-hint { position: fixed; z-index: 8; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); display: none; align-items: center; gap: var(--gs-space-2); margin: 0; padding: var(--gs-space-3) var(--gs-space-5); border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); white-space: nowrap; translate: -50% 0; pointer-events: none; animation: pure-rotate-hint 5s ease-in forwards; }

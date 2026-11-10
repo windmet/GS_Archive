@@ -128,9 +128,11 @@ const countClass = computed(() => {
   min-height: 78px;
 }
 
-.choice-bubble:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(3, 12, 20, 0.34);
+@media (hover: hover) and (pointer: fine) {
+  .choice-bubble:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(3, 12, 20, 0.34);
+  }
 }
 
 .choice-bubble:active {
@@ -242,8 +244,10 @@ const countClass = computed(() => {
   .choice-bubble {
     transition: none;
   }
-  .choice-bubble:hover {
-    transform: none;
+  @media (hover: hover) and (pointer: fine) {
+    .choice-bubble:hover {
+      transform: none;
+    }
   }
   .choice-bubble:active {
     transform: none;

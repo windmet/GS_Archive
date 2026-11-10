@@ -10,9 +10,12 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { X } from '@lucide/vue'
-const props = defineProps({ open: Boolean, title: String, titleId: { type: String, required: true } })
+import { useSheetDrag } from '../../../composables/useSheetDrag.js'
+// swipeDismiss: the dialog is a bottom sheet on phones, so pulling it down closes it (composables/useSheetDrag.js). Only a bottom-form sheet reacts.
+const props = defineProps({ open: Boolean, title: String, titleId: { type: String, required: true }, swipeDismiss: Boolean })
 const emit = defineEmits(['close'])
 const dialog = ref(null)
+useSheetDrag(dialog, { handle: '.terminal-dialog-header', onClose: () => emit('close'), enabled: () => props.swipeDismiss })
 // The body stays mounted while the dialog fades out (gs-motion.css, 120ms), so it never collapses
 // to an empty frame on its way out; it unmounts once the exit is over.
 const EXIT_MS = 160
@@ -40,6 +43,11 @@ onBeforeUnmount(() => { clearTimeout(releaseTimer); dialog.value?.close(); resto
 .terminal-dialog-header { display: flex; flex: 0 0 auto; align-items: center; gap: var(--gs-space-5); padding: var(--gs-space-4) var(--gs-space-4) var(--gs-space-4) var(--gs-space-6); border-bottom: 1px solid var(--gs-line); }
 .terminal-dialog-header h2 { flex: 1; min-width: 0; margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .terminal-dialog-body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--gs-space-6); }
+/* .filter-sheet: a bottom sheet on phones (ArchiveFilterSheet, the stage arrangement picker). It lives here, not with one of its
+   users, so it applies whichever of them loaded: full width, anchored to the bottom edge, rounded only on top; it rises
+   from that edge (gs-motion.css). */
+.terminal-dialog.filter-sheet { width: 100%; max-width: none; max-height: 85dvh; margin: auto 0 0; border-radius: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); --gs-dialog-travel: translateY(100%); --gs-dialog-duration: var(--gs-motion-sheet); }
+.filter-sheet .terminal-dialog-body { padding-bottom: calc(var(--gs-space-5) + var(--gs-safe-bottom)); }
 .terminal-icon-button { display: inline-grid; flex: 0 0 var(--gs-control-touch); place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); font: inherit; cursor: pointer; }
 .terminal-icon-button:hover { background: var(--gs-paper); }
 .terminal-dialog :is(button, input, select, summary):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }

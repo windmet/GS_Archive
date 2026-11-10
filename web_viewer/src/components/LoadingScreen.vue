@@ -139,7 +139,7 @@ const displayMessage = computed(() => props.readiness?.status === 'waiting' ? 'æ
 }
 .load-cancel:hover { background: #e6f7f4; }
 .load-cancel:focus-visible { outline: 3px solid #20cbb1; outline-offset: 3px; }
-.load-fade-enter-active, .load-fade-leave-active { transition: opacity 160ms ease; }
+.load-fade-enter-active, .load-fade-leave-active { transition: opacity var(--gs-motion-enter) var(--gs-ease-out); }
 /* Do not let a visually fading old curtain eat a click on the ready page. */
 .load-fade-leave-active { pointer-events: none; }
 .load-fade-enter-from, .load-fade-leave-to { opacity: 0; }

@@ -19,7 +19,12 @@ const registry=JSON.parse(readFileSync(new URL('./qa/layout-routes.json',import.
 const controls=['normal','outside','clipped','overlap','scroll','image','fixed','title','input','broken','delayed','unreachable','mutation','mutation-broken','mutation-restored','focus','timeout'];
 const routes=fixtureTest?['Demo','Worst case','Empty','One','Dense'].map(id=>({id,url:'/scripts/qa/responsive.html?data='+encodeURIComponent(id),identity:{path:'/scripts/qa/responsive.html'},readySelector:'#qa',timeoutMs:5000})):selfTest?controls.map(id=>({id,url:'/scripts/qa/layout-negative.html?case='+ (id.startsWith('mutation')?'mutation':id==='timeout'?'delayed':id==='focus'?'fixed':id)+(id==='mutation-broken'?'&mutated=1':''),identity:{path:'/scripts/qa/layout-negative.html'},readySelector:'body[data-qa-ready=true]',timeoutMs:id==='timeout'?100:5000,horizontalExceptions:id==='scroll'?['#subject']:[],focusSelector:id==='focus'?'#covered':null,overlapPairs:[['#first','#second']]})):registry.filter(r=>!only.length||only.includes(r.id));
 if(!routes.length)throw Error('No matching routes');
-const windows=opt('windows',selfTest?'390x844':'320x720,390x844,1280x688').split(',').map(s=>s.split('x').map(Number));
+// --touch-input: strict gate for MX-03. Emulates a touch device, then every visible text input, search, number, select and textarea
+// must compute to >= 16px (iOS zooms the page on focus below that). Run on its own: it measures 390 and 1024, the iPad width a max-width rule misses.
+const touchInput=args.includes('--touch-input');
+// States that only exist after an opening action (the reader's in-page search, the phone filter sheet) are the same route plus a click.
+if(touchInput&&!selfTest&&!fixtureTest)for(const [from,id,click] of [['reader','reader-search',['button[aria-label="阅读设置"]','.reader-search-toggle']],['cards','cards-filter','.filter-sheet-trigger']]){const source=registry.find(r=>r.id===from);if(source&&(!only.length||only.includes(from)||only.includes(id)))routes.push({...source,id,precondition:{click}});}
+const windows=opt('windows',selfTest?'390x844':touchInput?'390x844,1024x768':'320x720,390x844,1280x688').split(',').map(s=>s.split('x').map(Number));
 assert.ok(windows.every(([w,h])=>Number.isInteger(w)&&w>0&&Number.isInteger(h)&&h>0),'Invalid windows');
 const profile = createBrowserProfile('layout-integrity')
 const port = 9500 + Math.floor(Math.random() * 400)
@@ -46,13 +51,16 @@ try {
   const waitReady=async route=>{const start=Date.now();let detail,previous=null;while(Date.now()-start<route.timeoutMs){detail=await evaluate(readyProbe(route));const signature=JSON.stringify(detail);if(!detail?.errorOverlay&&detail?.identity&&detail.content&&detail.selector&&!detail.loading&&detail.fonts==='loaded'&&!detail.imagesPending&&!detail.brokenImages&&signature===previous)return {status:'READY',elapsedMs:Date.now()-start,detail};previous=signature;await sleep(100)}return {status:'INCONCLUSIVE',elapsedMs:Date.now()-start,detail,reason:'Identity/content/fonts/images readiness timeout'};};
   for(const [width,height] of windows){
     await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<600});
+    if(touchInput){await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});await send('Emulation.setEmulatedMedia',{features:[{name:'pointer',value:'coarse'},{name:'hover',value:'none'}]});}
     for(const route of routes){
       const record={routeId:route.id,requestedUrl:base+route.url,type:route.type||'negative-control',viewport:{width,height},browser:environment,head,testState:selfTest?'negative-control':route.stateDescription||'default-entry',measuredAt:new Date().toISOString(),status:'INCONCLUSIVE',url:null,title:null,detection:null,reason:null};
       try{
         runtimeErrors=[];await send('Page.navigate',{url:record.requestedUrl});
-        if(route.precondition){const start=Date.now();let clicked=false;while(Date.now()-start<route.timeoutMs){clicked=await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(route.precondition.click)});if(!e||!e.getBoundingClientRect().width)return false;e.click();return true})()`);if(clicked)break;await sleep(100)}if(!clicked)throw Error('Precondition control unavailable');}
+        if(route.precondition){for(const selector of [].concat(route.precondition.click)){const start=Date.now();let clicked=false;while(Date.now()-start<route.timeoutMs){clicked=await evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(n=>n.getBoundingClientRect().width);if(!e)return false;e.click();return true})()`);if(clicked)break;await sleep(100)}if(!clicked)throw Error('Precondition control unavailable: '+selector);await sleep(300)}}
         record.ready=await waitReady(route);record.runtimeErrors=[...runtimeErrors];if(runtimeErrors.length){record.ready.status='INCONCLUSIVE';record.ready.reason='Uncaught runtime error';}
-        record.url=await evaluate('location.href');record.title=await evaluate('document.title');record.measuredAt=new Date().toISOString();
+        record.url=await evaluate('location.href');
+        if(touchInput)record.touch=await evaluate(`(()=>({coarse:matchMedia('(pointer: coarse)').matches,inputs:[...document.querySelectorAll('input:not([type=range],[type=checkbox],[type=radio],[type=color],[type=file],[type=hidden]),select,textarea')].filter(e=>e.getBoundingClientRect().width>1&&getComputedStyle(e).visibility!=='hidden').length}))()`);
+        record.title=await evaluate('document.title');record.measuredAt=new Date().toISOString();
         if(route.focusSelector)await evaluate(`document.querySelector(${JSON.stringify(route.focusSelector)})?.focus()`);
         if(record.ready.status==='READY'){record.detection=await evaluate(`(${inspectLayout.toString()})(${JSON.stringify(route)})`);record.status='REVIEW_REQUIRED';record.reason='Ready; geometry candidates require human review, not a product PASS';}
         else record.reason=record.ready.reason;
@@ -68,6 +76,18 @@ try {
       if(fixtureTest){record.componentCount=await evaluate("document.querySelectorAll('.archive-idol-reference').length");record.firstName=await evaluate("document.querySelector('.archive-idol-reference strong')?.textContent");record.testPassed=record.componentCount===({'Demo':3,'Worst case':49,'Empty':0,'One':1,'Dense':49}[route.id])&&record.ready.status==='READY';if(!record.testPassed)process.exitCode=1;}
       results.push(record);writeFileSync(path.join(output,'measurements.json'),JSON.stringify(results,null,2));console.log(route.id,record.ready?.status,selfTest?record.testPassed:record.status);
     }
+  }
+  if(touchInput){
+    // Not a hollow pass: every measured page must really be a coarse pointer, and some inputs must have been seen at all.
+    const measured=results.filter(r=>r.touch);
+    const notCoarse=measured.filter(r=>!r.touch.coarse).map(r=>`${r.viewport.width} ${r.routeId}`);
+    assert.deepEqual(notCoarse,[],'touch emulation did not make the pointer coarse; the pointer: coarse rules were not under test');
+    const unreadyStates=results.filter(r=>['reader-search','cards-filter'].includes(r.routeId)&&r.viewport.width<=480&&r.ready?.status!=='READY').map(r=>r.routeId);
+    assert.deepEqual(unreadyStates,[],'the opened-state routes must be measured at phone width');
+    assert.ok(measured.length>0&&measured.reduce((sum,r)=>sum+r.touch.inputs,0)>0,'no visible input was measured');
+    const small=results.flatMap(r=>(r.detection?.findings||[]).filter(f=>f.kind==='small-input-risk').map(f=>`${r.viewport.width} ${r.routeId} ${f.selector} ${f.detail.fontSize}`));
+    console.log(`Touch input: ${measured.length} page states, ${measured.reduce((sum,r)=>sum+r.touch.inputs,0)} visible inputs, ${results.length-measured.length} not ready`);
+    assert.deepEqual(small,[],`touch inputs under 16px: ${small.join('; ')}`);
   }
   const screenshots=results.filter(r=>r.screenshot);assert.equal(screenshots.length,results.length,'Missing screenshot');assert.equal(new Set(screenshots.map(r=>r.screenshot)).size,results.length);
   if(selfTest){writeFileSync(path.join(output,'self-test-summary.json'),JSON.stringify({passed:results.filter(r=>r.testPassed).length,total:results.length,results:results.map(r=>({id:r.routeId,passed:r.testPassed,expected:r.expected,kinds:r.detection?.findings.map(f=>f.kind)}))},null,2));if(results.some(r=>!r.testPassed))process.exitCode=1;}

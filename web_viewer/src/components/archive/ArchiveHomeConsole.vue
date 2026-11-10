@@ -186,4 +186,6 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
   .console-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) { .console-panel { scroll-behavior: auto; } }
+/* iOS zooms the page when a focused input is under 16px; iPad is wider than the phone tier, so this follows the pointer. */
+@media (pointer: coarse) { .console-search input { font-size: var(--gs-text-subtitle); } }
 </style>

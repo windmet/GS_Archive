@@ -104,7 +104,7 @@
 
     <!-- A side drawer (bottom sheet on phones) over the stage's side, so the idol stays in view while
          lines are auditioned; it stays open on a pick. A backdrop click closes it. -->
-    <dialog v-if="cueIndexOpen" ref="cueIndexRef" class="scene-settings cue-index" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex" @click="$event.target === cueIndexRef && closeCueIndex()">
+    <dialog v-if="cueIndexMounted" ref="cueIndexRef" class="scene-settings cue-index gs-dialog-motion" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex" @click="$event.target === cueIndexRef && closeCueIndex()">
       <header>
         <div>
           <h3 id="cue-index-title">台词目录</h3>
@@ -146,7 +146,7 @@
       </div>
     </dialog>
 
-    <dialog v-if="settingsOpen" ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
+    <dialog v-if="settingsMounted" ref="sceneSettingsRef" class="scene-settings gs-dialog-motion" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
       <header>
         <div>
           <h3 id="scene-settings-title">场景设置</h3>
@@ -283,6 +283,7 @@ import {archiveText} from './useArchiveCostumeText.js'
 import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
 import {costumeFilterView} from '../../presentation/CostumeCategories.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
+import { useSheetDrag } from '../../composables/useSheetDrag.js'
 import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
 import { archiveText as photoText } from './useArchivePhotoText.js'
 import {
@@ -326,6 +327,11 @@ let homeDisposed = false
 const settingsOpen = ref(false)
 const sceneSettingsRef = ref(null)
 let settingsReturnFocus = null
+// A <dialog> animates out only while it is still in the DOM: it stays mounted for EXIT_MS (longer than --gs-motion-exit)
+// after close(), the same pattern as ArchiveTerminalDialog. The open flags below keep meaning "open"; the mounted flags only gate v-if.
+const EXIT_MS = 160
+const settingsMounted = ref(false), cueIndexMounted = ref(false)
+let settingsReleaseTimer = 0, cueIndexReleaseTimer = 0
 function restoreSettingsFocus() {
   if (settingsReturnFocus?.isConnected) settingsReturnFocus.focus({ preventScroll: true })
   settingsReturnFocus = null
@@ -334,17 +340,23 @@ function closeSettings() {
   sceneSettingsRef.value?.close()
   settingsOpen.value = false
   restoreSettingsFocus()
+  clearTimeout(settingsReleaseTimer)
+  settingsReleaseTimer = setTimeout(() => { if (!settingsOpen.value) settingsMounted.value = false }, EXIT_MS)
 }
 // Line directory: grouped in source order (rarity, then card), filtered by rarity and by the shown
 // or source text / card title. Choosing a line jumps there and plays it.
 const cueIndexOpen = ref(false), cueIndexRef = ref(null), cueIndexBody = ref(null)
 const cueQuery = ref(''), cueRarity = ref(''), cueSource = ref('')
 let cueIndexReturnFocus = null
+// On phones the line directory is a bottom sheet: pulling it down closes it through closeCueIndex.
+useSheetDrag(cueIndexRef, { handle: 'header', onClose: () => closeCueIndex() })
 function closeCueIndex() {
   cueIndexRef.value?.close()
   cueIndexOpen.value = false
   if (cueIndexReturnFocus?.isConnected) cueIndexReturnFocus.focus({ preventScroll: true })
   cueIndexReturnFocus = null
+  clearTimeout(cueIndexReleaseTimer)
+  cueIndexReleaseTimer = setTimeout(() => { if (!cueIndexOpen.value) cueIndexMounted.value = false }, EXIT_MS)
 }
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
@@ -582,7 +594,9 @@ async function openSettings() {
   if (settingsOpen.value) return
   settingsReturnFocus = document.activeElement
   costumePickerOpen.value = false
+  clearTimeout(settingsReleaseTimer)
   settingsOpen.value = true
+  settingsMounted.value = true
   await nextTick()
   if (!homeDisposed && settingsOpen.value) sceneSettingsRef.value?.showModal()
   if (props.homeMode === 'spine') loadBackgroundCatalogue()
@@ -623,7 +637,9 @@ async function openCueIndex() {
   costumePickerOpen.value = false
   closeSettings()
   cueQuery.value = ''; cueRarity.value = ''; cueSource.value = ''
+  clearTimeout(cueIndexReleaseTimer)
   cueIndexOpen.value = true
+  cueIndexMounted.value = true
   await nextTick()
   if (homeDisposed || !cueIndexOpen.value) return
   cueIndexRef.value?.showModal()
@@ -796,6 +812,8 @@ onBeforeUnmount(() => {
   sceneSettingsRef.value?.close()
   cueIndexRef.value?.close()
   restoreSettingsFocus()
+  clearTimeout(settingsReleaseTimer)
+  clearTimeout(cueIndexReleaseTimer)
   delete document.documentElement.dataset.archiveHomeTheme
   queuedVoiceAbort?.abort()
   stageTapAbort?.abort()
@@ -820,17 +838,17 @@ onBeforeUnmount(() => {
 .dialogue-card span { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .dialogue-card svg { flex:none; }
 button.dialogue-card { cursor:pointer; }
-button.dialogue-card:hover { color:var(--gs-selected-ink); }
+@media (hover: hover) and (pointer: fine) { button.dialogue-card:hover { color:var(--gs-selected-ink); } }
 /* The box keeps the height of three lines and the text starts at the top, so stepping between lines never moves the frame or the controls. A fourth line grows it instead of clipping. */
 .home-dialogue .dialogue-text { height:calc(3 * 1.7em);overflow-y:auto;scrollbar-width:thin;font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
 .home-dialogue .dialogue-line { flex:1;min-width:0;margin:0;padding:2px 2px 4px;font-size:inherit;line-height:1.7; }
-.dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity .12s ease; }
+.dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity var(--gs-motion-feedback) var(--gs-ease-out); }
 .dialogue-fade-enter-from,.dialogue-fade-leave-to { opacity:0; }
 @media (prefers-reduced-motion:reduce) { .dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:none; } }
 .home-dialogue .is-pending { visibility:hidden; }
 .home-dialogue .dialogue-actions { display:flex;align-items:center;gap:2px;margin:4px -6px 0;padding-top:4px;border-top:1px solid var(--gs-line); }
 .home-dialogue .dialogue-actions button { display:inline-grid;place-items:center;width:40px;height:40px;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
-.home-dialogue .dialogue-actions button:hover:not(:disabled) { background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+@media (hover: hover) and (pointer: fine) { .home-dialogue .dialogue-actions button:hover:not(:disabled) { background:var(--gs-selected-bg);color:var(--gs-selected-ink); } }
 .home-dialogue .dialogue-actions button:disabled { opacity:.35; }
 .home-dialogue .dialogue-actions .dialogue-play { color:var(--gs-mint-ink); }
 .home-dialogue .dialogue-actions .cue-index-trigger { display:inline-flex;gap:6px;width:auto;margin-left:auto;padding:0 8px;font-size:var(--gs-text-ui);font-variant-numeric:tabular-nums; }
@@ -838,14 +856,11 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 @media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
 @media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { height:calc(4 * 1.7em);font-size:var(--gs-text-body); } }
 @media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
-.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in var(--gs-motion-enter) var(--gs-ease-out); }
+.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);--gs-dialog-travel:translateX(32px); }
 .scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
 .scene-settings.cue-index > header { background:transparent; }
-@keyframes cue-drawer-in { from { transform:translateX(32px);opacity:0; } }
-@keyframes cue-sheet-in { from { transform:translateY(100%);opacity:0; } }
-@keyframes cue-fade-in { from { opacity:0; } }
 @media (max-width:760px) {
-  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);animation-name:cue-sheet-in;animation-duration:var(--gs-motion-sheet); }
+  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);--gs-dialog-travel:translateY(100%);--gs-dialog-duration:var(--gs-motion-sheet); }
 }
 .cue-index-filters { flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 18px;border-bottom:1px solid var(--gs-line); }
 .cue-index-search { display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);color:var(--gs-ink-3); }
@@ -860,7 +875,7 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .cue-index-card h4 span { flex:none;min-width:34px;font-size:var(--gs-text-meta);color:var(--gs-mint-ink); }
 .cue-index-card ol { margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px; }
 .cue-index-card li button { display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font:inherit;text-align:left;cursor:pointer; }
-.cue-index-card li button:hover { background:var(--gs-paper); }
+@media (hover: hover) and (pointer: fine) { .cue-index-card li button:hover { background:var(--gs-paper); } }
 .cue-index-card li button[aria-current="true"] { background:var(--gs-current-bg-inset); }
 .cue-index-now { flex:none;display:inline-flex;align-items:flex-end;gap:2px;width:14px;height:14px;margin-top:5px; }
 .cue-index-now i { flex:1;height:100%;transform-origin:bottom;transform:scaleY(0.4);background:var(--gs-mint); }
@@ -869,7 +884,6 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .cue-index-now.is-playing i:nth-child(3) { animation-delay:-.6s; }
 @keyframes cue-now { 0%, 100% { transform:scaleY(0.3); } 50% { transform:scaleY(1); } }
 @media (prefers-reduced-motion: reduce) {
-  .scene-settings.cue-index { animation-name:cue-fade-in; }
   .cue-index-now.is-playing i { animation:none;transform:scaleY(0.6); }
 }
 .cue-index-number { flex:none;min-width:24px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;line-height:1.65; }
