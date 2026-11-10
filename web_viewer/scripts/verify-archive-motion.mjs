@@ -45,6 +45,10 @@ assert.match(motion, /:where\(#story-viewer, body > :not\(#app\)\) :where\(img:n
 assert.match(motion, /:where\(img\[data-gs-failed\]\) \{ background-color: var\(--gs-paper-2\); \}/, 'a failed image shows the placeholder tone, never hidden')
 assert.ok(!/img\[data-gs-failed\][^}]*(?:opacity|visibility|display)/.test(motion), 'alt text and fallbacks of a failed image stay visible')
 
+// Progress values never lag the real position: the player's step bar is driven by a step number, so it jumps and does not ease.
+const topBar = read('src/components/player/PlayerTopBar.vue')
+assert.ok(/\.progress-fill \{[^}]*transform-origin: left/.test(topBar) && !/\.progress-fill \{[^}]*transition/.test(topBar), 'the player progress fill has no transition')
+
 const main = read('src/main.js')
 assert.ok(main.includes("import './styles/gs-motion.css'"), 'motion styles load with the tokens')
 assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImageReveal()') < main.indexOf('.mount('), 'images are watched before the app renders any')
