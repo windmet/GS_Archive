@@ -82,7 +82,7 @@
         <span v-if="dialogueLocale === 'zh-CN' && cueLine.lang === 'ja' && !cueLine.pending" class="dialogue-status">仅原文</span>
         <GsSegmented class="home-language-switch" v-model="dialogueLocale" :options="DIALOGUE_LOCALES" aria-label="台词语言" />
       </header>
-      <div class="dialogue-text"><Transition name="dialogue-fade" mode="out-in"><p :key="cueLine.text" class="dialogue-line gs-flow" :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p></Transition></div>
+      <div class="dialogue-text"><Transition name="dialogue-fade" mode="out-in"><p :key="cueLine.text" class="dialogue-line gs-flow" :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }"><span class="dialogue-authored">{{ cueLine.text }}</span><span class="dialogue-reflowed">{{ reflowArchiveText(cueLine.text) }}</span></p></Transition></div>
       <div class="dialogue-actions">
         <button type="button" aria-label="上一句台词" title="上一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(-1)">
           <ChevronLeft :size="20" />
@@ -284,6 +284,7 @@ import CostumeCategoryFilter from './CostumeCategoryFilter.vue'
 import {costumeFilterView} from '../../presentation/CostumeCategories.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { useSheetDrag } from '../../composables/useSheetDrag.js'
+import { reflowArchiveText } from '../../presentation/ArchiveText.js'
 import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
 import { archiveText as photoText } from './useArchivePhotoText.js'
 import {
@@ -840,7 +841,8 @@ onBeforeUnmount(() => {
 button.dialogue-card { cursor:pointer; }
 @media (hover: hover) and (pointer: fine) { button.dialogue-card:hover { color:var(--gs-selected-ink); } }
 /* The box keeps the height of three lines and the text starts at the top, so stepping between lines never moves the frame or the controls. A fourth line grows it instead of clipping. */
-.home-dialogue .dialogue-text { height:calc(3 * 1.7em);overflow-y:auto;scrollbar-width:thin;font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
+/* The box holds N lines plus the line's own 2px + 4px padding; without it a full box scrolls by 6px. */
+.home-dialogue .dialogue-text { height:calc(3 * 1.7em + 6px);overflow-y:auto;scrollbar-width:thin;font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
 .home-dialogue .dialogue-line { flex:1;min-width:0;margin:0;padding:2px 2px 4px;font-size:inherit;line-height:1.7; }
 .dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity var(--gs-motion-feedback) var(--gs-ease-out); }
 .dialogue-fade-enter-from,.dialogue-fade-leave-to { opacity:0; }
@@ -854,8 +856,12 @@ button.dialogue-card { cursor:pointer; }
 .home-dialogue .dialogue-actions .cue-index-trigger { display:inline-flex;gap:6px;width:auto;margin-left:auto;padding:0 8px;font-size:var(--gs-text-ui);font-variant-numeric:tabular-nums; }
 .cue-index-trigger small { font-size:var(--gs-text-meta);color:var(--gs-ink-3); }
 @media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
-@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { height:calc(4 * 1.7em);font-size:var(--gs-text-body); } }
-@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
+@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { height:calc(4 * 1.7em + 6px);font-size:var(--gs-text-body); } }
+/* A line keeps its clause breaks (flowVoiceText) where the box has room for them; a short landscape screen has two rows, so it
+   shows the line joined instead (the same authored/reflowed pair as the card page). */
+.dialogue-reflowed { display:none; }
+@media (max-height:540px) and (orientation:landscape) { .dialogue-authored { display:none; } .dialogue-reflowed { display:inline; } }
+@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);height:calc(2 * 1.6em + 6px); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
 .scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);--gs-dialog-travel:translateX(32px); }
 .scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
 .scene-settings.cue-index > header { background:transparent; }

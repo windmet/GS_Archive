@@ -48,7 +48,8 @@ try {
   hold = false; held.splice(0).forEach(resolve => resolve())
   await names.loadArchiveLines([plain[0]])
   // Translations join the game's textbox wraps (the container wraps instead); the Japanese original keeps them.
-  assert.deepEqual(touch(plain[0]), { text: plain[1].split(String.fromCharCode(10)).join(''), lang: 'zh-CN', pending: false })
+  // A spoken line keeps the translator's breaks that close a clause and joins the rest (flowVoiceText).
+  assert.deepEqual(touch(plain[0]), { text: plain[1], lang: 'zh-CN', pending: false }, 'every break here closes a clause, so all three lines stay')
 
   await names.loadArchiveLines([withP[0], withChan[0]])
   // Producer macros: never raw dots; the unnamed word follows the shown language; a set name replaces it.
