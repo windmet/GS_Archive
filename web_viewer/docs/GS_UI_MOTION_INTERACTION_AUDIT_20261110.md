@@ -103,15 +103,15 @@
 
 ## 三、执行批次
 
-拆成三个 PR，按顺序做；每个 PR 都从当时最新的 master 开 `portal/<日期>-<主题>` 分支。
+共拆成五个 PR：A→B→C→D 依次叠加，E 从 master 单独开。分支命名为 `portal/<日期>-<主题>`。
 
 | PR | 批次 | 依赖 | 预计改动 | 视觉变化 | 状态 |
 |---|---|---|---|---|---|
-| A | M0 守卫 + M1 令牌收口 | — | 2 个验证脚本、约 10 个组件 | 无或 ≤40ms | 未开始 |
-| B | M2 触屏细节 + M3 输入字号 | A（棘轮基线） | GsInfo、约 10 个高频组件、layout-integrity | 只在触屏 | 未开始 |
-| C | M4 首页对话框 + M5 焦点环 | A | ArchiveImmersiveHome、gs-motion.css | 首页两个对话框有进出场 | 未开始 |
-| D | D1 底部抽屉下滑关闭 | C（台词目录先接入共享动效） | 一个共用组合式函数，接入各底部抽屉 | 只在手机底部抽屉 | 未开始 |
-| E | D3 播放器进度条与对白框 | — | `PlayerTopBar.vue`、`StoryViewer.vue` | 播放器 | 未开始 |
+| A | M0 守卫 + M1 令牌收口 | — | 2 个验证脚本、约 10 个组件 | 无或 ≤40ms | #204 已开，CI 通过，待合 |
+| B | M2 触屏细节 + M3 输入字号 | A（棘轮基线） | GsInfo、约 10 个高频组件、layout-integrity | 只在触屏 | #205（叠在 #204 上），CI 通过，待合；真机未测 |
+| C | M4 首页对话框 + M5 焦点环 | A | ArchiveImmersiveHome、gs-motion.css | 首页两个对话框有进出场 | #206（叠在 #205 上），CI 通过，待合 |
+| D | D1 底部抽屉下滑关闭 | C（台词目录先接入共享动效） | 一个共用组合式函数，接入各底部抽屉 | 只在手机底部抽屉 | #207（叠在 #206 上），CI 通过，待合；手感要真机确认 |
+| E | D3 播放器进度条与对白框 | — | `PlayerTopBar.vue`、`StoryViewer.vue` | 播放器 | #208：只改了进度条；对白框没有原生证据，未改 |
 
 通用验证（每个 PR 都跑）：`npm run build:check`（**不要直接跑 `vite build`**，会把语料拷进 dist）、`npm run verify:archive-motion`、`npm run verify:design-tokens`、`npm run verify:source-batch`；合并前在 LF worktree 里跑 `npm run gate:source`（`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录> <分支>`）。新加或改动的断言要做变异测试：把修复改回坏版本，确认验证器失败，再还原。
 
@@ -186,12 +186,12 @@
 
 - `src/styles/gs-motion.css` 按压规则后面加：
   ```css
-  :where(button, a[href], summary, input, select, textarea, [role="button"], [role="tab"], [role="option"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  :where(button, a[href], summary, input, select, textarea, [role="button"], [role="tab"], [role="option"], [tabindex]:not([tabindex="-1"])):where(:focus-visible) {
     outline: var(--gs-focus-ring) solid var(--gs-mint);
     outline-offset: var(--gs-focus-offset);
   }
   ```
-  `:where()` 特异性为 0，现有 226 处组件规则照样生效，所以本批没有视觉变化，只补上漏写的组件。
+  `:focus-visible` 也要包进 `:where()`，整条选择器的特异性才是 0。如果写成 `:where(…):focus-visible`，特异性是 0,1,0，会盖过组件里的 `outline: none`（#206 实施时发现，已改）。这样写之后现有 226 处组件规则照样生效，本批没有视觉变化，只补上漏写的组件。
 - `LoadingScreen.vue:141` 的 `3px solid #20cbb1` 改成令牌（它还被 design-tokens 的十六进制颜色棘轮记着）。
 - 其余组件里的焦点环不批量删；以后碰到哪个文件，就顺手删掉和默认值完全相同的那条。
 - 验证：键盘 Tab 走一遍首页、目录、详情、阅读器，每个可聚焦元素都有环；深色侧栏和舞台上薄荷环可见。
@@ -203,6 +203,24 @@
 - **D1 底部抽屉下滑关闭**：筛选、阅读设置、舞台编排、台词目录这几个手机底部抽屉，**支持**。做法：用 `gestures` skill，拖动期间 1:1 跟手、不加缓动；松手速度超过约 0.11 px/ms 或拖过高度 1/3 就关闭，否则弹回；向上拖越界时阻力递增；在 `<dialog>` 上用 Pointer Events，滚动内容在顶部时才接管手势。抽屉范围在开工时按实际代码清点（宽屏的右侧抽屉、居中对话框、新手引导不接）。拖动阈值、回弹曲线最终以 K60 / iPad 手感为准，合入前在 PR 描述里写明真机是否已测。
 - **D2 偶像落款动画（MX-11）**：**维持现状**（用户决定）。原备选：①保留，改成从左往右揭开（`clip-path: inset(0 100% 0 0)` → `inset(0)`）、≤600ms、去掉 .2s 延迟，按偶像加 key，每次换偶像都播；②去掉动画，直接显示；③维持现状。
 - **D3 播放器演出（MX-12）**：对白框 280ms 对称加 blur、进度条 180ms 过渡，**执行**。进度条是本站自己的界面，按 2.2「进度类数值线性或不过渡」改；对白框淡入淡出先找原生证据（Ghidra 反编译输出里 ADV 对白框的显示 / 隐藏时长），找到再对齐，找不到就不改，并记录查过哪里。单独一个 PR，不和门户批次混在一起。
+
+### 实施记录（2026-11-10）
+
+A–D 都在 LF worktree 里跑过 `gate:source`（116/116）。E 是 115/116，唯一失败的 `verify-story-preload-cancellation` 只在整套高负载时超时，单独重跑两次都通过，和 E 的改动无关。每条新断言都做了变异测试。没有上真机，K60 和 iPad 都没连。
+
+和上面计划不一致的地方：
+
+- **A**：`--gs-motion-ease` 改成引用 `--gs-ease-out`。偶像落款（D2 不改）原本用这个令牌，现在把它固定成原来的字面曲线 `cubic-bezier(.2,.7,.2,1)`，手感不变。
+- **B**：触屏点第二次关不掉 ⓘ，不只是 mouseenter 的问题。点按会让按钮获得焦点，`focused` 一直是 true，气泡就关不掉。现在 GsInfo 只有键盘焦点（`:focus-visible`）才打开气泡，关闭时同时清掉 `focused`。
+- **B**：`layout-routes.json` 里 `live` 路由的 `readySelector`（`.song-go`）早就不存在了，这条路由一直判不出结果，`/live/` 搜索框的 13px 字号也就一直没被门禁看到。已改成 `.chart-table`。
+- **C**：M5 的选择器改成 `:where(:focus-visible)`，见 M5 一节。首页两个对话框没有直接用 `ArchiveTerminalDialog` 组件，只照搬了它的退场写法：挂载标志 + `EXIT_MS` + 先 `close()` 再卸载。
+- **D**：改用 Touch Events，没有用 Pointer Events。只有非 passive 的 `touchmove` 才能拦住浏览器滚动，鼠标拖动不受影响。
+- **D**：判断是否属于手机底部抽屉，看的是元素的实际位置和宽度（铺满视口宽度并贴着底边），没有照抄 ≤760px 的断点，因为各组件的断点不同。
+- **D**：一次手势只在开始时判断一次是否接管。内容滚回顶部后继续往下拖，不会中途变成拖抽屉。
+- **D**：拖动时 `::backdrop` 不随位移变淡。
+- **E**：进度条绑定的是步骤序号，按整步跳变、间隔不固定，所以选了「不过渡」，没有用 linear。
+
+D3 对白框的原生证据：在 `E:/Tools/ghidra_work/sidem` 全目录搜了 `Balloon`、`MessageWindow`、`TextWindow`、`DialogWindow`、`DOFade`、`CanvasGroup`、`alpha`、`fade`、`duration`、`DOTween`。对白框类是 `Growing.Theater.AdventureBalloonTextPanel`，`names.tsv` 里有 `UpdateAlpha`（RVA 0x241f348）、`FadeInText`（0x241f82c）、`FadeOutText`（0x241f8a4），对应协程的 `MoveNext` 在 0x20028c0 和 0x2002a6c。这几个函数本身都没有反编译，`decompiled*` 里只有调用方（`StoryView.c` 等），传的参数是布尔值或速度，没有秒数。所以 `adv-dialogue-fade` 维持不变。要对齐原生值，得先反编译这两个协程。
 
 ## 附：普查方法
 
