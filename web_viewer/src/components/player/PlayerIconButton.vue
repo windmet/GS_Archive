@@ -39,12 +39,9 @@ defineProps({
     transform var(--player-motion-fast) var(--player-ease-standard);
 }
 
-.player-icon-btn:hover:not(:disabled) {
-  background: var(--player-control-surface-hover);
-}
-
 @media (hover: hover) and (pointer: fine) {
   .player-icon-btn:hover:not(:disabled) {
+    background: var(--player-control-surface-hover);
     transform: translateY(-2px);
   }
 }
@@ -54,9 +51,13 @@ defineProps({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .player-icon-btn:hover:not(:disabled),
   .player-icon-btn:active:not(:disabled) {
     transform: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .player-icon-btn:hover:not(:disabled) {
+      transform: none;
+    }
   }
 }
 

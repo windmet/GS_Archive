@@ -117,4 +117,6 @@ watch(()=>props.scopeIdol?.id,load,{immediate:true})
   .event-item { grid-template-columns: 96px minmax(0, 1fr) 16px; }
   .pagination button, .event-catalog > p[role] button { min-height: var(--gs-control-touch); }
 }
+/* iOS zooms the page when a focused input is under 16px; iPad is wider than the phone tier, so this follows the pointer. */
+@media (pointer: coarse) { .catalog-filter input, .catalog-filter select { font-size: var(--gs-text-subtitle); } }
 </style>

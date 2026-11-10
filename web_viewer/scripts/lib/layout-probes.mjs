@@ -15,7 +15,7 @@ export function inspectLayout(config = {}) {
     if(e.matches('h1,h2,h3,button,label')&&(e.scrollWidth>e.clientWidth+2||e.scrollHeight>e.clientHeight+2))add('text-clipping-candidate',e,{ellipsis:s.textOverflow==='ellipsis',overflow:s.overflow});
     if((config.clippingExceptions||[]).some(rule=>e.matches(rule))){exceptions.push({kind:'intentional-art-crop',selector:locator(e),reason:config.exceptionReason});continue;}
     for(let p=e.parentElement;p&&p!==document.body;p=p.parentElement){const ps=getComputedStyle(p),pr=rect(p);if((/hidden|clip/.test(ps.overflowX)&&(r.x<pr.x-2||r.right>pr.right+2))||(/hidden|clip/.test(ps.overflowY)&&(r.y<pr.y-2||r.bottom>pr.bottom+2))){add('parent-clipping',e,{parent:locator(p),parentRect:pr});break;}}
-    if(e.matches('input:not([type=range]):not([type=checkbox]):not([type=radio]),textarea,select')&&parseFloat(s.fontSize)<16)add('small-input-risk',e,{fontSize:s.fontSize,hardwareConfirmationRequired:true});
+    if(e.matches('input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]):not([type=hidden]),textarea,select')&&parseFloat(s.fontSize)<16)add('small-input-risk',e,{fontSize:s.fontSize,hardwareConfirmationRequired:true});
     if(e.tagName==='IMG'&&e.complete){if(!e.naturalWidth)add('broken-image',e,{src:e.getAttribute('src')});else if(s.objectFit==='fill'&&Math.abs(r.width/r.height-e.naturalWidth/e.naturalHeight)>.1)add('image-distortion-candidate',e,{natural:[e.naturalWidth,e.naturalHeight],objectFit:s.objectFit});}
     if(e.scrollHeight>e.clientHeight+2&&/hidden|clip/.test(s.overflowY)&&e.matches('[data-qa-scroll], [data-archive-scroll-container]'))add('unreachable-scroll-end',e,{scrollHeight:e.scrollHeight,clientHeight:e.clientHeight});
   }

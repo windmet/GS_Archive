@@ -176,4 +176,6 @@ button:focus-visible { outline: 3px solid var(--reader-accent-text); outline-off
 .reader-loading-lines i { height:12px; background:var(--reader-border); border-radius:6px; opacity:.45; }
 .reader-loading-lines i:last-child { width:65%; }
 @keyframes reader-loading-reveal { from { opacity:0; } to { opacity:1; } }
+/* iOS zooms the page when a focused input is under 16px; iPad is wider than the phone tier, so this follows the pointer. */
+@media (pointer: coarse) { .reader-search input { font-size: var(--gs-text-subtitle); } }
 </style>

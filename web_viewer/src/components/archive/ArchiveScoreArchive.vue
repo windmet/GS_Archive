@@ -125,7 +125,7 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 .score-cues > li { border-top: 1px solid var(--gs-line); }
 .score-row { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px; }
 .score-play { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--gs-line); border-radius: 50%; background: var(--gs-surface); color: var(--gs-mint-ink); cursor: pointer; }
-.score-play:hover:not(:disabled) { border-color: var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) { .score-play:hover:not(:disabled) { border-color: var(--gs-mint-ink); } }
 .score-play[aria-pressed='true'] { border-color: var(--gs-mint-ink); background: var(--gs-mint-wash); }
 .score-play:disabled { color: var(--gs-ink-4, var(--gs-ink-3)); opacity: .45; cursor: default; }
 .score-name { flex: 1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; font-size: var(--gs-text-ui); }
@@ -133,15 +133,15 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 .score-name code { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
 .score-song { padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; cursor: pointer; }
 .score-song small { color: var(--gs-ink-3); font-weight: 400; }
-.score-song:hover { text-decoration: underline; }
+@media (hover: hover) and (pointer: fine) { .score-song:hover { text-decoration: underline; } }
 .score-tag { padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .score-count { flex: none; display: inline-flex; align-items: center; gap: 2px; min-height: 32px; padding: 0 8px; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; cursor: pointer; }
-.score-count:hover { color: var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) { .score-count:hover { color: var(--gs-mint-ink); } }
 .score-count svg { transition: transform .15s; }
 .is-open .score-count svg { transform: rotate(180deg); }
 .score-stories { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px; margin: 0 0 var(--gs-space-3); padding: 8px; border-radius: var(--gs-radius-control); background: var(--gs-paper); list-style: none; }
 .score-stories button { display: grid; width: 100%; min-height: 36px; padding: 4px 8px; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
-.score-stories button:hover { background: var(--gs-surface); color: var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) { .score-stories button:hover { background: var(--gs-surface); color: var(--gs-mint-ink); } }
 .score-stories small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .score-stories .is-pending { visibility: hidden; }
 .score-stories .score-more { color: var(--gs-mint-ink); }
@@ -154,4 +154,6 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
   .score-row { gap: 8px; padding: 4px 0; }
   .score-stories { grid-template-columns: 1fr; padding: 4px; }
 }
+/* iOS zooms the page when a focused input is under 16px; iPad is wider than the phone tier, so this follows the pointer. */
+@media (pointer: coarse) { .score-search input { font-size: var(--gs-text-subtitle); } }
 </style>

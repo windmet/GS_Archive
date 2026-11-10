@@ -91,10 +91,12 @@ function select(opt, index) {
   transition: background 0.2s, border-color 0.2s, transform 0.1s;
   box-shadow: 0 0 9px rgba(32, 200, 232, 0.75), 0 2px 12px rgba(0, 0, 0, 0.24);
 }
-.choice-btn:hover {
-  background: #fff;
-  border-color: #13b7da;
-  transform: scale(1.01);
+@media (hover: hover) and (pointer: fine) {
+  .choice-btn:hover {
+    background: #fff;
+    border-color: #13b7da;
+    transform: scale(1.01);
+  }
 }
 .choice-text {
   flex: 1;

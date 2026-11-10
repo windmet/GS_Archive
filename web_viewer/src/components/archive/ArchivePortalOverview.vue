@@ -800,4 +800,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   @container portal (max-width:420px) { .overview-hub-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 }
 @media (prefers-reduced-motion:reduce) { .portal-overview :where(button, a) { transform:none !important; } }
+/* iOS zooms the page when a focused input is under 16px; iPad is wider than the phone tier, so this follows the pointer. */
+@media (pointer: coarse) { .overview-search-form input { font-size:var(--gs-text-subtitle); } }
 </style>
