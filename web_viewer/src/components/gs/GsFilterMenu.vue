@@ -3,7 +3,7 @@
     <button ref="trigger" type="button" class="gs-filter-trigger" :class="{ 'is-filtered': variant === 'chip' && filtered, 'is-open': open }" :disabled="disabled" aria-haspopup="listbox" :aria-expanded="open" :aria-label="`${label}：${selectedLabel}`" @click="toggle">
       <span class="gs-filter-label">{{ label }}</span><span class="gs-filter-value">{{ selectedLabel }}</span><ChevronRight v-if="variant !== 'chip'" class="gs-filter-caret" :size="17" aria-hidden="true" /><ChevronDown v-else class="gs-filter-caret" :size="14" aria-hidden="true" />
     </button>
-    <Teleport to="body">
+    <Teleport :to="layer">
       <div v-if="open" class="gs-filter-layer" @pointerdown.self="close(false)">
         <ul ref="list" class="gs-filter-list" role="listbox" :aria-label="label" :style="position" @keydown="onKey">
           <li v-for="(option, index) in options" :key="option.value" role="presentation">
@@ -23,7 +23,7 @@ import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
 import { Check, ChevronDown, ChevronRight } from '@lucide/vue'
 
 // Filter with many values: a chip-shaped trigger 「资源：全部 ▾」 and a list of 44px choosable rows. Fewer than seven values
-// belong in filter chips instead. options: [{ value, label, count?, group? }]; on a phone the list is a bottom sheet.
+// belong in filter chips instead. options: [{ value, label, count?, group? }]; on a phone (or a short landscape screen) the list is a bottom sheet.
 // variant row: a settings row 「标签 · 当前值 ›」 that opens the same list (线框减法册 rule 1, the stage panel);
 // variant value: only 「当前值 ›」, for the control slot of a GsRow that already carries the label (the chart panel);
 // options carrying a group label get a 12px grey heading where the group changes (in place of <optgroup>).
@@ -38,16 +38,27 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 const root = ref(null), trigger = ref(null), list = ref(null)
-const open = ref(false), position = ref({})
+const open = ref(false), position = ref({}), layer = ref('body')
 const selected = computed(() => props.options.find(option => option.value === props.modelValue))
 const selectedLabel = computed(() => selected.value?.label || '全部')
 const filtered = computed(() => props.neutral !== undefined ? props.modelValue !== props.neutral : props.modelValue !== (props.options[0]?.value ?? ''))
 
+// A narrow screen, or a landscape phone too short for a list beside the trigger, gets the bottom sheet (keep in step with the CSS).
+const SHEET_MEDIA = '(max-width: 760px), (max-height: 480px)'
 function toggle() { open.value ? close(true) : show() }
 async function show() {
   const rect = trigger.value.getBoundingClientRect()
-  const phone = matchMedia('(max-width: 760px)').matches
-  position.value = phone ? {} : { left: `${Math.min(rect.left, innerWidth - 260)}px`, top: `${rect.bottom + 4}px`, minWidth: `${Math.max(rect.width, 200)}px` }
+  const phone = matchMedia(SHEET_MEDIA).matches
+  // Below the trigger when it fits; on a short screen (a landscape phone) it opens upward if there is more room above.
+  const below = innerHeight - rect.bottom - 12, above = rect.top - 12, down = below >= 220 || below >= above
+  position.value = phone ? {} : {
+    left: `${Math.min(rect.left, innerWidth - 260)}px`, minWidth: `${Math.max(rect.width, 200)}px`,
+    ...(down ? { top: `${rect.bottom + 4}px` } : { bottom: `${innerHeight - rect.top + 4}px` }),
+    maxHeight: `${Math.min(420, down ? below : above)}px`,
+  }
+  // A modal <dialog> sits in the top layer and makes the rest of the page inert, so a list left in body would open
+  // underneath it (the scene settings) and take no taps; inside a dialog the list goes into that dialog instead.
+  layer.value = root.value?.closest('dialog') || 'body'
   open.value = true
   document.addEventListener('keydown', onDocumentKey, true)
   await nextTick()
@@ -100,7 +111,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onDocumentKey, tru
 .gs-filter-option small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
 .gs-filter-option[aria-selected=true] { font-weight: var(--gs-weight-semibold); }
 @media (hover: hover) { .gs-filter-option:hover { background: var(--gs-hover); } }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 480px) {
   .gs-filter-layer { background: rgb(11 20 36 / 18%); }
   .gs-filter-list { right: 0; bottom: 0; left: 0; max-height: 70dvh; padding-bottom: calc(var(--gs-space-3) + env(safe-area-inset-bottom, 0px)); border-bottom-right-radius: 0; border-bottom-left-radius: 0; }
 }

@@ -2255,7 +2255,7 @@
     "line": 14,
     "event": "@close",
     "handler": "drawerOpen = false",
-    "template": "<component :is=\"compact ? ArchiveTerminalDialog : 'div'\" v-if=\"selectedGroup.versions.length > 1\" v-bind=\"compact ? { class: 'filter-sheet arrangement-sheet', open: drawerOpen, title: '编排', titleId: 'stage-arrangement-sheet-title' } : { class: 'arrangement-inline' }\" @close=\"drawerOpen = false\">",
+    "template": "<component :is=\"compact ? ArchiveTerminalDialog : 'div'\" v-if=\"selectedGroup.versions.length > 1\" v-bind=\"compact ? { class: 'filter-sheet arrangement-sheet', swipeDismiss: true, open: drawerOpen, title: '编排', titleId: 'stage-arrangement-sheet-title' } : { class: 'arrangement-inline' }\" @close=\"drawerOpen = false\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -2955,7 +2955,7 @@
     "line": 520,
     "event": "@close",
     "handler": "chooseStageQuality(pendingQuality)",
-    "template": "<ArchiveTerminalDialog class=\"stage-dev-dialog stage-quality-dialog\" :open=\"qualityPromptOpen\" title=\"选择舞台加载方式\" :title-id=\"qualityTitleId\" @close=\"chooseStageQuality(pendingQuality)\">",
+    "template": "<ArchiveTerminalDialog class=\"stage-dev-dialog stage-quality-dialog\" swipe-dismiss :open=\"qualityPromptOpen\" title=\"选择舞台加载方式\" :title-id=\"qualityTitleId\" @close=\"chooseStageQuality(pendingQuality)\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -5075,7 +5075,7 @@
     "line": 7,
     "event": "@close",
     "handler": "open = false",
-    "template": "<ArchiveTerminalDialog class=\"filter-sheet\" :open=\"open\" :title=\"title\" :title-id=\"titleId\" @close=\"open = false\">",
+    "template": "<ArchiveTerminalDialog class=\"filter-sheet\" swipe-dismiss :open=\"open\" :title=\"title\" :title-id=\"titleId\" @close=\"open = false\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6055,7 +6055,7 @@
     "line": 107,
     "event": "@cancel.prevent",
     "handler": "closeCueIndex",
-    "template": "<dialog v-if=\"cueIndexOpen\" ref=\"cueIndexRef\" class=\"scene-settings cue-index\" aria-labelledby=\"cue-index-title\" @cancel.prevent=\"closeCueIndex\" @close=\"closeCueIndex\" @click=\"$event.target === cueIndexRef && closeCueIndex()\">",
+    "template": "<dialog v-if=\"cueIndexMounted\" ref=\"cueIndexRef\" class=\"scene-settings cue-index gs-dialog-motion\" aria-labelledby=\"cue-index-title\" @cancel.prevent=\"closeCueIndex\" @close=\"closeCueIndex\" @click=\"$event.target === cueIndexRef && closeCueIndex()\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6065,7 +6065,7 @@
     "line": 107,
     "event": "@close",
     "handler": "closeCueIndex",
-    "template": "<dialog v-if=\"cueIndexOpen\" ref=\"cueIndexRef\" class=\"scene-settings cue-index\" aria-labelledby=\"cue-index-title\" @cancel.prevent=\"closeCueIndex\" @close=\"closeCueIndex\" @click=\"$event.target === cueIndexRef && closeCueIndex()\">",
+    "template": "<dialog v-if=\"cueIndexMounted\" ref=\"cueIndexRef\" class=\"scene-settings cue-index gs-dialog-motion\" aria-labelledby=\"cue-index-title\" @cancel.prevent=\"closeCueIndex\" @close=\"closeCueIndex\" @click=\"$event.target === cueIndexRef && closeCueIndex()\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6075,7 +6075,7 @@
     "line": 107,
     "event": "@click",
     "handler": "$event.target === cueIndexRef && closeCueIndex()",
-    "template": "<dialog v-if=\"cueIndexOpen\" ref=\"cueIndexRef\" class=\"scene-settings cue-index\" aria-labelledby=\"cue-index-title\" @cancel.prevent=\"closeCueIndex\" @close=\"closeCueIndex\" @click=\"$event.target === cueIndexRef && closeCueIndex()\">",
+    "template": "<dialog v-if=\"cueIndexMounted\" ref=\"cueIndexRef\" class=\"scene-settings cue-index gs-dialog-motion\" aria-labelledby=\"cue-index-title\" @cancel.prevent=\"closeCueIndex\" @close=\"closeCueIndex\" @click=\"$event.target === cueIndexRef && closeCueIndex()\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6155,7 +6155,7 @@
     "line": 149,
     "event": "@cancel.prevent",
     "handler": "closeSettings",
-    "template": "<dialog v-if=\"settingsOpen\" ref=\"sceneSettingsRef\" class=\"scene-settings\" aria-labelledby=\"scene-settings-title\" @cancel.prevent=\"closeSettings\" @close=\"closeSettings\">",
+    "template": "<dialog v-if=\"settingsMounted\" ref=\"sceneSettingsRef\" class=\"scene-settings gs-dialog-motion\" aria-labelledby=\"scene-settings-title\" @cancel.prevent=\"closeSettings\" @close=\"closeSettings\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6165,7 +6165,7 @@
     "line": 149,
     "event": "@close",
     "handler": "closeSettings",
-    "template": "<dialog v-if=\"settingsOpen\" ref=\"sceneSettingsRef\" class=\"scene-settings\" aria-labelledby=\"scene-settings-title\" @cancel.prevent=\"closeSettings\" @close=\"closeSettings\">",
+    "template": "<dialog v-if=\"settingsMounted\" ref=\"sceneSettingsRef\" class=\"scene-settings gs-dialog-motion\" aria-labelledby=\"scene-settings-title\" @cancel.prevent=\"closeSettings\" @close=\"closeSettings\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6202,10 +6202,10 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 171,
-    "event": "@update:model-value",
-    "handler": "chooseBackgroundSource",
-    "template": "<GsSegmented class=\"background-source\" :model-value=\"backgroundSource\" :options=\"BACKGROUND_SOURCES\" aria-label=\"背景来源\" @update:model-value=\"chooseBackgroundSource\" />",
+    "line": 172,
+    "event": "@click",
+    "handler": "toggleBackgroundPicker",
+    "template": "<button type=\"button\" class=\"background-more\" :aria-expanded=\"backgroundPickerOpen\" @click=\"toggleBackgroundPicker\">{{ backgroundPickerOpen ? '收起场景列表' : '选择固定场景' }}</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -6213,6 +6213,16 @@
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
     "line": 173,
+    "event": "@click",
+    "handler": "preferences.background = 'cue'",
+    "template": "<button v-if=\"preferences.background !== 'cue'\" type=\"button\" class=\"background-more\" @click=\"preferences.background = 'cue'\">改回跟随台词</button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveImmersiveHome",
+    "file": "src/components/archive/ArchiveImmersiveHome.vue",
+    "line": 176,
     "event": "@click",
     "handler": "loadBackgroundCatalogue(true)",
     "template": "<p v-if=\"backgroundError\" role=\"status\">{{ backgroundError }} <button type=\"button\" @click=\"loadBackgroundCatalogue(true)\">重试</button></p>",
@@ -6222,7 +6232,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 177,
+    "line": 180,
     "event": "@click",
     "handler": "backgroundVariant = ''",
     "template": "<button type=\"button\" :aria-pressed=\"!backgroundVariant\" @click=\"backgroundVariant = ''\">全部</button>",
@@ -6232,7 +6242,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 178,
+    "line": 181,
     "event": "@click",
     "handler": "backgroundVariant = entry.id",
     "template": "<button v-for=\"entry in backgroundVariants\" :key=\"entry.id\" type=\"button\" :aria-pressed=\"backgroundVariant === entry.id\" @click=\"backgroundVariant = entry.id\">{{ entry.label }} <small>{{ entry.count }}</small></button>",
@@ -6242,7 +6252,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 181,
+    "line": 184,
     "event": "@click",
     "handler": "preferences.background = background.id",
     "template": "<button v-for=\"background in visibleBackgrounds\" :key=\"background.id\" type=\"button\" :aria-pressed=\"preferences.background === background.id\" @click=\"preferences.background = background.id\">",
@@ -6252,7 +6262,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 182,
+    "line": 185,
     "event": "@error",
     "handler": "backgroundThumbnailFailed($event, background)",
     "template": "<img v-if=\"background.url || background.thumbnail\" :src=\"photoBackgroundThumbnailUrl(background.url) || background.thumbnail\" alt=\"\" loading=\"lazy\" decoding=\"async\" @error=\"backgroundThumbnailFailed($event, background)\" />",
@@ -6262,7 +6272,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 186,
+    "line": 189,
     "event": "@click",
     "handler": "backgroundLimit += 12",
     "template": "<button v-if=\"filteredBackgrounds.length > backgroundLimit\" type=\"button\" class=\"background-more\" @click=\"backgroundLimit += 12\">显示更多场景</button>",
@@ -6272,7 +6282,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 200,
+    "line": 203,
     "event": "@change",
     "handler": "emit('update:selectedCostume', $event.target.value)",
     "template": "<select :value=\"activeCostume?.modelId || ''\" @change=\"emit('update:selectedCostume', $event.target.value)\">",
@@ -6282,7 +6292,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 211,
+    "line": 214,
     "event": "@click",
     "handler": "preferences.dialogueOrder = 'sequential'",
     "template": "<button type=\"button\" :class=\"{ active: preferences.dialogueOrder === 'sequential' }\" :aria-pressed=\"preferences.dialogueOrder === 'sequential'\" @click=\"preferences.dialogueOrder = 'sequential'\">顺序</button>",
@@ -6292,7 +6302,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 212,
+    "line": 215,
     "event": "@click",
     "handler": "preferences.dialogueOrder = 'random'",
     "template": "<button type=\"button\" :class=\"{ active: preferences.dialogueOrder === 'random' }\" :aria-pressed=\"preferences.dialogueOrder === 'random'\" @click=\"preferences.dialogueOrder = 'random'\">随机</button>",
@@ -6302,7 +6312,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 236,
+    "line": 239,
     "event": "@click",
     "handler": "resetPreferences",
     "template": "<button class=\"settings-reset\" type=\"button\" @click=\"resetPreferences\">",
@@ -6312,7 +6322,7 @@
   {
     "component": "ArchiveImmersiveHome",
     "file": "src/components/archive/ArchiveImmersiveHome.vue",
-    "line": 240,
+    "line": 243,
     "event": "@click",
     "handler": "closeSettings",
     "template": "<button class=\"settings-done\" type=\"button\" @click=\"closeSettings\">",
@@ -8635,7 +8645,7 @@
     "line": 26,
     "event": "@pointerdown.stop",
     "handler": "startUnlock",
-    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" :style=\"{ '--unlock-press': `${UNLOCK_PRESS_MS}ms` }\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8645,7 +8655,7 @@
     "line": 26,
     "event": "@pointerup",
     "handler": "cancelUnlock",
-    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" :style=\"{ '--unlock-press': `${UNLOCK_PRESS_MS}ms` }\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8655,7 +8665,7 @@
     "line": 26,
     "event": "@pointercancel",
     "handler": "cancelUnlock",
-    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" :style=\"{ '--unlock-press': `${UNLOCK_PRESS_MS}ms` }\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8665,7 +8675,7 @@
     "line": 26,
     "event": "@pointerleave",
     "handler": "cancelUnlock",
-    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" :style=\"{ '--unlock-press': `${UNLOCK_PRESS_MS}ms` }\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8675,7 +8685,7 @@
     "line": 26,
     "event": "@keydown.enter.prevent",
     "handler": "unlockControls",
-    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" :style=\"{ '--unlock-press': `${UNLOCK_PRESS_MS}ms` }\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8685,7 +8695,7 @@
     "line": 26,
     "event": "@keydown.space.prevent",
     "handler": "unlockControls",
-    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
+    "template": "<button type=\"button\" class=\"chart-unlock\" :class=\"{ 'is-shown': unlockShown, 'is-holding': unlockHolding }\" aria-label=\"长按解锁\" :style=\"{ '--unlock-press': `${UNLOCK_PRESS_MS}ms` }\" @pointerdown.stop=\"startUnlock\" @pointerup=\"cancelUnlock\" @pointercancel=\"cancelUnlock\" @pointerleave=\"cancelUnlock\" @click.prevent @keydown.enter.prevent=\"unlockControls\" @keydown.space.prevent=\"unlockControls\"><LockOpen :size=\"17\" aria-hidden=\"true\" />长按解锁</button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12893,9 +12903,9 @@
     "component": "GsInfo",
     "file": "src/components/gs/GsInfo.vue",
     "line": 2,
-    "event": "@mouseenter",
-    "handler": "hover = true",
-    "template": "<span ref=\"root\" class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
+    "event": "@pointerenter",
+    "handler": "e => { if (e.pointerType === 'mouse') hover = true }",
+    "template": "<span ref=\"root\" class=\"gs-info\" @pointerenter=\"e => { if (e.pointerType === 'mouse') hover = true }\" @pointerleave=\"e => { if (e.pointerType === 'mouse') hover = false }\" @keydown.esc=\"close\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12903,9 +12913,9 @@
     "component": "GsInfo",
     "file": "src/components/gs/GsInfo.vue",
     "line": 2,
-    "event": "@mouseleave",
-    "handler": "hover = false",
-    "template": "<span ref=\"root\" class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
+    "event": "@pointerleave",
+    "handler": "e => { if (e.pointerType === 'mouse') hover = false }",
+    "template": "<span ref=\"root\" class=\"gs-info\" @pointerenter=\"e => { if (e.pointerType === 'mouse') hover = true }\" @pointerleave=\"e => { if (e.pointerType === 'mouse') hover = false }\" @keydown.esc=\"close\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12915,7 +12925,7 @@
     "line": 2,
     "event": "@keydown.esc",
     "handler": "close",
-    "template": "<span ref=\"root\" class=\"gs-info\" @mouseenter=\"hover = true\" @mouseleave=\"hover = false\" @keydown.esc=\"close\">",
+    "template": "<span ref=\"root\" class=\"gs-info\" @pointerenter=\"e => { if (e.pointerType === 'mouse') hover = true }\" @pointerleave=\"e => { if (e.pointerType === 'mouse') hover = false }\" @keydown.esc=\"close\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12924,8 +12934,8 @@
     "file": "src/components/gs/GsInfo.vue",
     "line": 3,
     "event": "@click",
-    "handler": "pinned = !pinned",
-    "template": "<button ref=\"trigger\" type=\"button\" class=\"gs-info-button\" :aria-label=\"label\" :aria-expanded=\"shown\" :aria-describedby=\"shown ? id : undefined\" @click=\"pinned = !pinned\" @focus=\"focused = true\" @blur=\"focused = false\"><Info :size=\"14\" aria-hidden=\"true\" /></button>",
+    "handler": "toggle",
+    "template": "<button ref=\"trigger\" type=\"button\" class=\"gs-info-button\" :aria-label=\"label\" :aria-expanded=\"shown\" :aria-describedby=\"shown ? id : undefined\" @click=\"toggle\" @focus=\"focus\" @blur=\"focused = false\"><Info :size=\"14\" aria-hidden=\"true\" /></button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12934,8 +12944,8 @@
     "file": "src/components/gs/GsInfo.vue",
     "line": 3,
     "event": "@focus",
-    "handler": "focused = true",
-    "template": "<button ref=\"trigger\" type=\"button\" class=\"gs-info-button\" :aria-label=\"label\" :aria-expanded=\"shown\" :aria-describedby=\"shown ? id : undefined\" @click=\"pinned = !pinned\" @focus=\"focused = true\" @blur=\"focused = false\"><Info :size=\"14\" aria-hidden=\"true\" /></button>",
+    "handler": "focus",
+    "template": "<button ref=\"trigger\" type=\"button\" class=\"gs-info-button\" :aria-label=\"label\" :aria-expanded=\"shown\" :aria-describedby=\"shown ? id : undefined\" @click=\"toggle\" @focus=\"focus\" @blur=\"focused = false\"><Info :size=\"14\" aria-hidden=\"true\" /></button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -12945,7 +12955,7 @@
     "line": 3,
     "event": "@blur",
     "handler": "focused = false",
-    "template": "<button ref=\"trigger\" type=\"button\" class=\"gs-info-button\" :aria-label=\"label\" :aria-expanded=\"shown\" :aria-describedby=\"shown ? id : undefined\" @click=\"pinned = !pinned\" @focus=\"focused = true\" @blur=\"focused = false\"><Info :size=\"14\" aria-hidden=\"true\" /></button>",
+    "template": "<button ref=\"trigger\" type=\"button\" class=\"gs-info-button\" :aria-label=\"label\" :aria-expanded=\"shown\" :aria-describedby=\"shown ? id : undefined\" @click=\"toggle\" @focus=\"focus\" @blur=\"focused = false\"><Info :size=\"14\" aria-hidden=\"true\" /></button>",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
