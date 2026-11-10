@@ -237,7 +237,7 @@ const close = () => emit('select-participant', '')
 // returns to the opener when it closes.
 const drawerElement = ref(null), closeButton = ref(null)
 // On phones the drawer is a bottom sheet: pulling it down closes it the same way the close button does.
-useSheetDrag(drawerElement, { handle: '.drawer-head', onClose: close })
+useSheetDrag(drawerElement, { handle: '.drawer-head', onClose: close, backdrop: node => node.parentElement })
 let opener = null, background = null, wasInert = false
 watch(() => Boolean(drawer.value), async isOpen => {
   if (isOpen) {
@@ -319,7 +319,7 @@ function cycleFocus(event) {
 }
 
 /* Side drawer (480px); a bottom sheet on phones. */
-.seasonal-drawer-backdrop { position: fixed; inset: 0; z-index: 3000; display: flex; justify-content: flex-end; background: color-mix(in srgb, var(--gs-chrome) 32%, transparent); }
+.seasonal-drawer-backdrop { position: fixed; inset: 0; z-index: 3000; display: flex; justify-content: flex-end; background: color-mix(in srgb, var(--gs-chrome) calc(32% * var(--sheet-backdrop, 1)), transparent); }
 .seasonal-drawer { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; width: min(var(--gs-surface-drawer-width), 100%); height: 100dvh; box-sizing: border-box; padding-top: var(--gs-safe-top); padding-right: var(--gs-safe-right); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
 .drawer-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); padding: var(--gs-space-5) var(--gs-space-5) var(--gs-space-4); border-bottom: 1px solid var(--gs-rule); }
 .drawer-identity { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }

@@ -59,20 +59,34 @@ Object.assign(globalThis, {
   requestAnimationFrame: callback => setTimeout(() => callback(performance.now()), 16),
   DOMMatrixReadOnly: class { constructor(value) { this.m42 = Number(value.match(/,\s*(-?[\d.]+)\)$/)?.[1] || 0) } },
 })
+// A style object with the CSSStyleDeclaration methods the composable uses for custom properties.
+function styleOf() {
+  const custom = {}
+  return Object.defineProperties({}, {
+    setProperty: { value: (name, value) => { custom[name] = value } },
+    removeProperty: { value: name => { delete custom[name] } },
+    getPropertyValue: { value: name => custom[name] ?? '' },
+  })
+}
+function attributesOf() {
+  const attributes = new Set()
+  return { toggleAttribute: (name, on) => { on ? attributes.add(name) : attributes.delete(name) }, hasAttribute: name => attributes.has(name) }
+}
 function sheet({ scrollTop = 0, width = 390, scrollable = true } = {}) {
   const listeners = {}
+  const backdrop = { nodeType: 1, style: styleOf() }
   const body = { nodeType: 1, style: {}, scrollHeight: scrollable ? 900 : 100, clientHeight: 300, scrollTop, parentElement: null, closest: selector => selector === '.header' ? null : body }
   const header = { nodeType: 1, style: {}, scrollHeight: 50, clientHeight: 50, scrollTop: 0, parentElement: null, closest: selector => selector === '.header' ? header : null }
   const node = {
     nodeType: 1, isConnected: true, open: true, scrollHeight: 400, clientHeight: 400, scrollTop: 0, parentElement: null,
-    style: {},
+    style: styleOf(), ...attributesOf(), getAnimations: () => [],
     addEventListener: (type, fn) => { (listeners[type] ||= []).push(fn) },
     removeEventListener: (type, fn) => { listeners[type] = (listeners[type] || []).filter(item => item !== fn) },
     getBoundingClientRect: () => ({ width, top: 444, bottom: 844, height: 400 }),
     listeners,
   }
   body.parentElement = node; header.parentElement = node
-  return { node, body, header }
+  return { node, body, header, backdrop }
 }
 globalThis.getComputedStyle = node => {
   const move = String(node.style.transform || '').match(/translateY\((-?[\d.]+)px\)/)?.[1]
@@ -219,6 +233,55 @@ const ramp = (total, count) => Array.from({ length: count }, (_, index) => ({ dy
   harness.stop(); second.stop()
   globals.reduced = false
 }
+{ // the backdrop thins with the sheet: --sheet-backdrop on the sheet (a <dialog>'s ::backdrop inherits it), held flag while dragging
+  const rig = sheet(), harness = mount(rig)
+  await drag(harness, rig.header, ramp(100, 4), { interval: 120 })
+  assert.equal(rig.node.style.getPropertyValue('--sheet-backdrop'), '0.75', 'a quarter of the height down, three quarters of the dimming')
+  assert.ok(rig.node.hasAttribute('data-sheet-drag'), 'the backdrop drops its transition while the finger holds the sheet')
+  lift(harness, rig.header)
+  assert.ok(!rig.node.hasAttribute('data-sheet-drag'), 'released: the backdrop eases back with the sheet')
+  assert.equal(rig.node.style.getPropertyValue('--sheet-backdrop'), '1')
+  await sleep(380)
+  assert.equal(rig.node.style.getPropertyValue('--sheet-backdrop'), '', 'cleared once it settles')
+  harness.stop()
+  const other = sheet(), second = mount(other, { use: { backdrop: () => other.backdrop } })
+  await drag(second, other.header, ramp(200, 4), { interval: 120 })
+  assert.equal(other.backdrop.style.getPropertyValue('--sheet-backdrop'), '0.5', 'a separate backdrop element dims instead')
+  assert.equal(other.node.style.getPropertyValue('--sheet-backdrop'), '')
+  lift(second, other.header); await sleep(420)
+  assert.equal(second.closed.length, 1)
+  assert.equal(other.backdrop.style.getPropertyValue('--sheet-backdrop'), '', 'cleared once the sheet is closed')
+  second.stop()
+}
+{ // scrolled content reaches its top mid-gesture and the finger keeps pulling: the sheet follows from there, in the same touch
+  const rig = sheet({ scrollTop: 60 }), harness = mount(rig)
+  harness.fire('touchstart', touchEvent(rig.body, [{ clientX: 200, clientY: 600 }]))
+  const move = (y, cancelable = false) => { const event = touchEvent(rig.body, [{ clientX: 200, clientY: y }], cancelable); harness.fire('touchmove', event); return event }
+  move(620, true) // first move: judged a scroll, the browser takes the touch
+  rig.body.scrollTop = 20; move(640)
+  assert.equal(rig.node.style.transform ?? '', '', 'still scrolling: the sheet stays')
+  rig.body.scrollTop = 0; move(660) // the content arrives at its top while the finger is still going down
+  move(720)
+  assert.equal(rig.node.style.transform, 'translateY(60px)', 'follows the finger from the point the content reached its top')
+  rig.body.scrollTop = 14; move(700) // the browser scrolls on the way back up; the content holds at its top while the sheet is out
+  assert.equal(rig.node.style.transform, 'translateY(40px)')
+  assert.equal(rig.body.scrollTop, 0, 'content holds at its top until the sheet is home')
+  move(600)
+  assert.equal(rig.node.style.transform, 'translateY(0px)', 'a handed-over sheet never rises above rest: further up is a scroll again')
+  rig.body.scrollTop = 30; move(580)
+  assert.equal(rig.body.scrollTop, 30, 'at rest the content scrolls freely')
+  lift(harness, rig.body); await sleep(420)
+  assert.equal(harness.closed.length, 0)
+  harness.stop()
+  const far = sheet({ scrollTop: 60 }), next = mount(far)
+  next.fire('touchstart', touchEvent(far.body, [{ clientX: 200, clientY: 500 }]))
+  next.fire('touchmove', touchEvent(far.body, [{ clientX: 200, clientY: 530 }]))
+  far.body.scrollTop = 0
+  for (let y = 560; y <= 720; y += 20) { next.fire('touchmove', touchEvent(far.body, [{ clientX: 200, clientY: y }], false)); await sleep(30) }
+  lift(next, far.body); await sleep(420)
+  assert.equal(next.closed.length, 1, 'pulled well past a third after the handover: closes')
+  next.stop()
+}
 { // listeners go away with the scope; the touchmove one must be non-passive
   const rig = sheet()
   const added = []
@@ -236,7 +299,8 @@ assert.ok(composable.includes("{ passive: false }") && composable.includes('even
 const wired = [
   ['src/components/archive/terminal/ArchiveTerminalDialog.vue', "useSheetDrag(dialog, { handle: '.terminal-dialog-header', onClose: () => emit('close'), enabled: () => props.swipeDismiss })"],
   ['src/components/archive/ReaderWorkspaceControls.vue', "useSheetDrag(dialog, { handle: '.sheet-header', onClose: () => closePanel() })"],
-  ['src/components/archive/ArchiveSeasonalCampaign.vue', "useSheetDrag(drawerElement, { handle: '.drawer-head', onClose: close })"],
+  ['src/components/archive/ArchiveSeasonalCampaign.vue', "useSheetDrag(drawerElement, { handle: '.drawer-head', onClose: close, backdrop: node => node.parentElement })"],
+  ['src/components/gs/GsFilterPanel.vue', "useSheetDrag(panel, { handle: '.gs-filter-panel-head', onClose: () => close(true), enabled: () => sheet.value, isShowing: node => node.isConnected, backdrop: node => node.parentElement })"],
   ['src/components/archive/ArchiveImmersiveHome.vue', "useSheetDrag(cueIndexRef, { handle: 'header', onClose: () => closeCueIndex() })"],
 ]
 for (const [file, call] of wired) assert.ok(read(file).includes(call), `${file} wires useSheetDrag`)
@@ -245,12 +309,21 @@ assert.ok(read('src/components/archive/ArchiveFilterSheet.vue').includes('<Archi
 assert.ok(read('src/components/ChibiSongPicker.vue').includes("{ class: 'filter-sheet arrangement-sheet', swipeDismiss: true,"))
 assert.ok(read('src/components/ChibiStageViewer.vue').includes('class="stage-dev-dialog stage-quality-dialog" swipe-dismiss '))
 assert.match(read('src/components/archive/terminal/ArchiveTerminalDialog.vue'), /swipeDismiss: Boolean/)
+// The backdrops read the dimming: <dialog> sheets through ::backdrop, the two layered sheets through their own background.
+const motion = read('src/styles/gs-motion.css')
+assert.ok(motion.includes('.gs-dialog-motion[open]::backdrop { opacity: var(--sheet-backdrop, 1);') && motion.includes('.gs-dialog-motion[data-sheet-drag]::backdrop { transition: none; }'))
+assert.ok(read('src/components/gs/GsFilterPanel.vue').includes('.is-sheet { background: rgb(11 20 36 / calc(18% * var(--sheet-backdrop, 1))); }'))
+assert.ok(read('src/components/archive/ArchiveSeasonalCampaign.vue').includes('color-mix(in srgb, var(--gs-chrome) calc(32% * var(--sheet-backdrop, 1)), transparent)'))
+// The bottom form of .filter-sheet lives with the dialog both of its users render, so the stage arrangement sheet has it even
+// when ArchiveFilterSheet's chunk never loaded (it was a centred card on a fresh stage page before).
+assert.ok(read('src/components/archive/terminal/ArchiveTerminalDialog.vue').includes('.terminal-dialog.filter-sheet { width: 100%;'))
+assert.ok(!read('src/components/archive/ArchiveFilterSheet.vue').includes('.terminal-dialog.filter-sheet'))
 // Not sheets: centred dialogs, the first-visit guide and the scene settings keep to buttons, backdrop and Escape.
 assert.ok(!read('src/components/archive/ArchiveOnboarding.vue').includes('useSheetDrag'))
 assert.ok(!/useSheetDrag\((?:sceneSettingsRef|dialog)/.test(read('src/components/archive/ArchiveImmersiveHome.vue')))
 // One implementation: no other file listens for touch moves on a sheet.
-for (const file of ['src/components/archive/ArchiveFilterSheet.vue', 'src/components/ChibiSongPicker.vue', 'src/components/archive/ReaderWorkspaceControls.vue', 'src/components/archive/ArchiveSeasonalCampaign.vue']) {
+for (const file of ['src/components/archive/ArchiveFilterSheet.vue', 'src/components/gs/GsFilterPanel.vue', 'src/components/ChibiSongPicker.vue', 'src/components/archive/ReaderWorkspaceControls.vue', 'src/components/archive/ArchiveSeasonalCampaign.vue']) {
   assert.ok(!/touchmove|pointermove/.test(read(file)), `${file} has no private sheet gesture`)
 }
 
-console.log('Sheet drag: pure decisions, 13 gesture scenarios (slow pull back, flick close, drag past a third, scrolled content, content at top, sideways, rubber band, not a bottom sheet, refused close, caught mid-flight, reduced motion, listener hygiene) and 7 wired sheets passed. Source/contract evidence; feel on real touch devices is separate.')
+console.log('Sheet drag: pure decisions, 15 gesture scenarios (slow pull back, flick close, drag past a third, scrolled content, content at top, sideways, rubber band, not a bottom sheet, refused close, caught mid-flight, reduced motion, backdrop dimming, scroll handover, listener hygiene) and 8 wired sheets passed. Source/contract evidence; feel on real touch devices is separate.')
