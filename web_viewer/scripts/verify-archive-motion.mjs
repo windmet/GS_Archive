@@ -78,6 +78,24 @@ assert.match(motion, /:where\(#story-viewer, body > :not\(#app\)\) :where\(img:n
 assert.match(motion, /:where\(img\[data-gs-failed\]\) \{ background-color: var\(--gs-paper-2\); \}/, 'a failed image shows the placeholder tone, never hidden')
 assert.ok(!/img\[data-gs-failed\][^}]*(?:opacity|visibility|display)/.test(motion), 'alt text and fallbacks of a failed image stay visible')
 
+// Default focus ring: zero specificity (the :focus-visible state sits in its own :where()), so every component rule still wins.
+assert.match(motion, /^:where\(button, a\[href\], summary, input, select, textarea, \[role="button"\], \[role="tab"\], \[role="option"\], \[tabindex\]:not\(\[tabindex="-1"\]\)\):where\(:focus-visible\) \{\n  outline: var\(--gs-focus-ring\) solid var\(--gs-mint\);\n  outline-offset: var\(--gs-focus-offset\);/m)
+assert.ok(!/:focus-visible/.test(motion.replace(/\/\*[\s\S]*?\*\//g, '').replace(/:where\(:focus-visible\)/g, '')), 'gs-motion.css adds no focus rule above zero specificity')
+assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(read('src/components/LoadingScreen.vue').match(/\.load-cancel:focus-visible[^}]*\}/)?.[0] || '#'), 'the loading curtain focus ring uses the tokens')
+
+// The home page dialogs: shared dialog motion (no private keyframes), a side drawer on wide screens and a bottom sheet on phones,
+// and both stay mounted while they fade out, as ArchiveTerminalDialog does.
+const home = read('src/components/archive/ArchiveImmersiveHome.vue')
+assert.ok(home.includes('<dialog v-if="cueIndexMounted" ref="cueIndexRef" class="scene-settings cue-index gs-dialog-motion"'))
+assert.ok(home.includes('<dialog v-if="settingsMounted" ref="sceneSettingsRef" class="scene-settings gs-dialog-motion"'))
+assert.ok(home.includes('--gs-dialog-travel:translateX(32px)') && home.includes('--gs-dialog-travel:translateY(100%);--gs-dialog-duration:var(--gs-motion-sheet);'), 'line directory: drawer on wide screens, bottom sheet on phones')
+assert.ok(!/@keyframes cue-(?:drawer|sheet|fade)-in/.test(home) && !/animation(?:-name)?\s*:\s*cue-(?:drawer|sheet|fade)/.test(home), 'the line directory has no private enter keyframes')
+assert.ok(Number(home.match(/const EXIT_MS = (\d+)/)?.[1]) > exit, 'the home dialogs unmount only after the exit fade')
+assert.match(home, /function closeSettings\(\) \{(?:(?!\n\})[\s\S])*?settingsReleaseTimer = setTimeout\(\(\) => \{ if \(!settingsOpen\.value\) settingsMounted\.value = false \}, EXIT_MS\)/)
+assert.match(home, /function closeCueIndex\(\) \{(?:(?!\n\})[\s\S])*?cueIndexReleaseTimer = setTimeout\(\(\) => \{ if \(!cueIndexOpen\.value\) cueIndexMounted\.value = false \}, EXIT_MS\)/)
+assert.match(home, /clearTimeout\(settingsReleaseTimer\)\n  settingsOpen\.value = true\n  settingsMounted\.value = true/)
+assert.match(home, /clearTimeout\(cueIndexReleaseTimer\)\n  cueIndexOpen\.value = true\n  cueIndexMounted\.value = true/)
+
 const main = read('src/main.js')
 assert.ok(main.includes("import './styles/gs-motion.css'"), 'motion styles load with the tokens')
 assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImageReveal()') < main.indexOf('.mount('), 'images are watched before the app renders any')
@@ -138,4 +156,4 @@ assert.ok(read('src/components/archive/CollectionQuickView.vue').includes('colle
 assert.ok(read('src/components/archive/CollectionDetailPanel.vue').includes("'gs-enter-panel':modal"))
 assert.ok(read('src/components/archive/ArchivePortalOverview.vue').includes('class="overview-search-results gs-enter-popover"'))
 
-console.log(`Archive motion: ${exit}/${page}/${enter}/${sheet}ms ladder, reduced motion, zero-specificity press and image reveal, opacity-only page change, nine layers wired (six also leave with a fade, keeping their content) passed. Source/contract evidence; feel on real touch devices is separate.`)
+console.log(`Archive motion: ${exit}/${page}/${enter}/${sheet}ms ladder, reduced motion, zero-specificity press and image reveal, opacity-only page change, eleven layers wired (eight also leave with a fade, keeping their content) passed. Source/contract evidence; feel on real touch devices is separate.`)
