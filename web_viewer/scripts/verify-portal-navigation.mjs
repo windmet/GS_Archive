@@ -307,6 +307,13 @@ assert.match(gridSource, /<ArrowUpRight v-if="section\.id === 'tools'"/, 'the tw
 assert.match(drawerSource, /props\.keyboard \? current \|\| sheet\.value\?\.querySelector\('button'\) : sheet\.value/, 'a tap focuses the sheet, not the first cell; the keyboard lands on the current cell')
 assert.match(shellSource, /drawerByKeyboard\.value = event\?\.detail === 0/, 'the shell tells keyboard opens from taps')
 assert.match(shellSource, /provide\('openNavigationDrawer', openNavigationDrawer\)/, 'the shell lends its one drawer to the archive home')
+// The brand is the sidebar's fold switch (11-10), not a second way to the portal; a landscape phone (forced rail) lifts
+// the sidebar over the page (peek) instead of being stuck on icons, and the old foot toggle is gone.
+assert.match(shellSource, /class="archive-brand"[^>]*:aria-expanded="sidebarExpanded"[^>]*@click="toggleSidebar"/, 'the brand folds and unfolds the sidebar')
+assert.doesNotMatch(shellSource, /class="archive-brand"[^>]*navigate/, 'the brand no longer navigates')
+assert.doesNotMatch(shellSource, /archive-sidebar-toggle/, 'one fold switch, not two')
+assert.match(shellSource, /if \(forcedRail\.value\) \{ peekOpen\.value = !peekOpen\.value; return \}/, 'the forced rail peeks instead of refusing')
+assert.match(shellSource, /\.is-peek \{ --archive-sidebar: 58px; \}/, 'peek keeps the rail track, so the page does not move')
 assert.match(shellSource, /\(drawerOpener\?\.isConnected \? drawerOpener : drawerToggle\.value\)\?\.focus\(\)/, 'Esc returns focus to whichever control opened the drawer')
 // 回到页顶 and 关于本站 close the drawer as a footer line; 回到页顶 scrolls the archive scroll area.
 assert.match(drawerSource, /<p class="archive-drawer-footer">[\s\S]*?<button type="button" class="archive-drawer-top" :disabled="!canScrollTop" @click="scrollToTop">回到页顶<\/button>[\s\S]*?sectionLabel\('about'\)[\s\S]*?<\/p>/, 'the footer offers 回到页顶 (disabled at the top) and 关于本站')

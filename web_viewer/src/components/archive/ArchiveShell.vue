@@ -1,8 +1,11 @@
 <template>
-  <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-rail': railMode, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'has-subnav': hasSubnav, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
+  <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-rail': railMode && !peekOpen, 'is-peek': peekOpen, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'has-subnav': hasSubnav, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
-      <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
+      <!-- The brand is the sidebar's fold switch (资料馆 has its own entry below). Expanded, the fold glyph stands at the
+           row's end; on the rail, pointing at the mark swaps it for the unfold glyph. -->
+      <button type="button" class="archive-brand" :aria-label="sidebarToggleLabel" :title="sidebarToggleLabel" :aria-expanded="sidebarExpanded" @click="toggleSidebar">
         <ArchiveBrandLockup />
+        <component :is="sidebarExpanded ? PanelLeftClose : PanelLeftOpen" class="archive-brand-toggle" :size="18" :stroke-width="1.8" aria-hidden="true" />
       </button>
       <!-- 担当 and the destinations scroll together: on a window too short for both, nothing slides under a fixed row. -->
       <div class="archive-sidebar-scroll">
@@ -21,12 +24,10 @@
         </nav>
       </div>
       <div class="archive-sidebar-foot">
-        <button v-if="!forcedRail" type="button" class="archive-sidebar-toggle" :aria-label="railMode ? '展开侧栏' : '收起侧栏'" :title="railMode ? '展开侧栏' : '收起侧栏'" :aria-expanded="!railMode" @click="toggleSidebar">
-          <component :is="railMode ? PanelLeftOpen : PanelLeftClose" :size="18" :stroke-width="1.8" aria-hidden="true" />
-        </button>
         <button type="button" class="archive-sidebar-about" :aria-current="activeSection === 'about' ? 'page' : undefined" @click="emit('navigate', 'about')">关于本站</button>
       </div>
     </aside>
+    <button v-if="peekOpen" type="button" class="archive-sidebar-scrim" aria-label="收起侧栏" tabindex="-1" @click="peekOpen = false"></button>
 
     <ArchivePageChrome v-if="!['portal', 'reader'].includes(activeSection)" class="archive-topbar" :can-go-back="backVisible" :back-label="backLabel" back-icon-only back-class="archive-back" @back="emit('back')">
       <template #before-title>
@@ -104,7 +105,7 @@
 </template>
 
 <script setup>
-import { BookOpen, Box, CalendarDays, ChevronDown, ChevronUp, Clapperboard, FolderOpen, Home, Info, Layers, LayoutGrid, Menu, Music, PanelLeftClose, PanelLeftOpen, Search, Users, UsersRound, X } from '@lucide/vue'
+import { Aperture, BookOpen, Box, CalendarDays, ChevronDown, ChevronUp, FolderOpen, Home, Info, LayoutGrid, Menu, MicVocal, Music, PanelLeftClose, PanelLeftOpen, Search, Users, X } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
@@ -135,7 +136,7 @@ watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = tru
 const emit = defineEmits(['navigate', 'follow', 'back', 'update:modelValue'])
 
 // Same destinations and labels as the portal; only the glyphs are shell-specific.
-const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, live: Clapperboard, studio: Layers, resources: FolderOpen }
+const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, live: MicVocal, studio: Aperture, resources: FolderOpen }
 const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, icon: groupIcons[group.id] }))
 const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
 const activeNavigationGroup = computed(() => navigationGroups.find(group => group.ids.includes(navigationSection.value))?.id || '')
@@ -156,7 +157,7 @@ const sidebarEntries = computed(() => [
   ...navigationGroups.map(group => {
     const items = group.id === 'collection'
       ? [{ id: 'collection', label: group.label, icon: Box, menu: true, active: activeNavigationGroup.value === 'collection' }]
-      : (group.id === 'people' ? ['idols', 'units', 'cards'] : group.ids).map(id => ({ id, label: sectionLabel(id), icon: id === 'units' ? UsersRound : archiveNavigationIcons[id] || group.icon, target: id, active: navigationSection.value === id }))
+      : (group.id === 'people' ? ['idols', 'units', 'cards'] : group.ids).map(id => ({ id, label: sectionLabel(id), icon: archiveNavigationIcons[id] || group.icon, target: id, active: navigationSection.value === id }))
     return { id: group.id, label: group.label, divider: group.id === 'live', items }
   }),
 ])
@@ -166,12 +167,22 @@ const SIDEBAR_KEY = 'sidem:archive-sidebar'
 const storedSidebar = ref(['rail', 'full'].includes(readStored(SIDEBAR_KEY)) ? readStored(SIDEBAR_KEY) : '')
 const wideWindow = ref(true), forcedRail = ref(false), isPhone = ref(false)
 const railMode = computed(() => forcedRail.value || (storedSidebar.value ? storedSidebar.value === 'rail' : !wideWindow.value))
+// A landscape phone is too short for the full sidebar beside the page, so the brand there lifts it over the page as a
+// sheet instead (peek): nothing is remembered, and leaving the page, Esc or a tap outside lays it back.
+const peekOpen = ref(false)
+const sidebarExpanded = computed(() => !railMode.value || peekOpen.value)
+const sidebarToggleLabel = computed(() => sidebarExpanded.value ? '收起侧栏' : '展开侧栏')
 // A route change or a fold of the sidebar moves the entry the menu hangs from, so the menu closes.
-watch([() => props.activeSection, railMode], () => { flyout.value = null })
+watch([() => props.activeSection, railMode, peekOpen], () => { flyout.value = null })
+watch([() => props.activeSection, forcedRail], () => { peekOpen.value = false })
 function toggleSidebar() {
+  if (forcedRail.value) { peekOpen.value = !peekOpen.value; return }
   storedSidebar.value = railMode.value ? 'full' : 'rail'
   writeStored(SIDEBAR_KEY, storedSidebar.value)
 }
+function onPeekKey(event) { if (event.key === 'Escape' && peekOpen.value) { peekOpen.value = false; document.querySelector('.archive-brand')?.focus() } }
+onMounted(() => document.addEventListener('keydown', onPeekKey))
+onBeforeUnmount(() => document.removeEventListener('keydown', onPeekKey))
 const stopQueries = []
 function track(query, target) {
   if (typeof matchMedia !== 'function') return
@@ -239,7 +250,7 @@ function measureIndicator() {
   if (!indicator.value.ready) requestAnimationFrame(() => { indicator.value = { ...indicator.value, ready: true } })
 }
 let navObserver
-watch([() => props.activeSection, navigationSection, railMode], () => nextTick(measureIndicator), { flush: 'post' })
+watch([() => props.activeSection, navigationSection, railMode, peekOpen], () => nextTick(measureIndicator), { flush: 'post' })
 onMounted(() => {
   measureIndicator()
   if (typeof ResizeObserver === 'function' && navRef.value) { navObserver = new ResizeObserver(measureIndicator); navObserver.observe(navRef.value) }
@@ -276,6 +287,10 @@ onBeforeUnmount(() => navObserver?.disconnect())
   transition: grid-template-columns 180ms var(--gs-ease-out);
 }
 .archive-shell.is-rail { --archive-sidebar: 58px; }
+/* Peek keeps the 58px track and lets the sidebar stand 208px wide over the page, above a light scrim. */
+.archive-shell.is-peek { --archive-sidebar: 58px; }
+.is-peek .archive-sidebar { position: relative; z-index: 30; width: 208px; box-shadow: var(--gs-shadow-float); }
+.archive-sidebar-scrim { position: fixed; inset: 0; z-index: 29; padding: 0; border: 0; background: rgb(11 20 36 / 18%); }
 .archive-shell.has-inspector { --archive-inspector: min(340px, 28vw); }
 .archive-shell.is-home { --archive-topbar: 0px; }
 .archive-shell.is-home .archive-topbar { display: none; }
@@ -355,11 +370,19 @@ onBeforeUnmount(() => navObserver?.disconnect())
    the one rule before the tools is the only break (an unlabelled 8px between groups read as uneven spacing). */
 .archive-nav-cluster { display: grid; gap: var(--gs-space-1); }
 .archive-nav-divider { margin: var(--gs-space-4) var(--gs-space-4); border: 0; border-top: 1px solid var(--gs-line); }
-/* The foot: fold button on the rail's icon axis, 关于本站 beside it, quieter than the destinations above. */
+/* The foot: 关于本站, quieter than the destinations above (the fold switch is the brand). The rail has no room for it. */
 .archive-sidebar-foot { display: flex; flex: none; align-items: center; gap: var(--gs-space-2); padding: var(--gs-space-3) var(--gs-space-3) var(--gs-space-3) 13px; }
-.archive-sidebar-toggle { display: grid; flex: none; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-3); cursor: pointer; }
+.is-rail .archive-sidebar-foot { display: none; }
+/* The fold glyph: at the brand row's end when expanded; on the rail it sits on the mark's centre (29px) and replaces the
+   mark while pointed at or focused. */
+.archive-brand { position: relative; }
+.archive-brand-toggle { flex: none; margin-left: auto; color: var(--gs-ink-3); transition: opacity var(--gs-motion-feedback), color var(--gs-motion-feedback); }
+.archive-brand :deep(.archive-brand-lockup img) { transition: opacity var(--gs-motion-feedback); }
+.is-rail .archive-brand-toggle { position: absolute; top: 50%; left: 20px; margin: -9px 0 0; opacity: 0; }
+.is-rail .archive-brand:focus-visible .archive-brand-toggle { opacity: 1; color: var(--gs-ink); }
+.is-rail .archive-brand:focus-visible :deep(.archive-brand-lockup img) { opacity: 0; }
 .archive-sidebar-about { flex: none; min-height: 32px; padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-meta); text-align: left; white-space: nowrap; cursor: pointer; }
-.archive-sidebar-toggle:hover, .archive-sidebar-about:hover { background: var(--gs-hover); color: var(--gs-ink); }
+.archive-sidebar-about:hover { background: var(--gs-hover); color: var(--gs-ink); }
 .archive-sidebar-about[aria-current='page'] { background: var(--gs-current-bg); box-shadow: var(--gs-current-shadow); color: var(--gs-ink); }
 /* Window height sets the row height: the whole sidebar must hold without scrolling down to 688px. */
 @media (max-height: 880px) {
@@ -377,9 +400,12 @@ onBeforeUnmount(() => navObserver?.disconnect())
 .is-rail .archive-nav-divider { margin-inline: var(--gs-space-3); }
 @media (hover: hover) {
   .archive-brand:hover { background: var(--gs-hover); }
+  .archive-brand:hover .archive-brand-toggle { color: var(--gs-ink); }
+  .is-rail .archive-brand:hover .archive-brand-toggle { opacity: 1; }
+  .is-rail .archive-brand:hover :deep(.archive-brand-lockup img) { opacity: 0; }
   .archive-nav-link:not(.active):hover { background: var(--gs-hover); color: var(--gs-ink); }
 }
-.archive-brand:focus-visible, .archive-nav-link:focus-visible, .archive-sidebar-toggle:focus-visible, .archive-sidebar-about:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
+.archive-brand:focus-visible, .archive-nav-link:focus-visible, .archive-sidebar-about:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 @media (prefers-reduced-motion: reduce) { .archive-shell { transition: none; } .archive-nav-indicator.is-ready { transition: none; } }
 /* The title row: back, parents, title on one 60px line; actions on the right. */
 .archive-topbar {
