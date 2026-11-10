@@ -135,13 +135,8 @@ const progressScale = computed(() => {
   border-radius: inherit;
   background: var(--player-accent);
   box-shadow: 0 0 8px rgba(56, 184, 167, 0.32);
-  transition: transform var(--player-motion-base) var(--player-ease-standard);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .progress-fill {
-    transition: none;
-  }
+  /* Not eased: the value is the step number, which changes in whole steps at irregular intervals (a tap, a voice line
+     ending), so there is no fixed interval to ease across, and any easing would leave the bar behind the real position. */
 }
 
 .bar-right {
