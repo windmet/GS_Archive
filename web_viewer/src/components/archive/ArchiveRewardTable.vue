@@ -5,11 +5,13 @@
       <span>{{ filtered.length }} 条</span>
     </div>
     <ol v-if="filtered.length" class="domain-reward-list" :aria-label="sources ? '已知来源与用途' : '奖励明细'">
-      <li v-for="(row,i) in visible" :key="row.key || `${page}:${i}`" class="domain-reward-entry">
+      <template v-for="(row,i) in visible" :key="row.key || `${page}:${i}`">
+      <li v-if="startsGroup(i)" class="domain-reward-group" aria-hidden="true">{{ rewardRelationLabel(row) }}</li>
+      <li class="domain-reward-entry">
         <div class="domain-reward-heading">
           <div class="domain-reward-conditions">
-            <small>{{ rewardRelationLabel(row) }}</small>
-            <div><span v-for="(condition,c) in rewardConditions(row)" :key="c" class="domain-reward-condition">{{ condition }}</span></div>
+            <span class="domain-reward-relation">{{ rewardRelationLabel(row) }}</span>
+            <span v-for="(condition,c) in rewardConditions(row)" :key="c" class="domain-reward-condition">{{ condition }}</span>
           </div>
           <span v-if="hasAmount(row)" class="domain-reward-quantity" :aria-label="`数量 ${amount(row)}`">× {{ amount(row) }}</span>
         </div>
@@ -28,6 +30,7 @@
         </div>
         <div v-if="row.campaigns?.length" class="domain-reward-campaigns"><template v-for="campaign in row.campaigns" :key="campaign.id"><small v-if="campaignPeriod(campaign.term)">{{ campaignPeriod(campaign.term) }} 期间登录</small></template></div>
       </li>
+      </template>
     </ol>
     <nav v-if="pages>1" class="domain-pagination" aria-label="奖励分页"><button type="button" :disabled="page===0" @click="page--">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type="button" :disabled="page+1>=pages" @click="page++">下一页</button></nav>
   </div>
@@ -48,6 +51,8 @@ const scopeOptions=computed(()=>[{value:'',label:'全部',count:props.rows.lengt
 const filtered=computed(()=>props.rows.filter(row=>!scope.value || row.scope===scope.value))
 const pages=computed(()=>Math.ceil(filtered.value.length/size)),visible=computed(()=>filtered.value.slice(page.value*size,(page.value+1)*size))
 watch(()=>props.rows,()=>{scope.value='';page.value=0});watch(scope,()=>{page.value=0})
+// A run of rows from one source shows its name once; a new page restarts the run.
+const startsGroup=i=>i===0 || rewardRelationLabel(visible.value[i-1])!==rewardRelationLabel(visible.value[i])
 const hasAmount=row=>Number.isFinite(row.product?.amount ?? row.amount)
 const amount=row=>hasAmount(row)?number(row.product?.amount ?? row.amount):''
 function openProduct(product) {

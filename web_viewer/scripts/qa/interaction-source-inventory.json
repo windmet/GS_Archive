@@ -7892,7 +7892,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 21,
+    "line": 23,
     "event": "@click",
     "handler": "openProduct(row.product)",
     "template": "<button v-if=\"rewardCollectionKey(row.product) || row.product?.target\" type=\"button\" class=\"domain-reward-name\" @click=\"openProduct(row.product)\">",
@@ -7902,7 +7902,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 27,
+    "line": 29,
     "event": "@click",
     "handler": "emit('open-event',row.event)",
     "template": "<button type=\"button\" class=\"domain-reward-name\" @click=\"emit('open-event',row.event)\"><span><strong>{{ row.event.title }}</strong><small>查看关联活动</small></span><ChevronRight :size=\"16\" /></button>",
@@ -7912,7 +7912,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 32,
+    "line": 35,
     "event": "@click",
     "handler": "page--",
     "template": "<nav v-if=\"pages>1\" class=\"domain-pagination\" aria-label=\"奖励分页\"><button type=\"button\" :disabled=\"page===0\" @click=\"page--\">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type=\"button\" :disabled=\"page+1>=pages\" @click=\"page++\">下一页</button></nav>",
@@ -7922,7 +7922,7 @@
   {
     "component": "ArchiveRewardTable",
     "file": "src/components/archive/ArchiveRewardTable.vue",
-    "line": 32,
+    "line": 35,
     "event": "@click",
     "handler": "page++",
     "template": "<nav v-if=\"pages>1\" class=\"domain-pagination\" aria-label=\"奖励分页\"><button type=\"button\" :disabled=\"page===0\" @click=\"page--\">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type=\"button\" :disabled=\"page+1>=pages\" @click=\"page++\">下一页</button></nav>",
@@ -10442,7 +10442,7 @@
   {
     "component": "ArchiveUnusedVoices",
     "file": "src/components/archive/ArchiveUnusedVoices.vue",
-    "line": 29,
+    "line": 31,
     "event": "@click",
     "handler": "play(line.cue)",
     "template": "<button type=\"button\" class=\"unused-play\" :aria-pressed=\"playing === line.cue\" :aria-label=\"`播放 ${scene.label} ${line.cue}`\" @click=\"play(line.cue)\"><component :is=\"playing === line.cue ? Pause : Play\" :size=\"18\" aria-hidden=\"true\" /></button>",
@@ -10452,7 +10452,7 @@
   {
     "component": "ArchiveUnusedVoices",
     "file": "src/components/archive/ArchiveUnusedVoices.vue",
-    "line": 31,
+    "line": 33,
     "event": "@click",
     "handler": "preview(line.cue)",
     "template": "<button type=\"button\" class=\"voice-preview-btn\" :aria-label=\"`演出预览 ${line.cue}`\" title=\"演出预览\" @click=\"preview(line.cue)\"><MonitorPlay :size=\"18\" aria-hidden=\"true\" /></button>",
@@ -10462,7 +10462,7 @@
   {
     "component": "ArchiveUnusedVoices",
     "file": "src/components/archive/ArchiveUnusedVoices.vue",
-    "line": 39,
+    "line": 41,
     "event": "@click",
     "handler": "play(line.cue)",
     "template": "<button type=\"button\" class=\"unused-play\" :aria-pressed=\"playing === line.cue\" :aria-label=\"`播放 ${speakerName(speaker.code)} ${line.cue}`\" @click=\"play(line.cue)\"><component :is=\"playing === line.cue ? Pause : Play\" :size=\"18\" aria-hidden=\"true\" /></button>",
@@ -10472,7 +10472,7 @@
   {
     "component": "ArchiveUnusedVoices",
     "file": "src/components/archive/ArchiveUnusedVoices.vue",
-    "line": 52,
+    "line": 54,
     "event": "@click",
     "handler": "play(line.cue)",
     "template": "<button v-for=\"line in speaker.cues\" :key=\"line.cue\" type=\"button\" class=\"unused-chip\" :data-unused-cue=\"line.cue\" :aria-pressed=\"playing === line.cue\" :aria-label=\"`播放 ${speakerName(speaker.code)} ${line.label} ${line.cue}`\" :title=\"line.cue\" @click=\"play(line.cue)\">",
@@ -10482,7 +10482,7 @@
   {
     "component": "ArchiveUnusedVoices",
     "file": "src/components/archive/ArchiveUnusedVoices.vue",
-    "line": 61,
+    "line": 63,
     "event": "@ended",
     "handler": "settle",
     "template": "<audio ref=\"audio\" preload=\"none\" @ended=\"settle\" @pause=\"settle\" @error=\"fail\" />",
@@ -10492,7 +10492,7 @@
   {
     "component": "ArchiveUnusedVoices",
     "file": "src/components/archive/ArchiveUnusedVoices.vue",
-    "line": 61,
+    "line": 63,
     "event": "@pause",
     "handler": "settle",
     "template": "<audio ref=\"audio\" preload=\"none\" @ended=\"settle\" @pause=\"settle\" @error=\"fail\" />",
@@ -10502,7 +10502,7 @@
   {
     "component": "ArchiveUnusedVoices",
     "file": "src/components/archive/ArchiveUnusedVoices.vue",
-    "line": 61,
+    "line": 63,
     "event": "@error",
     "handler": "fail",
     "template": "<audio ref=\"audio\" preload=\"none\" @ended=\"settle\" @pause=\"settle\" @error=\"fail\" />",

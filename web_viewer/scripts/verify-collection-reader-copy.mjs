@@ -1,7 +1,8 @@
 // Reader-facing copy rules for the 图鉴 (docs/GS_ARCHIVE_COLLECTION_CLEANUP_20261110.md section 2.1).
 // The readers of the collection pages see only what is known; engineering words and "unknown" placeholders
-// stay out. This scans the reader templates (plus the Chinese string literals in their scripts) and the
-// currency catalog's textZh for the banned terms.
+// stay out. This scans the reader templates (plus the Chinese string literals in their scripts), the
+// currency catalog's textZh and the voice archives' reader `note` fields (their `maintainerNote` is the
+// maintainer view) for the banned terms.
 //
 // Exclusions, by construction and nothing else:
 //   - the 原始资料 fold:  <details class="collection-source-meta"> ... </details>
@@ -23,7 +24,10 @@ const FILES = [
   'src/components/archive/CollectionDetailPanel.vue',
   'src/components/archive/ArchiveRewardTable.vue',
   'src/components/archive/ArchiveCollectionCatalog.vue',
+  'src/components/archive/ArchiveUnusedVoices.vue',
+  'src/components/archive/ArchivePhotoCatalog.vue',
 ]
+const VOICE_NOTES = { 'src/data/unusedVoiceArchive.json': 'families', 'src/data/officeSystemVoices.json': 'scenes' }
 
 // Removes `<tag ...attr...>...</tag>` blocks whose opening tag matches `opening`, balancing nested same-name tags.
 function removeBlocks(html, opening) {
@@ -103,10 +107,17 @@ function run() {
   })(catalog)
   assert.ok(zh.length >= 5, `currency catalog: only ${zh.length} textZh fields, the scan is hollow`)
   failures.push(...violations('config/currency-catalog.v1.json', zh))
+  let notes = 0
+  for (const [file, key] of Object.entries(VOICE_NOTES)) {
+    const rows = JSON.parse(read(file))[key]
+    assert.ok(rows?.length > 0 && rows.every(row => typeof row.note === 'string'), `${file}: no ${key}[].note to scan, the scan is hollow`)
+    notes += rows.length
+    failures.push(...violations(file, rows.map(row => row.note)))
+  }
   assert.ok(scannedStrings >= 80, `only ${scannedStrings} reader strings scanned`)
   assert.ok(folds >= 1, 'the 原始资料 fold exclusion matched nothing (class renamed?)')
-  assert.ok(gated >= 4, `maintainer-gated exclusion matched ${gated} blocks (flag renamed?)`)
+  assert.ok(gated >= 7, `maintainer-gated exclusion matched ${gated} blocks (flag renamed?)`)
   assert.deepEqual(failures, [], `reader copy uses banned terms:\n  ${failures.join('\n  ')}`)
-  console.log(`Collection reader copy: ${FILES.length} files, ${scannedStrings} strings and ${zh.length} currency texts clean (${folds} fold and ${gated} maintainer blocks excluded)`)
+  console.log(`Collection reader copy: ${FILES.length} files, ${scannedStrings} strings, ${zh.length} currency texts and ${notes} voice notes clean (${folds} fold and ${gated} maintainer blocks excluded)`)
 }
 run()

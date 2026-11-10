@@ -508,23 +508,6 @@ button.episode-main { cursor: pointer; }
 .detail-section :deep(.relation-labels strong), .detail-section :deep(.relation-labels small), .detail-section :deep(.relation-meta), .detail-section :deep(.relation-proof), .detail-section :deep(.relation-copy code) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .detail-section :deep(.relation-labels small) { padding: var(--gs-space-1) var(--gs-space-2); }
 .detail-section :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.general-reward-section :deep(.domain-reward-list) { gap: 0; font-size: var(--gs-text-body); }
-.general-reward-section :deep(.domain-reward-entry) { gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: transparent; }
-.general-reward-section :deep(.domain-reward-icon) { border: 0; border-radius: 0; background: transparent; }
-.detail-section :deep(.domain-reward-conditions > small) { margin-bottom: var(--gs-space-3); font-size: var(--gs-text-meta); }
-.detail-section :deep(.domain-reward-conditions > div) { gap: var(--gs-space-2); }
-.general-reward-section :deep(.domain-reward-condition) { padding: 0; border-radius: 0; background: transparent; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.general-reward-section :deep(.domain-reward-condition + .domain-reward-condition)::before { content: '·'; margin-right: var(--gs-space-2); color: var(--gs-ink-3); }
-.detail-section :deep(.domain-reward-quantity) { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.detail-section :deep(.domain-reward-product) { gap: var(--gs-space-4); }
-.detail-section :deep(.domain-reward-name) { gap: var(--gs-space-3); padding: var(--gs-space-2) 0; font-family: inherit; font-size: var(--gs-text-body); border-radius: var(--gs-radius-control); }
-.detail-section :deep(.domain-reward-name strong) { font-weight: var(--gs-weight-semibold); }
-.detail-section :deep(.domain-reward-name small), .detail-section :deep(.domain-reward-campaigns) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.detail-section :deep(.domain-table-controls) { flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-5); font-size: var(--gs-text-meta); }
-.detail-section :deep(.domain-table-controls label) { flex: 1 1 220px; gap: var(--gs-space-3); min-width: 0; font-size: var(--gs-text-ui); }
-.detail-section :deep(.domain-table-controls select) { flex: 1; box-sizing: border-box; min-width: 0; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); border-radius: var(--gs-radius-field); }
-.detail-section :deep(.domain-pagination) { flex-wrap: wrap; gap: var(--gs-space-4); margin-top: var(--gs-space-6); font-size: var(--gs-text-meta); }
-.detail-section :deep(.domain-pagination button) { min-height: var(--gs-control-normal); padding: var(--gs-space-3) var(--gs-space-4); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); border-radius: var(--gs-radius-control); }
 .detail-section :deep(.archive-technical), .event-detail > :deep(.archive-technical) { margin-top: var(--gs-space-5); border-radius: var(--gs-radius-control); }
 .detail-section :deep(.archive-technical summary), .event-detail > :deep(.archive-technical summary) { min-height: var(--gs-control-normal); padding: var(--gs-space-4) var(--gs-space-5); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .detail-section :deep(.archive-technical-body), .event-detail > :deep(.archive-technical-body) { padding: 0 var(--gs-space-5) var(--gs-space-5); font-size: var(--gs-text-meta); }
@@ -536,7 +519,6 @@ button.episode-main { cursor: pointer; }
 .event-summary :deep(a:focus-visible), .wiki-exchange-table :deep(a:focus-visible),
 .event-media-strip :deep(.domain-media-preview button:focus-visible), .event-reward-card :deep(.domain-media-preview button:focus-visible), .event-material :deep(.domain-media-preview button:focus-visible),
 .detail-section :deep(.relation-row:focus-visible),
-.detail-section :deep(.domain-rewards button:focus-visible), .detail-section :deep(.domain-rewards select:focus-visible),
 .detail-section :deep(.archive-technical summary:focus-visible), .event-detail > :deep(.archive-technical summary:focus-visible) {
   outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset);
 }
@@ -548,7 +530,6 @@ button.episode-main { cursor: pointer; }
 }
 @media (hover: none), (pointer: coarse) {
   .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
-  .detail-section :deep(button.domain-reward-name:hover) { background: transparent; color: inherit; }
 }
 @media (max-width: 760px), (pointer: coarse) {
   .story-action, .wiki-exchange-table > summary, .event-material > button, .event-cast-unit, .episode-more,

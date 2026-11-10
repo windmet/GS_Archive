@@ -132,3 +132,10 @@ C2 和 C3 都要改 `ArchiveRewardTable` 和抽屉，按顺序叠，不要并行
 - 新增 `verify-collection-reader-copy.mjs`：扫描图鉴六个分类的模板、抽屉、报酬表，以及 `currency-catalog`、两份语音 json 的 note，命中 §2.1 禁用词就 FAIL。`原始资料` 折叠和 `maintainer` 分支除外。按惯例要做变异测试：把一条旧文案写回去，确认确实 FAIL。
 - C3 完成后，把上面几个文件在 `design-token-baseline.json` 里的计数降到 0，棘轮锁住，以后只能减不能加。
 - 真机复查：K60 上逐个过六个分类、每类打开一个详情、再看活动 10020 的报酬表。
+
+## 6. 进度（2026-11-10）
+
+- C1 #216、C2 #217 已合并。C3（字号与间距）、C4（其他语音与摄影资源）在 portal/20261110-collection-type。
+- C2 改过的标签：「历史配置期」改为「开放期间」，「配置时间」改为「实装时间」。
+- 货币「用途」里服务端那半句，源数据（`config/currency-catalog.v1.json`）已经改了，但读者看到的文本来自读模型，要等下次重建读模型才会更新。
+- 其他语音的考据说明移进 `maintainerNote`，只在 `?maintainer=1` 下显示；生成器 `build-unused-voice-archive.mjs` 重跑后，输出与提交的 JSON 字节一致。
