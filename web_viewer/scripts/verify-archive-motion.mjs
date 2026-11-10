@@ -38,6 +38,39 @@ for (const file of walk(path.join(root, 'src'))) {
   assert.ok(!/--gs-(?:enter|dialog)-from\s*:/.test(source), `${path.relative(root, file)} sets --gs-*-travel, not --gs-*-from`)
 }
 
+// Tokens must exist: a var(--gs-motion-*) / --gs-ease-* / --gs-duration-* nobody declares silently falls back to its
+// literal (--gs-duration-base ran on 200ms and a bare ease for as long as it was written).
+// Loops: an infinite animation only expresses a continuing state (loading, playing, the other side typing, waiting for a
+// tap). Each loop file is listed here and keeps a reduced-motion rule; AdvUI is reduced by player-motion.css (#story-viewer).
+const LOOP_FILES = new Set(['src/components/GsLoadingIndicator.vue', 'src/components/archive/ArchiveImmersiveHome.vue', 'src/components/mobile/MobileTypingIndicator.vue', 'src/components/AdvUI.vue'])
+const LOOP_REDUCED_ELSEWHERE = new Set(['src/components/AdvUI.vue'])
+const LOOPS = /animation[a-z-]*\s*:[^;}]*\binfinite\b/
+export function undeclaredTokens(files) {
+  const declared = new Set(), used = new Map()
+  for (const [file, source] of files) {
+    for (const [, name] of source.matchAll(/(--gs-(?:motion|ease|duration)-[a-z-]+)\s*:/g)) declared.add(name)
+    for (const [, name] of source.matchAll(/var\((--gs-(?:motion|ease|duration)-[a-z-]+)/g)) if (!used.has(name)) used.set(name, file)
+  }
+  return [...used].filter(([name]) => !declared.has(name)).map(([name, file]) => `${name} (${file})`)
+}
+export function loopViolations(files) {
+  const found = []
+  for (const [file, source] of files) {
+    if (!LOOPS.test(source)) continue
+    if (!LOOP_FILES.has(file)) found.push(`${file}: infinite animation outside the loop whitelist`)
+    else if (!LOOP_REDUCED_ELSEWHERE.has(file) && !source.includes('prefers-reduced-motion')) found.push(`${file}: loop without a prefers-reduced-motion rule`)
+  }
+  return found
+}
+assert.deepEqual(undeclaredTokens([['a.css', ':root{--gs-motion-x: 1ms}'], ['b.vue', 'a{transition: var(--gs-motion-x) var(--gs-duration-base, 1ms)}']]), ['--gs-duration-base (b.vue)'])
+assert.deepEqual(loopViolations([['src/x.vue', 'a{animation: spin 1s linear infinite}'], ['src/components/AdvUI.vue', 'a{animation: b 1s infinite}'], ['src/components/GsLoadingIndicator.vue', 'a{animation: b 1s infinite}']]), ['src/x.vue: infinite animation outside the loop whitelist', 'src/components/GsLoadingIndicator.vue: loop without a prefers-reduced-motion rule'])
+{
+  const sources = walk(path.join(root, 'src')).map(file => [path.relative(root, file).replaceAll('\\', '/'), readFileSync(file, 'utf8')])
+  assert.deepEqual(undeclaredTokens(sources), [], 'every motion token a component uses is declared in gs-motion.css or GS_UI_TOKENS.css')
+  assert.deepEqual(loopViolations(sources), [])
+  assert.deepEqual([...LOOP_FILES].filter(file => !LOOPS.test(sources.find(([name]) => name === file)?.[1] || '')), [], 'a whitelisted loop file really loops (drop it from the list when the loop goes)')
+}
+
 // Press feedback and image reveal stay at zero specificity so components keep the last word.
 assert.match(motion, /^:where\(button, a\[href\], summary, \[role="button"\], \[role="tab"\], \[role="option"\]\) \{\n  transition:/m)
 assert.match(motion, /@media \(hover: none\) \{\n  :where\(button[^{]*:where\(:active:not\(:disabled, \[aria-disabled="true"\]\)\) \{\n    transform: scale\(\.97\);\n    filter: brightness\(\.92\);/)
