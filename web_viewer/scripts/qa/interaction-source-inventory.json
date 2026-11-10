@@ -8212,30 +8212,20 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 4,
+    "line": 6,
     "event": "@click",
-    "handler": "emit('navigate', 'portal')",
-    "template": "<button type=\"button\" class=\"archive-brand\" :aria-current=\"activeSection === 'portal' ? 'page' : undefined\" title=\"资料馆首页\" @click=\"emit('navigate', 'portal')\">",
+    "handler": "toggleSidebar",
+    "template": "<button type=\"button\" class=\"archive-brand\" :aria-label=\"sidebarToggleLabel\" :title=\"sidebarToggleLabel\" :aria-expanded=\"sidebarExpanded\" @click=\"toggleSidebar\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 16,
+    "line": 19,
     "event": "@click",
     "handler": "item.menu ? flyout = flyout ? null : $event.currentTarget : emit('navigate', item.target)",
     "template": "<button v-for=\"item in entry.items\" :key=\"item.id\" type=\"button\" class=\"archive-nav-link\" :class=\"{ active: item.active }\" :title=\"railMode ? item.label : undefined\" :aria-current=\"item.active ? 'page' : undefined\" :aria-haspopup=\"item.menu && 'menu'\" :aria-expanded=\"item.menu && !!flyout\" @click=\"item.menu ? flyout = flyout ? null : $event.currentTarget : emit('navigate', item.target)\">",
-    "status": "PENDING",
-    "reason": "Source inventory only; requires rendered state transition evidence"
-  },
-  {
-    "component": "ArchiveShell",
-    "file": "src/components/archive/ArchiveShell.vue",
-    "line": 24,
-    "event": "@click",
-    "handler": "toggleSidebar",
-    "template": "<button v-if=\"!forcedRail\" type=\"button\" class=\"archive-sidebar-toggle\" :aria-label=\"railMode ? '展开侧栏' : '收起侧栏'\" :title=\"railMode ? '展开侧栏' : '收起侧栏'\" :aria-expanded=\"!railMode\" @click=\"toggleSidebar\">",
     "status": "PENDING",
     "reason": "Source inventory only; requires rendered state transition evidence"
   },
@@ -8252,7 +8242,17 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 31,
+    "line": 30,
+    "event": "@click",
+    "handler": "peekOpen = false",
+    "template": "<button v-if=\"peekOpen\" type=\"button\" class=\"archive-sidebar-scrim\" aria-label=\"收起侧栏\" tabindex=\"-1\" @click=\"peekOpen = false\"></button>",
+    "status": "PENDING",
+    "reason": "Source inventory only; requires rendered state transition evidence"
+  },
+  {
+    "component": "ArchiveShell",
+    "file": "src/components/archive/ArchiveShell.vue",
+    "line": 32,
     "event": "@back",
     "handler": "emit('back')",
     "template": "<ArchivePageChrome v-if=\"!['portal', 'reader'].includes(activeSection)\" class=\"archive-topbar\" :can-go-back=\"backVisible\" :back-label=\"backLabel\" back-icon-only back-class=\"archive-back\" @back=\"emit('back')\">",
@@ -8262,7 +8262,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 40,
+    "line": 41,
     "event": "@follow",
     "handler": "emit('follow', $event)",
     "template": "<ArchiveBreadcrumb :items=\"breadcrumbs\" @follow=\"emit('follow', $event)\" />",
@@ -8272,7 +8272,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 46,
+    "line": 47,
     "event": "@click",
     "handler": "mobileSearchOpen = !mobileSearchOpen",
     "template": "<button v-if=\"searchable\" class=\"archive-search-toggle\" type=\"button\" aria-label=\"搜索目录\" :aria-expanded=\"mobileSearchOpen\" @click=\"mobileSearchOpen = !mobileSearchOpen\"><Search :size=\"19\" /></button>",
@@ -8282,7 +8282,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 53,
+    "line": 54,
     "event": "@input",
     "handler": "emit('update:modelValue', $event.target.value)",
     "template": "@input=\"emit('update:modelValue', $event.target.value)\"",
@@ -8292,7 +8292,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 62,
+    "line": 63,
     "event": "@select",
     "handler": "flyout = null; emit('navigate', $event)",
     "template": "<ArchiveFlyoutMenu v-if=\"flyout\" :anchor=\"flyout\" :current=\"navigationSection\" @select=\"flyout = null; emit('navigate', $event)\" @close=\"flyout = null\" />",
@@ -8302,7 +8302,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 62,
+    "line": 63,
     "event": "@close",
     "handler": "flyout = null",
     "template": "<ArchiveFlyoutMenu v-if=\"flyout\" :anchor=\"flyout\" :current=\"navigationSection\" @select=\"flyout = null; emit('navigate', $event)\" @close=\"flyout = null\" />",
@@ -8312,7 +8312,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 77,
+    "line": 78,
     "event": "@navigate",
     "handler": "navigateFromDrawer",
     "template": "<ArchiveNavigationDrawer v-if=\"drawerOpen\" id=\"archive-navigation-drawer\" :groups=\"navigationGroups\" :active-section=\"navigationSection\" :keyboard=\"drawerByKeyboard\" @navigate=\"navigateFromDrawer\" @close=\"closeDrawer(true)\" />",
@@ -8322,7 +8322,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 77,
+    "line": 78,
     "event": "@close",
     "handler": "closeDrawer(true)",
     "template": "<ArchiveNavigationDrawer v-if=\"drawerOpen\" id=\"archive-navigation-drawer\" :groups=\"navigationGroups\" :active-section=\"navigationSection\" :keyboard=\"drawerByKeyboard\" @navigate=\"navigateFromDrawer\" @close=\"closeDrawer(true)\" />",
@@ -8332,7 +8332,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 85,
+    "line": 86,
     "event": "@click",
     "handler": "emit('navigate', item.id)",
     "template": "@click=\"emit('navigate', item.id)\"",
@@ -8342,7 +8342,7 @@
   {
     "component": "ArchiveShell",
     "file": "src/components/archive/ArchiveShell.vue",
-    "line": 97,
+    "line": 98,
     "event": "@click",
     "handler": "drawerOpen ? closeDrawer(false) : openNavigationDrawer($event)",
     "template": "@click=\"drawerOpen ? closeDrawer(false) : openNavigationDrawer($event)\"",
