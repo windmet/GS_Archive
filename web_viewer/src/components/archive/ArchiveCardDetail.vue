@@ -230,7 +230,7 @@
       <section v-if="card.home_voice_cues?.length" class="card-detail-section">
         <h4>首页触摸语音</h4>
         <div class="voice-list">
-          <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row" :data-voice-cue="cue.cue" :class="{ 'is-focused': cue.cue === focusVoice }">
+          <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row" :data-voice-cue="cue.cue" :class="{ 'is-focused': cue.cue === arrivedVoice }">
             <div class="voice-copy">
               <strong>触摸语音 {{ index + 1 }}</strong>
               <p v-if="cue.preview?.text" v-bind="cardLine('card-touch', 'text', cue.preview.text).attrs"><span class="authored-text">{{ cardLine('card-touch', 'text', cue.preview.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-touch', 'text', cue.preview.text).text) }}</span></p>
@@ -307,7 +307,7 @@
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
 import { ANY_CARD_LINE, archiveLineText } from './useArchiveNamedText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
 // Card lines, touch voices and operational voices: the shared spoken-line path (archiveLineText).
 const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
@@ -426,8 +426,17 @@ const stage = computed(() => {
 const attributeKey = computed(() => attributeKeyOf(props.card?.gameplay?.attribute?.name))
 
 const detailRoot = ref(null)
+// Arriving from a home touch voice marks its row, then lets go: the mark says "this one", it is not a selection, so it fades
+// back to an ordinary row after a moment instead of staying lit for the rest of the visit.
+const FOCUS_HOLD_MS = 2400
+const arrivedVoice = ref('')
+let arrivedTimer = 0
+onBeforeUnmount(() => clearTimeout(arrivedTimer))
 watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
+  clearTimeout(arrivedTimer)
+  arrivedVoice.value = voice || ''
   if (!voice) return
+  arrivedTimer = setTimeout(() => { arrivedVoice.value = '' }, FOCUS_HOLD_MS)
   await nextTick()
   // Center it inside this page's own scroller only: scrollIntoView would also scroll the overflow-hidden document,
   // pushing the whole shell up where the reader cannot scroll it back.
@@ -815,7 +824,7 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
 .voice-list, .scenario-link-list { display: grid; }
 .voice-list { gap: 0; }
 /* One voice, one row: copy on the left, a quiet play control and the preview on the right. */
-.voice-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
+.voice-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); transition: background-color var(--gs-motion-sheet) var(--gs-ease-out), box-shadow var(--gs-motion-sheet) var(--gs-ease-out), padding-left var(--gs-motion-sheet) var(--gs-ease-out); }
 .voice-row > .archive-voice, .voice-row > .voice-preview-btn { align-self: center; }
 .voice-row.is-focused { padding-left: var(--gs-space-4); background: var(--gs-selected-bg); box-shadow: inset 3px 0 0 var(--gs-selected-line); }
 .voice-row > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }

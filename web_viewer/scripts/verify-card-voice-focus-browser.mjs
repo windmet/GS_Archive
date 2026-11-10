@@ -80,11 +80,14 @@ try {
         m = JSON.parse(await evaluate(measure(journey.cue)))
         if (m.path === `/cards/${journey.card}/` && m.focused) break
       }
+      const arrived = m.path === `/cards/${journey.card}/` && m.focused
+      // The mark only says where the voice is: after a moment it lets go and the row is an ordinary row again.
       await sleep(2500)
       m = JSON.parse(await evaluate(measure(journey.cue)))
       check(m.path === `/cards/${journey.card}/`, `ended on ${m.path}`)
-      check(m.focused, 'the voice row is missing or not marked')
-      if (m.path !== `/cards/${journey.card}/` || !m.focused) continue
+      check(arrived, 'the voice row is missing or was never marked on arrival')
+      check(!m.focused, 'the arrival mark is still on the voice row after the hold')
+      if (m.path !== `/cards/${journey.card}/` || !arrived) continue
       checked++
       // The costume table must be on the page, or this journey no longer exercises what broke.
       check(m.costumes > 0, 'the card page has no costume rows')
@@ -98,7 +101,7 @@ try {
   }
   assert.ok(checked === VIEWPORTS.length * JOURNEYS.length, `only ${checked} journeys reached the card page`)
   assert.deepEqual(failures, [], '\n' + failures.join('\n'))
-  console.log(`Card voice focus: ${checked} journeys (${VIEWPORTS.length} windows x ${JOURNEYS.length} SSR touch voice): voice in view in the card page, document unscrolled, shell at 0 passed`)
+  console.log(`Card voice focus: ${checked} journeys (${VIEWPORTS.length} windows x ${JOURNEYS.length} SSR touch voice): voice marked on arrival then let go, in view in the card page, document unscrolled, shell at 0 passed`)
 } finally {
   socket?.close()
   await closeBrowser(chrome, profile)
