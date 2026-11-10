@@ -108,10 +108,10 @@
 | PR | 批次 | 依赖 | 预计改动 | 视觉变化 | 状态 |
 |---|---|---|---|---|---|
 | A | M0 守卫 + M1 令牌收口 | — | 2 个验证脚本、约 10 个组件 | 无或 ≤40ms | #204 已开，CI 通过，待合 |
-| B | M2 触屏细节 + M3 输入字号 | A（棘轮基线） | GsInfo、约 10 个高频组件、layout-integrity | 只在触屏 | #205（叠在 #204 上），CI 通过，待合；真机未测 |
+| B | M2 触屏细节 + M3 输入字号 | A（棘轮基线） | GsInfo、约 10 个高频组件、layout-integrity | 只在触屏 | #205（叠在 #204 上），CI 通过，待合；K60 已验收，iPad 未测 |
 | C | M4 首页对话框 + M5 焦点环 | A | ArchiveImmersiveHome、gs-motion.css | 首页两个对话框有进出场 | #206（叠在 #205 上），CI 通过，待合 |
-| D | D1 底部抽屉下滑关闭 | C（台词目录先接入共享动效） | 一个共用组合式函数，接入各底部抽屉 | 只在手机底部抽屉 | #207（叠在 #206 上），CI 通过，待合；手感要真机确认 |
-| E | D3 播放器进度条与对白框 | — | `PlayerTopBar.vue`、`StoryViewer.vue` | 播放器 | #208：只改了进度条；对白框没有原生证据，未改 |
+| D | D1 底部抽屉下滑关闭 | C（台词目录先接入共享动效） | 一个共用组合式函数，接入各底部抽屉 | 只在手机底部抽屉 | #207（叠在 #206 上），待合；K60 实测后补了一个提交（见「K60 实机验收」） |
+| E | D3 播放器进度条与对白框 | — | `PlayerTopBar.vue`、`StoryViewer.vue` | 播放器 | #208：进度条不过渡；对白框改为只淡 alpha（用户 11-10 授权，见下） |
 
 通用验证（每个 PR 都跑）：`npm run build:check`（**不要直接跑 `vite build`**，会把语料拷进 dist）、`npm run verify:archive-motion`、`npm run verify:design-tokens`、`npm run verify:source-batch`；合并前在 LF worktree 里跑 `npm run gate:source`（`git -c core.autocrlf=false -c core.eol=lf worktree add --detach <目录> <分支>`）。新加或改动的断言要做变异测试：把修复改回坏版本，确认验证器失败，再还原。
 
@@ -216,11 +216,35 @@ A–D 都在 LF worktree 里跑过 `gate:source`（116/116）。E 是 115/116，
 - **C**：M5 的选择器改成 `:where(:focus-visible)`，见 M5 一节。首页两个对话框没有直接用 `ArchiveTerminalDialog` 组件，只照搬了它的退场写法：挂载标志 + `EXIT_MS` + 先 `close()` 再卸载。
 - **D**：改用 Touch Events，没有用 Pointer Events。只有非 passive 的 `touchmove` 才能拦住浏览器滚动，鼠标拖动不受影响。
 - **D**：判断是否属于手机底部抽屉，看的是元素的实际位置和宽度（铺满视口宽度并贴着底边），没有照抄 ≤760px 的断点，因为各组件的断点不同。
-- **D**：一次手势只在开始时判断一次是否接管。内容滚回顶部后继续往下拖，不会中途变成拖抽屉。
-- **D**：拖动时 `::backdrop` 不随位移变淡。
+- **D**：一次手势只在开始时判断一次是否接管（K60 实测后已改为可中途转交，见下）。
+- **D**：拖动时 `::backdrop` 不随位移变淡（K60 实测后已改为跟着变淡，见下）。
 - **E**：进度条绑定的是步骤序号，按整步跳变、间隔不固定，所以选了「不过渡」，没有用 linear。
 
 D3 对白框的原生证据：在 `E:/Tools/ghidra_work/sidem` 全目录搜了 `Balloon`、`MessageWindow`、`TextWindow`、`DialogWindow`、`DOFade`、`CanvasGroup`、`alpha`、`fade`、`duration`、`DOTween`。对白框类是 `Growing.Theater.AdventureBalloonTextPanel`，`names.tsv` 里有 `UpdateAlpha`（RVA 0x241f348）、`FadeInText`（0x241f82c）、`FadeOutText`（0x241f8a4），对应协程的 `MoveNext` 在 0x20028c0 和 0x2002a6c。这几个函数本身都没有反编译，`decompiled*` 里只有调用方（`StoryView.c` 等），传的参数是布尔值或速度，没有秒数。所以 `adv-dialogue-fade` 维持不变。要对齐原生值，得先反编译这两个协程。
+
+### K60 实机验收（2026-11-10）
+
+Redmi K60 Ultra，Edge 156，USB `adb reverse` 加 CDP 驱动，测的是 #207 和 #208 合在一起的测试分支，页面 viewport 406×749、DPR 3。手势用 `Input.dispatchTouchEvent` 发真实触摸事件，没有用脚本 click。
+
+**注意**：这台 K60 在开发者选项里把三项系统动画缩放都设成了 0，Edge 因此报 `prefers-reduced-motion: reduce`，站点在这台手机上默认走减弱动效。完整动效是用 CDP `Emulation.setEmulatedMedia` 只对当前标签页改出来测的，没有改手机设置。
+
+通过：
+- B：ⓘ 点一下打开，再点关闭，点外面也关闭；`/live/` 搜索框 16px。
+- D：卡片筛选、LIVE 筛选、季节企划抽屉、阅读器目录、台词目录、舞台加载方式、舞台编排都能下滑关闭。拉 25% 停住松手回弹，快速轻扫 70px 关闭，拉过三分之一关闭，往上拉有阻力（手指 200px 只移动 57px）。
+- 完整动效下台词目录从底边升起（ease-out，约 240ms）；拖动关闭从松手位置继续往下走，不回弹。
+- E：进度条在完整动效下没有过渡。减弱动效下有 80ms，来自播放器原有的 reduced-motion 全局规则，不是本批引入的。
+
+实测发现并修好的问题（#207 追加提交）：
+- **LIVE 谱面筛选没接下滑**。它是 `GsFilterPanel`，不是 `ArchiveFilterSheet`，D 漏掉了，现已接入。
+- **舞台编排抽屉在手机上是居中卡片**（master 上就是这样）。`.filter-sheet` 的底部样式写在 `ArchiveFilterSheet.vue` 里，编排抽屉借用这个类名，只有先打开过卡片或活动页、加载了那个 chunk，才会变成底部抽屉。现在这条规则移到了两者共用的 `ArchiveTerminalDialog.vue`。
+- **减弱动效下拖动关闭会往回跳**：内联位移清得太早，对话框淡出时又滑回原位。现在等对话框自己的淡出结束再清；另外拖动留下的内联 `transition: none` 会掐掉淡出，也一并去掉。
+
+原来待定的三件事，用户交给我定，处理如下：
+- **滚回顶部后继续往下拖（原待定 2）：已做**。实测 Chrome 一旦开始滚动，后续 `touchmove` 都不可取消（`cancelable: false`），没法中途 `preventDefault`。但内容到顶后，在 `overscroll-behavior: contain` 下浏览器的滚动不产生任何效果，所以抽屉直接跟手就行。转交后抽屉不会高过静止位置，往回推时把内容钉在顶部，直到抽屉回到原位，避免内容和抽屉同时移动、看起来是两倍速度。
+- **拖动时遮罩跟着变淡（原待定 3）：已做**。组合式函数在遮罩元素上写 `--sheet-backdrop`（静止时 1，移出屏幕时 0）。`<dialog>` 的 `::backdrop` 会继承这个变量，Edge 上实测拖到一半时遮罩透明度约 0.51；不继承的浏览器保持全暗，属于平稳降级。手指按住时 `::backdrop` 取消过渡，保证跟手。季节企划抽屉和 `GsFilterPanel` 的遮罩是普通元素，用 `backdrop` 选项指定。
+- **对白框淡入淡出（原待定 1）：改了，没有反编译**。用户说明剧情播放页本来就不是原生做法。原生函数名是 `UpdateAlpha` / `FadeInText` / `FadeOutText`，只说明它只改透明度。现在只淡透明度，不位移、不模糊：进场用播放器的 base 时长 180ms 和 standard 曲线，退场用 fast 时长 120ms 和 ease-in。去掉 blur 有两个原因：整宽对白框每帧做 blur 在手机上开销大，而且会把字糊掉。
+
+没有测：iPad（这次没连）；键盘 Tab 逐页走查，以及深色背景上的焦点环。
 
 ## 附：普查方法
 
