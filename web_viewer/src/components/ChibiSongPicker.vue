@@ -11,7 +11,7 @@
         <div ref="arrangementRef" class="stage-arrangement">
           <!-- Phones: one row names the current arrangement and opens the same picker as a bottom sheet. -->
           <button v-if="compact && selectedGroup.versions.length > 1" class="arrangement-summary" type="button" aria-haspopup="dialog" :aria-expanded="drawerOpen" :disabled="disabled" @click="drawerOpen = true"><span>编排</span><strong>{{ [kindLabels[selectedKind], selectedScript?.label].filter(Boolean).join(' · ') }}</strong><ChevronRight :size="17" aria-hidden="true" /></button>
-          <component :is="compact ? ArchiveTerminalDialog : 'div'" v-if="selectedGroup.versions.length > 1" v-bind="compact ? { class: 'filter-sheet arrangement-sheet', open: drawerOpen, title: '编排', titleId: 'stage-arrangement-sheet-title' } : { class: 'arrangement-inline' }" @close="drawerOpen = false">
+          <component :is="compact ? ArchiveTerminalDialog : 'div'" v-if="selectedGroup.versions.length > 1" v-bind="compact ? { class: 'filter-sheet arrangement-sheet', swipeDismiss: true, open: drawerOpen, title: '编排', titleId: 'stage-arrangement-sheet-title' } : { class: 'arrangement-inline' }" @close="drawerOpen = false">
           <div class="arrangement-picker">
             <span v-if="!compact" class="arrangement-title">编排</span>
             <!-- Kinds are sections of one list, not filters: only the kinds this song really has. -->

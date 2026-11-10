@@ -120,6 +120,7 @@ const modules = {
   '../../presentation/ArchiveGeneralTextCore.mjs': { isArchiveResourceDescription: () => false },
   '../../../readmodels/runtime/DomainRepository.mjs': { DomainRepository },
   '../../styles/archive-domains.css': {},
+  '../../../composables/useSheetDrag.js': { useSheetDrag() {} },
 }
 async function component(file) {
   const { descriptor } = parse(read(file))

@@ -38,6 +38,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
 import { SlidersHorizontal, X } from '@lucide/vue'
+import { useSheetDrag } from '../../composables/useSheetDrag.js'
 
 // Several filters behind one 「筛选」 button: a floating panel under it on wide screens, a bottom sheet on phones
 // (手机端通用模式 1). Every section's values lie open as chips, so a long list such as the units never scrolls sideways.
@@ -92,6 +93,8 @@ function onKey(event) {
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
 }
 onBeforeUnmount(() => document.removeEventListener('keydown', onDocumentKey, true))
+// On phones the sheet is pulled down to close, the same way the close button closes it; the layer behind dims with it.
+useSheetDrag(panel, { handle: '.gs-filter-panel-head', onClose: () => close(true), enabled: () => sheet.value, isShowing: node => node.isConnected, backdrop: node => node.parentElement })
 </script>
 
 <style scoped>
@@ -123,7 +126,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onDocumentKey, tru
 .gs-filter-panel-done { border: 0; background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
 .gs-filter-panel :focus-visible, .gs-filter-panel-surface :focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 /* Phone: a sheet over the dimmed page, chips at touch height, the done button the width of the sheet. */
-.is-sheet { background: rgb(11 20 36 / 18%); }
+.is-sheet { background: rgb(11 20 36 / calc(18% * var(--sheet-backdrop, 1))); }
 .is-sheet .gs-filter-panel-surface { right: 0; bottom: 0; left: 0; height: 78dvh; max-height: none; border-bottom-right-radius: 0; border-bottom-left-radius: 0; }
 .is-sheet .gs-filter-panel-option { min-height: var(--gs-control-touch); }
 .is-sheet .gs-filter-panel-foot { padding-bottom: calc(var(--gs-space-4) + env(safe-area-inset-bottom, 0px)); }

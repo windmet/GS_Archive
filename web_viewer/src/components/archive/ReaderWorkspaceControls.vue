@@ -57,10 +57,13 @@ import ReaderTocRail from './ReaderTocRail.vue'
 import { READER_THEMES, readerTheme, setReaderTheme } from '../../presentation/ReaderTheme.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { readerSegmentNeighbour } from '../../presentation/ReaderControls.js'
+import { useSheetDrag } from '../../composables/useSheetDrag.js'
 const props = defineProps({ title:String, titlePending:Boolean, subtitle:String, segments:{type:Array,default:()=>[]}, documentId:String, activeDocumentId:String, chapterNavigation:{type:Object,default:null}, mode:String, searchable:{type:Boolean,default:true}, allowUnlinked:Boolean })
 const emit = defineEmits(['back','chapter','select','mode'])
 const modes = [{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
 const dialog = ref(null), heading = ref(null), panel = ref(''), dockTucked = ref(false)
+// On phones the panel is a bottom sheet: pulling it down closes it through closePanel (focus returns to the opener as usual).
+useSheetDrag(dialog, { handle: '.sheet-header', onClose: () => closePanel() })
 // What the sheet shows. It outlives panel by the exit fade (gs-motion.css) so a closing sheet keeps
 // its content instead of flashing to the settings view; it then clears and the content unmounts.
 const shownPanel = ref(''), SHEET_EXIT_MS = 160

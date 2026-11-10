@@ -517,7 +517,7 @@
       <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
       </template>
     </ArchiveTerminalDialog>
-    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(pendingQuality)">
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" swipe-dismiss :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(pendingQuality)">
       <div class="quality-options" role="radiogroup" aria-label="舞台加载方式">
         <button type="button" role="radio" :aria-checked="pendingQuality === 'lite'" @click="pendingQuality = 'lite'"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、应援棒、演出镜头与歌词。不开启光束和动态物件，手机与平板更流畅。</span></button>
         <button type="button" role="radio" :aria-checked="pendingQuality === 'full'" @click="pendingQuality = 'full'"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
