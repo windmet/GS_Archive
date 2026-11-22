@@ -22,11 +22,11 @@ Pages Functions 接管 /_app/* 的静态回退。缺失脚本返回 404 与 no-s
 
 公网发行版保留 catalog.v2.json 的指纹 8eebf849dda55fa6，49 人、124 张卡。以卡片编号和 resource_id 对照 GS 读模型中的 124 个公开 SSR 详情，全部唯一匹配。业务层教程别名由资料馆归并。主站仅在已核对的 resource_id 上渲染链接，收录新卡时同步更新 src/content/animated-card-resources.json。
 
-稳定版源码 5f83a17，Pages 预览 ae77ed51、正式 c829169d，上一个可回滚正式部署 7ce051cd。Node 33 项测试和生产包校验通过。桌面 Edge 已在预览及原正式入口验证冬美旬 SSR 2 直达、刷新、切换至 SSR 1、浏览器返回、未知 ID 回到默认卡。媒体仍使用原 R2。卡面页的「查看卡片资料」按已核准的 resource_id 打开资料馆。旧分享入口可继续使用。[冬美旬 SSR 2](https://smgs-ssr.pages.dev/?card=021jun_ssr02)
+稳定版源码 5f83a17，Pages 预览 ae77ed51、正式 c829169d，上一个可回滚正式部署 7ce051cd。Node 33 项测试和生产包校验通过。桌面 Edge 已在预览、原正式入口及 ssr.gs-archive.com 验证冬美旬 SSR 2 直达、刷新、切换至 SSR 1、浏览器返回、未知 ID 回到默认卡。媒体仍使用原 R2。卡面页的「查看卡片资料」按已核准的 resource_id 打开资料馆。旧分享入口可继续使用。[冬美旬 SSR 2](https://smgs-ssr.pages.dev/?card=021jun_ssr02)
 
 ## 馆刊
 
-新工程在 E:/Web_build/GS_Archive_Journal，独立于本机 folio 项目。首版刊登《冬美旬的第二张 SSR 是怎么找回来的》，取材于卡面站补录记录。读者可由文章进入卡面；当前链接使用已验证的 pages.dev 域。文章 frontmatter 和文件名驱动目录、固定链接和 RSS。构建生成独立 sitemap、canonical、分享标题和摘要。正式部署 47a46a08，首版可回滚至 9939f213。写作与发布命令见馆刊仓库 README。[馆刊](https://gs-archive-journal.pages.dev/) · [源码](https://github.com/windmet/gs-archive-journal)
+新工程在 E:/Web_build/GS_Archive_Journal，独立于本机 folio 项目。首版刊登《冬美旬的第二张 SSR 是怎么找回来的》，取材于卡面站补录记录。读者可由文章进入卡面；文章通过新域名直达冬美旬 SSR 2。文章 frontmatter 和文件名驱动目录、固定链接和 RSS。构建生成独立 sitemap、canonical、分享标题和摘要。源码 d71bace，正式部署 85246a1c，上一个部署 47a46a08，创刊首版 9939f213。写作与发布命令见馆刊仓库 README。[馆刊](https://blog.gs-archive.com/) · [源码](https://github.com/windmet/gs-archive-journal)
 
 ## 域名启用与回滚
 
@@ -37,7 +37,6 @@ Pages Functions 接管 /_app/* 的静态回退。缺失脚本返回 404 与 no-s
 | CNAME | ssr | smgs-ssr.pages.dev |
 | CNAME | blog | gs-archive-journal.pages.dev |
 
-等待 Pages 域验证和证书 active，从新域复查馆刊文章、RSS、sitemap，以及 SSR catalog 指纹、冬美旬纹理、换卡返回和主站反向入口。新域确认后更新馆刊文章的卡面地址。移动端播放与返回需在设备实测。
+新域实测：馆刊首页、首篇、RSS 与两级 sitemap 可访问。卡面新域返回正确 catalog；冬美旬的无损 WebP 返回 200、image/webp、跨源允许。桌面 Edge 通过单卡直达、刷新、切卡、浏览器返回与未知 ID 回退。390px 桌面浏览器模拟完成馆刊文章 → 动画 → 主站卡片 → 返回动画，以及主站预览卡片 → 动画。首次域名传播期间有一次刷新超时，重试通过。手机上的真实播放与返回仍待测。
 
 主站晋升前的回滚锚点是 0416f1f5。优先在对应项目回滚独立 Pages 部署，并保留该版本所引用的 R2 数据。两个子站的发布及回滚互相独立。[Cloudflare 自定义域说明](https://developers.cloudflare.com/pages/configuration/custom-domains/)
-
