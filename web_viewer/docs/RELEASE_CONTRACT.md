@@ -36,7 +36,7 @@ Cloudflare Pages 项目 `gs-archive-preview` 同时承载两个环境，并共�
 - 回执（`preview-receipt.json` / `production-receipt.json`）与环境匹配；给 `--package` 时与包内回执逐字相同；
 - `X-Robots-Tag: noindex` 只出现在 preview；
 - `index.html` 引用的入口 chunk 返回 200 且为 JavaScript；
-- 随机的 `/_app/<随机>.js` 的实际行为（返回 200 HTML 记为 warning，不是 fail）；
+- 随机的 `/_app/<随机>.js` 必须返回 404 和 `Cache-Control: no-store`，返回 HTML 200 或 immutable 缓存均失败；
 - `/_catalog/bootstrap.json` 与回执 release 一致，bootstrap 里的各域索引能取到；
 - 抽样 `/data/`、`/assets/` 键返回 200（证明 Functions + R2 绑定在位）；
 - 实体页 canonical 等于回执的 `siteOrigin`，且该 origin 能连上（不能解析会给出 DNS 答复）；
@@ -46,7 +46,7 @@ Cloudflare Pages 项目 `gs-archive-preview` 同时承载两个环境，并共�
 `--package <包目录> --local` 对本地包用 Pages 语义做离线一致性检查（不碰网络和 R2，R2 抽样与 origin 探测显示 SKIP）。输出区分 `fail` 与 `warn`，有 `fail` 时退出码为 1。
 
 - 证明：线上这一份确实是刚才那个包，且环境身份（收录、canonical、robots）正确。
-- 不证明：任何页面能渲染、播放或交互；抽样之外的 R2 键存在；未知的 SPA 回退问题（缺失的 `/_app/*.js`、`/robots.txt` 在 Pages 上会被回退成 200 `text/html`，只有 `/data/*`、`/assets/*` 由 Functions 正确返回 404）。
+- 不证明：任何页面能渲染、播放或交互；抽样之外的 R2 键存在；未知的 SPA 回退问题（随机缺失 chunk 只覆盖一个静态命名空间）。
 
 ### 门 4：浏览器旅程（`config/release-journeys.json`）
 
