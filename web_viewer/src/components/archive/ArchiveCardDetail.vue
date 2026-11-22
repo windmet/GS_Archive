@@ -39,6 +39,7 @@
             <p v-if="card.title && card.title !== displayCardTitle" class="card-original-title" lang="ja">{{ card.title }}</p>
           </div>
           <div class="card-facts">
+            <a v-if="animatedCards.has(card.resource_id)" :href="`https://ssr.gs-archive.com/?card=${encodeURIComponent(card.resource_id)}`">查看动态卡面</a>
             <ArchiveIdolReference v-if="ownerReference" class="card-owner" :reference="ownerReference" :data-archive-focus-id="`card-owner:${card.resource_id}:head`" density="identity" @open="emit('open-idol', $event)" />
             <p v-if="card.gameplay" class="card-metaline">
               <span v-if="Number.isFinite(card.gameplay.life)"><b>{{ card.gameplay.life }}</b>Life</span>
@@ -304,12 +305,14 @@
 </template>
 
 <script setup>
+import animatedCardResources from '../../content/animated-card-resources.json'
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
 import { ANY_CARD_LINE, archiveLineText } from './useArchiveNamedText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
 // Card lines, touch voices and operational voices: the shared spoken-line path (archiveLineText).
+const animatedCards = new Set(animatedCardResources)
 const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
 const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines', [[kind, field]], source))
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
