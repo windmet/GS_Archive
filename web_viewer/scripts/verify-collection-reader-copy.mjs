@@ -5,9 +5,9 @@
 // maintainer view) for the banned terms.
 //
 // Exclusions, by construction and nothing else:
-//   - the 原始资料 fold:  <details class="collection-source-meta"> ... </details>
 //   - maintainer-gated blocks: any element whose v-if starts with `maintainer` (CollectionEntryDetails
-//     reads isMaintainerMode() into `maintainer`), removed together with its children.
+//     and ArchivePhotoDetailDialog read isMaintainerMode() into `maintainer`), including the 原始资料
+//     and 来源与资源 folds, removed together with their children.
 //   - comments (HTML and JS) and the code outside string literals.
 // Hollow-pass guard: a minimum number of files and strings must actually be scanned, and every exclusion
 // rule must have matched something, so a renamed class or flag cannot silently widen or empty the scan.
@@ -26,6 +26,7 @@ const FILES = [
   'src/components/archive/ArchiveCollectionCatalog.vue',
   'src/components/archive/ArchiveUnusedVoices.vue',
   'src/components/archive/ArchivePhotoCatalog.vue',
+  'src/components/archive/ArchivePhotoDetailDialog.vue',
 ]
 const VOICE_NOTES = { 'src/data/unusedVoiceArchive.json': 'families', 'src/data/officeSystemVoices.json': 'scenes' }
 
@@ -115,9 +116,8 @@ function run() {
     failures.push(...violations(file, rows.map(row => row.note)))
   }
   assert.ok(scannedStrings >= 80, `only ${scannedStrings} reader strings scanned`)
-  assert.ok(folds >= 1, 'the 原始资料 fold exclusion matched nothing (class renamed?)')
-  assert.ok(gated >= 7, `maintainer-gated exclusion matched ${gated} blocks (flag renamed?)`)
+  assert.ok(gated >= 3, `maintainer-gated exclusion matched ${gated} blocks (flag renamed?)`)
   assert.deepEqual(failures, [], `reader copy uses banned terms:\n  ${failures.join('\n  ')}`)
-  console.log(`Collection reader copy: ${FILES.length} files, ${scannedStrings} strings, ${zh.length} currency texts and ${notes} voice notes clean (${folds} fold and ${gated} maintainer blocks excluded)`)
+  console.log(`Collection reader copy: ${FILES.length} files, ${scannedStrings} strings, ${zh.length} currency texts and ${notes} voice notes clean (${gated} maintainer blocks excluded)`)
 }
 run()

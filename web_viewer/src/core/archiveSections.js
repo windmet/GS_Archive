@@ -8,6 +8,7 @@ export const ARCHIVE_BRAND = Object.freeze({ name: 'GROWING STARS 资料馆', ma
 export const ARCHIVE_SECTIONS = Object.freeze(Object.fromEntries([
   { id: 'home', label: '事务所' },
   { id: 'portal', label: '资料馆' },
+  { id: 'search', label: '全站搜索' },
   { id: 'stories', label: '剧情', groupId: 'stories' },
   { id: 'interactions', label: '通信', groupId: 'stories' },
   { id: 'idols', label: '偶像', groupId: 'people' },

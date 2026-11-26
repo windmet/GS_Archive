@@ -232,6 +232,7 @@ const imports = {
   '../../utils/AssetResolver.js': { getVoiceUrl },
   '../../utils/CardAssetResolver.js': cardAssets,
   '../../data/eventResourceGraph.js': { eventBannerUrl },
+  '../../composables/useSmoothImage.js': { preloadImage: () => Promise.resolve(true), scheduleImagePrefetch: () => () => {} },
   './useArchiveCardText.js': { archiveText }, './useArchiveGashaText.js': { gashaText },
   // Card lines come from the lazy card-lines overlay; this contract covers costumes, so lines stay source.
   './useArchiveNamedText.js': { archiveNamedText: (_kind, source) => source, loadArchiveNames: () => Promise.resolve(), ANY_CARD_LINE: [],
@@ -239,7 +240,7 @@ const imports = {
   '../../localization/ui/UiLocaleStore.js': { uiLocale },
   '../../presentation/AttributeLabel.js': { ...AttributeLabel },
   ...Object.fromEntries(['ArchiveVoiceRow', 'ArchiveImageLightbox', 'ArchiveListHeader', 'ArchiveIdolReference',
-    'ArchiveTechnicalDetails', 'ArchiveRelationList', 'ArchiveSourceLink', 'ArchiveVideoPlayer'].map(name => [`./${name}.vue`, { default: emptyComponent }])),
+    'ArchiveTechnicalDetails', 'ArchiveRelationList', 'ArchiveSourceLink', 'ArchiveVideoPlayer', 'ArchiveSmoothImage'].map(name => [`./${name}.vue`, { default: emptyComponent }])),
 }
 const { descriptor } = parse(read('src/components/archive/ArchiveCardDetail.vue'))
 const source = compileScript(descriptor, { id: 'card-costume-contract', inlineTemplate: true }).content
@@ -367,7 +368,7 @@ for (const id of [10501, 10502, 10503, 10504, 10505]) {
     assert.equal(all(button).filter(item => ['button', 'a', 'select', 'input'].includes(item.type)).length, 1,
       'the material button contains no nested retry or link control')
     button.props.onClick(); assert.equal(openedEntities.at(-1), `item:${id}`)
-    assert.equal(all(row).filter(item => item.type === 'p').map(text).join(''),
+    assert.equal(text(all(button).find(item => hasClass(item, 'limitbreak-item-desc'))),
       archiveText('item', state.limitbreakMaterial.description, 'description'))
   }
   assert.equal(JSON.stringify({ card: state.card, material: state.limitbreakMaterial }), original)

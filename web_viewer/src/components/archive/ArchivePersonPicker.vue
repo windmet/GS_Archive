@@ -1,7 +1,7 @@
 <template>
   <div class="person-picker">
     <button type="button" class="person-trigger" :aria-haspopup="'dialog'" :aria-label="`${label}：${currentName}，更换`" @click="open = true">
-      <ArchiveIdolAvatar v-if="current" class="person-avatar" :idol-code="current.id" :accent-color="current.color" :size="28" :ring-width="0" :gap="0" decorative />
+      <ArchiveIdolAvatar v-if="current" class="person-avatar" :idol-code="current.id" :accent-color="current.color || ''" ring="identity" :size="26" :ring-width="2" :gap="1" decorative />
       <span v-else class="person-empty" aria-hidden="true"><Users :size="16" /></span>
       <span class="person-name">{{ currentName }}</span>
       <ChevronsUpDown class="person-caret" :size="14" aria-hidden="true" />
@@ -38,9 +38,10 @@ function choose(id) { open.value = false; emit('update:modelValue', id) }
 
 <style scoped>
 .person-picker { min-width: 0; }
-.person-trigger { display: flex; align-items: center; gap: var(--gs-space-4); box-sizing: border-box; width: 100%; min-width: 0; height: var(--gs-control-normal); padding: 0 var(--gs-space-4) 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
+.person-trigger { display: flex; align-items: center; gap: var(--gs-space-3); box-sizing: border-box; width: 100%; min-width: 0; min-height: 40px; padding: var(--gs-space-1) var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
 .person-avatar { flex: none; }
-.person-empty { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border: 1px dashed var(--gs-ink-3); border-radius: 50%; color: var(--gs-ink-3); }
+.person-empty { display: grid; flex: none; place-items: center; width: 26px; height: 26px; border: 1px dashed var(--gs-ink-3); border-radius: 50%; color: var(--gs-ink-3); }
+@media (max-width: 760px) { .person-trigger { min-height: var(--gs-control-touch); } }
 .person-name { flex: 1; min-width: 0; overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .person-caret { flex: none; color: var(--gs-ink-3); }
 .person-trigger:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }

@@ -4,7 +4,7 @@
       :saved-idol-code="preferredReference?.idolCode || ''" :idols="idols" :idol-search="idolSearch" :idol-name="idolName"
       :preferred-actions="preferredActions" :desktop-overview="desktopOverview" :global-search="globalSearch"
       @back="emit('back')" @open-home="emit('open-home', $event)" @navigate="emit('navigate', $event)" @edit-personal="emit('settings')"
-      @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-directory="emit('open-directory', $event)"
+      @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-search="emit('open-search', $event)" @open-directory="emit('open-directory', $event)"
       @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')"
       @select-scope="emit('select-scope', $event)" @save-preferred="emit('save-preferred', $event)" @expand-cards="emit('expand-cards')">
       <template #toolbar>
@@ -37,7 +37,7 @@ const props = defineProps({
   loadingSection: { type: String, default: '' }, retrySection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' },
   desktopOverview: { type: Object, default: () => ({}) }, globalSearch: { type: Object, default: () => ({}) },
 })
-const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'expand-cards'])
+const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred', 'search', 'open-search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'expand-cards'])
 
 const overview = ref(null)
 // The idol lens tints the portal only while it is about that idol; the whole archive stays mint.

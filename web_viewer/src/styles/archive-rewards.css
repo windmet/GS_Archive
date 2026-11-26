@@ -15,7 +15,7 @@
 .domain-reward-condition + .domain-reward-condition::before { content:'·'; margin-right:var(--gs-space-2); color:var(--gs-ink-3); }
 .domain-reward-quantity { grid-column:3; grid-row:1; color:var(--gs-mint-ink); font-size:var(--gs-text-subtitle); font-weight:var(--gs-weight-semibold); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .domain-reward-product { grid-column:2; grid-row:1; display:grid; grid-template-columns:48px minmax(0,1fr); align-items:center; gap:var(--gs-space-4); min-width:0; }
-.domain-reward-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:var(--gs-radius-media); color:var(--gs-ink-3); }
+.domain-reward-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:var(--gs-radius-control); background:var(--gs-paper); color:var(--gs-ink-3); }
 .domain-reward-icon .domain-media-compact { margin:0; padding:0; }
 .domain-reward-icon .domain-media-preview img { min-height:0; }
 .domain-reward-name { display:flex; align-items:center; justify-content:space-between; gap:var(--gs-space-3); min-width:0; min-height:48px; padding:var(--gs-space-2) 0; border:0; background:transparent; color:inherit; font:inherit; text-align:left; text-decoration:none; line-height:1.5; }
@@ -28,12 +28,33 @@ button.domain-reward-name { width:100%; border-radius:var(--gs-radius-control); 
 .domain-reward-name svg { flex:none; color:var(--gs-mint-ink); }
 .domain-reward-source { grid-column:2; grid-row:1; min-width:0; }
 .domain-reward-campaigns { grid-column:1/-1; display:grid; gap:var(--gs-space-1); color:var(--gs-ink-3); font-size:var(--gs-text-meta); line-height:1.6; }
+/* Grouped source disclosures inside narrow collection drawers (matches CurrencyDetailSections). */
+.domain-reward-accordions { display:grid; gap:0; border-top:1px solid var(--gs-line); }
+.domain-reward-accordion { border-bottom:1px solid var(--gs-line); }
+.domain-reward-accordion > summary { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:var(--gs-space-3); min-height:var(--gs-control-touch); padding:var(--gs-space-3) 0; list-style:none; cursor:pointer; }
+.domain-reward-accordion > summary::-webkit-details-marker { display:none; }
+.domain-reward-accordion > summary:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint); outline-offset:var(--gs-focus-offset); }
+.domain-reward-accordion-copy { display:grid; gap:2px; min-width:0; }
+.domain-reward-accordion-copy strong { color:var(--gs-ink); font-size:var(--gs-text-body); font-weight:var(--gs-weight-semibold); line-height:1.4; }
+.domain-reward-accordion-copy small { color:var(--gs-ink-3); font-size:var(--gs-text-meta); font-variant-numeric:tabular-nums; line-height:1.4; }
+.domain-reward-toggle { display:inline-flex; align-items:center; gap:2px; padding:var(--gs-space-1) var(--gs-space-2) var(--gs-space-1) var(--gs-space-3); border-radius:var(--gs-radius-pill); background:var(--gs-current-bg-inset); color:var(--gs-ink-2); font-size:var(--gs-text-meta); font-weight:var(--gs-weight-medium); white-space:nowrap; }
+.domain-reward-toggle svg { transition:transform var(--gs-motion-feedback) var(--gs-ease-out); }
+.domain-reward-toggle-open, .domain-reward-accordion[open] .domain-reward-toggle-closed { display:none; }
+.domain-reward-accordion[open] .domain-reward-toggle-open { display:inline; }
+.domain-reward-accordion[open] .domain-reward-toggle svg { transform:rotate(180deg); }
+.domain-reward-accordion > .domain-reward-list { margin:0 0 var(--gs-space-3); padding-left:var(--gs-space-4); border-left:2px solid var(--gs-line); }
+.domain-reward-accordion > .domain-reward-list .domain-reward-entry { padding:var(--gs-space-3) 0; }
+.domain-reward-accordion > .domain-reward-list .domain-reward-entry:last-child { border-bottom:0; }
+.domain-reward-more { width:100%; min-height:var(--gs-control-normal); margin:0 0 var(--gs-space-3); padding:var(--gs-space-2) var(--gs-space-4); border:0; border-radius:var(--gs-radius-control); background:var(--gs-current-bg-inset); color:var(--gs-mint-ink); font-size:var(--gs-text-ui); font-weight:var(--gs-weight-semibold); text-align:center; cursor:pointer; }
+.domain-rewards.is-sources .domain-reward-name { min-height:var(--gs-control-normal); padding:var(--gs-space-1) 0; }
 .domain-rewards .domain-pagination { flex-wrap:wrap; gap:var(--gs-space-4); margin-top:var(--gs-space-6); font-size:var(--gs-text-meta); }
 .domain-rewards .domain-pagination button { min-height:var(--gs-control-normal); padding:var(--gs-space-3) var(--gs-space-4); border-radius:var(--gs-radius-control); font-size:var(--gs-text-ui); font-weight:var(--gs-weight-semibold); }
 /* Touch keeps :hover after a tap, which would read as a selected row; only a real pointer gets the wash. */
 @media (hover:hover) and (pointer:fine) {
   button.domain-reward-name:hover { background:var(--gs-mint-wash); color:var(--gs-mint-ink); }
+  .domain-reward-accordion > summary:hover .domain-reward-toggle, .domain-reward-more:hover { background:var(--gs-hover); color:var(--gs-ink); }
 }
+@media (prefers-reduced-motion: reduce) { .domain-reward-toggle svg { transition:none; } }
 @media (max-width:760px), (pointer:coarse) {
   .domain-rewards .domain-pagination button { min-height:var(--gs-control-touch); }
 }

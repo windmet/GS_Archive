@@ -1,8 +1,8 @@
 <template>
   <div v-if="!compact" class="filter-inline"><slot /></div>
   <template v-else>
-    <button class="filter-sheet-trigger" type="button" :aria-expanded="open" @click="open = true">
-      <SlidersHorizontal :size="17" aria-hidden="true" />筛选<small v-if="activeCount">{{ activeCount }}</small>
+    <button class="filter-sheet-trigger" :class="{ 'is-active': activeCount > 0 }" type="button" :aria-expanded="open" @click="open = true">
+      <SlidersHorizontal :size="16" aria-hidden="true" />筛选<small v-if="activeCount">{{ activeCount }}</small>
     </button>
     <ArchiveTerminalDialog class="filter-sheet" swipe-dismiss :open="open" :title="title" :title-id="titleId" @close="open = false">
       <div class="filter-sheet-body"><slot /></div>
@@ -26,7 +26,9 @@ onBeforeUnmount(() => query?.removeEventListener?.('change', sync))
 </script>
 <style>
 .filter-inline { display: contents; }
-.filter-sheet-trigger { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.filter-sheet-trigger { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-current-bg-inset); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); cursor: pointer; }
+.filter-sheet-trigger.is-active { background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
+.filter-sheet-trigger:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .filter-sheet-trigger small { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--gs-radius-pill); background: var(--gs-action-bg); color: var(--gs-action-ink); font-size: var(--gs-text-caption); }
 .filter-sheet-body { display: grid; gap: var(--gs-space-5); }
 .filter-sheet-body label { display: grid !important; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }

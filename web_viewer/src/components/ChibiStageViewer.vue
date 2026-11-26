@@ -282,7 +282,7 @@
                   :data-shadow-y="runtimes.get(position)?.groundShadow?.y?.toFixed(2) || ''"
                   :data-shadow-width="runtimes.get(position)?.groundShadow?.width?.toFixed(2) || ''"
                 >
-                  <ArchiveIdolAvatar v-if="activePositions.includes(position)" :idol-code="slotByPosition(position)?.characterId || ''" :size="48" decorative :fallback-text="String(position)" />
+                  <ArchiveIdolAvatar v-if="activePositions.includes(position)" :idol-code="slotByPosition(position)?.characterId || ''" :accent-color="stageIdolColor(characterForSlot(slotByPosition(position)))" :ring="editingSlot?.position === position ? 'selected' : 'group'" :size="48" decorative :fallback-text="String(position)" />
                   <span v-else class="rest-position" aria-hidden="true"></span>
                   <span class="position-caption">{{ activePositions.includes(position) && position === centerStagePosition ? 'C' : position }}<span v-if="currentSingerPositions.includes(position)" class="singing-status" role="img" aria-label="当前段演唱"><Mic2 :size="12" aria-hidden="true" /></span></span>
                 </button>
@@ -4467,9 +4467,8 @@ function formatTime(milliseconds) {
 .position-rail { display: flex; justify-content: space-between; gap: 8px; padding: 12px 0 8px; overflow-x: auto; scrollbar-width: none; }
 .position-rail::-webkit-scrollbar { display: none; }
 .position-marker { display: flex; flex: none; flex-direction: column; align-items: center; gap: 4px; width: 56px; padding: 0; border: 0; background: none; color: var(--gs-ink-3); font: inherit; cursor: pointer; }
-.position-marker :deep(.idol-avatar-shell) { border-radius: var(--gs-radius-pill); transition: box-shadow 180ms ease-out; }
-.position-marker.selected :deep(.idol-avatar-shell) { box-shadow: 0 0 0 2px var(--gs-surface), 0 0 0 4px var(--gs-mint); }
-.position-marker.selected { color: var(--gs-mint-ink); }
+.position-marker :deep(.idol-avatar-shell) { border-radius: var(--gs-radius-pill); }
+.position-marker.selected { color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .position-marker:not(:disabled):hover :deep(.idol-avatar-shell) { filter: brightness(1.04); }
 .position-marker:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: 2px; border-radius: var(--gs-radius-control); }
 .position-caption { display: inline-flex; align-items: center; gap: 2px; min-height: 16px; font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1; }

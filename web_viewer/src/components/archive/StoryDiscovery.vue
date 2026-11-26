@@ -12,7 +12,7 @@
       </div>
       <div v-if="idolPicker" class="idol-picker" aria-label="49 位偶像多选">
         <p>多选匹配任一登场偶像 <button @click="state.idols=[]">清除偶像</button><button @click="idolPicker=false">完成选择</button></p>
-        <div v-for="unit in units" :key="unit" class="idol-unit"><strong>{{ unit }}</strong><div><button v-for="idol in idolDirectory.filter(row=>row.unitName===unit)" :key="idol.id" :aria-pressed="state.idols.includes(idol.id)" @click="toggleIdol(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :size="30" :ring-width="0" :gap="0" decorative /><span>{{ idolName(idol.id)||idol.name }}</span></button></div></div>
+        <div v-for="unit in units" :key="unit" class="idol-unit"><strong>{{ unit }}</strong><div><button v-for="idol in idolDirectory.filter(row=>row.unitName===unit)" :key="idol.id" :aria-pressed="state.idols.includes(idol.id)" @click="toggleIdol(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color || ''" :ring="state.idols.includes(idol.id) ? 'selected' : 'group'" :size="30" decorative /><span>{{ idolName(idol.id)||idol.name }}</span></button></div></div>
       </div>
       <nav class="series-tabs" aria-label="剧情系列"><button v-for="tab in tabs" :key="tab.id" :aria-pressed="state.series===tab.id" @click="state.series=tab.id;emit('series-change')">{{ tab.label }}</button></nav>
       <slot name="filters" />
@@ -32,7 +32,7 @@
         <span class="row-language" :class="language(entry)">{{ languageLabel(entry) }}</span><span class="read-action" :class="{ missing: !entry.exists }">{{ entry.exists ? '' : '未收录' }}<ArrowRight v-if="entry.exists" :size="15" aria-hidden="true" /></span>
       </button>
     </div>
-    <div v-else class="table-wrap"><table><thead><tr><th>章节 / 类型</th><th>标题</th><th>登场偶像</th><th>译文</th><th>操作</th></tr></thead><tbody><tr v-for="entry in visible" :key="entry.id"><td>{{ entry.domainLabel }}<small>{{ chapterLabel(entry.sectionLabel) }} {{ chapterLabel(entry.episodeLabel) }}</small></td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">{{ entry.title }}</button></td><td :title="castNames(entry)">{{ castNames(entry) }}</td><td>{{ languageLabel(entry) }}</td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" :aria-label="`阅读 ${entry.title}`" @click="emit('select',entry)"><ArrowRight :size="15" /></button></td></tr></tbody></table></div>
+    <div v-else class="table-wrap"><table><thead><tr><th>章节 / 类型</th><th>标题</th><th>登场偶像</th><th>译文</th><th>操作</th></tr></thead><tbody><tr v-for="entry in visible" :key="entry.id"><td>{{ entry.domainLabel }}<small>{{ chapterLabel(entry.sectionLabel) }} {{ chapterLabel(entry.episodeLabel) }}</small></td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">{{ localizedTitle(entry) }}</button></td><td :title="castNames(entry)">{{ castNames(entry) }}</td><td>{{ languageLabel(entry) }}</td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" :aria-label="`阅读 ${localizedTitle(entry)}`" @click="emit('select',entry)"><ArrowRight :size="15" /></button></td></tr></tbody></table></div>
     <p v-if="!filtered.length" class="empty-results">没有符合条件的剧情。</p>
     <div v-if="compact && filtered.length" class="mobile-more"><p role="status">已显示 {{ visible.length }} / {{ filtered.length }} 篇</p><button v-if="visible.length<filtered.length" @click="state.mobileLimit+=40">加载更多 · 剩余 {{ filtered.length-visible.length }} 篇</button><p v-else>已显示全部结果</p></div>
     <nav v-else-if="!compact" class="result-pagination" aria-label="检索结果分页"><button :disabled="page===1" @click="page--">上一页</button><span>{{ page }} / {{ pages }}</span><button :disabled="page===pages" @click="page++">下一页</button></nav>
@@ -40,6 +40,7 @@
 </template>
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
+import { useStoryTitles } from './useReaderTitles.js'
 import {computed,ref,watch,onMounted,onBeforeUnmount} from 'vue'
 import {Search,UserRound,BookOpen,ArrowRight,List,Table2,SlidersHorizontal} from '@lucide/vue'
 import {storyDiscoveryState as state} from '../../data/storyDiscoveryState.js'
@@ -74,6 +75,8 @@ function cover(entry){const resource=storyEventResources(entry);if(resource?.sto
 function toggleIdol(code){state.idols=state.idols.includes(code)?state.idols.filter(value=>value!==code):[...state.idols,code]}
 function clear(){state.series='';state.idols=[];state.unit='';state.language='';emit('update:query','');emit('series-change');emit('reset-filters')}
 const active=computed(()=>Boolean(props.externalFiltersActive||state.series||state.idols.length||state.unit||props.query||state.language))
+const storyTitle=useStoryTitles()
+const localizedTitle=entry=>storyTitle(entry.file||entry.id,entry.title)
 const filtered=computed(()=>props.entries.filter(entry=>{
  const event=entry.domain==='event'?storyEventResources(entry):null
  if(state.series==='unit_story'&&entry.domain!=='unit_story')return false
@@ -83,7 +86,7 @@ const filtered=computed(()=>props.entries.filter(entry=>{
  if(state.idols.length&&!state.idols.some(code=>codes.includes(code)))return false
  if(state.unit&&!codes.some(code=>props.idolDirectory.find(row=>row.id===code)?.unitName===state.unit))return false
  if(state.language&&language(entry)!==state.language)return false
- const text=[entry.title,description(entry),...storyKindAliases(entry.domain),...codes.map(code=>props.idolSearch(code))].join(' ').toLowerCase()
+ const text=[entry.title,localizedTitle(entry),description(entry),...storyKindAliases(entry.domain),...codes.map(code=>props.idolSearch(code))].join(' ').toLowerCase()
  return text.includes(props.query.trim().toLowerCase())
 }))
 const pages=computed(()=>Math.max(1,Math.ceil(filtered.value.length/40)))
@@ -93,7 +96,7 @@ const visible=computed(()=>compact.value?filtered.value.slice(0,state.mobileLimi
 watch(()=>JSON.stringify([state.series,state.idols,state.unit,props.query,state.language,filtered.value.map(entry=>entry.id)]),key=>{
  if(key!==state.resultKey){state.page=1;state.mobileLimit=40;state.resultKey=key}
 },{immediate:true})
-function displayTitle(entry){return compact.value&&entry.domain==='event'?entry.title.replace(/^GROWING (SIGN@L|SELECTION)\s*-\s*/,'').replace(/-$/,''):entry.title}
+function displayTitle(entry){const title=localizedTitle(entry);return compact.value&&entry.domain==='event'?title.replace(/^GROWING (SIGN@L|SELECTION)\s*-\s*/,'').replace(/-$/,''):title}
 function titleParts(title){const query=props.query.trim();if(!query)return [{text:title,hit:false}];const parts=[],lower=title.toLowerCase(),needle=query.toLowerCase();let start=0,index;while((index=lower.indexOf(needle,start))!==-1){parts.push({text:title.slice(start,index),hit:false},{text:title.slice(index,index+query.length),hit:true});start=index+query.length}parts.push({text:title.slice(start),hit:false});return parts}
 </script>
 <style scoped>

@@ -217,7 +217,7 @@
           </button>
           <div v-if="mainStart" class="main-start">
             <small>从头读起</small>
-            <strong>{{ chapterLabel(mainSections[0].label) }} · {{ presentProducerAddressingText(mainStart.title) }}</strong>
+            <strong>{{ chapterLabel(mainSections[0].label) }} · {{ presentProducerAddressingText(storyTitle(mainStart.file, mainStart.title)) }}</strong>
             <button type="button" class="main-start-action" @click="emit('select', mainStart)">开始阅读 <ChevronRight :size="15" aria-hidden="true" /></button>
           </div>
         </div>
@@ -297,6 +297,7 @@
 
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
+import { useStoryTitles } from './useReaderTitles.js'
 import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { computed, ref } from 'vue'
@@ -339,6 +340,7 @@ const props = defineProps({
 })
 const emit = defineEmits([
   'clear-idol','select', 'read-event', 'open-event', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort','update:search-query'])
+const storyTitle = useStoryTitles()
 
 const groupEntries = domain => {
   const groups = new Map()

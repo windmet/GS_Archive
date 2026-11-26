@@ -121,6 +121,7 @@ const modules = {
   '../../../readmodels/runtime/DomainRepository.mjs': { DomainRepository },
   '../../styles/archive-domains.css': {},
   '../../../composables/useSheetDrag.js': { useSheetDrag() {} },
+  '../../core/maintainerMode.js': { isMaintainerMode: () => false },
 }
 async function component(file) {
   const { descriptor } = parse(read(file))

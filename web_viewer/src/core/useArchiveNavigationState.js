@@ -65,6 +65,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
   const currentCardRarity = ref('all')
   const currentCardAssetState = ref('all')
   const currentCardRelationState = ref('all')
+  const currentSearchDomain = ref('all')
   const filterQuery = ref('')
   const currentScenarioFile = ref('')
   const currentScenarioStartStep = ref(null)
@@ -130,6 +131,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
+      ...(view.value === 'search' && currentSearchDomain.value !== 'all' ? { searchDomain: currentSearchDomain.value } : {}),
       homeIdol: view.value === 'home' ? homeSelectedId.value : '',
       homeCue: view.value === 'home' ? homeSelectedCue.value : '',
       homeCostume: view.value === 'home' ? homeSelectedCostume.value : '',
@@ -233,6 +235,7 @@ export function useArchiveNavigationState({ portalScopeShown = () => '' } = {}) 
     currentCardAttribute,
     currentCardAssetState,
     currentCardRelationState,
+    currentSearchDomain,
     filterQuery,
     currentScenarioFile,
     currentScenarioStartStep,

@@ -28,8 +28,8 @@ function matchesCardRelationState(card, state, { eventRelations, gashaRelations 
   return true
 }
 
-export function filterArchiveCards(cards, { query = '', rarity = 'all', attribute = 'all', assetState = 'all', relationState = 'all', assets, eventRelations, gashaRelations, titleSearchText = source => source } = {}) {
-  const q = query.toLowerCase()
+export function filterArchiveCards(cards, { query = '', rarity = 'all', attribute = 'all', assetState = 'all', relationState = 'all', assets, eventRelations, gashaRelations, titleSearchText = source => source, ownerSearchText = () => '' } = {}) {
+  const q = query.trim().toLowerCase()
   return cards.filter(card =>
     (rarity === 'all' || card.rarity === rarity) &&
     (attribute === 'all' || card.attribute === attribute) &&
@@ -37,6 +37,7 @@ export function filterArchiveCards(cards, { query = '', rarity = 'all', attribut
     matchesCardRelationState(card, relationState, { eventRelations, gashaRelations }) &&
     (!q ||
     String(titleSearchText(card.title || '')).toLowerCase().includes(q) ||
+    String(ownerSearchText(card.character_id) || '').toLowerCase().includes(q) ||
     String(card.resource_id || '').toLowerCase().includes(q) ||
     String(card.rarity || '').toLowerCase().includes(q))
   )

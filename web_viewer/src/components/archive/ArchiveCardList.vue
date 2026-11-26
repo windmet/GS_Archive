@@ -5,7 +5,7 @@
         <input
           ref="searchInput"
           :value="modelValue"
-          placeholder="搜索卡片标题或稀有度"
+          placeholder="搜索卡片标题、偶像或稀有度"
           class="filter-input"
           @input="emit('update:modelValue', $event.target.value)"
         />
@@ -207,8 +207,8 @@ function fallbackCardIcon(event, resourceId) {
 <style scoped>
 /* Card catalogue: heading, one filter bar, then hairline rows or a border-free art grid. */
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); }
-.card-idol-heading { display: flex; align-items: center; justify-content: flex-end; gap: var(--gs-space-6); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-7) var(--gs-space-8) var(--gs-space-4); }
-.card-idol-heading :deep(.idol-switcher) { width: min(360px, 48vw); }
+.card-idol-heading { display: flex; align-items: center; justify-content: flex-start; gap: var(--gs-space-6); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-6) var(--gs-space-8) var(--gs-space-3); }
+.card-idol-heading :deep(.idol-switcher) { width: min(380px, 100%); }
 .embedded-filters { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-5); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8) var(--gs-space-4); background: var(--gs-paper); }
 .card-rarity-tabs { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); margin-right: auto; }
 /* Toolbar without a rule of its own (线框减法册 C): rarity as text tabs with the mint underline, the view
@@ -275,7 +275,10 @@ function fallbackCardIcon(event, resourceId) {
   .card-counts { grid-column: 2; grid-row: 2; }
   .card-row-arrow { display: block; grid-column: 3; grid-row: 1 / 3; align-self: center; color: var(--gs-ink-3); }
   .card-archive-list.layout-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5) var(--gs-space-4); }
+  .layout-grid .card-thumb { grid-column: auto; grid-row: auto; align-self: stretch; }
   .layout-grid .card-rarity { display: inline; }
+  .layout-grid .card-main { grid-column: auto; grid-row: auto; align-self: stretch; }
+  .layout-grid .card-counts { grid-column: auto; grid-row: auto; }
   .layout-grid .card-row-arrow { display: none; }
 }
 </style>

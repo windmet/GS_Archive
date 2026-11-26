@@ -33,7 +33,7 @@
       <p v-if="gasha.source_type==='item-masterdata'" class="gasha-note">{{ wikiRuns.length ? '道具名称证明了此招募记录；开放时间与新卡据 Wikiwiki 过往公告补录。' : '道具名称证明了此招募记录；开放时间和卡片范围尚未收录。' }}</p>
       <ul class="ticket-list">
         <li v-for="ticket in gasha.tickets" :key="ticket.id">
-          <button type="button" class="ticket-open" :data-archive-focus-id="`gasha-ticket:${ticket.key}`" @click="emit('open-item',ticket.key)">
+          <button type="button" class="ticket-open" :data-archive-focus-id="`gasha-ticket:${ticket.key}`" @click="openTicket(ticket.key)">
             <span class="ticket-art" aria-hidden="true">
               <img v-if="ticket.image?.url && !failedTickets.has(ticket.id)" :src="ticket.image.url" :width="ticket.image.width" :height="ticket.image.height" alt="" loading="lazy" decoding="async" @error="failedTickets=new Set([...failedTickets,ticket.id])" />
               <Ticket v-else :size="24" />
@@ -95,6 +95,8 @@
       </ul>
     </section>
 
+    <CollectionQuickView v-if="quickEntity && client && bootstrap" :client="client" :bootstrap="bootstrap" :entity-key="quickEntity" :display-idol-name="idolName" @close="quickEntity = ''" @open-entity="emit('open-entity', $event)" @open-card="emit('open-card', $event)" />
+
     <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
       <dl class="evidence-grid">
         <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
@@ -113,7 +115,7 @@
 </template>
 
 <script setup>
-import { computed, shallowRef, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue'
 import { ChevronRight, Ticket } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
@@ -121,16 +123,26 @@ import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveGashaArt from './ArchiveGashaArt.vue'
 import ArchiveGashaRules from './ArchiveGashaRules.vue'
 import { gashaPoolArt, loadGashaPoolDetail } from '../../data/gashaPoolDetails.js'
+import { collectionKindForEntity } from '../../core/CollectionRouteState.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {gashaText} from './useArchiveGashaText.js'
 import {archiveText} from './useArchiveCollectionText.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 
+const CollectionQuickView = defineAsyncComponent(() => import('./CollectionQuickView.vue'))
+
 const props = defineProps({
   gasha: { type: Object, default: null },
   idolName: { type: Function, required: true },
+  client: { type: Object, default: null },
+  bootstrap: { type: Object, default: null },
 })
-const emit = defineEmits(['open-card','open-item'])
+const emit = defineEmits(['open-card', 'open-item', 'open-entity'])
+const quickEntity = ref('')
+function openTicket(key) {
+  if (props.client && props.bootstrap && collectionKindForEntity(key)) { quickEntity.value = key; return }
+  emit('open-item', key)
+}
 
 const CATEGORY_LABELS = {
   standard_pickup: '通常招募',
@@ -141,7 +153,7 @@ const CATEGORY_LABELS = {
 }
 
 const failedTickets = shallowRef(new Set())
-watch(() => props.gasha?.id, () => { failedTickets.value = new Set() })
+watch(() => props.gasha?.id, () => { failedTickets.value = new Set(); quickEntity.value = '' })
 
 // Rules and art load with the gasha; a reply for a gasha that is no longer open is dropped.
 const detail = shallowRef(null)
@@ -264,18 +276,20 @@ function formatDateTime(timestamp) {
 .gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
 .ticket-only .gasha-banner { aspect-ratio:auto; }
 .ticket-only .ticket-banner-label { min-height:42px;margin:0;font-size:var(--gs-text-ui); }
-/* Tickets read like the item catalogue: icon well on paper, name, then what it draws. */
-.ticket-list { list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:0 var(--gs-space-7);border-top:1px solid var(--gs-rule); }
-.ticket-list li { min-width:0;border-bottom:1px solid var(--gs-line); }
-.ticket-open { display:grid;grid-template-columns:88px minmax(0,1fr) 16px;align-items:center;gap:var(--gs-space-4);width:100%;min-height:var(--gs-control-touch);margin:var(--gs-space-3) 0;padding:var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2);text-align:left;cursor:pointer;font:inherit;transition:background var(--gs-motion-feedback); }
-.ticket-open:hover { background:var(--gs-mint-wash); }
-.ticket-art { display:grid;place-items:center;width:88px;height:64px;border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-mint-ink); }
-.ticket-art img { display:block;width:76px;height:52px;object-fit:contain; }
-.ticket-copy { display:grid;gap:var(--gs-space-2);min-width:0; }
-.ticket-copy strong { color:var(--gs-ink);font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
-.ticket-copy small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.6;overflow-wrap:anywhere; }
+/* Tickets float as white reference cards on paper: icon well, localized name, concise description, chevron. */
+.ticket-list { list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:var(--gs-space-3) var(--gs-space-5); }
+.ticket-list li { min-width:0; }
+.ticket-open { display:grid;grid-template-columns:56px minmax(0,1fr) 16px;align-items:center;gap:var(--gs-space-4);width:100%;min-height:var(--gs-control-touch);margin:0;padding:var(--gs-space-3) var(--gs-space-4);border:0;border-radius:var(--gs-radius-control);background:var(--gs-surface);box-shadow:var(--gs-shadow-1);color:var(--gs-ink-2);text-align:left;cursor:pointer;font:inherit;transition:box-shadow var(--gs-motion-feedback) var(--gs-ease-out); }
+.ticket-art { display:grid;place-items:center;width:56px;height:56px;border-radius:var(--gs-radius-media);background:var(--gs-paper);color:var(--gs-mint-ink); }
+.ticket-art img { display:block;width:44px;height:44px;object-fit:contain; }
+.ticket-copy { display:grid;gap:var(--gs-space-1);min-width:0; }
+.ticket-copy strong { color:var(--gs-ink);font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.45;overflow-wrap:anywhere; }
+.ticket-copy small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.5;overflow-wrap:anywhere; }
 .ticket-chevron { color:var(--gs-ink-3); }
-.ticket-open:hover .ticket-chevron, .ticket-open:hover strong { color:var(--gs-mint-ink); }
+@media (hover: hover) and (pointer: fine) {
+  .ticket-open:hover .ticket-chevron, .ticket-open:hover strong { color:var(--gs-mint-ink); }
+}
+@media (prefers-reduced-motion: reduce) { .ticket-open { transition:none; } }
 .gasha-summary dl { margin: 0; }
 .gasha-summary dl div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-meta); }
 .gasha-summary dt { color: var(--gs-ink-3); font-weight: var(--gs-weight-medium); }

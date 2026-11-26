@@ -7,7 +7,7 @@
         <p v-else-if="state.error" role="alert" class="domain-error">{{ state.error }}<button type="button" @click="preview.open(entityKey)">重试</button></p>
         <template v-else-if="state.detail">
           <CollectionEntryDetails :detail="state.detail" :kind="state.domain" :display-idol-name="displayIdolName" @open-card="emit('open-card',$event)" />
-          <button type="button" class="domain-action collection-quick-full" @click="emit('open-entity',state.key)">在{{ collectionKindLabel(state.domain) }}页查看{{ state.domain === 'costumes' ? '对应卡片' : '来源与用途' }} <ChevronRight :size="16" /></button>
+          <button type="button" class="domain-action collection-quick-full" @click="emit('open-entity',state.key)"><span>在{{ collectionKindLabel(state.domain) }}页查看{{ state.domain === 'costumes' ? '对应卡片' : '完整获得来源' }}</span><ChevronRight :size="16" /></button>
         </template>
       </section>
     </div>
@@ -73,25 +73,24 @@ function cycleFocus(event) {
 /* Same scale as the 图鉴 drawer: window title 16/700, entry name 20/700. */
 .collection-quick-dialog > header h2 { min-width: 0; margin: 0; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
 .collection-quick-dialog > header button { display: grid; place-items: center; width: var(--gs-control-touch); min-height: var(--gs-control-touch); flex: none; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-mint-ink); }
-.collection-quick-full { max-width: 100%; min-height: var(--gs-control-touch); margin: var(--gs-space-5) 0 var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); gap: var(--gs-space-3); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.6; text-align: left; overflow-wrap: anywhere; }
+.collection-quick-full { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 100%; min-height: var(--gs-control-touch); margin: var(--gs-space-5) 0 var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); gap: var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); box-shadow: var(--gs-shadow-1); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.5; text-align: left; overflow-wrap: anywhere; }
 .collection-quick-full svg { flex: 0 0 auto; }
 .collection-quick-dialog > .domain-error { padding: var(--gs-space-5); border-radius: var(--gs-radius-field); }
 .collection-quick-dialog > .domain-error button { min-height: var(--gs-control-normal); margin-left: var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 
 /* Local roles for the existing shared entry; media geometry remains unchanged. */
 .collection-quick-dialog :deep(.collection-entry-details) { padding: var(--gs-space-6); border-radius: var(--gs-radius-panel); }
-.collection-quick-dialog :deep(.domain-detail-title) { gap: var(--gs-space-5); margin-bottom: var(--gs-space-6); }
 .collection-quick-dialog :deep(.collection-entry-details .domain-detail-title h3) { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); line-height: 1.45; overflow-wrap: anywhere; }
-.collection-quick-dialog :deep(.collection-original) { margin: var(--gs-space-3) 0; font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
-.collection-quick-dialog :deep(.domain-description) { margin: 0 0 var(--gs-space-5); font-size: var(--gs-text-body); }
-.collection-quick-dialog :deep(.domain-meta) { margin: var(--gs-space-6) 0; }
+.collection-quick-dialog :deep(.collection-original) { margin: 0; font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+.collection-quick-dialog :deep(.domain-description) { margin: 0 0 var(--gs-space-4); font-size: var(--gs-text-body); }
+.collection-quick-dialog :deep(.domain-meta) { margin: var(--gs-space-4) 0 0; }
 .collection-quick-dialog :deep(.domain-meta > div) { gap: var(--gs-space-4); padding: var(--gs-space-3) 0; }
 .collection-quick-dialog :deep(.domain-meta dt) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .collection-quick-dialog :deep(.domain-meta dd) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
 .collection-quick-dialog :deep(.collection-source-meta) { margin-top: var(--gs-space-6); }
 .collection-quick-dialog :deep(.collection-source-meta > summary) { min-height: var(--gs-control-normal); padding: var(--gs-space-3) 0; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.5; cursor: pointer; }
 .collection-quick-dialog :deep(.collection-entry-details > .domain-muted) { margin: var(--gs-space-5) 0; font-size: var(--gs-text-body); }
-.collection-quick-dialog :deep(.domain-media-preview) { margin-bottom: var(--gs-space-6); padding: var(--gs-space-5); border-radius: var(--gs-radius-field); }
+.collection-quick-dialog :deep(.collection-hero-head.is-wide .domain-media-preview) { margin-bottom: 0; padding: var(--gs-space-5); border-radius: var(--gs-radius-field); }
 .collection-quick-dialog :deep(.domain-media-preview figcaption) { margin-top: var(--gs-space-4); font-size: var(--gs-text-meta); }
 .collection-quick-dialog :deep(.domain-media-preview button) { min-height: var(--gs-control-normal); padding: var(--gs-space-3) var(--gs-space-4); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .collection-quick-dialog button:focus-visible,

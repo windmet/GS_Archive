@@ -1,10 +1,10 @@
 <template>
-  <div ref="root" class="home-console" :class="{ 'is-open': open }" @keydown.esc="close">
+  <div ref="root" class="home-console" :class="{ 'is-open': open }" @keydown.esc="close(true)">
     <!-- Three things: who and what they wear, how it is shown, scene settings. The two idol / costume dropdowns that
          used to cut names short are one capsule that opens a panel. -->
     <div class="console-bar">
-      <button type="button" class="console-capsule" :aria-expanded="open" aria-haspopup="dialog" aria-controls="home-console-panel" :aria-label="`人物与衣装：${activeName}，${activeSubject}`" @click="open ? close() : openPanel()">
-        <ArchiveIdolAvatar :idol-code="activeIdol.id" :size="28" :ring-width="0" :gap="0" class="console-avatar" :style="{ '--console-ring': ringColor }" decorative />
+      <button ref="capsuleRef" type="button" class="console-capsule" :aria-expanded="open" aria-haspopup="dialog" aria-controls="home-console-panel" :aria-label="`人物与衣装：${activeName}，${activeSubject}`" @click="open ? close() : openPanel()">
+        <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color || ''" ring="identity" :size="32" :ring-width="2" :gap="2" class="console-avatar" decorative />
         <span class="console-copy"><strong>{{ activeName }}</strong><small>{{ activeSubject }}</small></span>
         <ChevronsUpDown :size="14" aria-hidden="true" />
       </button>
@@ -12,8 +12,8 @@
       <button type="button" class="console-settings" aria-label="场景设置" aria-haspopup="dialog" :aria-expanded="settingsOpen" title="场景设置" @click="emit('settings')"><SlidersHorizontal :size="17" /></button>
     </div>
 
-    <button v-if="open" type="button" class="console-scrim" aria-label="关闭人物与衣装" @click="close"></button>
-    <section v-if="open" id="home-console-panel" class="console-panel" role="dialog" aria-label="人物与衣装" :data-tab="tab">
+    <button v-if="open" type="button" class="console-scrim gs-enter-backdrop" aria-label="关闭人物与衣装" @click="close()"></button>
+    <section v-if="open" id="home-console-panel" class="console-panel gs-enter-popover" role="dialog" aria-label="人物与衣装" :data-tab="tab">
       <div class="console-tabs" role="tablist" aria-label="选择内容">
         <button type="button" role="tab" :aria-selected="tab === 'idol'" @click="tab = 'idol'">偶像</button>
         <button type="button" role="tab" :aria-selected="tab === 'subject'" @click="tab = 'subject'">{{ homeMode === 'card' ? '卡面' : '衣装' }}</button>
@@ -25,7 +25,7 @@
             <section v-for="group in groups" :key="group.unit">
               <h3>{{ group.unit }}</h3>
               <button v-for="idol in group.idols" :key="idol.id" type="button" role="option" class="console-idol" :class="{ 'is-current': idol.id === selectedId }" :aria-selected="idol.id === selectedId" @click="pickIdol(idol)">
-                <ArchiveIdolAvatar :idol-code="idol.id" :size="28" :ring-width="0" :gap="0" class="console-avatar" :style="{ '--console-ring': colorOf(idol) }" decorative />
+                <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color || ''" :ring="idol.id === selectedId ? 'selected' : 'group'" :size="28" class="console-avatar" decorative />
                 <span>{{ idolLabel(idol) }}</span>
               </button>
             </section>
@@ -72,7 +72,6 @@ import GsSegmented from '../gs/GsSegmented.vue'
 import { costumeImage } from '../../presentation/CostumeCollection.js'
 import { costumeCategoryCounts } from '../../presentation/CostumeCategories.js'
 import { groupConsoleIdols } from '../../presentation/HomeConsole.js'
-import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 
 const INTRO_KEY = 'sidem:home-console-intro-seen'
 const MODES = [{ value: 'spine', label: '立绘' }, { value: 'card', label: '卡面' }]
@@ -86,7 +85,7 @@ const props = defineProps({
   settingsOpen: Boolean, idolLabel: { type: Function, required: true }, costumeLabel: { type: Function, required: true },
 })
 const emit = defineEmits(['update:selectedId', 'update:selectedCostume', 'update:homeMode', 'update:cardKey', 'update:costumeCategory', 'settings'])
-const root = ref(null), open = ref(false), tab = ref('idol'), query = ref('')
+const root = ref(null), capsuleRef = ref(null), open = ref(false), tab = ref('idol'), query = ref('')
 const activeName = computed(() => props.idolLabel(props.activeIdol))
 const activeSubject = computed(() => props.homeMode === 'card'
   ? (props.activeCard?.label || '默认卡面')
@@ -96,12 +95,10 @@ const activeSubject = computed(() => props.homeMode === 'card'
 const failedThumbs = shallowRef(new Set())
 const thumbOf = costume => failedThumbs.value.has(costume.modelId) ? ''
   : costumeImage(costume.modelId, props.costumeImages?.get(costume.modelId) || null)?.url || ''
-const colorOf = idol => normalizeIdolAccentColor(idol.color) || 'var(--gs-rule)'
-const ringColor = computed(() => colorOf(props.activeIdol))
 const categoryCounts = computed(() => costumeCategoryCounts(props.activeIdol.costumes))
 const groups = computed(() => groupConsoleIdols(props.idols, props.idolLabel, query.value))
 function openPanel() { open.value = true; tab.value = 'idol'; query.value = '' }
-function close() { open.value = false }
+function close(restoreFocus = false) { open.value = false; if (restoreFocus) capsuleRef.value?.focus({ preventScroll: true }) }
 function pickIdol(idol) { emit('update:selectedId', idol.id); tab.value = 'subject' }
 function outside(event) { if (open.value && !root.value?.contains(event.target)) open.value = false }
 
@@ -117,10 +114,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 .home-console { position: absolute; z-index: 6; top: 22px; right: 24px; }
 .console-bar { display: flex; align-items: center; gap: var(--gs-space-3); padding: var(--gs-space-2); border-radius: var(--gs-radius-control); background: var(--chrome-bg, var(--gs-surface)); box-shadow: var(--gs-shadow-console); }
 .console-capsule { display: flex; align-items: center; gap: var(--gs-space-3); box-sizing: border-box; min-width: 0; max-width: 280px; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3) 0 7px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; text-align: left; cursor: pointer; }
-.console-capsule:hover { background: var(--gs-hover); }
 .console-capsule[aria-expanded=true] { background: var(--gs-current-bg-inset); }
-.console-avatar { outline: 2px solid var(--console-ring); outline-offset: 2px; flex: none; }
-.console-avatar :deep(.idol-avatar-shell) { box-shadow: none; }
+.console-avatar { flex: none; }
 .console-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .console-copy strong, .console-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .console-copy strong { color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
@@ -128,10 +123,9 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 .console-capsule > svg { flex: none; color: var(--gs-ink-3); }
 .console-settings { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
 .console-costume-thumb { flex: none; width: 40px; height: 40px; border-radius: var(--gs-radius-media); object-fit: contain; background: var(--gs-paper); }
-.console-settings:hover { background: var(--gs-hover); }
 .console-capsule:focus-visible, .console-settings:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .console-scrim { display: none; }
-.console-panel { position: absolute; top: calc(100% + var(--gs-space-3)); right: 0; display: flex; flex-direction: column; width: 640px; max-width: calc(100vw - 2 * var(--gs-space-6)); max-height: min(560px, calc(100vh - 120px)); overflow: hidden; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
+.console-panel { position: absolute; top: calc(100% + var(--gs-space-3)); right: 0; display: flex; flex-direction: column; width: 640px; max-width: calc(100vw - 2 * var(--gs-space-6)); max-height: min(560px, calc(100dvh - 120px)); overflow: hidden; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
 .console-tabs { display: none; }
 .console-columns { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 0; flex: 1; }
 .console-column { display: flex; flex-direction: column; gap: var(--gs-space-3); min-height: 0; padding: var(--gs-space-4); overflow: hidden; }
@@ -145,7 +139,9 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 .console-idol, .console-card { display: flex; align-items: center; gap: var(--gs-space-4); box-sizing: border-box; width: 100%; min-height: var(--gs-row); padding: 0 var(--gs-space-3) 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
 .console-idol span, .console-card span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .console-card small { margin-left: auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
-.console-idol:hover, .console-card:hover, .console-costume:hover { background: var(--gs-hover); }
+@media (hover: hover) {
+  .console-capsule:hover, .console-settings:hover, .console-idol:hover, .console-card:hover, .console-costume:hover { background: var(--gs-hover); }
+}
 .console-idol.is-current, .console-card.is-current, .console-costume.is-current { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
 .console-chips { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); }
 .console-chips button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
@@ -176,7 +172,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
   /* A bottom sheet with an idol tab and a costume tab, standing on the shell's mobile nav (it was
      drawn under the nav, so the last rows could not be reached). */
   .console-scrim { position: fixed; z-index: 7; inset: 0; display: block; border: 0; background: rgb(11 20 36 / 25%); }
-  .console-panel { position: fixed; z-index: 8; top: auto; right: 0; bottom: var(--archive-mobile-nav-inset, 0px); left: 0; width: auto; max-width: none; max-height: calc(72vh - var(--archive-mobile-nav-inset, 0px)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; padding-bottom: var(--archive-sheet-safe-bottom, env(safe-area-inset-bottom, 0px)); }
+  .console-panel { position: fixed; z-index: 8; top: auto; right: 0; bottom: var(--archive-mobile-nav-inset, 0px); left: 0; width: auto; max-width: none; max-height: calc(72dvh - var(--archive-mobile-nav-inset, 0px)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; padding-bottom: var(--archive-sheet-safe-bottom, env(safe-area-inset-bottom, 0px)); --gs-enter-travel: translateY(100%); --gs-enter-duration: var(--gs-motion-sheet); }
   .console-tabs { display: grid; grid-template-columns: repeat(2, 1fr); border-bottom: 1px solid var(--gs-line); }
   .console-tabs button { min-height: var(--gs-control-touch); border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
   .console-tabs button[aria-selected=true] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); }

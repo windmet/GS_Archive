@@ -19,16 +19,29 @@
       @navigate="navigateArchiveSection"
       @follow="followArchiveLink"
       @back="goArchiveBack"
+      @open-search="openGlobalSearch($event)"
     >
       <template v-if="COLLECTION_SECTIONS.includes(archiveSection)" #subnav>
         <ArchiveCollectionTabs :current="archiveSection" :counts="portalData.overview.value?.collectionCounts || null" @select="navigateArchiveSection" />
       </template>
-      <template v-if="view === 'card_detail' || (view === 'idol_detail' && currentIdolUnitMates.length > 1)" #header-actions>
-        <ArchiveHeaderStepper v-if="view === 'card_detail'" label="同偶像卡片" :previous="previousCard" :next="nextCard" :title-of="cardStepTitle" @step="openCard" />
-        <ArchiveUnitMateFaces v-else :mates="currentIdolUnitMates" :current="currentCharacterId" :unit-name="currentIdolProfile?.unit_name || ''" :idol-name="idolDisplayName" @select="selectPrimaryIdol" />
+      <template v-if="view === 'card_detail'" #header-actions>
+        <ArchiveHeaderStepper label="同偶像卡片" :previous="previousCard" :next="nextCard" :title-of="cardStepTitle" @step="openCard" />
       </template>
       <template #sidebar-identity>
         <ArchiveStageIdolSwitch
+          :idol="preferredArchiveIdol"
+          :name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
+          :stage-light="Boolean(stageLightIdol)"
+          :idols="archivePickerIdols"
+          :idol-name="idolDisplayName"
+          :idol-search="idolEntitySearchText"
+          @save-preferred="savePreferredIdol"
+          @save-startup="storeUserPreferences"
+        />
+      </template>
+      <template #drawer-identity>
+        <ArchiveStageIdolSwitch
+          inline
           :idol="preferredArchiveIdol"
           :name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
           :stage-light="Boolean(stageLightIdol)"
@@ -54,6 +67,7 @@
         :desktop-overview="portalData.overview.value"
         :global-search="portalData.search.value"
         @search="portalData.updateSearch"
+        @open-search="openGlobalSearch"
         @open-result="openPortalResult"
         @open-directory="openPortalDirectory"
         @open-stage="openPortalStage"
@@ -114,6 +128,23 @@
       />
 
       <ArchiveAbout v-if="view === 'about'" />
+      <ArchiveSearchPage
+        v-if="view === 'search'"
+        :query="filterQuery"
+        :domain="currentSearchDomain"
+        :bootstrap="archiveBootstrap"
+        :client="readModelClient"
+        :preferred-idol="preferredArchiveIdol"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
+        :card-title="source => archiveNamedText('card', source, 'title')"
+        :card-search="source => archiveNamedSearchText('card', source, 'title')"
+        :song-title="source => source || ''"
+        :gasha-title="source => archiveNamedText('gasha', source, 'title')"
+        @update:query="filterQuery = $event; syncArchiveRoute({ replace: true })"
+        @update:domain="currentSearchDomain = $event; syncArchiveRoute({ replace: true })"
+        @open-result="openPortalResult"
+      />
       <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" :shelf="currentVoiceShelf" @shelf="currentVoiceShelf = $event; syncArchiveRoute({ replace: true })" @preview-office-voice="previewOfficeVoice" />
       <ArchiveScoreArchive v-if="view === 'score_archive'" :shelf="currentSoundShelf" :load-stories="loadStoryReadModelCatalog" @shelf="currentSoundShelf = $event; syncArchiveRoute({ replace: true })" @open-story="openStoryDetail($event, 'score_archive')" @open-song="openSong" />
       <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" :songs="stageSongDirectory" :preferred-idol="preferredArchiveIdol" :preferred-name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
@@ -228,9 +259,12 @@
       <ArchiveGashaDetail
         v-if="view === 'gasha_detail'"
         :gasha="currentGasha"
+        :client="readModelClient"
+        :bootstrap="archiveBootstrap"
         :idol-name="idolDisplayName"
         @open-card="openGashaCard"
         @open-item="openCollectionEntity"
+        @open-entity="openCollectionEntity"
       />
 
       <ArchiveSongCatalog
@@ -605,7 +639,6 @@ import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import ArchiveHeaderStepper from './components/archive/ArchiveHeaderStepper.vue'
-import ArchiveUnitMateFaces from './components/archive/ArchiveUnitMateFaces.vue'
 import ArchiveCollectionTabs from './components/archive/ArchiveCollectionTabs.vue'
 import ArchiveStageIdolSwitch from './components/archive/ArchiveStageIdolSwitch.vue'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
@@ -723,6 +756,7 @@ const archiveRouteLoaders = {
   live: () => import('./components/archive/ArchiveToolLanding.vue'),
   studio: () => import('./components/archive/ArchiveToolLanding.vue'),
   about: () => import('./components/archive/ArchiveAbout.vue'),
+  search: () => import('./components/archive/ArchiveSearchPage.vue'),
   unused_archive: () => import('./components/archive/ArchiveUnusedVoices.vue'),
   score_archive: () => import('./components/archive/ArchiveScoreArchive.vue'),
   chart_lab: () => import('./components/archive/ArchiveChartLab.vue'),
@@ -755,6 +789,7 @@ const ArchiveCollectionCatalog = defineArchivePage(archiveRouteLoaders.collectio
 const ArchivePhotoCatalog = defineArchivePage(archiveRouteLoaders.photo_catalog)
 const ArchiveToolLanding = defineArchivePage(archiveRouteLoaders.live)
 const ArchiveAbout = defineArchivePage(archiveRouteLoaders.about)
+const ArchiveSearchPage = defineArchivePage(archiveRouteLoaders.search)
 const ArchiveUnusedVoices = defineArchivePage(archiveRouteLoaders.unused_archive)
 const ArchiveScoreArchive = defineArchivePage(archiveRouteLoaders.score_archive)
 const ArchiveChartLab = defineArchivePage(archiveRouteLoaders.chart_lab)
@@ -857,6 +892,7 @@ const {
   currentCardAttribute,
   currentCardAssetState,
   currentCardRelationState,
+  currentSearchDomain,
   filterQuery,
   currentScenarioFile,
   currentScenarioStartStep,
@@ -895,13 +931,8 @@ const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiv
   unit_code: idol.unitCode,
 }])) }
 const bootstrapIdolSwitcher = computed(() => archiveBootstrap.idols.map(idol => ({
-  idol_code: idol.id, display_name: idolDisplayName(idol.id), unit_name: idol.unitName,
+  idol_code: idol.id, display_name: idolDisplayName(idol.id), unit_name: idol.unitName, color: idol.color || '',
 })))
-// The idol page's unit, for the faces in the title row.
-const currentIdolUnitMates = computed(() => {
-  const unit = bootstrapIdolSwitcher.value.find(row => row.idol_code === currentCharacterId.value)?.unit_name
-  return unit ? bootstrapIdolSwitcher.value.filter(row => row.unit_name === unit) : []
-})
 const mobileIdolReadModelCatalog = shallowRef(null)
 const mobileUnitReadModelCatalog = shallowRef(null)
 const mobileIdolReadModelDetail = shallowRef(null)
@@ -1432,6 +1463,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'live') return sectionLabel('live')
   if (view.value === 'studio') return sectionLabel('studio')
   if (view.value === 'about') return sectionLabel('about')
+  if (view.value === 'search') return sectionLabel('search')
   if (view.value === 'unused_archive') return COLLECTION_PAGE_TITLE
   if (view.value === 'score_archive') return sectionLabel('scores')
   if (view.value === 'archive_status') return '数据状态'
@@ -1471,11 +1503,11 @@ const archiveTitle = computed(() => {
 const archiveSearchable = computed(() => ['idols', 'cards', 'gashas'].includes(view.value))
 
 const archiveSearchPlaceholder = computed(() => {
-  if (view.value === 'idols') return categoryFilterPlaceholder.value
-  if (view.value === 'cards') return '搜索卡片标题或稀有度'
-  if (view.value === 'gashas') return '搜索卡池名称、卡片或偶像'
-  if (view.value === 'story_catalog') return '搜索剧情标题或角色'
-  return '搜索资料'
+  if (view.value === 'idols') return '筛选当前列表（偶像姓名或组合）'
+  if (view.value === 'cards') return '筛选当前列表（卡名、偶像或稀有度）'
+  if (view.value === 'gashas') return '筛选当前列表（卡池名、卡片或偶像）'
+  if (view.value === 'story_catalog') return '筛选剧情标题或角色'
+  return '筛选当前列表'
 })
 
 const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.value) : (view.value !== 'portal' || Boolean(portalFrom.value)))
@@ -1860,6 +1892,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentSongScope.value = route.songScope || 'all'
     songParentView.value = route.view === 'song_detail' ? (route.parentView || '') : ''
     currentCardRarity.value = route.rarity || 'all'
+    currentSearchDomain.value = route.searchDomain || 'all'
     currentCardAttribute.value = route.cardAttribute || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
@@ -2005,7 +2038,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'scores', 'idols', 'units', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','about'].includes(section)) return
+  if (!['home', 'search', 'stories', 'songs', 'scores', 'idols', 'units', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2023,6 +2056,7 @@ function navigateArchiveSection(section) {
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'live' || section === 'studio') { filterQuery.value = ''; commitView(section) }
   else if (section === 'about') { filterQuery.value = ''; commitView('about') }
+  else if (section === 'search') openGlobalSearch()
   else if (section === 'unused') { filterQuery.value = ''; currentVoiceShelf.value = ''; commitView('unused_archive') }
   else if (section === 'scores') { filterQuery.value = ''; currentSoundShelf.value = ''; commitView('score_archive') }
   else if (section === 'resources') openArchiveStatus()
@@ -2377,11 +2411,24 @@ async function restoreDetailSource(fallback) {
   })
 }
 
+function openGlobalSearch(payload = '') {
+  const query = typeof payload === 'string' ? payload : (payload?.query || '')
+  const domain = typeof payload === 'object' && payload?.domain ? payload.domain : 'all'
+  if (view.value !== 'search') captureDetailSource()
+  filterQuery.value = String(query || '').slice(0, 120)
+  currentSearchDomain.value = domain
+  commitView('search')
+}
+
 async function openPortalResult(result) {
-  if (view.value !== 'portal' || !result?.target) return
+  if (!['portal', 'search'].includes(view.value) || !result?.target) return
+  const originView = view.value
   const target = result.target, sourceRevision = navigation.getRevision()
-  const stillHere = () => view.value === 'portal' && sourceRevision === navigation.getRevision() && !navigation.isDisposed()
+  const stillHere = () => view.value === originView && sourceRevision === navigation.getRevision() && !navigation.isDisposed()
   try {
+    if (target.domain === 'collection' && target.view === 'collection_entity' && target.entityKey) {
+      return openCollectionEntity(target.entityKey)
+    }
     if (target.domain === 'units' && target.view === 'unit_detail' && archiveBootstrap.idols.some(row => row.unitCode === target.unitCode)) {
       return openArchiveUnit({unit_code: target.unitCode})
     } else if (target.view === 'story_gateway') {
@@ -2406,10 +2453,10 @@ async function openPortalResult(result) {
     } else if (target.domain === 'idols' && target.view === 'idol_detail' && archiveBootstrap.idols.some(row => row.id === target.idolCode)) {
       return openIdolReadModel(target.idolCode, { captureSource: true, resetContext: true, clearEventContext: true })
     } else if (target.domain === 'stories' && target.view === 'story_detail') {
-      if (stillHere()) return openStoryDetail({ file: target.file, domain: target.storyDomain, sectionId: target.sectionId }, 'portal')
+      if (stillHere()) return openStoryDetail({ file: target.file, domain: target.storyDomain, sectionId: target.sectionId }, originView)
     } else if (target.domain === 'events' && target.view === 'event_detail') {
       const rows = await loadEventCatalog()
-      if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, 'portal')
+      if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, originView)
     } else if (target.domain === 'gashas' && target.view === 'gasha_detail') {
       if (stillHere()) return openGasha({ id: target.gashaId })
     }

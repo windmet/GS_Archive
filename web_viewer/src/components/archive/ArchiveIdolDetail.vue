@@ -1,25 +1,30 @@
 <template>
   <article v-if="idol" class="idol-detail" :style="themeStyle" data-archive-scroll-container>
     <!-- 人物幕: the idol's wash, the figure with a flat shadow in the idol's ink (色影), the unit logo,
-         the name after a 3px colour bar, and the autograph written beside it in ink (落款). The unit's
-         faces live in the title row (the shell's header actions), not here. -->
-    <header class="idol-hero" :class="{ 'has-figure': portrait && !portraitFailed }" :style="heroStyle">
-      <img v-if="portrait && !portraitFailed" class="idol-hero-figure" :src="portrait.url" alt="" decoding="async" @error="portraitFailed = true" />
-      <ArchiveIdolAvatar v-else class="idol-hero-avatar" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" decorative />
-      <div class="idol-hero-copy">
-        <button v-if="idol.unit_code" class="idol-hero-unit" type="button" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" :aria-label="`组合 ${idol.unit_name}`" @click="emit('open-unit', idol)">
-          <img v-if="!unitLogoFailed" :src="getUnitLogoUrl(idol.unit_code)" alt="" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ idol.unit_name }}</span>
-        </button>
-        <h2 class="idol-hero-name">{{ displayedIdolName }}</h2>
-        <p lang="ja">{{ idol.name_fields?.kana || '' }}</p>
-        <span class="idol-hero-sign" aria-hidden="true"></span>
-      </div>
-      <div class="idol-hero-acts">
-        <button v-if="hasHome" type="button" class="idol-hero-home" :data-archive-focus-id="`idol-home:${idol.idol_code}`" @click="emit('open-home', idol.idol_code)">去事务所<ChevronRight :size="15" aria-hidden="true" /></button>
-        <span v-if="isFavorite" class="idol-hero-favorite">我的担当</span>
-        <ArchiveIdolSwitcher v-if="unitMates.length <= 1" class="profile-switcher" :idols="idols" :selected-idol="selectedIdol" @select="emit('select-idol', $event)" />
-      </div>
-    </header>
+         the name after a 3px colour bar, and the autograph written beside it in ink (落款). Teammate
+         faces sit in their own breathable strip right beneath the hero so they never crowd the topbar. -->
+    <div class="idol-hero-block">
+      <header class="idol-hero" :class="{ 'has-figure': displayedFigure.url && !portraitFailed }" :style="heroStyle">
+        <Transition name="idol-figure-swap" mode="out-in">
+          <img v-if="displayedFigure.url && !portraitFailed" :key="displayedFigure.url" class="idol-hero-figure" :src="displayedFigure.url" data-gs-loaded alt="" decoding="async" @error="portraitFailed = true" />
+          <ArchiveIdolAvatar v-else key="avatar" class="idol-hero-avatar" :idol-code="idol.idol_code" :accent-color="idol.color" ring="identity" :size="104" :ring-width="3" decorative />
+        </Transition>
+        <div class="idol-hero-copy">
+          <button v-if="idol.unit_code" class="idol-hero-unit" type="button" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" :aria-label="`组合 ${idol.unit_name}`" @click="emit('open-unit', idol)">
+            <img v-if="!unitLogoFailed" :src="getUnitLogoUrl(idol.unit_code)" alt="" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ idol.unit_name }}</span>
+          </button>
+          <h2 class="idol-hero-name">{{ displayedIdolName }}</h2>
+          <p lang="ja">{{ idol.name_fields?.kana || '' }}</p>
+          <span class="idol-hero-sign" aria-hidden="true"></span>
+        </div>
+        <div class="idol-hero-acts">
+          <button v-if="hasHome" type="button" class="idol-hero-home" :data-archive-focus-id="`idol-home:${idol.idol_code}`" @click="emit('open-home', idol.idol_code)">去事务所<ChevronRight :size="15" aria-hidden="true" /></button>
+          <span v-if="isFavorite" class="idol-hero-favorite">我的担当</span>
+          <ArchiveIdolSwitcher v-if="unitMates.length <= 1" class="profile-switcher" :idols="idols" :selected-idol="selectedIdol" @select="emit('select-idol', $event)" />
+        </div>
+      </header>
+      <ArchiveUnitMateFaces v-if="unitMates.length > 1" class="idol-unit-strip" :mates="unitMates" :current="idol.idol_code" :unit-name="idol.unit_name || ''" :idol-name="idolName" @select="emit('select-idol', $event)" />
+    </div>
 
     <section class="idol-facts" aria-label="偶像档案">
       <dl>
@@ -53,39 +58,53 @@
         <h3 id="idol-related-title">关联资料</h3>
       </div>
       <div class="related-grid">
-        <!-- Numbers are text: the figure in the stage face, the name, one grey line for what it holds. -->
+        <!-- Left-aligned label + uniform breakdown, right-aligned stage-face count beside the chevron. -->
         <button v-for="item in related" :key="item.id" :data-archive-focus-id="`idol-domain:${idol.idol_code}:${item.id}`" @click="emit('open-domain', item.id)">
-          <span class="related-figure">{{ item.figure ?? '—' }}<small v-if="item.unit && item.figure != null">{{ item.unit }}</small></span>
           <span class="related-copy">
             <strong>{{ item.label }}</strong>
-            <small>{{ item.figure == null ? (item.pending ? '' : '尚未确认') : item.breakdown }}</small>
+            <small>{{ item.figure == null ? (item.pending ? '读取中…' : '尚未确认') : item.breakdown }}</small>
           </span>
-          <ChevronRight :size="18" aria-hidden="true" />
+          <span class="related-figure">{{ item.figure ?? '—' }}<small v-if="item.unit && item.figure != null">{{ item.unit }}</small></span>
+          <ChevronRight :size="17" aria-hidden="true" />
         </button>
       </div>
     </section>
 
-    <!-- Honors as the plates the game shows. The idol's own honors decode from the honor id; ranking
-         honors name the idol in an event's ranking configuration. Each plate opens the honor page. -->
+    <!-- Honors as the plates the game shows. Bond & FES stay visible for identity; long-tail event
+         ranking plates fold behind a compact summary bar so songs and events stay close at hand. -->
     <section v-if="honors.length" class="idol-related idol-honors" aria-labelledby="idol-honors-title">
       <div class="section-heading"><h3 id="idol-honors-title">称号</h3><span>{{ honors.length }} 个</span></div>
-      <!-- The plate already prints the honor's name; each caption adds only what the plate does not
-           say (bond level, FES and month, rank). Where each group comes from opens behind its ⓘ. -->
       <section v-for="group in honorGroups" :key="group.id" class="honor-group" :aria-labelledby="`idol-honor-group-${group.id}`">
-        <h4 :id="`idol-honor-group-${group.id}`">{{ group.title }}<small>{{ group.count }}</small>
-          <button type="button" class="honor-info" :aria-expanded="openHonorNote === group.id" :aria-label="`${group.title}的来源说明`" :title="group.note" @click="openHonorNote = openHonorNote === group.id ? '' : group.id"><Info :size="15" aria-hidden="true" /></button>
-        </h4>
-        <p v-if="openHonorNote === group.id" class="honor-note">{{ group.note }}</p>
-        <div v-for="row in group.rows" :key="row.id" class="honor-row">
-          <h5 v-if="row.title">{{ row.title }}</h5>
-          <ul v-for="line in row.lines" :key="line.id" class="honor-plates" :class="line.layout && `is-${line.layout}`">
-            <li v-for="item in line.items" :key="item.honor.key">
-              <button type="button" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${item.honor.key}`" :aria-label="item.label" :title="item.honor.nameJa" @click="emit('open-honor',item.honor.key)">
-                <span class="honor-plate"><img v-if="item.honor.image?.url" :src="item.honor.image.url" alt="" loading="lazy" decoding="async" /><Medal v-else :size="20" aria-hidden="true" /></span>
-                <span v-if="item.tag" class="honor-caption"><span class="honor-text">{{ item.text }}</span><span class="honor-sep" aria-hidden="true">·</span><b class="honor-value">{{ item.tag }}</b></span>
-              </button>
-            </li>
-          </ul>
+        <div v-if="group.id === 'ranking'" class="honor-collapse-bar">
+          <div class="honor-collapse-head">
+            <h4 :id="`idol-honor-group-${group.id}`">{{ group.title }}<small>{{ group.count }} 枚 · {{ group.rows.length }} 场活动</small>
+              <button type="button" class="honor-info" :aria-expanded="openHonorNote === group.id" :aria-label="`${group.title}的来源说明`" :title="group.note" @click="openHonorNote = openHonorNote === group.id ? '' : group.id"><Info :size="15" aria-hidden="true" /></button>
+            </h4>
+            <button type="button" class="honor-collapse-toggle" :aria-expanded="rankingHonorsOpen" :aria-controls="`idol-honor-list-${group.id}`" @click="rankingHonorsOpen = !rankingHonorsOpen">
+              <span>{{ rankingHonorsOpen ? '收起' : '展开全部' }}</span>
+              <ChevronDown :size="16" :class="{ 'is-open': rankingHonorsOpen }" aria-hidden="true" />
+            </button>
+          </div>
+          <p v-if="openHonorNote === group.id" class="honor-note">{{ group.note }}</p>
+        </div>
+        <template v-else>
+          <h4 :id="`idol-honor-group-${group.id}`">{{ group.title }}<small>{{ group.count }}</small>
+            <button type="button" class="honor-info" :aria-expanded="openHonorNote === group.id" :aria-label="`${group.title}的来源说明`" :title="group.note" @click="openHonorNote = openHonorNote === group.id ? '' : group.id"><Info :size="15" aria-hidden="true" /></button>
+          </h4>
+          <p v-if="openHonorNote === group.id" class="honor-note">{{ group.note }}</p>
+        </template>
+        <div v-if="group.id !== 'ranking' || rankingHonorsOpen" :id="`idol-honor-list-${group.id}`" class="honor-group-body">
+          <div v-for="row in group.rows" :key="row.id" class="honor-row">
+            <h5 v-if="row.title">{{ row.title }}</h5>
+            <ul v-for="line in row.lines" :key="line.id" class="honor-plates" :class="line.layout && `is-${line.layout}`">
+              <li v-for="item in line.items" :key="item.honor.key">
+                <button type="button" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${item.honor.key}`" :aria-label="item.label" :title="item.honor.nameJa" @click="emit('open-honor',item.honor.key)">
+                  <span class="honor-plate"><img v-if="item.honor.image?.url" :src="item.honor.image.url" alt="" loading="lazy" decoding="async" /><Medal v-else :size="20" aria-hidden="true" /></span>
+                  <span v-if="item.tag" class="honor-caption"><span class="honor-text">{{ item.text }}</span><span class="honor-sep" aria-hidden="true">·</span><b class="honor-value">{{ item.tag }}</b></span>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
     </section>
@@ -122,9 +141,9 @@
 
 <script setup>
 import { archiveLineText, archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { idolThemeProperties } from '../../presentation/idolStageLight.js'
-import { ChevronRight, Info, Medal, MonitorPlay, Music } from '@lucide/vue'
+import { ChevronDown, ChevronRight, Info, Medal, MonitorPlay, Music } from '@lucide/vue'
 import { getCharaSignUrl, getUnitLogoUrl, getVoiceUrl } from '../../utils/AssetResolver.js'
 import { validateArchivePayload } from '../../data/archiveDataContracts.js'
 import { portalIdolPortrait } from '../../presentation/ArchivePortalPresentation.js'
@@ -140,6 +159,8 @@ import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import ArchiveUnitMateFaces from './ArchiveUnitMateFaces.vue'
+import { preloadImage, scheduleImagePrefetch } from '../../composables/useSmoothImage.js'
 
 const props = defineProps({
   idol: { type: Object, default: null },
@@ -174,12 +195,39 @@ fetch('/data/assets/raw_character_image_promotions.json').then(response => {
 }).then(registry => { validateArchivePayload('rawCharacterImagePromotions', registry); portraitRegistry.value = registry }).catch(() => {})
 const portrait = computed(() => props.idol ? portalIdolPortrait(portraitRegistry.value, props.idol.idol_code) : null)
 const portraitFailed = ref(false), unitLogoFailed = ref(false)
-watch(() => props.idol?.idol_code, () => { portraitFailed.value = false; unitLogoFailed.value = false })
+// Transparent cutouts must never double-expose on top of each other: preload the next teammate's
+// portrait (plus idle-prefetch all unit mates) and swap url + focusX atomically via out-in fade.
+const displayedFigure = ref({ url: '', width: 0, height: 0 })
+let portraitSeq = 0
+let stopMatePrefetch = () => {}
+watch(portrait, async next => {
+  const token = ++portraitSeq
+  if (!next?.url) {
+    displayedFigure.value = { url: '', width: 0, height: 0 }
+    return
+  }
+  if (!displayedFigure.value.url || displayedFigure.value.url === next.url) {
+    displayedFigure.value = { url: next.url, width: next.width || 0, height: next.height || 0 }
+    return
+  }
+  await preloadImage(next.url)
+  if (token !== portraitSeq) return
+  portraitFailed.value = false
+  displayedFigure.value = { url: next.url, width: next.width || 0, height: next.height || 0 }
+}, { immediate: true })
+watch([unitMates, portraitRegistry], ([mates, registry]) => {
+  stopMatePrefetch()
+  if (!registry || mates.length <= 1) return
+  const urls = mates.map(mate => portalIdolPortrait(registry, mate.idol_code)?.url).filter(Boolean)
+  stopMatePrefetch = scheduleImagePrefetch(urls)
+}, { immediate: true })
+onBeforeUnmount(() => { portraitSeq += 1; stopMatePrefetch() })
+watch(() => props.idol?.idol_code, () => { portraitFailed.value = false; unitLogoFailed.value = false; rankingHonorsOpen.value = false })
 const HERO_FIGURE_HEIGHT = 340
 const heroStyle = computed(() => {
   if (!props.idol) return undefined
-  const image = portrait.value
-  const focus = image ? idolVisualFocus.focusX[image.url] ?? 0.5 : 0.5
+  const image = displayedFigure.value.url ? displayedFigure.value : portrait.value
+  const focus = image?.url ? idolVisualFocus.focusX[image.url] ?? 0.5 : 0.5
   const width = image?.width && image?.height ? HERO_FIGURE_HEIGHT * image.width / image.height : HERO_FIGURE_HEIGHT * 0.66
   return { '--hero-sign': `url(${getCharaSignUrl(props.idol.idol_code)})`, '--hero-figure-left': `calc(78% - ${Math.round(focus * width)}px)` }
 })
@@ -189,6 +237,7 @@ const introVoiceUrl = computed(() => getVoiceUrl(props.selfIntroduction?.voice, 
 // Bond honors (担当 at bond Lv.50, the catchphrase at Lv.100), then FES achievements, then event
 // rankings grouped by event. Notes say where each group comes from in reader terms.
 const openHonorNote = ref('')
+const rankingHonorsOpen = ref(false)
 const HONOR_NOTES = {
   bond: '偶像羁绊达到指定等级时获得：担当称号为 Lv.50，台词称号为 Lv.100。等级来自玩家转述，暂未见官方资料。',
   fes: '称号原名就是达成条件：让该偶像的 FES 限定卡换装，或突破至最大上限。称号牌上印有对应的卡名。',
@@ -263,14 +312,14 @@ const storyRow = computed(() => {
   return { figure: sections, unit: '话', breakdown: [`${episodes} Episode`, talks ? `${talks} Small Talk` : ''].filter(Boolean).join(' · ') }
 })
 const related = computed(() => [
-  { id: 'cards', label: '卡片', figure: props.stats.cards || 0, unit: '张', breakdown: '全部卡面' },
+  { id: 'cards', label: '卡片', figure: props.stats.cards || 0, unit: '张', breakdown: '全部卡面与台词' },
   { id: 'stories', label: '个人剧情', ...storyRow.value },
-  { id: 'chat', label: '个人聊天', figure: props.stats.chats ?? null, unit: '条', breakdown: '' },
-  { id: 'phone', label: '电话通信', figure: props.stats.phones ?? null, unit: '条', breakdown: '' },
-  { id: 'work', label: '工作剧情', figure: props.work?.stories ?? null, unit: '篇', breakdown: props.work ? `${props.work.lines} 句场景台词` : '', pending: !props.work },
+  { id: 'chat', label: '个人聊天', figure: props.stats.chats ?? null, unit: '条', breakdown: '对话记录' },
+  { id: 'phone', label: '电话通信', figure: props.stats.phones ?? null, unit: '条', breakdown: '语音通话' },
+  { id: 'work', label: '工作剧情', figure: props.work?.stories ?? null, unit: '篇', breakdown: props.work ? `${props.work.lines} 句场景台词` : '场景对话', pending: !props.work },
   ...(props.photo ? [{ id: 'photos', label: '摄影姿势与语音', figure: props.photo.faceCount, unit: '表情', breakdown: `${props.photo.poseCount} 姿势 · ${props.photo.cueCount} 语音` }] : []),
   // Every archive idol has a Valentine / White Day arc; the seasonal page opens on theirs.
-  { id: 'seasonal', label: '季节企划', figure: 2, unit: '', breakdown: '情人节与白色情人节' },
+  { id: 'seasonal', label: '季节企划', figure: 2, unit: '项', breakdown: '情人节与白色情人节' },
 ])
 
 const eventItems = computed(() => props.events.map(event => {
@@ -314,8 +363,15 @@ function formatDate(timestamp) {
 
 /* 人物幕: artwork on the idol's wash. The figure casts a flat shadow in the idol's ink (24%) to the
    lower right; the autograph is written in ink beside the name. Media radius, nothing else. */
-.idol-hero { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 300px; overflow: hidden; padding: var(--gs-space-7) var(--gs-space-8); border-radius: var(--gs-radius-media); background: radial-gradient(circle at 78% 62%, var(--gs-surface) 0, var(--gs-idol-wash) 58%); }
+.idol-hero-block { display: grid; gap: var(--gs-space-3); min-width: 0; }
+.idol-hero { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 300px; overflow: hidden; padding: var(--gs-space-7) var(--gs-space-8); border-radius: var(--gs-radius-media); background: radial-gradient(circle at 78% 62%, color-mix(in oklab, var(--gs-surface) 42%, var(--gs-idol-wash)) 0, var(--gs-idol-wash) 64%); }
 .idol-hero-figure { position: absolute; left: var(--hero-figure-left, 50%); bottom: -60px; z-index: 1; width: auto; max-width: none; height: 340px; object-fit: contain; -webkit-mask-image: linear-gradient(black 82%, transparent); mask-image: linear-gradient(black 82%, transparent); filter: drop-shadow(6px 4px 0 color-mix(in oklab, var(--gs-idol-ink) 24%, transparent)); }
+.idol-figure-swap-enter-active { transition: opacity var(--gs-motion-feedback) var(--gs-ease-out), transform var(--gs-motion-feedback) var(--gs-ease-out); }
+.idol-figure-swap-leave-active { transition: opacity var(--gs-motion-page) var(--gs-ease-in), transform var(--gs-motion-page) var(--gs-ease-in); }
+.idol-figure-swap-enter-from { opacity: 0; transform: translateX(6px); }
+.idol-figure-swap-leave-to { opacity: 0; transform: translateX(-4px); }
+@media (prefers-reduced-motion: reduce) { .idol-figure-swap-enter-active, .idol-figure-swap-leave-active { transition: none; } }
+.idol-unit-strip { padding-bottom: var(--gs-space-1); }
 .idol-hero-avatar { position: absolute; right: var(--gs-space-9); top: 50%; z-index: 1; translate: 0 -50%; }
 .idol-hero-copy { position: relative; z-index: 2; display: grid; justify-items: start; gap: var(--gs-space-2); width: max-content; max-width: 55%; }
 .idol-hero-unit { display: block; height: 42px; margin-bottom: var(--gs-space-2); padding: 0; border: 0; background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
@@ -344,14 +400,14 @@ function formatDate(timestamp) {
 .section-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .section-heading h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .section-heading span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.related-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); }
-.related-grid button { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-4) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); text-align: left; cursor: pointer; }
-.related-grid button > svg { color: var(--gs-ink-3); }
-.related-figure { font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.related-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-8); }
+.related-grid button { display: grid; grid-template-columns: minmax(0, 1fr) auto 18px; align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: 60px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); text-align: left; cursor: pointer; }
+.related-grid button > svg { justify-self: end; color: var(--gs-ink-3); }
+.related-figure { justify-self: end; color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .related-figure small { margin-left: 3px; color: var(--gs-ink-3); font-family: var(--gs-font-body); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.related-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
-.related-copy strong { font-weight: var(--gs-weight-semibold); }
-.related-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.related-copy { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+.related-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.3; }
+.related-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.35; }
 .song-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 var(--gs-space-7); }
 .song-links button { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); text-align: left; cursor: pointer; }
 .song-links img { width: 48px; height: 48px; border-radius: var(--gs-radius-media); object-fit: cover; }
@@ -367,8 +423,16 @@ function formatDate(timestamp) {
 .idol-intro-adv { display: inline-grid; flex: none; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; }
 @media (hover: hover) { .idol-intro-adv:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); } }
 .honor-group + .honor-group { margin-top: var(--gs-space-7); }
-.honor-group h4 { display: flex; align-items: center; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-3); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.honor-group h4 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-3); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .honor-group h4 small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
+.honor-collapse-bar { padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); }
+.honor-collapse-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-2) var(--gs-space-4); }
+.honor-collapse-head h4 { margin: 0; }
+.honor-collapse-bar .honor-note { margin: var(--gs-space-3) 0 0; }
+.honor-collapse-toggle { display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-1); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-current-bg-inset); color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.honor-collapse-toggle svg { transition: transform var(--gs-motion-feedback) var(--gs-ease-out); }
+.honor-collapse-toggle svg.is-open { transform: rotate(180deg); }
+.honor-collapse-bar + .honor-group-body { margin-top: var(--gs-space-5); }
 .honor-info { display: grid; place-items: center; width: var(--gs-control-compact); height: var(--gs-control-compact); margin-left: calc(-1 * var(--gs-space-2)); padding: 0; border: 0; border-radius: var(--gs-radius-pill); background: none; color: var(--gs-ink-3); cursor: pointer; }
 .honor-info[aria-expanded="true"] { color: var(--gs-mint-ink); }
 .honor-note { max-width: 46em; margin: 0 0 var(--gs-space-4); padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.7; }
@@ -394,12 +458,13 @@ function formatDate(timestamp) {
 .idol-detail :deep(.relation-labels strong), .idol-detail :deep(.relation-labels small), .idol-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
 
 @media (hover: hover) {
-  .related-grid button:hover strong, .song-links button:hover strong, .honor-plates button:hover .honor-text { color: var(--gs-ink-2); }
+  .related-grid button:hover strong, .song-links button:hover strong, .honor-plates button:hover .honor-text { color: var(--gs-mint-ink); }
   .honor-plates button:hover img { transform: translateY(-2px); }
   .honor-info:hover { color: var(--gs-ink); }
+  .honor-collapse-toggle:hover { background: var(--gs-hover); color: var(--gs-mint-ink); }
   .idol-hero-home:hover { background: var(--gs-paper); }
 }
-@media (max-width: 900px) { .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container idol-detail (max-width: 720px) { .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* Phones: the hero runs to the screen edges at 220px, the figure to the right. */
 @media (max-width: 760px) {
   .idol-detail { gap: var(--gs-space-8); padding: var(--gs-space-5); }
@@ -415,7 +480,8 @@ function formatDate(timestamp) {
   .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .related-grid, .song-links { grid-template-columns: 1fr; gap: 0; }
-  .related-grid button { grid-template-columns: 60px minmax(0, 1fr) auto; }
+  .related-grid button { grid-template-columns: minmax(0, 1fr) auto 18px; }
+  .honor-collapse-toggle { min-height: var(--gs-control-touch); }
   .honor-plates, .honor-plates.is-ranked, .honor-plates.is-chocolate { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
   .honor-plate { height: auto; min-height: 36px; }
 }

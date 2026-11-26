@@ -4,20 +4,22 @@
     <div v-if="card" class="card-detail">
       <section class="card-hero" :class="`is-${stage.layout}`">
         <figure class="card-stage">
-          <div v-if="stage.items.length" class="card-stage-rail" :style="{ '--stage-count': stage.items.length }">
-            <button v-for="item in stage.items" :key="item.src" class="card-stage-art" :class="{ 'is-landscape': item.landscape }" type="button"
-              :disabled="item.thumbnail" :title="item.thumbnail ? '只有缩略图资源' : `查看${item.label}原图`" @click="openLightbox(item.src)">
-              <span class="card-stage-frame">
-                <img :src="item.src" :alt="`${displayCardTitle} ${item.label}`" />
-                <Expand v-if="!item.thumbnail" :size="17" aria-hidden="true" />
-              </span>
-              <span v-if="item.caption" class="card-stage-caption">{{ item.caption }}</span>
-            </button>
-          </div>
-          <span v-else class="card-stage-missing"><ImageOff :size="24" aria-hidden="true" /><span>暂无卡面图像</span></span>
+          <Transition name="card-stage-swap" mode="out-in">
+            <div v-if="stage.items.length" :key="stage.layout" class="card-stage-rail" :style="{ '--stage-count': stage.items.length }">
+              <button v-for="(item, index) in stage.items" :key="`${stage.layout}:${index}`" class="card-stage-art" :class="{ 'is-landscape': item.landscape }" type="button"
+                :disabled="item.thumbnail" :title="item.thumbnail ? '只有缩略图资源' : `查看${item.label}原图`" @click="openLightbox(item.src)">
+                <span class="card-stage-frame">
+                  <ArchiveSmoothImage :src="item.src" :alt="`${displayCardTitle} ${item.label}`" :eager-ready="frameReady" />
+                  <Expand v-if="!item.thumbnail" :size="17" aria-hidden="true" />
+                </span>
+                <span v-if="item.caption" class="card-stage-caption">{{ item.caption }}</span>
+              </button>
+            </div>
+            <span v-else key="missing" class="card-stage-missing"><ImageOff :size="24" aria-hidden="true" /><span>暂无卡面图像</span></span>
+          </Transition>
           <figcaption v-if="heroFrames.length > 1 || landscapeStates.length > 1 || stage.layout !== 'landscape'" class="card-stage-controls">
             <div v-if="heroFrames.length > 1" class="card-tabs" role="group" aria-label="画幅">
-              <button v-for="frame in heroFrames" :key="frame.id" type="button" :aria-pressed="activeHeroFrame === frame.id" @click="heroFrame = frame.id">{{ frame.label }}</button>
+              <button v-for="frame in heroFrames" :key="frame.id" type="button" :aria-pressed="requestedHeroFrame === frame.id" @click="switchHeroFrame(frame.id)">{{ frame.label }}</button>
             </div>
             <div v-if="stage.layout === 'landscape' && landscapeStates.length > 1" class="card-tabs" role="group" aria-label="卡面状态">
               <button v-for="state in landscapeStates" :key="state.id" type="button" :aria-pressed="activeLandscapeState === state.id" @click="heroState = state.id">{{ state.label }}</button>
@@ -135,10 +137,10 @@
                   <span class="limitbreak-item-copy">
                     <small>突破素材</small>
                     <strong :title="resolvedLimitbreakMaterial.nameJa">{{ archiveText('item', resolvedLimitbreakMaterial.nameJa) }}</strong>
+                    <span v-if="resolvedLimitbreakMaterial.description" class="limitbreak-item-desc">{{ archiveText('item', resolvedLimitbreakMaterial.description, 'description') }}</span>
                   </span>
                   <ChevronRight :size="17" aria-hidden="true" />
                 </button>
-                <p v-if="resolvedLimitbreakMaterial.description">{{ archiveText('item', resolvedLimitbreakMaterial.description, 'description') }}</p>
               </template>
               <template v-else>
                 <PackageOpen :size="19" />
@@ -315,7 +317,9 @@ const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines',
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
 import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, MonitorPlay, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
+import ArchiveSmoothImage from './ArchiveSmoothImage.vue'
 import ArchiveVideoPlayer from './ArchiveVideoPlayer.vue'
+import { preloadImage, scheduleImagePrefetch } from '../../composables/useSmoothImage.js'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
@@ -392,7 +396,8 @@ const awakenedLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.reso
 
 // The stage shows the card's artwork at once: both portraits side by side (普通 / 特训后), a
 // single-state portrait beside the title, or — for SSR — the landscape of the chosen state.
-const heroState = ref('normal'), heroFrame = ref('landscape')
+const heroState = ref('normal'), heroFrame = ref('landscape'), requestedFrame = ref('landscape'), frameReady = ref(false)
+let frameSwitchSeq = 0
 const landscapeStates = computed(() => {
   const status = props.assetStatus || {}
   return [status.normal_landscape && { id: 'normal', label: '普通' }, status.awakened_landscape && { id: 'awakened', label: '特训后' }].filter(Boolean)
@@ -406,6 +411,20 @@ const heroFrames = computed(() => {
   ].filter(Boolean)
 })
 const activeHeroFrame = computed(() => heroFrames.value.some(frame => frame.id === heroFrame.value) ? heroFrame.value : heroFrames.value[0]?.id || 'portrait')
+const requestedHeroFrame = computed(() => heroFrames.value.some(frame => frame.id === requestedFrame.value) ? requestedFrame.value : activeHeroFrame.value)
+async function switchHeroFrame(frameId) {
+  if (frameId === requestedHeroFrame.value && frameId === activeHeroFrame.value) return
+  const token = ++frameSwitchSeq
+  requestedFrame.value = frameId
+  const status = props.assetStatus || {}, single = Boolean(props.card?.single_state)
+  const urls = frameId === 'landscape'
+    ? [activeLandscapeState.value === 'awakened' ? awakenedLandscapeUrl.value : normalLandscapeUrl.value].filter(Boolean)
+    : [!single && status.normal_portrait && normalPortraitUrl.value, status.awakened_portrait && awakenedPortraitUrl.value].filter(Boolean)
+  if (urls.length) await Promise.all(urls.map(preloadImage))
+  if (token !== frameSwitchSeq) return
+  frameReady.value = true
+  heroFrame.value = frameId
+}
 const stage = computed(() => {
   const status = props.assetStatus || {}, single = Boolean(props.card?.single_state)
   if (activeHeroFrame.value === 'landscape' && activeLandscapeState.value) {
@@ -431,7 +450,28 @@ const detailRoot = ref(null)
 const FOCUS_HOLD_MS = 2400
 const arrivedVoice = ref('')
 let arrivedTimer = 0
-onBeforeUnmount(() => clearTimeout(arrivedTimer))
+let stopCardPrefetch = () => {}
+onBeforeUnmount(() => { frameSwitchSeq += 1; clearTimeout(arrivedTimer); stopCardPrefetch() })
+watch(() => [props.card?.resource_id, props.assetStatus, framedPortrait.value, activeHeroFrame.value, activeLandscapeState.value], () => {
+  stopCardPrefetch()
+  const id = props.card?.resource_id
+  const status = props.assetStatus || {}
+  if (!id) return
+  // Warm both alternate states AND the opposite frame (landscape <-> portrait) during idle time
+  // so toggling between 16:9 landscape and 4:5 portrait cards resolves from cache without grey flash.
+  const alternateUrls = []
+  if (status.normal_landscape) alternateUrls.push(getCardLandscapeUrl(id, false))
+  if (status.awakened_landscape) alternateUrls.push(getCardLandscapeUrl(id, true))
+  if (!props.card?.single_state && status.normal_portrait) {
+    alternateUrls.push(getCardPortraitUrl(id, false, framedPortrait.value))
+    alternateUrls.push(getCardPortraitUrl(id, false, !framedPortrait.value))
+  }
+  if (status.awakened_portrait) {
+    alternateUrls.push(getCardPortraitUrl(id, true, framedPortrait.value))
+    alternateUrls.push(getCardPortraitUrl(id, true, !framedPortrait.value))
+  }
+  stopCardPrefetch = scheduleImagePrefetch(alternateUrls)
+}, { immediate: true })
 watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
   clearTimeout(arrivedTimer)
   arrivedVoice.value = voice || ''
@@ -448,9 +488,12 @@ watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
 
 const skillMovieMegabytes = computed(() => ((props.skillMovie?.bytes || 0) / 1e6).toFixed(1))
 watch(() => props.card?.resource_id, () => {
+  frameSwitchSeq += 1
+  frameReady.value = false
   selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
   heroState.value = props.card?.single_state ? 'awakened' : 'normal'
   heroFrame.value = 'landscape'
+  requestedFrame.value = 'landscape'
 }, { immediate: true })
 
 const selectedSkill = computed(() => props.card?.gameplay?.skill?.levels
@@ -665,7 +708,10 @@ function openRelation(item) {
 </script>
 
 <style scoped>
-.is-pending { visibility: hidden; }
+.is-pending { position: relative; color: transparent; user-select: none; }
+.card-text-block p.is-pending { border-left-color: var(--gs-line); }
+.card-text-block p.is-pending::before, .voice-copy p.is-pending::before { content: "正在载入文本…"; position: absolute; top: 0; left: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); white-space: nowrap; }
+.card-text-block p.is-pending::before { left: var(--gs-space-5); }
 /* Card detail: one artwork hero, an identity column, then flat sections under hairlines. */
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); }
 .card-detail { container: card-detail / inline-size; display: grid; gap: var(--gs-space-section); min-width: 0; max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-8) var(--gs-space-8) var(--gs-space-9); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
@@ -682,12 +728,17 @@ function openRelation(item) {
 .is-single .card-stage-rail { justify-content: stretch; grid-template-columns: minmax(0, 1fr); }
 .card-stage-art { display: grid; gap: var(--gs-space-3); justify-items: center; min-width: 0; padding: 0; border: 0; background: none; color: var(--gs-ink-3); font: inherit; cursor: zoom-in; }
 .card-stage-art:disabled { cursor: default; }
-.card-stage-frame { position: relative; display: block; width: 100%; border-radius: var(--gs-radius-media); background: var(--gs-line); overflow: hidden; }
-.card-stage-frame img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: contain; }
-.card-stage-art.is-landscape .card-stage-frame img { aspect-ratio: 16 / 9; object-fit: cover; }
+.card-stage-frame { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; border-radius: var(--gs-radius-media); background: var(--gs-line); overflow: hidden; }
+.card-stage-frame :deep(img) { display: block; width: 100%; height: 100%; object-fit: contain; }
+.card-stage-art.is-landscape .card-stage-frame { aspect-ratio: 16 / 9; }
+.card-stage-art.is-landscape .card-stage-frame :deep(img) { object-fit: cover; }
 .card-stage-frame > svg { position: absolute; right: var(--gs-space-3); bottom: var(--gs-space-3); padding: 6px; width: 30px; height: 30px; border-radius: var(--gs-radius-control); background: rgb(19 33 58 / 64%); color: #fff; opacity: 0; transition: opacity var(--gs-motion-feedback) var(--gs-motion-ease); }
 .card-stage-art:hover .card-stage-frame > svg, .card-stage-art:focus-visible .card-stage-frame > svg { opacity: 1; }
 .card-stage-caption { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: .04em; }
+.card-stage-swap-enter-active { transition: opacity var(--gs-motion-feedback) var(--gs-ease-out); }
+.card-stage-swap-leave-active { transition: opacity var(--gs-motion-page) var(--gs-ease-in); }
+.card-stage-swap-enter-from, .card-stage-swap-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .card-stage-swap-enter-active, .card-stage-swap-leave-active { transition: none; } }
 .card-stage-missing { display: grid; place-items: center; gap: var(--gs-space-3); aspect-ratio: 16 / 9; border-radius: var(--gs-radius-media); background: var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .card-stage-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gs-space-3) var(--gs-space-7); }
 .is-single .card-stage-controls { justify-content: start; }
@@ -700,6 +751,13 @@ function openRelation(item) {
 .is-single .card-identity { grid-template-columns: minmax(0, 1fr); }
 .card-heading, .card-facts { display: grid; gap: var(--gs-space-4); align-content: start; min-width: 0; }
 .card-facts { gap: var(--gs-space-5); }
+/* External animated-card link (ssr.gs-archive.com): program-booklet action chip with 44px touch height. */
+.card-facts > a { display: inline-flex; align-items: center; gap: var(--gs-space-2); justify-self: start; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; }
+.card-facts > a::after { content: "↗"; font-size: var(--gs-text-meta); }
+.card-facts > a:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@media (hover: hover) and (pointer: fine) {
+  .card-facts > a:hover { border-color: var(--gs-selected-line); background: var(--gs-mint-wash); }
+}
 .card-marks { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); }
 .card-rarity { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-style: italic; font-weight: var(--gs-weight-bold); line-height: 1; letter-spacing: .02em; }
 .card-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
@@ -770,16 +828,14 @@ function openRelation(item) {
 .limitbreak-item-row small { display: block; margin-bottom: var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .limitbreak-item-row strong { color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .limitbreak-item-row p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.7; }
-.limitbreak-item-resolved { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
-/* Same reading as the item catalogue: a white icon well on paper; mint only on hover. */
-.limitbreak-item-open { display: grid; grid-template-columns: 56px minmax(0, 1fr) 16px; align-items: center; gap: var(--gs-space-4); width: calc(100% + 2 * var(--gs-space-3)); min-height: var(--gs-control-touch); margin: 0 calc(-1 * var(--gs-space-3)); padding: var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); text-align: left; cursor: pointer; transition: background var(--gs-motion-feedback); }
-.limitbreak-item-open:hover { background: var(--gs-mint-wash); }
-.limitbreak-item-open:hover strong, .limitbreak-item-open:hover > svg { color: var(--gs-mint-ink); }
-.limitbreak-item-image { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: var(--gs-radius-media); background: var(--gs-surface); color: var(--gs-mint-ink); }
+.limitbreak-item-resolved { grid-template-columns: minmax(0, 1fr); padding-bottom: 0; border-bottom: 0; }
+/* Unified floating white item reference card on paper (matches event/gasha item cards). */
+.limitbreak-item-open { display: grid; grid-template-columns: 56px minmax(0, 1fr) 16px; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: var(--gs-control-touch); margin: 0; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-surface); box-shadow: var(--gs-shadow-1); color: var(--gs-ink-3); text-align: left; cursor: pointer; transition: box-shadow var(--gs-motion-feedback) var(--gs-ease-out); }
+.limitbreak-item-image { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: var(--gs-radius-media); background: var(--gs-paper); color: var(--gs-mint-ink); }
 .limitbreak-item-image img { display: block; width: 44px; height: 44px; object-fit: contain; }
-.limitbreak-item-copy { min-width: 0; }
-.limitbreak-item-copy strong { display: block; line-height: 1.5; }
-.limitbreak-item-resolved p { margin: 0; overflow-wrap: anywhere; }
+.limitbreak-item-copy { display: grid; gap: 2px; min-width: 0; }
+.limitbreak-item-copy strong { display: block; line-height: 1.45; }
+.limitbreak-item-desc { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; overflow-wrap: anywhere; }
 
 /* Costumes */
 .costume-list { display: grid; }
@@ -844,7 +900,7 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
 .scenario-link-btn span { font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .scenario-link-btn small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 @media (hover: hover) {
-  .limitbreak-item-open:hover { border-color: var(--gs-ink-3); }
+  .limitbreak-item-open:hover strong, .limitbreak-item-open:hover > svg { color: var(--gs-mint-ink); }
   .voice-preview-btn:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
   .scenario-link-btn:hover:not(:disabled) span { color: var(--gs-mint-ink); }
 }
@@ -872,6 +928,10 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
   .voice-row { grid-template-columns: auto minmax(0, 1fr); gap: var(--gs-space-2) var(--gs-space-3); }
   .voice-row > .voice-preview-btn { justify-self: start; }
   .voice-row > .voice-copy, .voice-row > span:first-child { grid-column: 1 / -1; }
+}
+@container card-detail (max-width: 520px) {
+  .costume-matrix-head, .costume-row { grid-template-columns: 44px minmax(0, 1fr) 56px 56px 18px; gap: var(--gs-space-3); }
+  .costume-thumb { width: 44px; height: 44px; }
 }
 @media (max-width: 760px) {
   .card-detail { gap: var(--gs-space-8); padding: var(--gs-space-5) var(--gs-space-5) var(--gs-space-9); }

@@ -137,7 +137,7 @@
             <DomainMediaPreview :binding="card.image" :name="card.card_title" compact/>
             <button type="button" class="event-reward-open" :data-archive-focus-id="`event-card:${view.identity.id}:exchange:${card.card_resource_id}`" @click="emit('open-card',card)">
               <div class="reward-copy"><div class="reward-identity"><span v-if="card.rarity" class="reward-rarity">{{ card.rarity }}</span><span class="reward-name">{{ displayIdolName(card.character_id,card.character_name) || card.character_name }}</span></div><strong>{{ cardTitle(card.card_title) }}</strong>
-                <ul><li>{{ card.cost.nameJa }} × {{ card.cost.amount }}</li><li>限兑 {{ card.exchangeLimit }} 次 · Wiki 补录</li></ul>
+                <ul><li>{{ itemText('item', card.cost.nameJa) }} × {{ card.cost.amount }}</li><li>限兑 {{ card.exchangeLimit }} 次 · Wiki 补录</li></ul>
               </div>
             </button>
           </div>
@@ -149,7 +149,13 @@
 
     <section v-if="view.rewards" class="detail-section general-reward-section" aria-labelledby="event-general-rewards">
       <div class="section-heading"><div><h3 id="event-general-rewards">{{ view.identity.kind==='collection' ? '活动兑换道具' : '奖励明细与藏品' }}</h3><p v-if="exchangeRewards">通过演唱会与工作收集道具，用于兑换活动报酬。完整兑换清单见上方 Wikiwiki 补录。</p></div></div>
-      <nav v-if="view.rewards.materials?.length" class="event-materials" aria-label="活动材料"><div v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" class="event-material"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/><button type="button" @click="openQuick(`item:${item.itemId}`)">{{ item.nameJa }}</button></div></nav>
+      <nav v-if="view.rewards.materials?.length" class="event-materials" aria-label="活动材料">
+        <button v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" type="button" class="event-material-card" :data-archive-focus-id="`event-material:${view.identity.id}:${item.itemId}`" @click="openQuick(`item:${item.itemId}`)">
+          <span class="event-material-art" aria-hidden="true"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="itemText('item', item.nameJa)" compact /></span>
+          <span class="event-material-copy"><small>{{ item.role === 'exchange' ? '兑换道具' : '活动道具' }}</small><strong>{{ itemText('item', item.nameJa) }}</strong></span>
+          <ChevronRight class="event-material-go" :size="16" aria-hidden="true" />
+        </button>
+      </nav>
       <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="openQuick" @open-target="emit('open-target',$event)" />
     </section>
 
@@ -185,6 +191,7 @@ import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
+import {archiveText as itemText} from './useArchiveCollectionText.js'
 const cardTitle=source=>cardText('card',source,'title')
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
@@ -492,15 +499,20 @@ button.episode-main { cursor: pointer; }
 .wiki-exchange-table th { border-bottom-color: var(--gs-rule); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .wiki-exchange-table td:first-child { min-width: 200px; }
 
-/* Materials are entries on the paper: icon and name, no box. */
-.event-materials { display: flex; flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-6); margin: 0 0 var(--gs-space-5); }
-.event-material { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; max-width: 100%; }
-.event-material :deep(.domain-media-compact) { margin: 0; }
-.event-material > button { min-width: 0; min-height: var(--gs-control-normal); padding: 0; border: 0; background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-align: left; overflow-wrap: anywhere; }
+/* Materials sit as floating white reference cards on paper (icon well, role kicker, localized name, chevron). */
+.event-materials { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-5); }
+.event-material-card { display: inline-grid; grid-template-columns: 48px minmax(0, 1fr) 16px; align-items: center; gap: var(--gs-space-3); min-width: min(260px, 100%); max-width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-surface); box-shadow: var(--gs-shadow-1); color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; transition: box-shadow var(--gs-motion-feedback) var(--gs-ease-out); }
+.event-material-art { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--gs-radius-media); background: var(--gs-paper); }
+.event-material-art :deep(.domain-media-compact) { margin: 0; }
+.event-material-copy { display: grid; gap: 2px; min-width: 0; }
+.event-material-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.event-material-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+.event-material-go { color: var(--gs-ink-3); }
+@media (prefers-reduced-motion: reduce) { .event-material-card { transition: none; } }
 
 .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link) { gap: var(--gs-space-3); min-height: var(--gs-control-normal); max-width: 100%; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .event-summary :deep(.archive-source-link small), .wiki-exchange-table :deep(.archive-source-link small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.event-reward-card :deep(.domain-media-preview button), .event-material :deep(.domain-media-preview button) { min-height: var(--gs-control-compact); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); border-radius: var(--gs-radius-control); }
+.event-reward-card :deep(.domain-media-preview button), .event-material-card :deep(.domain-media-preview button) { min-height: var(--gs-control-compact); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); border-radius: var(--gs-radius-control); }
 .detail-section :deep(.relation-list) { gap: var(--gs-space-3); }
 .detail-section :deep(.relation-row) { gap: var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); font-family: inherit; border-radius: var(--gs-radius-control); }
 .detail-section :deep(.relation-copy) { gap: var(--gs-space-2); }
@@ -515,26 +527,27 @@ button.episode-main { cursor: pointer; }
 
 .wiki-exchange-table > summary:focus-visible, .event-time-original:focus-visible, .event-cast-unit-name:focus-visible, .event-banner-open:focus-visible, .event-media-strip button:focus-visible, .event-cast-unit:focus-visible, .episode-more:focus-visible,
 .story-actions > :focus-visible, .episode-entry button:focus-visible, .event-reward-open:focus-visible,
-.event-material > button:focus-visible,
+.event-material-card:focus-visible,
 .event-summary :deep(a:focus-visible), .wiki-exchange-table :deep(a:focus-visible),
-.event-media-strip :deep(.domain-media-preview button:focus-visible), .event-reward-card :deep(.domain-media-preview button:focus-visible), .event-material :deep(.domain-media-preview button:focus-visible),
+.event-media-strip :deep(.domain-media-preview button:focus-visible), .event-reward-card :deep(.domain-media-preview button:focus-visible), .event-material-card :deep(.domain-media-preview button:focus-visible),
 .detail-section :deep(.relation-row:focus-visible),
 .detail-section :deep(.archive-technical summary:focus-visible), .event-detail > :deep(.archive-technical summary:focus-visible) {
   outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset);
 }
 @media (hover: hover) and (pointer: fine) {
   button.episode-main:hover strong, .episode-play:hover:not(:disabled),
-  .event-reward-open:hover, .event-material > button:hover, .event-cast-unit:hover,
+  .event-reward-open:hover, .event-cast-unit:hover,
   .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-ink-2); }
+  .event-material-card:hover .event-material-copy strong, .event-material-card:hover .event-material-go { color: var(--gs-mint-ink); }
   .event-time-original:hover, .event-cast-unit-name:hover, .event-cast-unit:hover { color: var(--gs-ink); }
 }
 @media (hover: none), (pointer: coarse) {
   .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
 }
 @media (max-width: 760px), (pointer: coarse) {
-  .story-action, .wiki-exchange-table > summary, .event-material > button, .event-cast-unit, .episode-more,
+  .story-action, .wiki-exchange-table > summary, .event-material-card, .event-cast-unit, .episode-more,
   .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link),
-  .event-reward-card :deep(.domain-media-preview button), .event-material :deep(.domain-media-preview button),
+  .event-reward-card :deep(.domain-media-preview button), .event-material-card :deep(.domain-media-preview button),
   .detail-section :deep(.domain-pagination button), .detail-section :deep(.archive-technical summary), .event-detail > :deep(.archive-technical summary) { min-height: var(--gs-control-touch); }
   .detail-section :deep(.domain-table-controls select) { min-height: var(--gs-control-touch); max-width: 100%; font-size: var(--gs-text-subtitle); }
 }

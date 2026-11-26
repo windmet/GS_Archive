@@ -14,32 +14,41 @@
 
       <section ref="searchPanel" class="overview-search" @keydown.esc.prevent="collapseSearch" aria-labelledby="portal-search-title">
         <h2 id="portal-search-title" class="overview-visually-hidden">搜索全站档案</h2>
-        <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; setSearchCollapsed(false); emit('search', query)">
+        <form class="overview-search-form" role="search" @submit.prevent="submitPortalSearch">
           <Search :size="21" aria-hidden="true" />
-          <input id="portal-global-search" ref="searchInput" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true; setSearchCollapsed(false)" @input="searchOpen = true; setSearchCollapsed(false); emit('search', $event.target.value)" />
+          <input id="portal-global-search" ref="searchInput" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事、活动或图鉴" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true; setSearchCollapsed(false)" @input="searchOpen = true; setSearchCollapsed(false); emit('search', $event.target.value)" />
           <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', ''); setSearchCollapsed(false); searchOpen = false"><X :size="18" aria-hidden="true" /></button>
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
 
         <div v-if="searchOpen" id="portal-search-results" class="overview-search-results gs-enter-popover" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
-          <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="collapseSearch"><X :size="16" />收起</button>
-          <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="setSearchCollapsed(false); searchOpen = true; emit('search',term)">{{ term }}</button></div>
+          <div class="overview-search-head">
+            <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="setSearchCollapsed(false); searchOpen = true; emit('search',term)">{{ term }}</button></div>
+            <span v-else class="overview-search-head-label">全站快捷搜索</span>
+            <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="collapseSearch"><X :size="16" aria-hidden="true" />收起</button>
+          </div>
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
           <ArchiveErrorNote v-if="globalSearch.error" class="overview-error">{{ globalSearch.error }}</ArchiveErrorNote>
           <template v-if="searchGroups.length">
-            <p class="overview-search-total">匹配 {{ formatCount(searchResults.length) }} 条 · 每类展示最多 6 条</p>
+            <div class="overview-search-summary-bar">
+              <p class="overview-search-total">核心域匹配 {{ formatCount(searchResults.length) }} 条 · 每类展示最多 6 条</p>
+              <button type="button" class="overview-search-full-link" @click="openFullSearch()">全站搜索页（含活动·卡池·图鉴）<ChevronRight :size="15" aria-hidden="true" /></button>
+            </div>
             <section v-for="group in searchGroups" :key="group.domain" class="overview-result-group" :aria-labelledby="`portal-search-${group.domain}`">
-              <header><h3 :id="`portal-search-${group.domain}`">{{ domainLabel(group.domain) }} <span>{{ formatCount(group.total) }} 条</span></h3><button type="button" :data-archive-focus-id="`portal-search-directory:${group.domain}`" @click="emit('navigate', group.domain)">查看目录<ChevronRight :size="15" aria-hidden="true" /></button></header>
+              <header><h3 :id="`portal-search-${group.domain}`">{{ domainLabel(group.domain) }} <span>{{ formatCount(group.total) }} 条</span></h3><button type="button" :data-archive-focus-id="`portal-search-directory:${group.domain}`" @click="openFullSearch(group.domain)">查看全部<ChevronRight :size="15" aria-hidden="true" /></button></header>
               <ul>
             <li v-for="result in group.rows" :key="result.key">
               <DomainMediaPreview v-if="result.image?.url" class="overview-result-image" :binding="result.image" :name="result.label" compact />
               <span v-else class="overview-result-kind" aria-hidden="true"><component :is="archiveNavigationIcons[result.domain] || Search" :size="21" /></span>
-              <button type="button" :disabled="!result.target" :data-archive-focus-id="`portal-search:${result.key}`" @click="setSearchCollapsed(false); emit('open-result', result)"><span class="overview-result-copy"><small>{{ domainLabel(result.domain) }}</small><strong>{{ result.label }}</strong><span v-if="result.subtitle">{{ result.subtitle }}</span></span><ArrowUpRight :size="18" aria-hidden="true" /></button>
+              <button type="button" :disabled="!result.target" :data-archive-focus-id="`portal-search:${result.key}`" @click="setSearchCollapsed(false); emit('open-result', result)"><span class="overview-result-copy"><small>{{ domainLabel(result.domain) }}</small><strong>{{ result.domain === 'stories' ? storyTitle(result.target?.file, result.label) : result.label }}</strong><span v-if="result.subtitle">{{ result.domain === 'stories' ? storySubtitle(result.subtitle) : result.subtitle }}</span></span><ArrowUpRight :size="18" aria-hidden="true" /></button>
             </li>
               </ul>
             </section>
           </template>
-          <p v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-status" role="status">{{ query.trim() ? '没有找到相关内容，试试名称或关键词。' : '搜索全站的偶像、卡片、歌曲与故事。' }}</p>
+          <div v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-search-empty-box">
+            <p class="overview-status" role="status">{{ query.trim() ? '核心 4 域没有找到相关内容，可前往全站搜索检索活动、卡池、组合与图鉴。' : '搜索全站的偶像、组合、卡片、歌曲、故事、活动、卡池与图鉴。' }}</p>
+            <button type="button" class="overview-search-full-link" @click="openFullSearch()">{{ query.trim() ? `在全站搜索「${query.trim()}」` : '打开全站搜索页' }}<ChevronRight :size="15" aria-hidden="true" /></button>
+          </div>
         </div>
       </section>
       <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
@@ -182,7 +191,7 @@
       </div>
       <ArchiveTerminalDialog class="portal-scope-dialog" :open="scopeOpen" title="切换资料馆视角" title-id="portal-scope-title" @close="scopeOpen = false">
         <p class="overview-dialog-note">切换浏览视角不会修改已保存的担当。</p>
-        <div class="overview-scope-actions"><button type="button" :aria-pressed="!preferredReference?.actionable" @click="chooseScope('')"><Users :size="18" />全站档案大厅</button><button v-if="savedIdolCode" type="button" @click="chooseScope(savedIdolCode)"><ArchiveIdolAvatar :idol-code="savedIdolCode" :size="28" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>
+        <div class="overview-scope-actions"><button type="button" :aria-pressed="!preferredReference?.actionable" @click="chooseScope('')"><Users :size="18" />全站档案大厅</button><button v-if="savedIdolCode" type="button" @click="chooseScope(savedIdolCode)"><ArchiveIdolAvatar :idol-code="savedIdolCode" :accent-color="idols.find(row=>row.id===savedIdolCode)?.color || ''" ring="identity" :size="28" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>
         <ArchiveIdolPickerPanel compact :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
       </ArchiveTerminalDialog>
       <footer class="overview-footer">{{ ARCHIVE_BRAND.english }} · 非官方资料存档 · <button type="button" class="overview-footer-link" @click="emit('navigate', 'about')">关于本站</button></footer>
@@ -234,7 +243,7 @@ const readableMainCollections = computed(() => (props.desktopOverview.mainCollec
 // and "主线剧情 · 第5話" shows its chapter word in the reader's language.
 const storyTitle = useStoryTitles()
 const storySubtitle = text => String(text || '').split(' · ').map(chapterLabel).join(' · ')
-const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred', 'expand-cards'])
+const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred', 'expand-cards'])
 const SEARCH_COLLAPSED_KEY = 'sidem:portal-search-collapsed'
 function isSearchCollapsed() {
   try { return sessionStorage.getItem(SEARCH_COLLAPSED_KEY) === 'true' } catch { return false }
@@ -252,6 +261,20 @@ const searchOpen = ref(Boolean(props.globalSearch?.query?.trim()) && !isSearchCo
 function collapseSearch() {
   searchOpen.value = false
   setSearchCollapsed(true)
+}
+function openFullSearch(domain = 'all') {
+  searchOpen.value = false
+  setSearchCollapsed(false)
+  emit('open-search', { query: query.value.trim(), domain })
+}
+function submitPortalSearch() {
+  if (query.value.trim()) {
+    openFullSearch('all')
+    return
+  }
+  searchOpen.value = true
+  setSearchCollapsed(false)
+  emit('search', query.value)
 }
 function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) collapseSearch() }
 onMounted(() => document.addEventListener('pointerdown',closeSearchOutside))
@@ -336,15 +359,20 @@ function updateStoryChipsOverflow() {
   }
   storyChipsOverflow.value = el.scrollWidth > el.clientWidth && (el.scrollLeft + el.clientWidth < el.scrollWidth - 2)
 }
-let storyChipsObserver = null
+let storyChipsObserver = null, storyChipsFrame = 0
+function scheduleStoryChipsOverflow() {
+  cancelAnimationFrame(storyChipsFrame)
+  storyChipsFrame = requestAnimationFrame(() => { storyChipsFrame = 0; updateStoryChipsOverflow() })
+}
 onMounted(() => {
   if (typeof ResizeObserver !== 'undefined') {
-    storyChipsObserver = new ResizeObserver(() => updateStoryChipsOverflow())
+    storyChipsObserver = new ResizeObserver(scheduleStoryChipsOverflow)
     if (storyChipsRef.value) storyChipsObserver.observe(storyChipsRef.value)
   }
   updateStoryChipsOverflow()
 })
 onBeforeUnmount(() => {
+  cancelAnimationFrame(storyChipsFrame)
   if (storyChipsObserver) {
     storyChipsObserver.disconnect()
     storyChipsObserver = null
@@ -458,8 +486,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-search-form .overview-icon-button { width:32px;height:38px; }
 .overview-search-submit { min-height:38px;padding:0 var(--gs-space-4);border:0;border-radius:6px;background:var(--gs-action-bg);color:var(--gs-action-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-search-results { position:absolute;z-index:12;top:52px;right:0;width:min(620px,calc(100vw - 96px));max-height:min(560px,calc(100dvh - 160px));overflow:auto;overscroll-behavior:contain;padding:var(--gs-space-3) var(--gs-space-5);border-radius:var(--gs-radius-panel);background:var(--gs-surface);box-shadow:var(--gs-shadow-float); }
-.overview-search-collapse { display:flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-normal);margin-left:auto;padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-3); }
-.overview-search-shortcuts { display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-3);margin:var(--gs-space-3) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-search-head { display:flex;align-items:flex-start;justify-content:space-between;gap:var(--gs-space-3);margin-bottom:var(--gs-space-2); }
+.overview-search-head-label { align-self:center;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.overview-search-collapse { display:inline-flex;flex:none;align-items:center;gap:var(--gs-space-1);min-height:var(--gs-control-compact);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-3);white-space:nowrap; }
+.overview-search-shortcuts { display:flex;flex:1;flex-wrap:wrap;align-items:center;gap:var(--gs-space-2);min-width:0;margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-search-shortcuts > button { min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-search-total { margin:var(--gs-space-3) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-search-results ul { margin:0;padding:0;list-style:none; }
@@ -484,6 +514,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footprint b small { color:var(--gs-ink-3);font-family:var(--gs-font-body);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-directory { display:none; }
 
+.overview-search-summary-bar { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--gs-space-2) var(--gs-space-4);margin-bottom:var(--gs-space-3); }
+.overview-search-summary-bar .overview-search-total { margin:0; }
+.overview-search-full-link { display:inline-flex;align-items:center;gap:var(--gs-space-1);min-height:var(--gs-control-compact);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:var(--gs-mint-wash);color:var(--gs-mint-ink);font:inherit;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);cursor:pointer; }
+.overview-search-empty-box { display:grid;justify-items:start;gap:var(--gs-space-2);padding:var(--gs-space-2) 0; }
 .overview-status, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
 .overview-error { margin:0;padding:var(--gs-space-4) 0;font-size:var(--gs-text-ui); }
 .overview-error button, .overview-error > button { min-height:var(--gs-control-touch);margin-left:var(--gs-space-4);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:var(--gs-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);cursor:pointer; }
@@ -597,9 +631,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-hub-group > h3 { margin:0;padding-top:var(--gs-space-4);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);letter-spacing:var(--gs-track-label); }
 .overview-hub-links { display:grid;grid-template-columns:repeat(3,minmax(0,1fr)); }
 .overview-hub-links button { display:flex;flex-direction:row;align-items:center;gap:var(--gs-space-3);min-height:var(--gs-row);padding:0 var(--gs-space-3);border:0;border-radius:0;background:transparent;color:var(--gs-ink-2);text-align:left;box-sizing:border-box; }
-.overview-hub-links button:hover { background:var(--gs-hover); }
-.overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-ink); }
-.overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-ink); }
+@media (hover:hover) and (pointer:fine) {
+  .overview-hub-links button:hover { background:var(--gs-hover); }
+  .overview-hub-links button:hover .overview-hub-card-head > strong { color:var(--gs-ink); }
+}
 .overview-hub-card-head { display:flex;align-items:center;gap:var(--gs-space-3);flex:1;min-width:0; }
 .overview-hub-card-head > svg { flex:none;color:var(--gs-ink-3); }
 .overview-hub-card-head > strong { flex:1;min-width:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
@@ -680,8 +715,11 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-almanac-column > h3 { margin:0 0 var(--gs-space-2);color:var(--gs-ink-2);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-almanac-column > h3 small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-almanac .overview-event-grid { grid-template-columns:minmax(0,1fr); }
+.overview-almanac .overview-event-image { width:108px;height:59px; }
+.overview-almanac .overview-event strong { display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;line-height:1.35; }
+.overview-almanac .overview-event small { white-space:normal; }
 .overview-almanac-gashas { grid-column:1 / -1; }
-@container almanac-col (min-width:560px) {
+@container almanac-col (min-width:680px) {
   .overview-almanac .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-4); }
 }
 @container almanac-col (min-width:1000px) {

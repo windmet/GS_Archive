@@ -1,7 +1,18 @@
 <template>
-  <div ref="root" class="stage-idol" @keydown.esc="open = false">
-    <button type="button" class="stage-idol-switch" :class="{ 'is-open': open }" :style="{ '--stage-idol-ring': ringColor }" :aria-haspopup="idol ? 'true' : 'dialog'" :aria-expanded="idol ? open : undefined" :aria-label="idol ? `我的担当：${name}，担当设置` : '设置担当'" @click="idol ? toggle() : pickerOpen = true">
-      <ArchiveIdolAvatar v-if="idol" class="stage-idol-avatar" :idol-code="idol.id" :size="28" :ring-width="0" :gap="0" decorative />
+  <div v-if="inline" class="stage-idol-inline">
+    <button type="button" class="stage-idol-inline-main" :aria-label="idol ? `我的担当：${name}，更换担当` : '设置担当'" @click="pickerOpen = true">
+      <ArchiveIdolAvatar v-if="idol" class="stage-idol-avatar" :idol-code="idol.id" :accent-color="idol.color || ''" ring="identity" :size="36" :ring-width="2" :gap="2" decorative />
+      <span v-else class="stage-idol-empty" aria-hidden="true"><UserRound :size="18" /></span>
+      <span class="stage-idol-copy"><strong>{{ idol ? name : '设置我的担当' }}</strong><small>{{ idol ? '我的担当 · 点击更换' : '首页与门户优先呈现' }}</small></span>
+    </button>
+    <label v-if="idol" class="stage-idol-inline-light">
+      <span>舞台光</span>
+      <GsSwitch :model-value="stageLight" aria-label="舞台光跟随担当色" @update:model-value="emit('save-startup', { stageLight: $event ? 'idol' : 'mint' })" />
+    </label>
+  </div>
+  <div v-else ref="root" class="stage-idol" @keydown.esc="open = false">
+    <button type="button" class="stage-idol-switch" :class="{ 'is-open': open }" :aria-haspopup="idol ? 'true' : 'dialog'" :aria-expanded="idol ? open : undefined" :aria-label="idol ? `我的担当：${name}，担当设置` : '设置担当'" @click="idol ? toggle() : pickerOpen = true">
+      <ArchiveIdolAvatar v-if="idol" class="stage-idol-avatar" :idol-code="idol.id" :accent-color="idol.color || ''" ring="identity" :size="32" :ring-width="2" :gap="2" decorative />
       <span v-else class="stage-idol-empty" aria-hidden="true"><UserRound :size="16" /></span>
       <span class="stage-idol-copy"><strong>{{ idol ? name : '设置担当' }}</strong><small v-if="idol">我的担当</small></span>
       <ChevronsUpDown v-if="idol" class="stage-idol-caret" :size="14" aria-hidden="true" />
@@ -16,18 +27,16 @@
   </ArchiveTerminalDialog>
 </template>
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { ChevronRight, ChevronsUpDown, UserRound } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import GsSwitch from '../gs/GsSwitch.vue'
-import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 // The 担当 in the sidebar is also its switch: a one-line row on the paper. Opened, it lifts to a white slice with two
-// choices underneath (stage light on/off, change 担当). The ring is an outline with an offset, so its gap stays
-// transparent whatever the row's background is (rest, hover or lifted).
+// choices underneath (stage light on/off, change 担当). The avatar wears the unified identity ring.
 const props = defineProps({
-  idol: { type: Object, default: null }, name: { type: String, default: '' }, stageLight: Boolean,
+  idol: { type: Object, default: null }, name: { type: String, default: '' }, stageLight: Boolean, inline: Boolean,
   idols: { type: Array, default: () => [] }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' },
 })
 const emit = defineEmits(['save-preferred', 'save-startup'])
@@ -43,18 +52,18 @@ function toggle() {
     : { top: `${rect.bottom + 4}px`, left: `${rect.left}px`, width: `${rect.width}px` }
 }
 function closeOnScroll(event) { if (open.value && !root.value?.contains(event.target)) open.value = false }
-// Identity colour is always on; it only draws the ring.
-const ringColor = computed(() => normalizeIdolAccentColor(props.idol?.color) || 'var(--gs-rule)')
 function outside(event) { if (open.value && !root.value?.contains(event.target)) open.value = false }
 onMounted(() => { document.addEventListener('pointerdown', outside); document.addEventListener('scroll', closeOnScroll, true) })
 onBeforeUnmount(() => { document.removeEventListener('pointerdown', outside); document.removeEventListener('scroll', closeOnScroll, true) })
 </script>
 <style scoped>
+.stage-idol-inline { display: flex; align-items: center; gap: var(--gs-space-3); padding: var(--gs-space-2) var(--gs-space-3); border-radius: var(--gs-radius-control); background: var(--gs-paper); }
+.stage-idol-inline-main { display: flex; flex: 1; align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-control-touch); padding: 0; border: 0; background: transparent; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.stage-idol-inline-light { display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .stage-idol { position: relative; margin: 0 var(--gs-space-3) var(--gs-space-4); }
-.stage-idol-switch { display: flex; align-items: center; gap: var(--gs-space-4); box-sizing: border-box; width: 100%; height: var(--archive-identity-row, 52px); padding: 0 var(--gs-space-3) 0 7px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; text-align: left; cursor: pointer; }
+.stage-idol-switch { display: flex; align-items: center; gap: var(--gs-space-3); box-sizing: border-box; width: 100%; height: var(--archive-identity-row, 52px); padding: 0 var(--gs-space-3) 0 5px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; text-align: left; cursor: pointer; }
 .stage-idol-switch.is-open { background: var(--gs-current-bg); box-shadow: var(--gs-current-shadow); }
-.stage-idol-avatar { outline: 2px solid var(--stage-idol-ring); outline-offset: 2px; }
-.stage-idol-avatar :deep(.idol-avatar-clip::after) { box-shadow: none; }
+.stage-idol-avatar { flex: none; }
 .stage-idol-empty { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border: 1px dashed var(--gs-ink-3); border-radius: 50%; color: var(--gs-ink-3); }
 .stage-idol-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .stage-idol-copy strong { overflow: hidden; color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }

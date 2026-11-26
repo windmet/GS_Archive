@@ -35,6 +35,7 @@
         <ArchiveIdolAvatar
           :idol-code="idol.id"
           :accent-color="idol.color"
+          :ring="selectedIdolCode === idol.id ? 'selected' : 'group'"
           :size="48"
           decorative
           :fallback-text="Array.from(idol.displayName)[0] || '?'"

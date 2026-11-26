@@ -59,6 +59,7 @@ export const PUBLIC_ROUTES = Object.freeze([
   Object.freeze({ kind: 'section', view: 'studio', prefix: 'studio', section: 'studio', implied: {} }),
   Object.freeze({ kind: 'section', view: 'picture_studio', prefix: 'studio/edit', section: 'studio', implied: {} }),
   Object.freeze({ kind: 'section', view: 'about', prefix: 'about', section: 'about', implied: {} }),
+  Object.freeze({ kind: 'section', view: 'search', prefix: 'search', section: 'search', implied: {} }),
   Object.freeze({ kind: 'section', view: 'archive_status', prefix: 'status', section: 'resources', implied: {} }),
   Object.freeze({ kind: 'section', view: 'score_archive', prefix: 'scores', section: 'scores', implied: {} }),
 ])

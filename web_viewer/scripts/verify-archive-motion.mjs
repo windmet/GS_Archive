@@ -135,6 +135,33 @@ assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImag
   assert.ok(!broken.hasAttribute(IMAGE_FAILED_ATTRIBUTE), 'a failed image that later loads loses the placeholder tone')
   uninstall()
   assert.deepEqual(Object.keys(listeners), [])
+
+  // Cached image inserted into DOM after src was already set & settled (Vue mount order) must still reveal.
+  let observerCallback = null, disconnected = false
+  const PrevMutationObserver = globalThis.MutationObserver
+  globalThis.MutationObserver = class {
+    constructor(cb) { observerCallback = cb }
+    observe() {}
+    disconnect() { disconnected = true }
+  }
+  try {
+    const cached = { ...image(true), naturalWidth: 640, currentSrc: '/assets/cards/x.png', getAttribute: () => '/assets/cards/x.png' }
+    const uncached = { ...image(true), naturalWidth: 0, currentSrc: '', getAttribute: () => null }
+    const docWithRoot = {
+      documentElement: {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      querySelectorAll: () => [],
+    }
+    const stop = installImageReveal(docWithRoot)
+    observerCallback([{ type: 'childList', addedNodes: [cached, uncached] }])
+    assert.ok(cached.hasAttribute(IMAGE_LOADED_ATTRIBUTE), 'memory-cached image inserted after src settles is revealed immediately')
+    assert.ok(!uncached.hasAttribute(IMAGE_LOADED_ATTRIBUTE), 'an image without src yet is not marked loaded prematurely')
+    stop()
+    assert.equal(disconnected, true, 'MutationObserver disconnects cleanly on uninstall')
+  } finally {
+    globalThis.MutationObserver = PrevMutationObserver
+  }
 }
 
 // Page change: a fade only. A transform on the page root would re-anchor its fixed bars mid-fade.

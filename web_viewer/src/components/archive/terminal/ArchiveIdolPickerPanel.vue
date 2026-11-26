@@ -11,7 +11,7 @@
         <h3>{{ group.name }}</h3>
         <div class="idol-picker-grid">
           <button v-for="idol in group.idols" :key="idol.id" type="button" :aria-label="`${displayName(idol)} · ${group.name}${counts[idol.id] ? ` · 画面中 ${counts[idol.id]}` : ''}`" :aria-pressed="modelValue===idol.id" :disabled="disabled" :data-idol-code="idol.id" @click="emit('update:modelValue',idol.id)">
-            <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color" :ring-width="groupRing ? 0 : 2" :size="48" decorative :fallback-text="displayName(idol).slice(0, 1) || '?'" />
+            <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color" :ring="modelValue === idol.id ? 'selected' : (groupRing ? 'group' : 'identity')" :size="48" decorative :fallback-text="displayName(idol).slice(0, 1) || '?'" />
             <strong>{{ displayName(idol) }}</strong>
             <small v-if="counts[idol.id]" class="idol-picker-count" aria-hidden="true">×{{ counts[idol.id] }}</small>
           </button>
@@ -65,8 +65,9 @@ const selectedName = computed(() => {
 .idol-picker-grid button:disabled { opacity: .45; cursor: default; }
 .idol-picker-count { position: absolute; top: 2px; right: 4px; min-width: 18px; padding: 0 4px; border-radius: var(--gs-radius-pill); background: var(--gs-action-bg); color: var(--gs-action-ink); font-size: var(--gs-text-caption); line-height: 18px; text-align: center; }
 .idol-picker-grid button strong { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); line-height: 1.4; text-align: center; overflow-wrap: anywhere; }
-.idol-picker-grid button[aria-pressed=true] { border-color: var(--gs-mint); background: var(--gs-mint-wash); color: var(--gs-ink); }
+.idol-picker-grid button[aria-pressed=true] { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
+.idol-picker-grid button[aria-pressed=true] strong { font-weight: var(--gs-weight-semibold); }
 .idol-picker button:focus-visible, .idol-picker input:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-@media (hover: hover) { .idol-picker-grid button:hover { background: var(--gs-mint-wash); } }
+@media (hover: hover) { .idol-picker-grid button:not([aria-pressed=true]):hover { background: var(--gs-hover); } }
 @container idol-picker (max-width: 420px) { .idol-picker-units button { min-height: var(--gs-control-touch); } }
 </style>

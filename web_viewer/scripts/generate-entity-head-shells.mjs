@@ -54,6 +54,7 @@ const SECTION_DESCRIPTIONS = Object.freeze({
   studio: { description: 'SideM GROWING STARS 摄影工作台：使用服装、背景与装饰素材制作画面。' },
   'studio/edit': { description: 'SideM GROWING STARS 摄影编辑器：选择地点与人物，在素材、画布与检查器中编辑构图。' },
   about: { description: '关于 SideM GROWING STARS 资料馆：收录范围、资料来源与使用说明。' },
+  search: { description: 'SideM GROWING STARS 全站搜索：检索偶像、组合、卡片、歌曲、活动、卡池、剧情与图鉴档案。' },
   status: { description: 'SideM GROWING STARS 资料馆资源状态：查看收录与可用情况。' },
   scores: { description: 'SideM GROWING STARS 剧情配乐：剧情中的背景音乐、剧中歌曲、环境音与音效，以及使用它们的剧情。' },
   unused: { description: 'SideM GROWING STARS 其他语音：事务所系统语音、登录标题呼号，以及游戏内留有音频但未使用的语音。' },

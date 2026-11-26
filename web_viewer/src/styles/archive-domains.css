@@ -32,7 +32,8 @@
 .domain-detail-title h3 { margin:0; font-size:var(--gs-text-section); }
 .domain-description { color:var(--gs-ink-3); line-height:1.8; white-space:pre-line; }
 .domain-meta { display:grid; gap:0; margin:var(--gs-space-6) 0; }
-.domain-meta>div { display:grid; grid-template-columns:100px minmax(0,1fr); gap:var(--gs-space-4); padding:var(--gs-space-3) 0; border-bottom:1px solid var(--gs-line); }
+/* Label and value align vertically centered so avatar/icon buttons sit level with their dt label. */
+.domain-meta>div { display:grid; grid-template-columns:100px minmax(0,1fr); align-items:center; gap:var(--gs-space-4); padding:var(--gs-space-3) 0; border-bottom:1px solid var(--gs-line); }
 .domain-meta dt { color:var(--gs-ink-3); }
 .domain-meta dd { margin:0; overflow-wrap:anywhere; }
 .domain-muted { color:var(--gs-ink-3); line-height:1.7; }

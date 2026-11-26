@@ -24,6 +24,7 @@
         </nav>
       </div>
       <div class="archive-sidebar-foot">
+        <button type="button" class="archive-sidebar-about" :aria-current="activeSection === 'search' ? 'page' : undefined" @click="emit('open-search', '')">全站搜索</button>
         <button type="button" class="archive-sidebar-about" :aria-current="activeSection === 'about' ? 'page' : undefined" @click="emit('navigate', 'about')">关于本站</button>
       </div>
     </aside>
@@ -75,7 +76,11 @@
       <slot name="inspector" />
     </aside>
 
-    <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" :keyboard="drawerByKeyboard" @navigate="navigateFromDrawer" @close="closeDrawer(true)" />
+    <Transition name="gs-overlay">
+      <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" :keyboard="drawerByKeyboard" @navigate="navigateFromDrawer" @search="searchFromDrawer" @close="closeDrawer(true)">
+        <template v-if="$slots['drawer-identity']" #identity><slot name="drawer-identity" /></template>
+      </ArchiveNavigationDrawer>
+    </Transition>
     <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
@@ -133,7 +138,7 @@ const mobileSearchOpen = ref(Boolean(props.modelValue))
 watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
 watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = true })
 
-const emit = defineEmits(['navigate', 'follow', 'back', 'update:modelValue'])
+const emit = defineEmits(['navigate', 'follow', 'back', 'open-search', 'update:modelValue'])
 
 // Same destinations and labels as the portal; only the glyphs are shell-specific.
 const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, live: MicVocal, studio: Aperture, resources: FolderOpen }
@@ -236,6 +241,10 @@ function navigateFromDrawer(id) {
   drawerOpen.value = false
   emit('navigate', id)
 }
+function searchFromDrawer(query) {
+  drawerOpen.value = false
+  emit('open-search', query)
+}
 watch(() => props.activeSection, () => { drawerOpen.value = false })
 
 // The sliding current-item slice: measured from the active destination. Re-measured when the route, the
@@ -249,14 +258,18 @@ function measureIndicator() {
   indicator.value = { ...indicator.value, show: true, left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight }
   if (!indicator.value.ready) requestAnimationFrame(() => { indicator.value = { ...indicator.value, ready: true } })
 }
-let navObserver
+let navObserver, navFrame = 0
+function scheduleIndicator() {
+  cancelAnimationFrame(navFrame)
+  navFrame = requestAnimationFrame(() => { navFrame = 0; measureIndicator() })
+}
 watch([() => props.activeSection, navigationSection, railMode, peekOpen], () => nextTick(measureIndicator), { flush: 'post' })
 onMounted(() => {
   measureIndicator()
-  if (typeof ResizeObserver === 'function' && navRef.value) { navObserver = new ResizeObserver(measureIndicator); navObserver.observe(navRef.value) }
+  if (typeof ResizeObserver === 'function' && navRef.value) { navObserver = new ResizeObserver(scheduleIndicator); navObserver.observe(navRef.value) }
   document.fonts?.ready?.then(measureIndicator)
 })
-onBeforeUnmount(() => navObserver?.disconnect())
+onBeforeUnmount(() => { navObserver?.disconnect(); cancelAnimationFrame(navFrame) })
 </script>
 
 <style scoped>
@@ -642,7 +655,7 @@ onBeforeUnmount(() => navObserver?.disconnect())
  .is-compact-mobile .archive-topbar .archive-page-actions {grid-column:3;grid-row:1;}
  .is-compact-mobile .archive-topbar :deep(.archive-page-actions > *) {margin-right:0;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)):has(.archive-page-actions) :deep(.archive-language-switch) {grid-column:4;}
- .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:#52777b;cursor:pointer;}
+ .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--gs-ink-2);cursor:pointer;}
  .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:var(--gs-control-touch);width:100%;margin-bottom:var(--gs-space-3);}
  .is-compact-mobile .archive-search.is-open {display:flex;animation:gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards;}
 }
