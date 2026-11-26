@@ -137,10 +137,10 @@
                   <span class="limitbreak-item-copy">
                     <small>突破素材</small>
                     <strong :title="resolvedLimitbreakMaterial.nameJa">{{ archiveText('item', resolvedLimitbreakMaterial.nameJa) }}</strong>
+                    <span v-if="resolvedLimitbreakMaterial.description" class="limitbreak-item-desc">{{ archiveText('item', resolvedLimitbreakMaterial.description, 'description') }}</span>
                   </span>
                   <ChevronRight :size="17" aria-hidden="true" />
                 </button>
-                <p v-if="resolvedLimitbreakMaterial.description">{{ archiveText('item', resolvedLimitbreakMaterial.description, 'description') }}</p>
               </template>
               <template v-else>
                 <PackageOpen :size="19" />
@@ -828,16 +828,14 @@ function openRelation(item) {
 .limitbreak-item-row small { display: block; margin-bottom: var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .limitbreak-item-row strong { color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .limitbreak-item-row p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.7; }
-.limitbreak-item-resolved { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
-/* Same reading as the item catalogue: a white icon well on paper; mint only on hover. */
-.limitbreak-item-open { display: grid; grid-template-columns: 56px minmax(0, 1fr) 16px; align-items: center; gap: var(--gs-space-4); width: calc(100% + 2 * var(--gs-space-3)); min-height: var(--gs-control-touch); margin: 0 calc(-1 * var(--gs-space-3)); padding: var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); text-align: left; cursor: pointer; transition: background var(--gs-motion-feedback); }
-.limitbreak-item-open:hover { background: var(--gs-mint-wash); }
-.limitbreak-item-open:hover strong, .limitbreak-item-open:hover > svg { color: var(--gs-mint-ink); }
-.limitbreak-item-image { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: var(--gs-radius-media); background: var(--gs-surface); color: var(--gs-mint-ink); }
+.limitbreak-item-resolved { grid-template-columns: minmax(0, 1fr); padding-bottom: 0; border-bottom: 0; }
+/* Unified floating white item reference card on paper (matches event/gasha item cards). */
+.limitbreak-item-open { display: grid; grid-template-columns: 56px minmax(0, 1fr) 16px; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: var(--gs-control-touch); margin: 0; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-surface); box-shadow: var(--gs-shadow-1); color: var(--gs-ink-3); text-align: left; cursor: pointer; transition: box-shadow var(--gs-motion-feedback) var(--gs-ease-out); }
+.limitbreak-item-image { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: var(--gs-radius-media); background: var(--gs-paper); color: var(--gs-mint-ink); }
 .limitbreak-item-image img { display: block; width: 44px; height: 44px; object-fit: contain; }
-.limitbreak-item-copy { min-width: 0; }
-.limitbreak-item-copy strong { display: block; line-height: 1.5; }
-.limitbreak-item-resolved p { margin: 0; overflow-wrap: anywhere; }
+.limitbreak-item-copy { display: grid; gap: 2px; min-width: 0; }
+.limitbreak-item-copy strong { display: block; line-height: 1.45; }
+.limitbreak-item-desc { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; overflow-wrap: anywhere; }
 
 /* Costumes */
 .costume-list { display: grid; }
@@ -902,7 +900,7 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
 .scenario-link-btn span { font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .scenario-link-btn small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 @media (hover: hover) {
-  .limitbreak-item-open:hover { border-color: var(--gs-ink-3); }
+  .limitbreak-item-open:hover strong, .limitbreak-item-open:hover > svg { color: var(--gs-mint-ink); }
   .voice-preview-btn:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
   .scenario-link-btn:hover:not(:disabled) span { color: var(--gs-mint-ink); }
 }

@@ -259,9 +259,12 @@
       <ArchiveGashaDetail
         v-if="view === 'gasha_detail'"
         :gasha="currentGasha"
+        :client="readModelClient"
+        :bootstrap="archiveBootstrap"
         :idol-name="idolDisplayName"
         @open-card="openGashaCard"
         @open-item="openCollectionEntity"
+        @open-entity="openCollectionEntity"
       />
 
       <ArchiveSongCatalog
