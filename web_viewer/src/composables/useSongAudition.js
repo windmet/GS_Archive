@@ -366,6 +366,34 @@ export function useSongAudition(experimentSource, { idolName = () => '' } = {}) 
     audio?.removeAttribute('src')
   })
 
+  const canExportMixdown = computed(() => (
+    (mode.value === 'lineup' && lineupSession.ready.value)
+    || (mode.value === 'solo' && soloSession.ready.value)
+  ))
+  const mixdownSingerNames = computed(() => {
+    if (mode.value === 'solo') {
+      const name = label(currentSoloTrack.value)
+      return name ? [name] : []
+    }
+    if (mode.value === 'lineup') {
+      const seen = new Set()
+      const names = []
+      for (const pos of STAGE_POSITIONS) {
+        const code = idolForStagePosition(pos)
+        if (!code || seen.has(code)) continue
+        seen.add(code)
+        names.push(slotName(pos))
+      }
+      return names
+    }
+    return []
+  })
+  function getMixdownSnapshot() {
+    if (mode.value === 'solo') return soloSession.getMixdownSnapshot()
+    if (mode.value === 'lineup') return lineupSession.getMixdownSnapshot()
+    return null
+  }
+
   return reactive({
     experiment, modes, mode, chooseMode,
     unitOptions, unitKey, trackOptions, trackKey,
@@ -377,5 +405,6 @@ export function useSongAudition(experimentSource, { idolName = () => '' } = {}) 
     ready, playing, currentTime, duration, toggle, seek, restart, pause,
     singleVolume, vocalGain, backingGain, error: failure,
     nowPlaying, lyrics, evidence, stageTarget,
+    canExportMixdown, mixdownSingerNames, getMixdownSnapshot,
   })
 }

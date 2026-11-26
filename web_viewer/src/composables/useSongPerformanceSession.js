@@ -493,6 +493,20 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
       pendingLoad: Boolean(loadAbortController), pendingResume: Boolean(resumeController), closePending, closeError }
   }
 
+  function getMixdownSnapshot() {
+    if (!ready.value || !backingBuffer) return null
+    return {
+      backingBuffer,
+      vocalBuffers: new Map(vocalBuffers),
+      lineup: [...lineup.value],
+      singerEvents: [...singerEvents.value],
+      continuous: continuousVocals,
+      backingGain: clampGain(backingGain.value),
+      vocalGain: clampGain(vocalGain.value),
+      duration: duration.value,
+    }
+  }
+
   return {
     activeIdolCodes,
     activePerformerSlots,
@@ -500,6 +514,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
     bufferStates,
     configure,
     dispose,
+    getMixdownSnapshot,
     inspect,
     currentTime,
     duration,
