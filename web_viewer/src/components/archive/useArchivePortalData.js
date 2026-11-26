@@ -1,11 +1,13 @@
 import { createPortalRepository, portalDisplayOverview } from '../../data/PortalRepository.js'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOMAINS, portalSearchPageDescriptors, validatePortalSearchRows } from '../../presentation/ArchivePortalPresentation.js'
+import { useStoryTitles } from './useReaderTitles.js'
 
 // Portal data is independent of catalogue filters and never owns a player detail.
 export function useArchivePortalData({ view, bootstrap, client, preferredIdol, scope = ref(''), searchQuery = ref(''),
   loadCards,
   idolName, idolSearch, cardTitle, cardSearch, songTitle }) {
+  const storyTitle = useStoryTitles()
   const loading = ref(false), error = ref('')
   const query = searchQuery, searchLoading = ref(false), searchError = ref('')
   const rowsByDomain = shallowRef({})
@@ -24,7 +26,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     loading:loading.value,error:error.value}))
   const search = computed(() => ({ query: query.value, loading: searchLoading.value,
     error: searchError.value, results: buildPortalSearchResults({ query: query.value,
-      rowsByDomain: rowsByDomain.value, bootstrap, idolName, idolSearch, cardTitle, cardSearch, songTitle }) }))
+      rowsByDomain: rowsByDomain.value, bootstrap, idolName, idolSearch, cardTitle, cardSearch, songTitle, storyTitle }) }))
   function stopOverview() { ++revision; overviewController?.abort(); overviewController = null }
   async function refresh() {
     stopOverview()

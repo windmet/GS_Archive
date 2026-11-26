@@ -22,8 +22,11 @@
         </form>
 
         <div v-if="searchOpen" id="portal-search-results" class="overview-search-results gs-enter-popover" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
-          <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="collapseSearch"><X :size="16" />收起</button>
-          <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="setSearchCollapsed(false); searchOpen = true; emit('search',term)">{{ term }}</button></div>
+          <div class="overview-search-head">
+            <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="setSearchCollapsed(false); searchOpen = true; emit('search',term)">{{ term }}</button></div>
+            <span v-else class="overview-search-head-label">全站快捷搜索</span>
+            <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="collapseSearch"><X :size="16" aria-hidden="true" />收起</button>
+          </div>
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
           <ArchiveErrorNote v-if="globalSearch.error" class="overview-error">{{ globalSearch.error }}</ArchiveErrorNote>
           <template v-if="searchGroups.length">
@@ -37,7 +40,7 @@
             <li v-for="result in group.rows" :key="result.key">
               <DomainMediaPreview v-if="result.image?.url" class="overview-result-image" :binding="result.image" :name="result.label" compact />
               <span v-else class="overview-result-kind" aria-hidden="true"><component :is="archiveNavigationIcons[result.domain] || Search" :size="21" /></span>
-              <button type="button" :disabled="!result.target" :data-archive-focus-id="`portal-search:${result.key}`" @click="setSearchCollapsed(false); emit('open-result', result)"><span class="overview-result-copy"><small>{{ domainLabel(result.domain) }}</small><strong>{{ result.label }}</strong><span v-if="result.subtitle">{{ result.subtitle }}</span></span><ArrowUpRight :size="18" aria-hidden="true" /></button>
+              <button type="button" :disabled="!result.target" :data-archive-focus-id="`portal-search:${result.key}`" @click="setSearchCollapsed(false); emit('open-result', result)"><span class="overview-result-copy"><small>{{ domainLabel(result.domain) }}</small><strong>{{ result.domain === 'stories' ? storyTitle(result.target?.file, result.label) : result.label }}</strong><span v-if="result.subtitle">{{ result.domain === 'stories' ? storySubtitle(result.subtitle) : result.subtitle }}</span></span><ArrowUpRight :size="18" aria-hidden="true" /></button>
             </li>
               </ul>
             </section>
@@ -483,8 +486,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-search-form .overview-icon-button { width:32px;height:38px; }
 .overview-search-submit { min-height:38px;padding:0 var(--gs-space-4);border:0;border-radius:6px;background:var(--gs-action-bg);color:var(--gs-action-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-search-results { position:absolute;z-index:12;top:52px;right:0;width:min(620px,calc(100vw - 96px));max-height:min(560px,calc(100dvh - 160px));overflow:auto;overscroll-behavior:contain;padding:var(--gs-space-3) var(--gs-space-5);border-radius:var(--gs-radius-panel);background:var(--gs-surface);box-shadow:var(--gs-shadow-float); }
-.overview-search-collapse { display:flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-normal);margin-left:auto;padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-3); }
-.overview-search-shortcuts { display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-3);margin:var(--gs-space-3) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-search-head { display:flex;align-items:flex-start;justify-content:space-between;gap:var(--gs-space-3);margin-bottom:var(--gs-space-2); }
+.overview-search-head-label { align-self:center;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.overview-search-collapse { display:inline-flex;flex:none;align-items:center;gap:var(--gs-space-1);min-height:var(--gs-control-compact);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-3);white-space:nowrap; }
+.overview-search-shortcuts { display:flex;flex:1;flex-wrap:wrap;align-items:center;gap:var(--gs-space-2);min-width:0;margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-search-shortcuts > button { min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-search-total { margin:var(--gs-space-3) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .overview-search-results ul { margin:0;padding:0;list-style:none; }

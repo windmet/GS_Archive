@@ -81,7 +81,7 @@
                     </span>
                     <span class="search-row-copy">
                       <strong>{{ item.label }}</strong>
-                      <small v-if="item.subtitle">{{ item.subtitle }}</small>
+                      <small v-if="item.subtitle">{{ item.domain === 'stories' ? formatStorySubtitle(item.subtitle) : item.subtitle }}</small>
                     </span>
                     <ArrowUpRight class="search-row-arrow" :size="16" aria-hidden="true" />
                   </button>
@@ -119,7 +119,7 @@
                   </span>
                   <span class="search-row-copy">
                     <strong>{{ item.label }}</strong>
-                    <small v-if="item.subtitle">{{ item.subtitle }}</small>
+                    <small v-if="item.subtitle">{{ item.domain === 'stories' ? formatStorySubtitle(item.subtitle) : item.subtitle }}</small>
                   </span>
                   <ArrowUpRight class="search-row-arrow" :size="16" aria-hidden="true" />
                 </button>
@@ -153,6 +153,8 @@ import {
 } from '../../presentation/ArchiveGlobalSearch.js'
 import { archiveText as collectionArchiveText } from './useArchiveCollectionText.js'
 import { archiveText as costumeArchiveText } from './useArchiveCostumeText.js'
+import { useStoryTitles } from './useReaderTitles.js'
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 
 const GROUP_PREVIEW_LIMIT = 8
 const PAGE_STEP = 60
@@ -310,6 +312,9 @@ function translateCollectionItem(kind, sourceName) {
   return collectionArchiveText(singular, sourceName)
 }
 
+const storyTitle = useStoryTitles()
+const formatStorySubtitle = text => String(text || '').split(' · ').map(chapterLabel).join(' · ')
+
 const groupedResults = computed(() => buildExtendedDomainResults({
   query: trimmedQuery.value,
   rowsByDomain: rowsByDomain.value,
@@ -319,6 +324,7 @@ const groupedResults = computed(() => buildExtendedDomainResults({
   cardTitle: props.cardTitle,
   cardSearch: props.cardSearch,
   songTitle: props.songTitle,
+  storyTitle: (file, source) => storyTitle(file, source),
   gashaTitle: props.gashaTitle,
   collectionText: translateCollectionItem,
 }))

@@ -7,7 +7,7 @@ function isReducedMotion() {
   return globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
 }
 
-function preloadImage(src) {
+export function preloadImage(src) {
   return new Promise(resolve => {
     if (typeof Image !== 'function' || !src) {
       resolve(true)

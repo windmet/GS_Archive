@@ -4,20 +4,22 @@
     <div v-if="card" class="card-detail">
       <section class="card-hero" :class="`is-${stage.layout}`">
         <figure class="card-stage">
-          <div v-if="stage.items.length" class="card-stage-rail" :style="{ '--stage-count': stage.items.length }">
-            <button v-for="(item, index) in stage.items" :key="`${stage.layout}:${index}`" class="card-stage-art" :class="{ 'is-landscape': item.landscape }" type="button"
-              :disabled="item.thumbnail" :title="item.thumbnail ? '只有缩略图资源' : `查看${item.label}原图`" @click="openLightbox(item.src)">
-              <span class="card-stage-frame">
-                <ArchiveSmoothImage :src="item.src" :alt="`${displayCardTitle} ${item.label}`" />
-                <Expand v-if="!item.thumbnail" :size="17" aria-hidden="true" />
-              </span>
-              <span v-if="item.caption" class="card-stage-caption">{{ item.caption }}</span>
-            </button>
-          </div>
-          <span v-else class="card-stage-missing"><ImageOff :size="24" aria-hidden="true" /><span>暂无卡面图像</span></span>
+          <Transition name="card-stage-swap" mode="out-in">
+            <div v-if="stage.items.length" :key="stage.layout" class="card-stage-rail" :style="{ '--stage-count': stage.items.length }">
+              <button v-for="(item, index) in stage.items" :key="`${stage.layout}:${index}`" class="card-stage-art" :class="{ 'is-landscape': item.landscape }" type="button"
+                :disabled="item.thumbnail" :title="item.thumbnail ? '只有缩略图资源' : `查看${item.label}原图`" @click="openLightbox(item.src)">
+                <span class="card-stage-frame">
+                  <ArchiveSmoothImage :src="item.src" :alt="`${displayCardTitle} ${item.label}`" :eager-ready="frameReady" />
+                  <Expand v-if="!item.thumbnail" :size="17" aria-hidden="true" />
+                </span>
+                <span v-if="item.caption" class="card-stage-caption">{{ item.caption }}</span>
+              </button>
+            </div>
+            <span v-else key="missing" class="card-stage-missing"><ImageOff :size="24" aria-hidden="true" /><span>暂无卡面图像</span></span>
+          </Transition>
           <figcaption v-if="heroFrames.length > 1 || landscapeStates.length > 1 || stage.layout !== 'landscape'" class="card-stage-controls">
             <div v-if="heroFrames.length > 1" class="card-tabs" role="group" aria-label="画幅">
-              <button v-for="frame in heroFrames" :key="frame.id" type="button" :aria-pressed="activeHeroFrame === frame.id" @click="heroFrame = frame.id">{{ frame.label }}</button>
+              <button v-for="frame in heroFrames" :key="frame.id" type="button" :aria-pressed="requestedHeroFrame === frame.id" @click="switchHeroFrame(frame.id)">{{ frame.label }}</button>
             </div>
             <div v-if="stage.layout === 'landscape' && landscapeStates.length > 1" class="card-tabs" role="group" aria-label="卡面状态">
               <button v-for="state in landscapeStates" :key="state.id" type="button" :aria-pressed="activeLandscapeState === state.id" @click="heroState = state.id">{{ state.label }}</button>
@@ -317,7 +319,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff,
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveSmoothImage from './ArchiveSmoothImage.vue'
 import ArchiveVideoPlayer from './ArchiveVideoPlayer.vue'
-import { scheduleImagePrefetch } from '../../composables/useSmoothImage.js'
+import { preloadImage, scheduleImagePrefetch } from '../../composables/useSmoothImage.js'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
@@ -394,7 +396,8 @@ const awakenedLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.reso
 
 // The stage shows the card's artwork at once: both portraits side by side (普通 / 特训后), a
 // single-state portrait beside the title, or — for SSR — the landscape of the chosen state.
-const heroState = ref('normal'), heroFrame = ref('landscape')
+const heroState = ref('normal'), heroFrame = ref('landscape'), requestedFrame = ref('landscape'), frameReady = ref(false)
+let frameSwitchSeq = 0
 const landscapeStates = computed(() => {
   const status = props.assetStatus || {}
   return [status.normal_landscape && { id: 'normal', label: '普通' }, status.awakened_landscape && { id: 'awakened', label: '特训后' }].filter(Boolean)
@@ -408,6 +411,20 @@ const heroFrames = computed(() => {
   ].filter(Boolean)
 })
 const activeHeroFrame = computed(() => heroFrames.value.some(frame => frame.id === heroFrame.value) ? heroFrame.value : heroFrames.value[0]?.id || 'portrait')
+const requestedHeroFrame = computed(() => heroFrames.value.some(frame => frame.id === requestedFrame.value) ? requestedFrame.value : activeHeroFrame.value)
+async function switchHeroFrame(frameId) {
+  if (frameId === requestedHeroFrame.value && frameId === activeHeroFrame.value) return
+  const token = ++frameSwitchSeq
+  requestedFrame.value = frameId
+  const status = props.assetStatus || {}, single = Boolean(props.card?.single_state)
+  const urls = frameId === 'landscape'
+    ? [activeLandscapeState.value === 'awakened' ? awakenedLandscapeUrl.value : normalLandscapeUrl.value].filter(Boolean)
+    : [!single && status.normal_portrait && normalPortraitUrl.value, status.awakened_portrait && awakenedPortraitUrl.value].filter(Boolean)
+  if (urls.length) await Promise.all(urls.map(preloadImage))
+  if (token !== frameSwitchSeq) return
+  frameReady.value = true
+  heroFrame.value = frameId
+}
 const stage = computed(() => {
   const status = props.assetStatus || {}, single = Boolean(props.card?.single_state)
   if (activeHeroFrame.value === 'landscape' && activeLandscapeState.value) {
@@ -434,20 +451,24 @@ const FOCUS_HOLD_MS = 2400
 const arrivedVoice = ref('')
 let arrivedTimer = 0
 let stopCardPrefetch = () => {}
-onBeforeUnmount(() => { clearTimeout(arrivedTimer); stopCardPrefetch() })
+onBeforeUnmount(() => { frameSwitchSeq += 1; clearTimeout(arrivedTimer); stopCardPrefetch() })
 watch(() => [props.card?.resource_id, props.assetStatus, framedPortrait.value, activeHeroFrame.value, activeLandscapeState.value], () => {
   stopCardPrefetch()
   const id = props.card?.resource_id
   const status = props.assetStatus || {}
   if (!id) return
+  // Warm both alternate states AND the opposite frame (landscape <-> portrait) during idle time
+  // so toggling between 16:9 landscape and 4:5 portrait cards resolves from cache without grey flash.
   const alternateUrls = []
-  if (activeHeroFrame.value === 'landscape') {
-    if (status.normal_landscape && activeLandscapeState.value !== 'normal') alternateUrls.push(getCardLandscapeUrl(id, false))
-    if (status.awakened_landscape && activeLandscapeState.value !== 'awakened') alternateUrls.push(getCardLandscapeUrl(id, true))
-  } else {
-    const otherFramed = !framedPortrait.value
-    if (!props.card?.single_state && status.normal_portrait) alternateUrls.push(getCardPortraitUrl(id, false, otherFramed))
-    if (status.awakened_portrait) alternateUrls.push(getCardPortraitUrl(id, true, otherFramed))
+  if (status.normal_landscape) alternateUrls.push(getCardLandscapeUrl(id, false))
+  if (status.awakened_landscape) alternateUrls.push(getCardLandscapeUrl(id, true))
+  if (!props.card?.single_state && status.normal_portrait) {
+    alternateUrls.push(getCardPortraitUrl(id, false, framedPortrait.value))
+    alternateUrls.push(getCardPortraitUrl(id, false, !framedPortrait.value))
+  }
+  if (status.awakened_portrait) {
+    alternateUrls.push(getCardPortraitUrl(id, true, framedPortrait.value))
+    alternateUrls.push(getCardPortraitUrl(id, true, !framedPortrait.value))
   }
   stopCardPrefetch = scheduleImagePrefetch(alternateUrls)
 }, { immediate: true })
@@ -467,9 +488,12 @@ watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
 
 const skillMovieMegabytes = computed(() => ((props.skillMovie?.bytes || 0) / 1e6).toFixed(1))
 watch(() => props.card?.resource_id, () => {
+  frameSwitchSeq += 1
+  frameReady.value = false
   selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
   heroState.value = props.card?.single_state ? 'awakened' : 'normal'
   heroFrame.value = 'landscape'
+  requestedFrame.value = 'landscape'
 }, { immediate: true })
 
 const selectedSkill = computed(() => props.card?.gameplay?.skill?.levels
@@ -711,6 +735,10 @@ function openRelation(item) {
 .card-stage-frame > svg { position: absolute; right: var(--gs-space-3); bottom: var(--gs-space-3); padding: 6px; width: 30px; height: 30px; border-radius: var(--gs-radius-control); background: rgb(19 33 58 / 64%); color: #fff; opacity: 0; transition: opacity var(--gs-motion-feedback) var(--gs-motion-ease); }
 .card-stage-art:hover .card-stage-frame > svg, .card-stage-art:focus-visible .card-stage-frame > svg { opacity: 1; }
 .card-stage-caption { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: .04em; }
+.card-stage-swap-enter-active { transition: opacity var(--gs-motion-feedback) var(--gs-ease-out); }
+.card-stage-swap-leave-active { transition: opacity var(--gs-motion-page) var(--gs-ease-in); }
+.card-stage-swap-enter-from, .card-stage-swap-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .card-stage-swap-enter-active, .card-stage-swap-leave-active { transition: none; } }
 .card-stage-missing { display: grid; place-items: center; gap: var(--gs-space-3); aspect-ratio: 16 / 9; border-radius: var(--gs-radius-media); background: var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .card-stage-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gs-space-3) var(--gs-space-7); }
 .is-single .card-stage-controls { justify-content: start; }

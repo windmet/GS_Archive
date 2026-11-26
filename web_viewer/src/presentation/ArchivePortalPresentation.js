@@ -338,7 +338,7 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
 }
 
 export function buildPortalSearchResults({ query = '', rowsByDomain = {}, bootstrap, idolName, idolSearch,
-  cardTitle, cardSearch, songTitle } = {}) {
+  cardTitle, cardSearch, songTitle, storyTitle } = {}) {
   const terms = normalizeSearch(query).split(' ').filter(Boolean)
   if (!terms.length) return []
   const directory = identities(bootstrap), results = []
@@ -369,10 +369,12 @@ export function buildPortalSearchResults({ query = '', rowsByDomain = {}, bootst
         searchable = [row.name, label, metadata.kana, metadata.unitName, row.id, sourceText(idolSearch, row.id, row.name)]
       } else {
         if (row.exists !== true) continue
-        result = { key: `stories:${row.id}`, domain, label: text(row.title),
+        const source = text(row.title)
+        const label = (typeof storyTitle === 'function' ? text(storyTitle(row.file, source)) : '') || source
+        result = { key: `stories:${row.id}`, domain, label,
           subtitle: [storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle)].filter(Boolean).join(' · '), image: null,
           target: storyTarget(row) }
-        searchable = [row.title, row.subtitle, row.episodeLabel, storyLabels[row.domain], ...storyKindAliases(row.domain), row.id, row.file,
+        searchable = [source, label, row.subtitle, row.episodeLabel, storyLabels[row.domain], ...storyKindAliases(row.domain), row.id, row.file,
           ...(Array.isArray(row.domainAliases) ? row.domainAliases : []),
           ...(Array.isArray(row.characters) ? row.characters.flatMap(id => directory.has(id)
             ? [idolDisplay(id, directory, idolName), text(directory.get(id).name), sourceText(idolSearch, id, text(directory.get(id).name))] : []) : [])]

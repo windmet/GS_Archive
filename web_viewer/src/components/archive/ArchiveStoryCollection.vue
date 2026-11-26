@@ -110,7 +110,7 @@
 
           <div v-if="expandedChapterId === chapter.id" class="chapter-panel">
             <div v-if="chapter.canonicalRelation" class="canonical-note">
-              <p><strong>{{ chapterLabel(chapter.canonicalRelation.sectionName) }}「{{ chapter.canonicalRelation.sectionTitle }}」</strong>本篇就是 {{ chapter.canonicalRelation.episodeNames.map(sourceName => presentIdolEpisodeLabel({ sourceName })).join('、') }}，完整章节与连续播放在个人故事页。</p>
+              <p><strong>{{ chapterLabel(chapter.canonicalRelation.sectionName) }}「{{ presentProducerAddressingText(sourceTitle(null, chapter.canonicalRelation.sectionTitle)) }}」</strong>本篇就是 {{ chapter.canonicalRelation.episodeNames.map(sourceName => presentIdolEpisodeLabel({ sourceName })).join('、') }}，完整章节与连续播放在个人故事页。</p>
               <button class="story-action" @click="emit('open-idol-story', chapter.canonicalRelation)"><BookOpen :size="16" />去个人剧情阅读</button>
             </div>
             <CollectionStorySynopsis class="chapter-synopsis" :key="chapter.id" :entry="chapter.episodes.map(readingEntry).find(Boolean)" :load-document="loadReadingDocument" :fallback="chapter.synopsis" :title="chapter.synopsis?.title || chapter.title" />
@@ -168,7 +168,7 @@ import { buildPublicArchiveUrl, buildArchiveSourceQuery } from '../../core/archi
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { storyCollectionTitle } from '../../presentation/StoryPageTitle.js'
-import { useReaderTitles } from './useReaderTitles.js'
+import { useReaderTitles, useSourceTitles } from './useReaderTitles.js'
 import {gashaText} from './useArchiveGashaText.js'
 import { extraStorySeriesDefinition } from '../../data/extraStoryTaxonomy.js'
 import { unitStoryVisualUrl } from '../../data/storyCollections.js'
@@ -201,6 +201,7 @@ const memberReferences = computed(() => props.members.map(code =>
 const relatedSong = computed(() => props.collection?.domain === 'extra' ? extraStorySeriesDefinition(props.collection.sectionId).song : null)
 const readingByFile = computed(() => { const map = new Map(); for (const entry of props.readingEntries) { if (!entry.source_file) continue; const existing = map.get(entry.source_file); map.set(entry.source_file, existing === undefined ? entry : null) } return map })
 const readingStatusNotice = ref('')
+const sourceTitle = useSourceTitles()
 const chapterUnit = computed(() => ({ main: '话', birthday: '篇' })[props.collection?.domain] || '章')
 const collectionTitle = computed(() => storyCollectionTitle(props.collection, props.idolName))
 const episodeLabel = episode => presentIdolEpisodeLabel({ sourceName: episode.label, kind:episode.kind, ordinal:episode.ordinal })

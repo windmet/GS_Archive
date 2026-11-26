@@ -1,11 +1,12 @@
 <template>
   <span class="gs-smooth-image" :class="{ 'is-pending': pending }">
-    <img v-if="displaySrc" class="gs-smooth-base" :src="displaySrc" :alt="alt" :decoding="decoding" :loading="loading" @error="emit('error', $event)" />
+    <img v-if="displaySrc" ref="baseImg" class="gs-smooth-base" :src="displaySrc" :alt="alt" :decoding="decoding" :loading="loading" :data-gs-loaded="ready ? '' : undefined" @load="ready = true" @error="ready = true; emit('error', $event)" />
     <img v-if="overlaySrc" class="gs-smooth-overlay" :src="overlaySrc" data-gs-loaded alt="" decoding="async" aria-hidden="true" />
   </span>
 </template>
 
 <script setup>
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { useSmoothImage } from '../../composables/useSmoothImage.js'
 
 const props = defineProps({
@@ -13,9 +14,22 @@ const props = defineProps({
   alt: { type: String, default: '' },
   decoding: { type: String, default: 'async' },
   loading: { type: String, default: undefined },
+  eagerReady: Boolean,
 })
 const emit = defineEmits(['error'])
 const { displaySrc, overlaySrc, pending } = useSmoothImage(() => props.src)
+const baseImg = ref(null)
+const ready = ref(Boolean(props.eagerReady))
+
+function checkSettled() {
+  const el = baseImg.value
+  if (el?.complete && el.naturalWidth > 0) ready.value = true
+}
+onMounted(checkSettled)
+watch(displaySrc, async () => {
+  await nextTick()
+  checkSettled()
+})
 </script>
 
 <style scoped>

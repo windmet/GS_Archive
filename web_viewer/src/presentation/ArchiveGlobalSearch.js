@@ -116,6 +116,7 @@ export function buildExtendedDomainResults({
   cardTitle,
   cardSearch,
   songTitle,
+  storyTitle,
   gashaTitle,
   collectionText,
 } = {}) {
@@ -137,6 +138,7 @@ export function buildExtendedDomainResults({
     cardTitle,
     cardSearch,
     songTitle,
+    storyTitle,
   })
   const byDomain = {
     idols: instant.idols,

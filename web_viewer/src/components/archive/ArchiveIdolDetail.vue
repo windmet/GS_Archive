@@ -4,12 +4,11 @@
          the name after a 3px colour bar, and the autograph written beside it in ink (落款). Teammate
          faces sit in their own breathable strip right beneath the hero so they never crowd the topbar. -->
     <div class="idol-hero-block">
-      <header class="idol-hero" :class="{ 'has-figure': portrait && !portraitFailed }" :style="heroStyle">
-        <template v-if="portrait && !portraitFailed">
-          <img v-if="heroPortrait.displaySrc.value" class="idol-hero-figure" :src="heroPortrait.displaySrc.value" alt="" decoding="async" @error="portraitFailed = true" />
-          <img v-if="heroPortrait.overlaySrc.value" class="idol-hero-figure idol-hero-figure-incoming" :src="heroPortrait.overlaySrc.value" data-gs-loaded alt="" decoding="async" />
-        </template>
-        <ArchiveIdolAvatar v-else class="idol-hero-avatar" :idol-code="idol.idol_code" :accent-color="idol.color" ring="identity" :size="104" :ring-width="3" decorative />
+      <header class="idol-hero" :class="{ 'has-figure': displayedFigure.url && !portraitFailed }" :style="heroStyle">
+        <Transition name="idol-figure-swap" mode="out-in">
+          <img v-if="displayedFigure.url && !portraitFailed" :key="displayedFigure.url" class="idol-hero-figure" :src="displayedFigure.url" data-gs-loaded alt="" decoding="async" @error="portraitFailed = true" />
+          <ArchiveIdolAvatar v-else key="avatar" class="idol-hero-avatar" :idol-code="idol.idol_code" :accent-color="idol.color" ring="identity" :size="104" :ring-width="3" decorative />
+        </Transition>
         <div class="idol-hero-copy">
           <button v-if="idol.unit_code" class="idol-hero-unit" type="button" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" :aria-label="`组合 ${idol.unit_name}`" @click="emit('open-unit', idol)">
             <img v-if="!unitLogoFailed" :src="getUnitLogoUrl(idol.unit_code)" alt="" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ idol.unit_name }}</span>
@@ -128,7 +127,7 @@
 
 <script setup>
 import { archiveLineText, archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { idolThemeProperties } from '../../presentation/idolStageLight.js'
 import { ChevronRight, Info, Medal, MonitorPlay, Music } from '@lucide/vue'
 import { getCharaSignUrl, getUnitLogoUrl, getVoiceUrl } from '../../utils/AssetResolver.js'
@@ -147,7 +146,7 @@ import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveUnitMateFaces from './ArchiveUnitMateFaces.vue'
-import { useSmoothImage } from '../../composables/useSmoothImage.js'
+import { preloadImage, scheduleImagePrefetch } from '../../composables/useSmoothImage.js'
 
 const props = defineProps({
   idol: { type: Object, default: null },
@@ -181,14 +180,40 @@ fetch('/data/assets/raw_character_image_promotions.json').then(response => {
   return response.json()
 }).then(registry => { validateArchivePayload('rawCharacterImagePromotions', registry); portraitRegistry.value = registry }).catch(() => {})
 const portrait = computed(() => props.idol ? portalIdolPortrait(portraitRegistry.value, props.idol.idol_code) : null)
-const heroPortrait = useSmoothImage(() => portrait.value?.url || '')
 const portraitFailed = ref(false), unitLogoFailed = ref(false)
+// Transparent cutouts must never double-expose on top of each other: preload the next teammate's
+// portrait (plus idle-prefetch all unit mates) and swap url + focusX atomically via out-in fade.
+const displayedFigure = ref({ url: '', width: 0, height: 0 })
+let portraitSeq = 0
+let stopMatePrefetch = () => {}
+watch(portrait, async next => {
+  const token = ++portraitSeq
+  if (!next?.url) {
+    displayedFigure.value = { url: '', width: 0, height: 0 }
+    return
+  }
+  if (!displayedFigure.value.url || displayedFigure.value.url === next.url) {
+    displayedFigure.value = { url: next.url, width: next.width || 0, height: next.height || 0 }
+    return
+  }
+  await preloadImage(next.url)
+  if (token !== portraitSeq) return
+  portraitFailed.value = false
+  displayedFigure.value = { url: next.url, width: next.width || 0, height: next.height || 0 }
+}, { immediate: true })
+watch([unitMates, portraitRegistry], ([mates, registry]) => {
+  stopMatePrefetch()
+  if (!registry || mates.length <= 1) return
+  const urls = mates.map(mate => portalIdolPortrait(registry, mate.idol_code)?.url).filter(Boolean)
+  stopMatePrefetch = scheduleImagePrefetch(urls)
+}, { immediate: true })
+onBeforeUnmount(() => { portraitSeq += 1; stopMatePrefetch() })
 watch(() => props.idol?.idol_code, () => { portraitFailed.value = false; unitLogoFailed.value = false })
 const HERO_FIGURE_HEIGHT = 340
 const heroStyle = computed(() => {
   if (!props.idol) return undefined
-  const image = portrait.value
-  const focus = image ? idolVisualFocus.focusX[image.url] ?? 0.5 : 0.5
+  const image = displayedFigure.value.url ? displayedFigure.value : portrait.value
+  const focus = image?.url ? idolVisualFocus.focusX[image.url] ?? 0.5 : 0.5
   const width = image?.width && image?.height ? HERO_FIGURE_HEIGHT * image.width / image.height : HERO_FIGURE_HEIGHT * 0.66
   return { '--hero-sign': `url(${getCharaSignUrl(props.idol.idol_code)})`, '--hero-figure-left': `calc(78% - ${Math.round(focus * width)}px)` }
 })
@@ -326,8 +351,10 @@ function formatDate(timestamp) {
 .idol-hero-block { display: grid; gap: var(--gs-space-3); min-width: 0; }
 .idol-hero { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 300px; overflow: hidden; padding: var(--gs-space-7) var(--gs-space-8); border-radius: var(--gs-radius-media); background: radial-gradient(circle at 78% 62%, var(--gs-surface) 0, var(--gs-idol-wash) 58%); }
 .idol-hero-figure { position: absolute; left: var(--hero-figure-left, 50%); bottom: -60px; z-index: 1; width: auto; max-width: none; height: 340px; object-fit: contain; -webkit-mask-image: linear-gradient(black 82%, transparent); mask-image: linear-gradient(black 82%, transparent); filter: drop-shadow(6px 4px 0 color-mix(in oklab, var(--gs-idol-ink) 24%, transparent)); }
-.idol-hero-figure-incoming { animation: gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards; pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .idol-hero-figure-incoming { animation: none; } }
+.idol-figure-swap-enter-active { transition: opacity var(--gs-motion-feedback) var(--gs-ease-out); }
+.idol-figure-swap-leave-active { transition: opacity var(--gs-motion-page) var(--gs-ease-in); }
+.idol-figure-swap-enter-from, .idol-figure-swap-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .idol-figure-swap-enter-active, .idol-figure-swap-leave-active { transition: none; } }
 .idol-unit-strip { padding-bottom: var(--gs-space-1); }
 .idol-hero-avatar { position: absolute; right: var(--gs-space-9); top: 50%; z-index: 1; translate: 0 -50%; }
 .idol-hero-copy { position: relative; z-index: 2; display: grid; justify-items: start; gap: var(--gs-space-2); width: max-content; max-width: 55%; }
