@@ -4,7 +4,7 @@
          used to cut names short are one capsule that opens a panel. -->
     <div class="console-bar">
       <button ref="capsuleRef" type="button" class="console-capsule" :aria-expanded="open" aria-haspopup="dialog" aria-controls="home-console-panel" :aria-label="`人物与衣装：${activeName}，${activeSubject}`" @click="open ? close() : openPanel()">
-        <ArchiveIdolAvatar :idol-code="activeIdol.id" :size="28" :ring-width="0" :gap="0" class="console-avatar" :style="{ '--console-ring': ringColor }" decorative />
+        <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color || ''" ring="identity" :size="32" :ring-width="2" :gap="2" class="console-avatar" decorative />
         <span class="console-copy"><strong>{{ activeName }}</strong><small>{{ activeSubject }}</small></span>
         <ChevronsUpDown :size="14" aria-hidden="true" />
       </button>
@@ -25,7 +25,7 @@
             <section v-for="group in groups" :key="group.unit">
               <h3>{{ group.unit }}</h3>
               <button v-for="idol in group.idols" :key="idol.id" type="button" role="option" class="console-idol" :class="{ 'is-current': idol.id === selectedId }" :aria-selected="idol.id === selectedId" @click="pickIdol(idol)">
-                <ArchiveIdolAvatar :idol-code="idol.id" :size="28" :ring-width="0" :gap="0" class="console-avatar" :style="{ '--console-ring': colorOf(idol) }" decorative />
+                <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color || ''" :ring="idol.id === selectedId ? 'selected' : 'group'" :size="28" class="console-avatar" decorative />
                 <span>{{ idolLabel(idol) }}</span>
               </button>
             </section>
@@ -72,7 +72,6 @@ import GsSegmented from '../gs/GsSegmented.vue'
 import { costumeImage } from '../../presentation/CostumeCollection.js'
 import { costumeCategoryCounts } from '../../presentation/CostumeCategories.js'
 import { groupConsoleIdols } from '../../presentation/HomeConsole.js'
-import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 
 const INTRO_KEY = 'sidem:home-console-intro-seen'
 const MODES = [{ value: 'spine', label: '立绘' }, { value: 'card', label: '卡面' }]
@@ -96,8 +95,6 @@ const activeSubject = computed(() => props.homeMode === 'card'
 const failedThumbs = shallowRef(new Set())
 const thumbOf = costume => failedThumbs.value.has(costume.modelId) ? ''
   : costumeImage(costume.modelId, props.costumeImages?.get(costume.modelId) || null)?.url || ''
-const colorOf = idol => normalizeIdolAccentColor(idol.color) || 'var(--gs-rule)'
-const ringColor = computed(() => colorOf(props.activeIdol))
 const categoryCounts = computed(() => costumeCategoryCounts(props.activeIdol.costumes))
 const groups = computed(() => groupConsoleIdols(props.idols, props.idolLabel, query.value))
 function openPanel() { open.value = true; tab.value = 'idol'; query.value = '' }
@@ -118,8 +115,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 .console-bar { display: flex; align-items: center; gap: var(--gs-space-3); padding: var(--gs-space-2); border-radius: var(--gs-radius-control); background: var(--chrome-bg, var(--gs-surface)); box-shadow: var(--gs-shadow-console); }
 .console-capsule { display: flex; align-items: center; gap: var(--gs-space-3); box-sizing: border-box; min-width: 0; max-width: 280px; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3) 0 7px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; text-align: left; cursor: pointer; }
 .console-capsule[aria-expanded=true] { background: var(--gs-current-bg-inset); }
-.console-avatar { outline: 2px solid var(--console-ring); outline-offset: 2px; flex: none; }
-.console-avatar :deep(.idol-avatar-shell) { box-shadow: none; }
+.console-avatar { flex: none; }
 .console-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .console-copy strong, .console-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .console-copy strong { color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }

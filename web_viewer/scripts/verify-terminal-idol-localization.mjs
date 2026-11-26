@@ -377,11 +377,23 @@ try {
       assert.match(solo, /1 位偶像<span[^>]*> · 已选：/)
       assert.ok(elementText(solo, 'strong').includes(displayed))
       assert.ok(solo.includes(`Solo · ${displayed}`))
-      assert.match(solo, /class="idol-avatar-shell is-plain"/, 'candidates wear the group ring, not their identity ring')
+      assert.match(solo, /class="idol-avatar-shell is-selected"/, 'selected candidate wears the unified selected accent ring')
       assert.deepEqual(picker.matches.value.map(idol => idol.id), ['029ass'])
       assert.deepEqual(audition.soloEntries.map(entry => entry.idol_code), soloCodes)
       checks++
     }
+    // Unselected candidates in group-ring mode still wear the quiet group ring (is-plain).
+    const unselectedSolo = await render(withState(Song, value => {
+      value.audition.mode = 'solo'
+      value.audition.idolCode = '001tom'
+      value.ArchiveSongVersionPanel = withState(VersionPanel, state => {
+        state.pickerOpen.value = true
+        state.ArchiveIdolPickerPanel = withState(Picker, pickerState => {
+          pickerState.query.value = '阿斯兰'
+        })
+      })
+    }), { song: drive, ...callbacks })
+    assert.match(unselectedSolo, /class="idol-avatar-shell is-plain"/, 'unselected candidates wear the group ring, not their identity ring')
     // Render the lineup through SongDetail, the version panel and the console to catch
     // missing callback forwarding, while retaining the real 49 track identities.
     const lineupSong = withState(Song, value => {

@@ -5,10 +5,10 @@
       <section class="card-hero" :class="`is-${stage.layout}`">
         <figure class="card-stage">
           <div v-if="stage.items.length" class="card-stage-rail" :style="{ '--stage-count': stage.items.length }">
-            <button v-for="item in stage.items" :key="item.src" class="card-stage-art" :class="{ 'is-landscape': item.landscape }" type="button"
+            <button v-for="(item, index) in stage.items" :key="`${stage.layout}:${index}`" class="card-stage-art" :class="{ 'is-landscape': item.landscape }" type="button"
               :disabled="item.thumbnail" :title="item.thumbnail ? '只有缩略图资源' : `查看${item.label}原图`" @click="openLightbox(item.src)">
               <span class="card-stage-frame">
-                <img :src="item.src" :alt="`${displayCardTitle} ${item.label}`" />
+                <ArchiveSmoothImage :src="item.src" :alt="`${displayCardTitle} ${item.label}`" />
                 <Expand v-if="!item.thumbnail" :size="17" aria-hidden="true" />
               </span>
               <span v-if="item.caption" class="card-stage-caption">{{ item.caption }}</span>
@@ -315,7 +315,9 @@ const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines',
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
 import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, MonitorPlay, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
+import ArchiveSmoothImage from './ArchiveSmoothImage.vue'
 import ArchiveVideoPlayer from './ArchiveVideoPlayer.vue'
+import { scheduleImagePrefetch } from '../../composables/useSmoothImage.js'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
@@ -431,7 +433,24 @@ const detailRoot = ref(null)
 const FOCUS_HOLD_MS = 2400
 const arrivedVoice = ref('')
 let arrivedTimer = 0
-onBeforeUnmount(() => clearTimeout(arrivedTimer))
+let stopCardPrefetch = () => {}
+onBeforeUnmount(() => { clearTimeout(arrivedTimer); stopCardPrefetch() })
+watch(() => [props.card?.resource_id, props.assetStatus, framedPortrait.value, activeHeroFrame.value, activeLandscapeState.value], () => {
+  stopCardPrefetch()
+  const id = props.card?.resource_id
+  const status = props.assetStatus || {}
+  if (!id) return
+  const alternateUrls = []
+  if (activeHeroFrame.value === 'landscape') {
+    if (status.normal_landscape && activeLandscapeState.value !== 'normal') alternateUrls.push(getCardLandscapeUrl(id, false))
+    if (status.awakened_landscape && activeLandscapeState.value !== 'awakened') alternateUrls.push(getCardLandscapeUrl(id, true))
+  } else {
+    const otherFramed = !framedPortrait.value
+    if (!props.card?.single_state && status.normal_portrait) alternateUrls.push(getCardPortraitUrl(id, false, otherFramed))
+    if (status.awakened_portrait) alternateUrls.push(getCardPortraitUrl(id, true, otherFramed))
+  }
+  stopCardPrefetch = scheduleImagePrefetch(alternateUrls)
+}, { immediate: true })
 watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
   clearTimeout(arrivedTimer)
   arrivedVoice.value = voice || ''
@@ -685,9 +704,10 @@ function openRelation(item) {
 .is-single .card-stage-rail { justify-content: stretch; grid-template-columns: minmax(0, 1fr); }
 .card-stage-art { display: grid; gap: var(--gs-space-3); justify-items: center; min-width: 0; padding: 0; border: 0; background: none; color: var(--gs-ink-3); font: inherit; cursor: zoom-in; }
 .card-stage-art:disabled { cursor: default; }
-.card-stage-frame { position: relative; display: block; width: 100%; border-radius: var(--gs-radius-media); background: var(--gs-line); overflow: hidden; }
-.card-stage-frame img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: contain; }
-.card-stage-art.is-landscape .card-stage-frame img { aspect-ratio: 16 / 9; object-fit: cover; }
+.card-stage-frame { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; border-radius: var(--gs-radius-media); background: var(--gs-line); overflow: hidden; }
+.card-stage-frame :deep(img) { display: block; width: 100%; height: 100%; object-fit: contain; }
+.card-stage-art.is-landscape .card-stage-frame { aspect-ratio: 16 / 9; }
+.card-stage-art.is-landscape .card-stage-frame :deep(img) { object-fit: cover; }
 .card-stage-frame > svg { position: absolute; right: var(--gs-space-3); bottom: var(--gs-space-3); padding: 6px; width: 30px; height: 30px; border-radius: var(--gs-radius-control); background: rgb(19 33 58 / 64%); color: #fff; opacity: 0; transition: opacity var(--gs-motion-feedback) var(--gs-motion-ease); }
 .card-stage-art:hover .card-stage-frame > svg, .card-stage-art:focus-visible .card-stage-frame > svg { opacity: 1; }
 .card-stage-caption { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: .04em; }

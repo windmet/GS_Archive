@@ -1,10 +1,10 @@
 <template>
   <div v-if="lead" ref="root" class="card-bento" :class="{'is-global':global,'has-portrait-lead':!lead.landscape?.url}">
     <button class="bento-lead" type="button" :data-archive-focus-id="`portal-card-art:${lead.id}`" :aria-label="`打开卡片 ${lead.title}`" @click="emit('open',lead)">
-      <picture><source v-if="lead.image?.url" media="(max-width:760px)" :srcset="near ? artUrl(lead.image) : undefined" /><img :src="near ? artUrl(lead.landscape || lead.image) : undefined" :alt="lead.title" decoding="async" @error="artFailed" /></picture>
+      <ArchiveSmoothImage class="bento-media" :src="near ? leadSrc : ''" :alt="lead.title" @error="artFailed" />
       <span class="bento-caption"><small>{{ lead.rarity }} · {{ lead.idolName }}</small><strong>{{ lead.title }}</strong><ArrowUpRight :size="16" /></span>
     </button>
-    <button v-for="card in shownPortraits" :key="card.id" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${card.id}`" :aria-label="`打开卡片 ${card.title}`" @click="emit('open',card)"><img :src="near ? artUrl(card.image) : undefined" alt="" decoding="async" @error="artFailed" /><span class="bento-tile-caption"><small v-if="cardCaption(card).eyebrow">{{ cardCaption(card).eyebrow }}</small><strong>{{ cardCaption(card).title }}</strong></span></button>
+    <button v-for="(card, index) in shownPortraits" :key="index" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${card.id}`" :aria-label="`打开卡片 ${card.title}`" @click="emit('open',card)"><ArchiveSmoothImage class="bento-media" :src="near ? artUrl(card.image) : ''" alt="" @error="artFailed" /><span class="bento-tile-caption"><small v-if="cardCaption(card).eyebrow">{{ cardCaption(card).eyebrow }}</small><strong>{{ cardCaption(card).title }}</strong></span></button>
   </div>
   <p v-else class="bento-empty">暂无可展示的卡面。</p>
 </template>
@@ -13,6 +13,7 @@ import {computed,onBeforeUnmount,reactive,ref,watch} from 'vue'
 import {ArrowUpRight} from '@lucide/vue'
 import {portalDailyCard,portalCardCaption} from '../../presentation/PortalBento.js'
 import {useNearViewport} from './useNearViewport.js'
+import ArchiveSmoothImage from './ArchiveSmoothImage.vue'
 const props=defineProps({cards:{type:Array,default:()=>[]},global:Boolean,offset:{type:Number,default:0}})
 const emit=defineEmits(['open'])
 // Card art is the Portal's heaviest download and sits below the fold on phones; in the wider layout the
@@ -38,15 +39,17 @@ const portraits=computed(()=>{
 // The row holds three portraits only when it is wider than 900px and not the phone layout; narrower rows
 // render two, so the hidden picture is never requested (CSS hiding would still download it).
 const wide=ref(false)
+const phoneLayout=ref(typeof matchMedia==='function' ? matchMedia('(max-width:760px)').matches : false)
 let resize=null, resizeFrame=0
 watch(root,element=>{
   resize?.disconnect(); resize=null; cancelAnimationFrame(resizeFrame); resizeFrame=0
   if(!element || typeof ResizeObserver==='undefined') return
   resize=new ResizeObserver(([entry])=>{
-    const next=entry.contentRect.width>900 && !matchMedia('(max-width:760px)').matches
-    if(next===wide.value) return
+    const nextPhone=matchMedia('(max-width:760px)').matches
+    const next=entry.contentRect.width>900 && !nextPhone
+    if(next===wide.value && nextPhone===phoneLayout.value) return
     cancelAnimationFrame(resizeFrame)
-    resizeFrame=requestAnimationFrame(()=>{wide.value=next; resizeFrame=0})
+    resizeFrame=requestAnimationFrame(()=>{wide.value=next; phoneLayout.value=nextPhone; resizeFrame=0})
   })
   resize.observe(element)
 },{flush:'post'})
@@ -56,6 +59,7 @@ const shownPortraits=computed(()=>portraits.value.slice(0,wide.value ? 3 : 2))
 // uploaded thumbnails yet), the picture falls back to the original art instead of staying blank.
 const failed=reactive(new Set())
 const artUrl=art=>art?.url && failed.has(art.url) && art.full ? art.full : art?.url
+const leadSrc=computed(()=>phoneLayout.value && lead.value?.image?.url ? artUrl(lead.value.image) : artUrl(lead.value?.landscape || lead.value?.image))
 function artFailed(event){
   const src=event.target.currentSrc || event.target.src
   if(src) failed.add(new URL(src,location.href).pathname)
@@ -72,9 +76,9 @@ function artFailed(event){
 .bento-lead { flex:1.875 1 0;aspect-ratio:15 / 8; }
 .has-portrait-lead .bento-lead { flex:.8 1 0;aspect-ratio:4 / 5; }
 .bento-portrait { flex:.8 1 0;aspect-ratio:4 / 5; }
-.bento-lead picture { display:block;width:100%;height:100%; }
-.card-bento img:not([src]) { visibility:hidden; }
-.bento-lead picture > img, .bento-portrait img { display:block;width:100%;height:100%;object-fit:cover;object-position:top; }
+.bento-media { width:100%;height:100%; }
+.card-bento :deep(img:not([src])) { visibility:hidden; }
+.bento-media :deep(img) { display:block;width:100%;height:100%;object-fit:cover;object-position:top; }
 /* Captions on art: the only place text sits on a picture, over a chrome fade. */
 .bento-caption, .bento-tile-caption { position:absolute;inset:auto 0 0;background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface); }
 .bento-caption { display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px var(--gs-space-3);padding:var(--gs-space-7) var(--gs-space-5) var(--gs-space-4); }
@@ -87,8 +91,8 @@ function artFailed(event){
 .bento-empty { color:var(--gs-ink-3); }
 
 @media (hover:hover) and (pointer:fine) {
-  .bento-lead img, .bento-portrait img { transition:transform var(--gs-motion-feedback) var(--gs-motion-ease); }
-  .bento-lead:hover img, .bento-portrait:hover img { transform:scale(1.02); }
+  .bento-lead :deep(img), .bento-portrait :deep(img) { transition:transform var(--gs-motion-feedback) var(--gs-motion-ease); }
+  .bento-lead:hover :deep(img), .bento-portrait:hover :deep(img) { transform:scale(1.02); }
 }
 @media (prefers-reduced-motion:reduce) { .card-bento * { transition:none !important;transform:none !important; } }
 

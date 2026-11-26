@@ -1,7 +1,7 @@
 <template>
   <div class="person-picker">
     <button type="button" class="person-trigger" :aria-haspopup="'dialog'" :aria-label="`${label}：${currentName}，更换`" @click="open = true">
-      <ArchiveIdolAvatar v-if="current" class="person-avatar" :idol-code="current.id" :accent-color="current.color" :size="28" :ring-width="0" :gap="0" decorative />
+      <ArchiveIdolAvatar v-if="current" class="person-avatar" :idol-code="current.id" :accent-color="current.color || ''" ring="identity" :size="30" :ring-width="2" :gap="1" decorative />
       <span v-else class="person-empty" aria-hidden="true"><Users :size="16" /></span>
       <span class="person-name">{{ currentName }}</span>
       <ChevronsUpDown class="person-caret" :size="14" aria-hidden="true" />

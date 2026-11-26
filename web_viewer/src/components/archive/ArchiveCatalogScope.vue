@@ -1,6 +1,6 @@
 <template>
   <div v-if="idol" class="catalog-idol-scope" role="group" aria-label="目录偶像筛选">
-    <ArchiveIdolAvatar :idol-code="idol.id" :size="28" decorative />
+    <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color || ''" ring="identity" :size="28" decorative />
     <span>当前筛选：<strong>{{ name || idol.name }}</strong></span>
     <button type="button" @click="$emit('clear')">查看全量目录</button>
   </div>

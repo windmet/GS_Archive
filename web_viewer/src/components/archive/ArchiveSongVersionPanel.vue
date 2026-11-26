@@ -44,7 +44,7 @@
             @click="openPicker(stagePosition)"
           >
             <span class="slot-position">{{ stagePosition }}<span v-if="stagePosition === 3" class="slot-center"> · 中心</span></span>
-            <ArchiveIdolAvatar v-if="audition.idolForStagePosition(stagePosition)" class="slot-avatar" :idol-code="audition.idolForStagePosition(stagePosition)" :accent-color="idolColor(audition.idolForStagePosition(stagePosition))" :size="64" decorative />
+            <ArchiveIdolAvatar v-if="audition.idolForStagePosition(stagePosition)" class="slot-avatar" :idol-code="audition.idolForStagePosition(stagePosition)" :accent-color="idolColor(audition.idolForStagePosition(stagePosition))" :ring="audition.activeStagePositions.includes(stagePosition) ? 'selected' : 'identity'" :size="64" decorative />
             <span v-else class="slot-avatar slot-empty" aria-hidden="true"><Plus :size="22" /></span>
             <strong>{{ audition.idolForStagePosition(stagePosition) ? audition.slotName(stagePosition) : '选择' }}</strong>
             <small>{{ audition.slotStatusLabel(stagePosition) }}</small>

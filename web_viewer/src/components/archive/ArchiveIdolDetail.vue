@@ -1,25 +1,31 @@
 <template>
   <article v-if="idol" class="idol-detail" :style="themeStyle" data-archive-scroll-container>
     <!-- 人物幕: the idol's wash, the figure with a flat shadow in the idol's ink (色影), the unit logo,
-         the name after a 3px colour bar, and the autograph written beside it in ink (落款). The unit's
-         faces live in the title row (the shell's header actions), not here. -->
-    <header class="idol-hero" :class="{ 'has-figure': portrait && !portraitFailed }" :style="heroStyle">
-      <img v-if="portrait && !portraitFailed" class="idol-hero-figure" :src="portrait.url" alt="" decoding="async" @error="portraitFailed = true" />
-      <ArchiveIdolAvatar v-else class="idol-hero-avatar" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" decorative />
-      <div class="idol-hero-copy">
-        <button v-if="idol.unit_code" class="idol-hero-unit" type="button" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" :aria-label="`组合 ${idol.unit_name}`" @click="emit('open-unit', idol)">
-          <img v-if="!unitLogoFailed" :src="getUnitLogoUrl(idol.unit_code)" alt="" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ idol.unit_name }}</span>
-        </button>
-        <h2 class="idol-hero-name">{{ displayedIdolName }}</h2>
-        <p lang="ja">{{ idol.name_fields?.kana || '' }}</p>
-        <span class="idol-hero-sign" aria-hidden="true"></span>
-      </div>
-      <div class="idol-hero-acts">
-        <button v-if="hasHome" type="button" class="idol-hero-home" :data-archive-focus-id="`idol-home:${idol.idol_code}`" @click="emit('open-home', idol.idol_code)">去事务所<ChevronRight :size="15" aria-hidden="true" /></button>
-        <span v-if="isFavorite" class="idol-hero-favorite">我的担当</span>
-        <ArchiveIdolSwitcher v-if="unitMates.length <= 1" class="profile-switcher" :idols="idols" :selected-idol="selectedIdol" @select="emit('select-idol', $event)" />
-      </div>
-    </header>
+         the name after a 3px colour bar, and the autograph written beside it in ink (落款). Teammate
+         faces sit in their own breathable strip right beneath the hero so they never crowd the topbar. -->
+    <div class="idol-hero-block">
+      <header class="idol-hero" :class="{ 'has-figure': portrait && !portraitFailed }" :style="heroStyle">
+        <template v-if="portrait && !portraitFailed">
+          <img v-if="heroPortrait.displaySrc.value" class="idol-hero-figure" :src="heroPortrait.displaySrc.value" alt="" decoding="async" @error="portraitFailed = true" />
+          <img v-if="heroPortrait.overlaySrc.value" class="idol-hero-figure idol-hero-figure-incoming" :src="heroPortrait.overlaySrc.value" data-gs-loaded alt="" decoding="async" />
+        </template>
+        <ArchiveIdolAvatar v-else class="idol-hero-avatar" :idol-code="idol.idol_code" :accent-color="idol.color" ring="identity" :size="104" :ring-width="3" decorative />
+        <div class="idol-hero-copy">
+          <button v-if="idol.unit_code" class="idol-hero-unit" type="button" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" :aria-label="`组合 ${idol.unit_name}`" @click="emit('open-unit', idol)">
+            <img v-if="!unitLogoFailed" :src="getUnitLogoUrl(idol.unit_code)" alt="" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ idol.unit_name }}</span>
+          </button>
+          <h2 class="idol-hero-name">{{ displayedIdolName }}</h2>
+          <p lang="ja">{{ idol.name_fields?.kana || '' }}</p>
+          <span class="idol-hero-sign" aria-hidden="true"></span>
+        </div>
+        <div class="idol-hero-acts">
+          <button v-if="hasHome" type="button" class="idol-hero-home" :data-archive-focus-id="`idol-home:${idol.idol_code}`" @click="emit('open-home', idol.idol_code)">去事务所<ChevronRight :size="15" aria-hidden="true" /></button>
+          <span v-if="isFavorite" class="idol-hero-favorite">我的担当</span>
+          <ArchiveIdolSwitcher v-if="unitMates.length <= 1" class="profile-switcher" :idols="idols" :selected-idol="selectedIdol" @select="emit('select-idol', $event)" />
+        </div>
+      </header>
+      <ArchiveUnitMateFaces v-if="unitMates.length > 1" class="idol-unit-strip" :mates="unitMates" :current="idol.idol_code" :unit-name="idol.unit_name || ''" :idol-name="idolName" @select="emit('select-idol', $event)" />
+    </div>
 
     <section class="idol-facts" aria-label="偶像档案">
       <dl>
@@ -140,6 +146,8 @@ import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import ArchiveUnitMateFaces from './ArchiveUnitMateFaces.vue'
+import { useSmoothImage } from '../../composables/useSmoothImage.js'
 
 const props = defineProps({
   idol: { type: Object, default: null },
@@ -173,6 +181,7 @@ fetch('/data/assets/raw_character_image_promotions.json').then(response => {
   return response.json()
 }).then(registry => { validateArchivePayload('rawCharacterImagePromotions', registry); portraitRegistry.value = registry }).catch(() => {})
 const portrait = computed(() => props.idol ? portalIdolPortrait(portraitRegistry.value, props.idol.idol_code) : null)
+const heroPortrait = useSmoothImage(() => portrait.value?.url || '')
 const portraitFailed = ref(false), unitLogoFailed = ref(false)
 watch(() => props.idol?.idol_code, () => { portraitFailed.value = false; unitLogoFailed.value = false })
 const HERO_FIGURE_HEIGHT = 340
@@ -314,8 +323,12 @@ function formatDate(timestamp) {
 
 /* 人物幕: artwork on the idol's wash. The figure casts a flat shadow in the idol's ink (24%) to the
    lower right; the autograph is written in ink beside the name. Media radius, nothing else. */
+.idol-hero-block { display: grid; gap: var(--gs-space-3); min-width: 0; }
 .idol-hero { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 300px; overflow: hidden; padding: var(--gs-space-7) var(--gs-space-8); border-radius: var(--gs-radius-media); background: radial-gradient(circle at 78% 62%, var(--gs-surface) 0, var(--gs-idol-wash) 58%); }
 .idol-hero-figure { position: absolute; left: var(--hero-figure-left, 50%); bottom: -60px; z-index: 1; width: auto; max-width: none; height: 340px; object-fit: contain; -webkit-mask-image: linear-gradient(black 82%, transparent); mask-image: linear-gradient(black 82%, transparent); filter: drop-shadow(6px 4px 0 color-mix(in oklab, var(--gs-idol-ink) 24%, transparent)); }
+.idol-hero-figure-incoming { animation: gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .idol-hero-figure-incoming { animation: none; } }
+.idol-unit-strip { padding-bottom: var(--gs-space-1); }
 .idol-hero-avatar { position: absolute; right: var(--gs-space-9); top: 50%; z-index: 1; translate: 0 -50%; }
 .idol-hero-copy { position: relative; z-index: 2; display: grid; justify-items: start; gap: var(--gs-space-2); width: max-content; max-width: 55%; }
 .idol-hero-unit { display: block; height: 42px; margin-bottom: var(--gs-space-2); padding: 0; border: 0; background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }

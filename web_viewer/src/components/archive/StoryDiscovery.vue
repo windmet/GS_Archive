@@ -12,7 +12,7 @@
       </div>
       <div v-if="idolPicker" class="idol-picker" aria-label="49 位偶像多选">
         <p>多选匹配任一登场偶像 <button @click="state.idols=[]">清除偶像</button><button @click="idolPicker=false">完成选择</button></p>
-        <div v-for="unit in units" :key="unit" class="idol-unit"><strong>{{ unit }}</strong><div><button v-for="idol in idolDirectory.filter(row=>row.unitName===unit)" :key="idol.id" :aria-pressed="state.idols.includes(idol.id)" @click="toggleIdol(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :size="30" :ring-width="0" :gap="0" decorative /><span>{{ idolName(idol.id)||idol.name }}</span></button></div></div>
+        <div v-for="unit in units" :key="unit" class="idol-unit"><strong>{{ unit }}</strong><div><button v-for="idol in idolDirectory.filter(row=>row.unitName===unit)" :key="idol.id" :aria-pressed="state.idols.includes(idol.id)" @click="toggleIdol(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color || ''" :ring="state.idols.includes(idol.id) ? 'selected' : 'group'" :size="30" decorative /><span>{{ idolName(idol.id)||idol.name }}</span></button></div></div>
       </div>
       <nav class="series-tabs" aria-label="剧情系列"><button v-for="tab in tabs" :key="tab.id" :aria-pressed="state.series===tab.id" @click="state.series=tab.id;emit('series-change')">{{ tab.label }}</button></nav>
       <slot name="filters" />
