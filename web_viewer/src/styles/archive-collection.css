@@ -95,16 +95,14 @@
 .collection-inspector-body>.domain-panel { border:0;padding:0;border-radius:0; }
 .collection-inspector-body>.domain-panel+.domain-panel { margin-top:var(--gs-space-6);padding-top:var(--gs-space-6);border-top:1px solid var(--gs-line); }
 .collection-inspector .domain-panel>h3 { margin:0 0 var(--gs-space-4);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
-.collection-inspector .collection-entry-details .domain-detail-title { margin-bottom:var(--gs-space-5); }
 .collection-inspector .collection-entry-details .domain-detail-title h3 { min-width:0;margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);overflow-wrap:anywhere; }
 .collection-inspector .domain-description { font-size:var(--gs-text-body); }
 .collection-inspector :is(.domain-meta,.collection-source-meta,.collection-original,.domain-media-preview figcaption) { font-size:var(--gs-text-meta); }
 .collection-inspector .domain-meta>div { padding:var(--gs-space-3) 0; }
 /* A currency has no rows to list once 种类 is dropped; the empty list must not leave its margins behind. */
 .collection-inspector .domain-meta:empty { display:none; }
-.collection-inspector .domain-media-preview { padding:var(--gs-space-4); }
-.collection-inspector .domain-media-preview img { width:96px;height:96px;min-height:0;object-fit:contain; }
-.collection-inspector.is-honors .domain-media-preview img { width:232px;height:auto;max-width:100%; }
+.collection-inspector .collection-hero-head.is-wide .domain-media-preview { padding:var(--gs-space-4); }
+.collection-inspector.is-honors .domain-media-preview img { width:232px;height:auto;max-width:100%;min-height:0; }
 .collection-source-meta { margin-top:var(--gs-space-6);color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .collection-source-meta summary { padding:var(--gs-space-3) 0;cursor:pointer; }
 .collection-original { margin:var(--gs-space-2) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.5;white-space:pre-line;overflow-wrap:anywhere; }

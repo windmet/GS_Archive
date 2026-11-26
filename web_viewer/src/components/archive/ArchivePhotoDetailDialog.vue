@@ -19,7 +19,7 @@
       <h3>原始相框图层</h3>
       <div><DomainMediaPreview v-for="(layer, index) in frameLayers" :key="`${entry.id}:${index}`" class="is-transparent" :binding="layer" :name="`${name} · 图层 ${index + 1}`" /></div>
     </section>
-    <details class="photo-detail-source">
+    <details v-if="maintainer" class="photo-detail-source">
       <summary>来源与资源</summary>
       <dl class="domain-meta">
         <div v-if="resourceDescription"><dt>原始说明</dt><dd>{{ entry.description }}</dd></div>
@@ -43,6 +43,9 @@ import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue';
 import DomainMediaPreview from './DomainMediaPreview.vue';
 import { archiveText } from './useArchivePhotoText.js';
 import { photoSceneLabels } from '../../presentation/photoSpotScenes.js';
+import { isMaintainerMode } from '../../core/maintainerMode.js';
+// Config ids, resource names and script presets are maintainer notes, not reader copy.
+const maintainer = isMaintainerMode();
 const props = defineProps({
   open: Boolean, kind: String, entry: { type: Object, required: true }, binding: Object,
   name: String, spotName: String, description: String, resourceDescription: Boolean,

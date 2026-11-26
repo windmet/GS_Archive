@@ -10,7 +10,7 @@
             <CollectionEntryDetails :detail="detail" :kind="kind" :display-idol-name="displayIdolName" link-idol @open-card="emit('open-card',$event)" @open-idol="emit('open-idol',$event)" />
             <section v-if="gashaLinks.length" class="domain-panel"><h3 class="collection-inferred-head">对应卡池<span class="collection-inferred">同名卡池</span><GsInfo label="同名卡池：说明">依据此道具的原文名称关联；不代表已确认卡片范围。</GsInfo></h3><p v-if="gashaLinks.some(link=>link.ambiguous)" class="domain-muted">券名对应同名卡池，尚不能区分具体公告。</p><ul class="collection-gasha-links"><li v-for="link in gashaLinks" :key="link.id"><button type="button" @click="emit('open-gasha',link)"><span>{{ gashaText(link.display_name) }}<small v-if="link.ambiguous && link.start_at">{{ gashaTicketPeriodLabel(link.start_at) }}</small></span><ChevronRight :size="16" aria-hidden="true"/></button></li></ul></section>
             <CurrencyDetailSections v-if="kind==='currencies'" :detail="detail" @open-event="emit('open-event',$event)" @open-gasha="emit('open-gasha',$event)" />
-            <section v-else-if="kind!=='costumes' && (bond || detail.sources?.length)" class="domain-panel"><h3>已知来源与用途</h3><p v-if="bond" class="domain-description">偶像羁绊 Lv.{{ bond.level }} 称号。</p><ArchiveRewardTable v-if="detail.sources?.length" :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
+            <section v-else-if="kind!=='costumes' && (bond || detail.sources?.length)" class="domain-panel"><h3 class="collection-sources-head">获得来源<small v-if="detail.sources?.length">{{ detail.sources.length }} 条</small></h3><p v-if="bond" class="domain-description">偶像羁绊 Lv.{{ bond.level }} 称号。</p><ArchiveRewardTable v-if="detail.sources?.length" :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
           </template>
           <p v-else class="domain-muted">选择资料查看详情。</p>
         </div>
@@ -55,7 +55,9 @@ function cycleFocus(event){
 }
 </script>
 <style scoped>
-.collection-inspector-body :deep(.domain-panel > h3.collection-inferred-head) { display: flex; align-items: center; gap: var(--gs-space-3); }
+.collection-inspector-body :deep(.domain-panel > h3.collection-inferred-head),
+.collection-inspector-body :deep(.domain-panel > h3.collection-sources-head) { display: flex; align-items: baseline; gap: var(--gs-space-3); }
+.collection-sources-head small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); font-variant-numeric: tabular-nums; }
 /* C 级 status mark: not a control, a thin outline beside the heading; the ⓘ says what it rests on. */
 .collection-inferred { flex: none; padding: 1px var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); white-space: nowrap; }
 /* Gasha links read like the drawer's other rows: hairline, name, chevron. */

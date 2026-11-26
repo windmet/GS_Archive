@@ -80,18 +80,17 @@ function cycleFocus(event) {
 
 /* Local roles for the existing shared entry; media geometry remains unchanged. */
 .collection-quick-dialog :deep(.collection-entry-details) { padding: var(--gs-space-6); border-radius: var(--gs-radius-panel); }
-.collection-quick-dialog :deep(.domain-detail-title) { gap: var(--gs-space-5); margin-bottom: var(--gs-space-6); }
 .collection-quick-dialog :deep(.collection-entry-details .domain-detail-title h3) { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); line-height: 1.45; overflow-wrap: anywhere; }
-.collection-quick-dialog :deep(.collection-original) { margin: var(--gs-space-3) 0; font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
-.collection-quick-dialog :deep(.domain-description) { margin: 0 0 var(--gs-space-5); font-size: var(--gs-text-body); }
-.collection-quick-dialog :deep(.domain-meta) { margin: var(--gs-space-6) 0; }
+.collection-quick-dialog :deep(.collection-original) { margin: 0; font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+.collection-quick-dialog :deep(.domain-description) { margin: 0 0 var(--gs-space-4); font-size: var(--gs-text-body); }
+.collection-quick-dialog :deep(.domain-meta) { margin: var(--gs-space-4) 0 0; }
 .collection-quick-dialog :deep(.domain-meta > div) { gap: var(--gs-space-4); padding: var(--gs-space-3) 0; }
 .collection-quick-dialog :deep(.domain-meta dt) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .collection-quick-dialog :deep(.domain-meta dd) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
 .collection-quick-dialog :deep(.collection-source-meta) { margin-top: var(--gs-space-6); }
 .collection-quick-dialog :deep(.collection-source-meta > summary) { min-height: var(--gs-control-normal); padding: var(--gs-space-3) 0; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.5; cursor: pointer; }
 .collection-quick-dialog :deep(.collection-entry-details > .domain-muted) { margin: var(--gs-space-5) 0; font-size: var(--gs-text-body); }
-.collection-quick-dialog :deep(.domain-media-preview) { margin-bottom: var(--gs-space-6); padding: var(--gs-space-5); border-radius: var(--gs-radius-field); }
+.collection-quick-dialog :deep(.collection-hero-head.is-wide .domain-media-preview) { margin-bottom: 0; padding: var(--gs-space-5); border-radius: var(--gs-radius-field); }
 .collection-quick-dialog :deep(.domain-media-preview figcaption) { margin-top: var(--gs-space-4); font-size: var(--gs-text-meta); }
 .collection-quick-dialog :deep(.domain-media-preview button) { min-height: var(--gs-control-normal); padding: var(--gs-space-3) var(--gs-space-4); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .collection-quick-dialog button:focus-visible,
