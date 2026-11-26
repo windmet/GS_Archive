@@ -14,9 +14,9 @@
 
       <section ref="searchPanel" class="overview-search" @keydown.esc.prevent="collapseSearch" aria-labelledby="portal-search-title">
         <h2 id="portal-search-title" class="overview-visually-hidden">搜索全站档案</h2>
-        <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; setSearchCollapsed(false); emit('search', query)">
+        <form class="overview-search-form" role="search" @submit.prevent="submitPortalSearch">
           <Search :size="21" aria-hidden="true" />
-          <input id="portal-global-search" ref="searchInput" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true; setSearchCollapsed(false)" @input="searchOpen = true; setSearchCollapsed(false); emit('search', $event.target.value)" />
+          <input id="portal-global-search" ref="searchInput" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事、活动或图鉴" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true; setSearchCollapsed(false)" @input="searchOpen = true; setSearchCollapsed(false); emit('search', $event.target.value)" />
           <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', ''); setSearchCollapsed(false); searchOpen = false"><X :size="18" aria-hidden="true" /></button>
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
@@ -27,9 +27,12 @@
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
           <ArchiveErrorNote v-if="globalSearch.error" class="overview-error">{{ globalSearch.error }}</ArchiveErrorNote>
           <template v-if="searchGroups.length">
-            <p class="overview-search-total">匹配 {{ formatCount(searchResults.length) }} 条 · 每类展示最多 6 条</p>
+            <div class="overview-search-summary-bar">
+              <p class="overview-search-total">核心域匹配 {{ formatCount(searchResults.length) }} 条 · 每类展示最多 6 条</p>
+              <button type="button" class="overview-search-full-link" @click="openFullSearch()">全站搜索页（含活动·卡池·图鉴）<ChevronRight :size="15" aria-hidden="true" /></button>
+            </div>
             <section v-for="group in searchGroups" :key="group.domain" class="overview-result-group" :aria-labelledby="`portal-search-${group.domain}`">
-              <header><h3 :id="`portal-search-${group.domain}`">{{ domainLabel(group.domain) }} <span>{{ formatCount(group.total) }} 条</span></h3><button type="button" :data-archive-focus-id="`portal-search-directory:${group.domain}`" @click="emit('navigate', group.domain)">查看目录<ChevronRight :size="15" aria-hidden="true" /></button></header>
+              <header><h3 :id="`portal-search-${group.domain}`">{{ domainLabel(group.domain) }} <span>{{ formatCount(group.total) }} 条</span></h3><button type="button" :data-archive-focus-id="`portal-search-directory:${group.domain}`" @click="openFullSearch(group.domain)">查看全部<ChevronRight :size="15" aria-hidden="true" /></button></header>
               <ul>
             <li v-for="result in group.rows" :key="result.key">
               <DomainMediaPreview v-if="result.image?.url" class="overview-result-image" :binding="result.image" :name="result.label" compact />
@@ -39,7 +42,10 @@
               </ul>
             </section>
           </template>
-          <p v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-status" role="status">{{ query.trim() ? '没有找到相关内容，试试名称或关键词。' : '搜索全站的偶像、卡片、歌曲与故事。' }}</p>
+          <div v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-search-empty-box">
+            <p class="overview-status" role="status">{{ query.trim() ? '核心 4 域没有找到相关内容，可前往全站搜索检索活动、卡池、组合与图鉴。' : '搜索全站的偶像、组合、卡片、歌曲、故事、活动、卡池与图鉴。' }}</p>
+            <button type="button" class="overview-search-full-link" @click="openFullSearch()">{{ query.trim() ? `在全站搜索「${query.trim()}」` : '打开全站搜索页' }}<ChevronRight :size="15" aria-hidden="true" /></button>
+          </div>
         </div>
       </section>
       <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
@@ -234,7 +240,7 @@ const readableMainCollections = computed(() => (props.desktopOverview.mainCollec
 // and "主线剧情 · 第5話" shows its chapter word in the reader's language.
 const storyTitle = useStoryTitles()
 const storySubtitle = text => String(text || '').split(' · ').map(chapterLabel).join(' · ')
-const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred', 'expand-cards'])
+const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred', 'expand-cards'])
 const SEARCH_COLLAPSED_KEY = 'sidem:portal-search-collapsed'
 function isSearchCollapsed() {
   try { return sessionStorage.getItem(SEARCH_COLLAPSED_KEY) === 'true' } catch { return false }
@@ -252,6 +258,20 @@ const searchOpen = ref(Boolean(props.globalSearch?.query?.trim()) && !isSearchCo
 function collapseSearch() {
   searchOpen.value = false
   setSearchCollapsed(true)
+}
+function openFullSearch(domain = 'all') {
+  searchOpen.value = false
+  setSearchCollapsed(false)
+  emit('open-search', { query: query.value.trim(), domain })
+}
+function submitPortalSearch() {
+  if (query.value.trim()) {
+    openFullSearch('all')
+    return
+  }
+  searchOpen.value = true
+  setSearchCollapsed(false)
+  emit('search', query.value)
 }
 function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) collapseSearch() }
 onMounted(() => document.addEventListener('pointerdown',closeSearchOutside))
@@ -489,6 +509,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footprint b small { color:var(--gs-ink-3);font-family:var(--gs-font-body);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-directory { display:none; }
 
+.overview-search-summary-bar { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--gs-space-2) var(--gs-space-4);margin-bottom:var(--gs-space-3); }
+.overview-search-summary-bar .overview-search-total { margin:0; }
+.overview-search-full-link { display:inline-flex;align-items:center;gap:var(--gs-space-1);min-height:var(--gs-control-compact);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:var(--gs-mint-wash);color:var(--gs-mint-ink);font:inherit;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);cursor:pointer; }
+.overview-search-empty-box { display:grid;justify-items:start;gap:var(--gs-space-2);padding:var(--gs-space-2) 0; }
 .overview-status, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
 .overview-error { margin:0;padding:var(--gs-space-4) 0;font-size:var(--gs-text-ui); }
 .overview-error button, .overview-error > button { min-height:var(--gs-control-touch);margin-left:var(--gs-space-4);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:var(--gs-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);cursor:pointer; }

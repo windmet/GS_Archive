@@ -54,6 +54,7 @@ const ROUTE_QUERY_KEYS = [
   'card_attribute',
   'asset_state',
   'relation_state',
+  'search_domain',
   'q',
   'scenario',
   'start_step',
@@ -89,6 +90,7 @@ const VALID_VIEWS = new Set([
   'studio',
   'experiments',
   'about',
+  'search',
   'archive_status',
   'story_catalog',
   'external_story_resources',
@@ -118,6 +120,7 @@ const VALID_WORK_MODES = new Set(['stories', 'lines'])
 const VALID_PICK_TARGETS = new Set(['home', 'profile', 'work', 'story', 'mobile'])
 const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
+const VALID_SEARCH_DOMAINS = new Set(['all', 'idols', 'units', 'cards', 'songs', 'stories', 'events', 'gashas', 'collection'])
 // A story link (story_detail) is not a page: it opens the story's owner page, so nothing returns to it.
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage', 'story_detail'].includes(view)))
 
@@ -161,6 +164,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   // Legacy `?view=experiments` links resolve to the LIVE landing page (see normalizeArchiveRoute).
   experiments: { section: 'live', required: [] },
   about: { section: 'about', required: [] },
+  search: { section: 'search', required: [] },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
   chibi_stage: { section: 'live', required: [] },
@@ -401,6 +405,7 @@ export function normalizeArchiveRoute(input = {}) {
     ...(['Physical','Intelligence','Mental'].includes(clean(input.cardAttribute)) ? {cardAttribute:clean(input.cardAttribute)} : {}),
     assetState: allowed(clean(input.assetState), VALID_CARD_ASSET_STATES, 'all'),
     relationState: allowed(clean(input.relationState), VALID_CARD_RELATION_STATES, 'all'),
+    ...(view === 'search' ? { searchDomain: allowed(clean(input.searchDomain), VALID_SEARCH_DOMAINS, 'all') } : {}),
     query: clean(input.query),
     scenario,
     startStep: positiveInteger(input.startStep),
@@ -623,6 +628,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   if (route.view === 'archive_status') return [home, { label: sectionLabel('resources') }]
   if (route.view === 'about') return [home, { label: sectionLabel('about') }]
+  if (route.view === 'search') return [home, { label: sectionLabel('search') }]
   if (route.view === 'unused_archive') return [home, { label: sectionLabel('unused') }]
   if (route.view === 'score_archive') return [home, { label: sectionLabel('scores') }]
   const storyRoot = { label: sectionLabel('stories'), route: breadcrumbRoute(route, 'story_catalog') }
@@ -757,6 +763,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     cardAttribute: params.get('card_attribute'),
     assetState: params.get('asset_state'),
     relationState: params.get('relation_state'),
+    searchDomain: params.get('search_domain'),
     query: clean(params.get('q')),
     scenario: params.get('scenario') || params.get('file'),
     startStep: params.get('start_step'),
@@ -850,6 +857,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.rarity !== 'all') url.searchParams.set('rarity', normalized.rarity)
   if (normalized.assetState !== 'all') url.searchParams.set('asset_state', normalized.assetState)
   if (normalized.relationState !== 'all') url.searchParams.set('relation_state', normalized.relationState)
+  if (normalized.view === 'search' && normalized.searchDomain && normalized.searchDomain !== 'all') url.searchParams.set('search_domain', normalized.searchDomain)
   if (normalized.query) url.searchParams.set('q', normalized.query)
   if (normalized.scenario) url.searchParams.set('scenario', normalized.scenario)
   if (normalized.scenario && normalized.startStep) url.searchParams.set('start_step', String(normalized.startStep))

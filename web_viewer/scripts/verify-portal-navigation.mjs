@@ -293,10 +293,12 @@ assert.match(shellSource, /<ArchiveNavigationDrawer v-if="drawerOpen"[^>]*:group
 const drawerSource = readFileSync(new URL('../src/components/archive/ArchiveNavigationDrawer.vue', import.meta.url), 'utf8')
 assert.doesNotMatch(drawerSource, /archiveRoute|archiveNavigationGroups/, 'the drawer keeps no destination list of its own')
 assert.match(drawerSource, /@keydown\.esc\.prevent="emit\('close'\)"/, 'Esc closes the drawer')
-// 线框减法册 L2: the drawer and the archive home draw one directory component — icon cells, no rules, three
-// sections told apart by space and a 12px name. The drawer keeps only its footer line of its own.
+assert.match(drawerSource, /class="archive-drawer gs-enter-sheet"/, 'the drawer rises smoothly as a bottom sheet')
+assert.match(drawerSource, /useSheetDrag\(sheet,/, 'the drawer supports swipe-to-dismiss gestures')
+assert.match(drawerSource, /class="drawer-search"/, 'the drawer offers direct full-site search')
+assert.match(drawerSource, /<slot name="identity" \/>/, 'the drawer hosts the inline 担当 identity strip')
+assert.match(shellSource, /<Transition name="gs-overlay">\s*<ArchiveNavigationDrawer v-if="drawerOpen"/, 'the drawer leaves with a smooth fade')
 const gridSource = readFileSync(new URL('../src/components/archive/ArchiveDirectoryGrid.vue', import.meta.url), 'utf8')
-assert.match(drawerSource, /<ArchiveDirectoryGrid :groups="groups\.filter\(group => group\.id !== 'resources'\)"/, 'the drawer draws the directory grid from the sidebar groups')
 assert.doesNotMatch(drawerSource + gridSource, /border(?:-top|-bottom|-block)?: 1px solid/, 'no rules in the drawer or the directory grid')
 assert.doesNotMatch(gridSource, /archiveRoute|archiveNavigationGroups/, 'the grid keeps no destination list of its own')
 assert.match(gridSource, /\{ id: 'core', label: '资料目录'[\s\S]*\{ id: 'collection', label: '图鉴'[\s\S]*\{ id: 'tools', label: '工具'/, 'three sections: 资料目录, 图鉴, 工具')
@@ -315,10 +317,9 @@ assert.doesNotMatch(shellSource, /archive-sidebar-toggle/, 'one fold switch, not
 assert.match(shellSource, /if \(forcedRail\.value\) \{ peekOpen\.value = !peekOpen\.value; return \}/, 'the forced rail peeks instead of refusing')
 assert.match(shellSource, /\.is-peek \{ --archive-sidebar: 58px; \}/, 'peek keeps the rail track, so the page does not move')
 assert.match(shellSource, /\(drawerOpener\?\.isConnected \? drawerOpener : drawerToggle\.value\)\?\.focus\(\)/, 'Esc returns focus to whichever control opened the drawer')
-// 回到页顶 and 关于本站 close the drawer as a footer line; 回到页顶 scrolls the archive scroll area.
-assert.match(drawerSource, /<p class="archive-drawer-footer">[\s\S]*?<button type="button" class="archive-drawer-top" :disabled="!canScrollTop" @click="scrollToTop">回到页顶<\/button>[\s\S]*?sectionLabel\('about'\)[\s\S]*?<\/p>/, 'the footer offers 回到页顶 (disabled at the top) and 关于本站')
-assert.match(drawerSource, /const scrollArea = \(\) => document\.querySelector\('\[data-archive-scroll-container\]'\)/, '回到页顶 scrolls the archive scroll area')
-assert.match(drawerSource, /scrollArea\(\)\?\.scrollTo\(\{ top: 0,[^}]*\}\)\s*\n\s*emit\('close'\)/, '回到页顶 scrolls to the top and closes the drawer')
+// Footer stays focused on 关于本站 (and maintainer resources when enabled), without an awkward 回到页顶 link.
+assert.match(drawerSource, /<p class="archive-drawer-footer">[\s\S]*?sectionLabel\('about'\)[\s\S]*?<\/p>/, 'the footer offers 关于本站')
+assert.doesNotMatch(drawerSource, /回到页顶/, 'the navigation drawer does not carry a scroll-to-top link')
 // Phone portal: following an idol, the hero comes before the index of every section; the all-archive view keeps the index first.
 const overviewSource = readFileSync(new URL('../src/components/archive/ArchivePortalOverview.vue', import.meta.url), 'utf8')
 const allDirectory = overviewSource.indexOf('<nav v-if="!preferredReference?.actionable" class="overview-directory"')
@@ -347,3 +348,38 @@ const portalOverviewSource = readFileSync(new URL('../src/components/archive/Arc
 assert.doesNotMatch(portalOverviewSource, /运营轨迹|overview-timeline|portalTimeline/, 'the Portal has no timeline fallback beside the almanac')
 assert.doesNotMatch(readFileSync(new URL('../src/presentation/PortalBento.js', import.meta.url), 'utf8'), /portalTimeline/, 'the timeline producer is retired')
 assert.match(readFileSync(new URL('./prepare-pages-package.mjs', import.meta.url), 'utf8'), /verify-portal-almanac\.mjs/, 'every Pages package checks the almanac first')
+
+// Dedicated /search/ route and multi-domain search engine (idols, units, events, gashas, collection).
+{
+  const { buildPublicArchiveUrl } = await import('../src/core/archiveRoute.js')
+  const { buildExtendedDomainResults } = await import('../src/presentation/ArchiveGlobalSearch.js')
+  const searchRoute = readArchiveRoute('http://localhost/search/?q=%E5%86%AC%E9%A9%AC&search_domain=events')
+  assert.equal(searchRoute.view, 'search')
+  assert.equal(searchRoute.query, '冬马')
+  assert.equal(searchRoute.searchDomain, 'events')
+  const searchUrl = buildPublicArchiveUrl('http://localhost/', searchRoute)
+  assert.equal(searchUrl.pathname, '/search/')
+  assert.equal(searchUrl.searchParams.get('q'), '冬马')
+  assert.equal(searchUrl.searchParams.get('search_domain'), 'events')
+  assert.equal(archiveDocumentTitle('search'), '全站搜索 · GROWING STARS 资料馆')
+  const bootstrap = {
+    release: '0'.repeat(64),
+    idols: [{ id: '001tom', name: '天ヶ瀬 冬馬', kana: 'あまがせ とうま', unitCode: '01jup', unitName: 'Jupiter', color: '#f32836' }],
+  }
+  const results = buildExtendedDomainResults({
+    query: 'jupiter',
+    bootstrap,
+    rowsByDomain: {
+      events: [{ id: '410001', title: 'Jupiter Live Event', eventKind: 'theater', release_at: 1650000000 }],
+      gashas: [{ id: '210003', display_name: 'Jupiter Pickup', category: 'standard_pickup', start_at: 1650000000, derived_pickup_cards: [] }],
+      items: [{ id: '10101', nameJa: 'Jupiter Badge', displayName: 'Jupiter Badge' }],
+    },
+  })
+  assert.equal(results.idols.length, 1)
+  assert.equal(results.units.length, 1)
+  assert.equal(results.events.length, 1)
+  assert.equal(results.gashas.length, 1)
+  assert.equal(results.collection.length, 1)
+  assert.equal(results.collection[0].target.entityKey, 'item:10101')
+  console.log('Global search route (/search/) and 8-group domain matching passed')
+}

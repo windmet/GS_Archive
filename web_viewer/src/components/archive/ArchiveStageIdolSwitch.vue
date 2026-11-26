@@ -1,5 +1,16 @@
 <template>
-  <div ref="root" class="stage-idol" @keydown.esc="open = false">
+  <div v-if="inline" class="stage-idol-inline">
+    <button type="button" class="stage-idol-inline-main" :aria-label="idol ? `我的担当：${name}，更换担当` : '设置担当'" @click="pickerOpen = true">
+      <ArchiveIdolAvatar v-if="idol" class="stage-idol-avatar" :idol-code="idol.id" :accent-color="idol.color || ''" ring="identity" :size="36" :ring-width="2" :gap="2" decorative />
+      <span v-else class="stage-idol-empty" aria-hidden="true"><UserRound :size="18" /></span>
+      <span class="stage-idol-copy"><strong>{{ idol ? name : '设置我的担当' }}</strong><small>{{ idol ? '我的担当 · 点击更换' : '首页与门户优先呈现' }}</small></span>
+    </button>
+    <label v-if="idol" class="stage-idol-inline-light">
+      <span>舞台光</span>
+      <GsSwitch :model-value="stageLight" aria-label="舞台光跟随担当色" @update:model-value="emit('save-startup', { stageLight: $event ? 'idol' : 'mint' })" />
+    </label>
+  </div>
+  <div v-else ref="root" class="stage-idol" @keydown.esc="open = false">
     <button type="button" class="stage-idol-switch" :class="{ 'is-open': open }" :aria-haspopup="idol ? 'true' : 'dialog'" :aria-expanded="idol ? open : undefined" :aria-label="idol ? `我的担当：${name}，担当设置` : '设置担当'" @click="idol ? toggle() : pickerOpen = true">
       <ArchiveIdolAvatar v-if="idol" class="stage-idol-avatar" :idol-code="idol.id" :accent-color="idol.color || ''" ring="identity" :size="32" :ring-width="2" :gap="2" decorative />
       <span v-else class="stage-idol-empty" aria-hidden="true"><UserRound :size="16" /></span>
@@ -25,7 +36,7 @@ import GsSwitch from '../gs/GsSwitch.vue'
 // The 担当 in the sidebar is also its switch: a one-line row on the paper. Opened, it lifts to a white slice with two
 // choices underneath (stage light on/off, change 担当). The avatar wears the unified identity ring.
 const props = defineProps({
-  idol: { type: Object, default: null }, name: { type: String, default: '' }, stageLight: Boolean,
+  idol: { type: Object, default: null }, name: { type: String, default: '' }, stageLight: Boolean, inline: Boolean,
   idols: { type: Array, default: () => [] }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' },
 })
 const emit = defineEmits(['save-preferred', 'save-startup'])
@@ -46,6 +57,9 @@ onMounted(() => { document.addEventListener('pointerdown', outside); document.ad
 onBeforeUnmount(() => { document.removeEventListener('pointerdown', outside); document.removeEventListener('scroll', closeOnScroll, true) })
 </script>
 <style scoped>
+.stage-idol-inline { display: flex; align-items: center; gap: var(--gs-space-3); padding: var(--gs-space-2) var(--gs-space-3); border-radius: var(--gs-radius-control); background: var(--gs-paper); }
+.stage-idol-inline-main { display: flex; flex: 1; align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-control-touch); padding: 0; border: 0; background: transparent; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.stage-idol-inline-light { display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .stage-idol { position: relative; margin: 0 var(--gs-space-3) var(--gs-space-4); }
 .stage-idol-switch { display: flex; align-items: center; gap: var(--gs-space-3); box-sizing: border-box; width: 100%; height: var(--archive-identity-row, 52px); padding: 0 var(--gs-space-3) 0 5px; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; text-align: left; cursor: pointer; }
 .stage-idol-switch.is-open { background: var(--gs-current-bg); box-shadow: var(--gs-current-shadow); }

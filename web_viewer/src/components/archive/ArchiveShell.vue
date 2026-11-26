@@ -24,6 +24,7 @@
         </nav>
       </div>
       <div class="archive-sidebar-foot">
+        <button type="button" class="archive-sidebar-about" :aria-current="activeSection === 'search' ? 'page' : undefined" @click="emit('open-search', '')">全站搜索</button>
         <button type="button" class="archive-sidebar-about" :aria-current="activeSection === 'about' ? 'page' : undefined" @click="emit('navigate', 'about')">关于本站</button>
       </div>
     </aside>
@@ -75,7 +76,11 @@
       <slot name="inspector" />
     </aside>
 
-    <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" :keyboard="drawerByKeyboard" @navigate="navigateFromDrawer" @close="closeDrawer(true)" />
+    <Transition name="gs-overlay">
+      <ArchiveNavigationDrawer v-if="drawerOpen" id="archive-navigation-drawer" :groups="navigationGroups" :active-section="navigationSection" :keyboard="drawerByKeyboard" @navigate="navigateFromDrawer" @search="searchFromDrawer" @close="closeDrawer(true)">
+        <template v-if="$slots['drawer-identity']" #identity><slot name="drawer-identity" /></template>
+      </ArchiveNavigationDrawer>
+    </Transition>
     <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
@@ -133,7 +138,7 @@ const mobileSearchOpen = ref(Boolean(props.modelValue))
 watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
 watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = true })
 
-const emit = defineEmits(['navigate', 'follow', 'back', 'update:modelValue'])
+const emit = defineEmits(['navigate', 'follow', 'back', 'open-search', 'update:modelValue'])
 
 // Same destinations and labels as the portal; only the glyphs are shell-specific.
 const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, live: MicVocal, studio: Aperture, resources: FolderOpen }
@@ -235,6 +240,10 @@ function closeDrawer(returnFocus) {
 function navigateFromDrawer(id) {
   drawerOpen.value = false
   emit('navigate', id)
+}
+function searchFromDrawer(query) {
+  drawerOpen.value = false
+  emit('open-search', query)
 }
 watch(() => props.activeSection, () => { drawerOpen.value = false })
 
