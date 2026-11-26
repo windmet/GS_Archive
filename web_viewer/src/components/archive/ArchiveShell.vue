@@ -249,14 +249,18 @@ function measureIndicator() {
   indicator.value = { ...indicator.value, show: true, left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight }
   if (!indicator.value.ready) requestAnimationFrame(() => { indicator.value = { ...indicator.value, ready: true } })
 }
-let navObserver
+let navObserver, navFrame = 0
+function scheduleIndicator() {
+  cancelAnimationFrame(navFrame)
+  navFrame = requestAnimationFrame(() => { navFrame = 0; measureIndicator() })
+}
 watch([() => props.activeSection, navigationSection, railMode, peekOpen], () => nextTick(measureIndicator), { flush: 'post' })
 onMounted(() => {
   measureIndicator()
-  if (typeof ResizeObserver === 'function' && navRef.value) { navObserver = new ResizeObserver(measureIndicator); navObserver.observe(navRef.value) }
+  if (typeof ResizeObserver === 'function' && navRef.value) { navObserver = new ResizeObserver(scheduleIndicator); navObserver.observe(navRef.value) }
   document.fonts?.ready?.then(measureIndicator)
 })
-onBeforeUnmount(() => navObserver?.disconnect())
+onBeforeUnmount(() => { navObserver?.disconnect(); cancelAnimationFrame(navFrame) })
 </script>
 
 <style scoped>
@@ -642,7 +646,7 @@ onBeforeUnmount(() => navObserver?.disconnect())
  .is-compact-mobile .archive-topbar .archive-page-actions {grid-column:3;grid-row:1;}
  .is-compact-mobile .archive-topbar :deep(.archive-page-actions > *) {margin-right:0;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)):has(.archive-page-actions) :deep(.archive-language-switch) {grid-column:4;}
- .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:#52777b;cursor:pointer;}
+ .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--gs-ink-2);cursor:pointer;}
  .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:var(--gs-control-touch);width:100%;margin-bottom:var(--gs-space-3);}
  .is-compact-mobile .archive-search.is-open {display:flex;animation:gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards;}
 }

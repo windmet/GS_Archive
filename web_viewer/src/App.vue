@@ -1472,7 +1472,7 @@ const archiveSearchable = computed(() => ['idols', 'cards', 'gashas'].includes(v
 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
-  if (view.value === 'cards') return '搜索卡片标题或稀有度'
+  if (view.value === 'cards') return '搜索卡片标题、偶像或稀有度'
   if (view.value === 'gashas') return '搜索卡池名称、卡片或偶像'
   if (view.value === 'story_catalog') return '搜索剧情标题或角色'
   return '搜索资料'

@@ -38,14 +38,19 @@ const portraits=computed(()=>{
 // The row holds three portraits only when it is wider than 900px and not the phone layout; narrower rows
 // render two, so the hidden picture is never requested (CSS hiding would still download it).
 const wide=ref(false)
-let resize=null
+let resize=null, resizeFrame=0
 watch(root,element=>{
-  resize?.disconnect(); resize=null
+  resize?.disconnect(); resize=null; cancelAnimationFrame(resizeFrame); resizeFrame=0
   if(!element || typeof ResizeObserver==='undefined') return
-  resize=new ResizeObserver(([entry])=>{wide.value=entry.contentRect.width>900 && !matchMedia('(max-width:760px)').matches})
+  resize=new ResizeObserver(([entry])=>{
+    const next=entry.contentRect.width>900 && !matchMedia('(max-width:760px)').matches
+    if(next===wide.value) return
+    cancelAnimationFrame(resizeFrame)
+    resizeFrame=requestAnimationFrame(()=>{wide.value=next; resizeFrame=0})
+  })
   resize.observe(element)
 },{flush:'post'})
-onBeforeUnmount(()=>resize?.disconnect())
+onBeforeUnmount(()=>{resize?.disconnect(); cancelAnimationFrame(resizeFrame)})
 const shownPortraits=computed(()=>portraits.value.slice(0,wide.value ? 3 : 2))
 // The Portal asks for the derived thumbnail first; if that object is missing (a deployment that has not
 // uploaded thumbnails yet), the picture falls back to the original art instead of staying blank.

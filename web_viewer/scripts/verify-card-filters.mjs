@@ -53,9 +53,10 @@ for (const rarity of ['all', ...new Set(cards.map(card => card.rarity))]) {
 }
 const hash = digest.digest('hex')
 if (!baseline) assert.equal(hash, 'd85379ca28eb7ee573ea8c18463214f39180ec8ef43dea76986f95ed4b9d9b45')
-const fixture = [{ resource_id: 'one', title: 'FIRST', rarity: 'R' }, { resource_id: 'two', rarity: 'SSR', scenario_entries: [{}] }]
+const fixture = [{ resource_id: 'one', character_id: '021jun', title: 'FIRST', rarity: 'R' }, { resource_id: 'two', character_id: '001tom', rarity: 'SSR', scenario_entries: [{}] }]
 const before = JSON.stringify(fixture)
 assert.deepEqual(filterArchiveCards(fixture, { query: 'first' }), [fixture[0]])
+assert.deepEqual(filterArchiveCards(fixture, { query: '冬美旬', ownerSearchText: id => id === '021jun' ? '冬美旬 冬美 旬' : '' }), [fixture[0]])
 assert.deepEqual(filterArchiveCards(fixture, { assetState: 'visible_icon' }), [])
 assert.deepEqual(filterArchiveCards(fixture, { relationState: 'unrelated' }), [fixture[0]])
 assert.deepEqual(filterArchiveCards(fixture, { relationState: 'event_card', eventRelations: { one: [] } }), [fixture[0]], 'existing empty relation array remains a present relation')

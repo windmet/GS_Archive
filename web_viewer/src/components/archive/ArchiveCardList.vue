@@ -5,7 +5,7 @@
         <input
           ref="searchInput"
           :value="modelValue"
-          placeholder="搜索卡片标题或稀有度"
+          placeholder="搜索卡片标题、偶像或稀有度"
           class="filter-input"
           @input="emit('update:modelValue', $event.target.value)"
         />
@@ -275,7 +275,10 @@ function fallbackCardIcon(event, resourceId) {
   .card-counts { grid-column: 2; grid-row: 2; }
   .card-row-arrow { display: block; grid-column: 3; grid-row: 1 / 3; align-self: center; color: var(--gs-ink-3); }
   .card-archive-list.layout-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5) var(--gs-space-4); }
+  .layout-grid .card-thumb { grid-column: auto; grid-row: auto; align-self: stretch; }
   .layout-grid .card-rarity { display: inline; }
+  .layout-grid .card-main { grid-column: auto; grid-row: auto; align-self: stretch; }
+  .layout-grid .card-counts { grid-column: auto; grid-row: auto; }
   .layout-grid .card-row-arrow { display: none; }
 }
 </style>

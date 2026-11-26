@@ -25,6 +25,7 @@ export function useCardNavigation({
   const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
     query: filterQuery.value,
     titleSearchText: source=>archiveNamedSearchText('card',source,'title'),
+    ownerSearchText: id => [idolDisplayName?.(id), idolSourceName?.(id)].filter(Boolean).join(' '),
     rarity: currentCardRarity.value,
     attribute: currentCardAttribute.value,
     assetState: currentCardAssetState.value,

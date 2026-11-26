@@ -394,12 +394,12 @@ function formatDate(timestamp) {
 .idol-detail :deep(.relation-labels strong), .idol-detail :deep(.relation-labels small), .idol-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
 
 @media (hover: hover) {
-  .related-grid button:hover strong, .song-links button:hover strong, .honor-plates button:hover .honor-text { color: var(--gs-ink-2); }
+  .related-grid button:hover strong, .song-links button:hover strong, .honor-plates button:hover .honor-text { color: var(--gs-mint-ink); }
   .honor-plates button:hover img { transform: translateY(-2px); }
   .honor-info:hover { color: var(--gs-ink); }
   .idol-hero-home:hover { background: var(--gs-paper); }
 }
-@media (max-width: 900px) { .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container idol-detail (max-width: 720px) { .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* Phones: the hero runs to the screen edges at 220px, the figure to the right. */
 @media (max-width: 760px) {
   .idol-detail { gap: var(--gs-space-8); padding: var(--gs-space-5); }

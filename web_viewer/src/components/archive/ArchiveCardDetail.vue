@@ -665,7 +665,10 @@ function openRelation(item) {
 </script>
 
 <style scoped>
-.is-pending { visibility: hidden; }
+.is-pending { position: relative; color: transparent; user-select: none; }
+.card-text-block p.is-pending { border-left-color: var(--gs-line); }
+.card-text-block p.is-pending::before, .voice-copy p.is-pending::before { content: "正在载入文本…"; position: absolute; top: 0; left: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); white-space: nowrap; }
+.card-text-block p.is-pending::before { left: var(--gs-space-5); }
 /* Card detail: one artwork hero, an identity column, then flat sections under hairlines. */
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); }
 .card-detail { container: card-detail / inline-size; display: grid; gap: var(--gs-space-section); min-width: 0; max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-8) var(--gs-space-8) var(--gs-space-9); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
@@ -700,6 +703,13 @@ function openRelation(item) {
 .is-single .card-identity { grid-template-columns: minmax(0, 1fr); }
 .card-heading, .card-facts { display: grid; gap: var(--gs-space-4); align-content: start; min-width: 0; }
 .card-facts { gap: var(--gs-space-5); }
+/* External animated-card link (ssr.gs-archive.com): program-booklet action chip with 44px touch height. */
+.card-facts > a { display: inline-flex; align-items: center; gap: var(--gs-space-2); justify-self: start; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; }
+.card-facts > a::after { content: "↗"; font-size: var(--gs-text-meta); }
+.card-facts > a:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@media (hover: hover) and (pointer: fine) {
+  .card-facts > a:hover { border-color: var(--gs-selected-line); background: var(--gs-mint-wash); }
+}
 .card-marks { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); }
 .card-rarity { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-style: italic; font-weight: var(--gs-weight-bold); line-height: 1; letter-spacing: .02em; }
 .card-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
@@ -872,6 +882,10 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
   .voice-row { grid-template-columns: auto minmax(0, 1fr); gap: var(--gs-space-2) var(--gs-space-3); }
   .voice-row > .voice-preview-btn { justify-self: start; }
   .voice-row > .voice-copy, .voice-row > span:first-child { grid-column: 1 / -1; }
+}
+@container card-detail (max-width: 520px) {
+  .costume-matrix-head, .costume-row { grid-template-columns: 44px minmax(0, 1fr) 56px 56px 18px; gap: var(--gs-space-3); }
+  .costume-thumb { width: 44px; height: 44px; }
 }
 @media (max-width: 760px) {
   .card-detail { gap: var(--gs-space-8); padding: var(--gs-space-5) var(--gs-space-5) var(--gs-space-9); }

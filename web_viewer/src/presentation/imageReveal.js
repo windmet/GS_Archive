@@ -15,6 +15,25 @@ function mark(target, failed = false) {
   if (!target.hasAttribute(IMAGE_LOADED_ATTRIBUTE)) target.setAttribute(IMAGE_LOADED_ATTRIBUTE, '')
 }
 
+function hasImageSource(image) {
+  return Boolean(image.currentSrc || image.getAttribute?.('src') || image.getAttribute?.('srcset'))
+}
+
+function revealIfSettled(image) {
+  if (image?.tagName !== 'IMG' || !image.complete || image.hasAttribute(IMAGE_LOADED_ATTRIBUTE)) return
+  if (image.naturalWidth > 0) {
+    mark(image, false)
+    return
+  }
+  if (!hasImageSource(image)) return
+  // Give a queued load/error event first claim; if it fired before DOM attachment, settle cleanly.
+  queueMicrotask(() => {
+    if (image.complete && !image.hasAttribute(IMAGE_LOADED_ATTRIBUTE) && hasImageSource(image)) {
+      mark(image, image.naturalWidth === 0)
+    }
+  })
+}
+
 export function installImageReveal(root = globalThis.document) {
   if (!root?.addEventListener) return () => {}
   const onLoad = event => mark(event.target)
@@ -24,7 +43,29 @@ export function installImageReveal(root = globalThis.document) {
   // Anything already settled before the listener existed (nothing, for the client-rendered app)
   // must not stay hidden.
   for (const image of root.querySelectorAll?.('img') || []) if (image.complete) mark(image)
+  // Vue sets img.src before inserting into the document; a memory-cached image can finish before
+  // attachment so the document capture listener never sees its load event.
+  let observer = null
+  const observeRoot = root.documentElement || root.body
+  if (typeof MutationObserver === 'function' && observeRoot) {
+    observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes') {
+          revealIfSettled(mutation.target)
+          continue
+        }
+        for (const node of mutation.addedNodes) {
+          if (node?.tagName === 'IMG') revealIfSettled(node)
+          else if (node?.querySelectorAll) {
+            for (const image of node.querySelectorAll('img')) revealIfSettled(image)
+          }
+        }
+      }
+    })
+    observer.observe(observeRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'srcset'] })
+  }
   return () => {
+    observer?.disconnect()
     root.removeEventListener('load', onLoad, true)
     root.removeEventListener('error', onError, true)
   }

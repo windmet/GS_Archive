@@ -1,14 +1,12 @@
 <template>
   <Teleport to="body">
-    <div class="archive-flyout-layer" @pointerdown.self="emit('close')">
-      <ul ref="list" class="archive-flyout" role="menu" :aria-label="group.label" :style="position" @keydown="onKey">
-        <li v-for="item in items" :key="item.id" role="presentation">
-          <button type="button" role="menuitem" class="archive-flyout-item" :aria-current="item.id === current ? 'page' : undefined" @click="emit('select', item.id)">
-            <component :is="item.icon" :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ item.label }}</span>
-          </button>
-        </li>
-      </ul>
-    </div>
+    <ul ref="list" class="archive-flyout" role="menu" :aria-label="group.label" :style="position" @keydown="onKey">
+      <li v-for="item in items" :key="item.id" role="presentation">
+        <button type="button" role="menuitem" class="archive-flyout-item" :aria-current="item.id === current ? 'page' : undefined" @click="emit('select', item.id)">
+          <component :is="item.icon" :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ item.label }}</span>
+        </button>
+      </li>
+    </ul>
   </Teleport>
 </template>
 
@@ -55,12 +53,18 @@ function onKey(event) {
   rows[next]?.focus()
 }
 const onResize = () => emit('close')
+// Close on any outside pointerdown without blocking clicks on other sidebar links.
+function onOutsidePointer(event) {
+  if (list.value?.contains(event.target) || props.anchor?.contains(event.target)) return
+  emit('close')
+}
 // The page changed under the menu (back button): it has nothing left to choose from.
 watch(() => props.current, onResize)
 
 onMounted(async () => {
   place()
   document.addEventListener('keydown', onDocumentKey, true)
+  document.addEventListener('pointerdown', onOutsidePointer, true)
   addEventListener('resize', onResize)
   await nextTick()
   place()
@@ -68,13 +72,13 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onDocumentKey, true)
+  document.removeEventListener('pointerdown', onOutsidePointer, true)
   removeEventListener('resize', onResize)
 })
 </script>
 
 <style scoped>
-.archive-flyout-layer { position: fixed; inset: 0; z-index: 1200; }
-.archive-flyout { position: fixed; box-sizing: border-box; margin: 0; padding: var(--gs-space-2); list-style: none; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-console); animation: gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards; }
+.archive-flyout { position: fixed; z-index: 1200; box-sizing: border-box; margin: 0; padding: var(--gs-space-2); list-style: none; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-console); animation: gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards; }
 .archive-flyout-item { display: flex; align-items: center; gap: var(--gs-space-4); box-sizing: border-box; width: 100%; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; white-space: nowrap; cursor: pointer; }
 .archive-flyout-item svg { flex: none; color: var(--gs-ink-3); }
 .archive-flyout-item[aria-current='page'] { font-weight: var(--gs-weight-semibold); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
