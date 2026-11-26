@@ -39,10 +39,12 @@ watch(imageUrl, () => { imageFailed.value = false })
 const normalizedAccent = computed(() => normalizeIdolAccentColor(props.accentColor))
 const resolvedRing = computed(() => {
   if (props.ring === 'selected') return 'selected'
-  if (props.ring === 'group' || !props.ringWidth) return 'group'
+  if (props.ring === 'group') return 'group'
+  if (!props.ringWidth) return 'bare'
   return normalizedAccent.value ? 'identity' : 'group'
 })
 const ringClass = computed(() => ({
+  'is-bare': resolvedRing.value === 'bare',
   'is-plain': resolvedRing.value === 'group',
   'is-identity': resolvedRing.value === 'identity',
   'is-selected': resolvedRing.value === 'selected',
@@ -60,12 +62,16 @@ function onImageError() { imageFailed.value = true; emit('error') }
 <style scoped>
 .idol-avatar-shell { --idol-avatar-size: var(--idol-avatar-override-size, var(--idol-avatar-base-size)); display: inline-block; flex: 0 0 var(--idol-avatar-size); width: var(--idol-avatar-size); height: var(--idol-avatar-size); box-sizing: border-box; padding: var(--idol-avatar-gap); border: var(--idol-avatar-ring) solid var(--idol-avatar-color); border-radius: 50%; background: var(--gs-surface); vertical-align: middle; transition: box-shadow var(--gs-motion-feedback) var(--gs-ease-out), border-color var(--gs-motion-feedback) var(--gs-ease-out); }
 .idol-avatar-clip { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; }
-/* Unified 3-ring constitution:
-   - is-plain (group): quiet paper-gap + faint navy edge; never falls back to a muddy grey border.
+/* Unified 3-ring constitution (all strictly border-box within --idol-avatar-size so toggling
+   or emphasizing an avatar never bleeds outward or crowds neighboring avatars/text):
+   - is-bare: tiny inline avatars with ringWidth=0 (soft inset group edge).
+   - is-plain (group): quiet inset paper-gap + faint navy ring.
    - is-identity: white gap + idol colour border (rules above).
-   - is-selected: white gap + bold 2.5px idol accent ring (same inner diameter as is-plain, so toggling never jumps). */
-.idol-avatar-shell.is-plain { padding: 0; border: 0; background: var(--gs-paper-2); box-shadow: var(--gs-ring-group); }
-.idol-avatar-shell.is-selected { padding: 0; border: 0; background: var(--gs-surface); box-shadow: 0 0 0 2px var(--gs-surface), 0 0 0 4.5px var(--idol-avatar-color); }
+   - is-selected: white gap + bold 2.5px idol accent border inside the exact same outer box,
+     plus a subtle 1px halo so emphasis is unmistakable without shifting layout or spacing. */
+.idol-avatar-shell.is-bare { padding: 0; border: 0; background: var(--gs-paper-2); box-shadow: var(--gs-ring-group); }
+.idol-avatar-shell.is-plain { padding: 1.5px; border: 1.5px solid var(--gs-rule); background: var(--gs-paper-2); box-shadow: none; }
+.idol-avatar-shell.is-selected { padding: 2px; border: 2.5px solid var(--idol-avatar-color); background: var(--gs-surface); box-shadow: 0 0 0 1px color-mix(in oklab, var(--idol-avatar-color) 18%, transparent); }
 .idol-avatar-clip img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(var(--idol-avatar-scale)); }
 .idol-avatar-fallback { display: grid; place-items: center; width: 100%; height: 100%; color: var(--gs-ink-2); font-size: max(12px, calc(var(--idol-avatar-size) * .35)); font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { .idol-avatar-shell { transition: none; } }

@@ -207,8 +207,8 @@ function fallbackCardIcon(event, resourceId) {
 <style scoped>
 /* Card catalogue: heading, one filter bar, then hairline rows or a border-free art grid. */
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); }
-.card-idol-heading { display: flex; align-items: center; justify-content: flex-end; gap: var(--gs-space-6); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-7) var(--gs-space-8) var(--gs-space-4); }
-.card-idol-heading :deep(.idol-switcher) { width: min(360px, 48vw); }
+.card-idol-heading { display: flex; align-items: center; justify-content: flex-start; gap: var(--gs-space-6); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-6) var(--gs-space-8) var(--gs-space-3); }
+.card-idol-heading :deep(.idol-switcher) { width: min(380px, 100%); }
 .embedded-filters { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-5); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8) var(--gs-space-4); background: var(--gs-paper); }
 .card-rarity-tabs { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); margin-right: auto; }
 /* Toolbar without a rule of its own (线框减法册 C): rarity as text tabs with the mint underline, the view
