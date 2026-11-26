@@ -49,10 +49,12 @@ const shell = read('src/components/archive/ArchiveShell.vue')
 assert.match(shell, /<slot name="sidebar-identity" \/>/)
 assert.doesNotMatch(shell, /\.archive-sidebar[^{]*\{[^}]*(box-shadow|border-top|background)[^}]*var\(--gs-mint/)
 const stageSwitch = read('src/components/archive/ArchiveStageIdolSwitch.vue')
-// The identity ring is always the idol's own colour (layer 1), drawn as an outline so its gap stays transparent;
+const idolAvatar = read('src/components/archive/ArchiveIdolAvatar.vue')
+// The identity ring is always the idol's own colour (layer 1), delegated to ArchiveIdolAvatar;
 // only the stage-light switch inside the popover follows the preference (layer 3).
-assert.match(stageSwitch, /normalizeIdolAccentColor\(props\.idol\?\.color\)/)
-assert.match(stageSwitch, /outline: 2px solid var\(--stage-idol-ring\)/)
+assert.match(stageSwitch, /<ArchiveIdolAvatar[^>]*:accent-color="idol\.color \|\| ''"[^>]*ring="identity"/)
+assert.match(idolAvatar, /normalizeIdolAccentColor\(props\.accentColor\)/)
+assert.match(idolAvatar, /\.idol-avatar-shell[^}]*border:\s*var\(--idol-avatar-ring\)\s+solid\s+var\(--idol-avatar-color\)/)
 assert.match(stageSwitch, /<GsSwitch :model-value="stageLight"[^>]*@update:model-value="emit\('save-startup', \{ stageLight: \$event \? 'idol' : 'mint' \}\)"/)
 assert.match(stageSwitch, /<ArchiveIdolPickerPanel[\s\S]{0,200}@update:model-value="emit\('save-preferred', \$event\)/)
 // P1.6: the settings row is a GsSwitch too, off without an idol to follow.
