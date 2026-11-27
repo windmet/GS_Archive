@@ -51,6 +51,7 @@ export class StudioCompositionStage {
     this.onInteraction = onInteraction;
     this.guides = [];
     this.snapEnabled = true;
+    this.previewMode = false;
     this.selectedId = "";
     this.transport = createStoryAssetTransport({
       maxBytes: 24 * 1024 * 1024,
@@ -132,6 +133,14 @@ export class StudioCompositionStage {
     });
   }
   render() { if (!this.disposed) this.renderLoop?.invalidate(); }
+  setPreviewMode(on) {
+    this.previewMode = Boolean(on);
+    if (this.previewMode) {
+      this.input?.cancel(false);
+      this.guides = [];
+    }
+    this.render();
+  }
   select(id) {
     if (id !== this.selectedId) this.input?.cancel(false);
     this.selectedId = id;
@@ -152,6 +161,7 @@ export class StudioCompositionStage {
   }
   drawSelection() {
     this.outline.clear();
+    if (this.previewMode) return;
     const controls = this.selectionControls();
     if (controls) {
       const { rect, unit, rotate, corners } = controls;
@@ -177,6 +187,7 @@ export class StudioCompositionStage {
     }
   }
   pointerIntent(point, pointerType = 'mouse') {
+    if (this.previewMode) return null;
     const controls = this.selectionControls();
     if (controls && !this.selectedRow()?.locked) {
       const radius = (pointerType === 'mouse' ? 10 : 22) * controls.unit;
@@ -592,7 +603,8 @@ export class StudioCompositionStage {
       if (!owner.current()) throw new DOMException("Aborted", "AbortError");
       this.clearImages(key);
       this.images.set(key, { signature, loaded });
-      for (const entry of loaded)
+      const ordered = key === "frame" ? [...loaded].reverse() : loaded;
+      for (const entry of ordered)
         (key === "background"
           ? this.backgroundLayer
           : this.frameLayer

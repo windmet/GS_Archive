@@ -759,7 +759,7 @@ function openRelation(item) {
 .card-facts > a::after { content: "↗"; font-size: var(--gs-text-meta); }
 .card-facts > a:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (hover: hover) and (pointer: fine) {
-  .card-facts > a:hover { border-color: var(--gs-selected-line); background: var(--gs-mint-wash); }
+  .card-facts > a:hover { border-color: var(--gs-rule); background: var(--gs-hover); color: var(--gs-ink); }
 }
 .card-marks { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); }
 .card-rarity { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-style: italic; font-weight: var(--gs-weight-bold); line-height: 1; letter-spacing: .02em; }
@@ -792,14 +792,14 @@ function openRelation(item) {
   .skill-movie-facts div { display: flex; gap: var(--gs-space-2); padding: 0; border: 0; }
 }
 .card-detail-section h4 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
-.release-series-cards { display: flex; gap: var(--gs-space-3); padding-bottom: var(--gs-space-2); overflow-x: auto; overscroll-behavior-inline: contain; }
+.release-series-cards { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); padding-bottom: var(--gs-space-2); }
 .release-series-cards button { flex: 0 0 74px; min-width: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
 .release-series-cards button.current { background: var(--gs-mint-wash); color: var(--gs-ink); }
 .release-series-cards button:disabled { cursor: default; }
 /* Preserve the archived series-icon crop and its established 74px entry width. */
 .release-series-cards img { display: block; width: 62px; height: 62px; margin-inline: auto; border-radius: var(--gs-radius-media); background: var(--gs-line); object-fit: cover; }
 .release-series-cards span { display: block; margin-top: var(--gs-space-2); font-size: var(--gs-text-meta); text-align: center; overflow-wrap: anywhere; }
-@media (hover: hover) { .release-series-cards button:hover:not(:disabled) { background: var(--gs-mint-wash); } }
+@media (hover: hover) { .release-series-cards button:hover:not(:disabled):not(.current) { background: var(--gs-hover); } }
 
 /* Abilities and skills */
 .gameplay-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: var(--gs-space-8); }
@@ -866,7 +866,7 @@ button.costume-row { cursor: pointer; }
 .costume-source-labels { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .costume-use { color: var(--gs-ink-2); font-size: var(--gs-text-ui); white-space: nowrap; }
 button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-@media (hover: hover) and (pointer: fine) { button.costume-row:hover { background: var(--gs-mint-wash); } }
+@media (hover: hover) and (pointer: fine) { button.costume-row:hover { background: var(--gs-hover); } }
 .costume-variant-name { color: var(--gs-ink-2); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
 .costume-conditions { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-3); min-width: 0; }
 .costume-condition { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
@@ -898,14 +898,15 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
 /* The stage preview is a 44px icon beside the play control, like the 通信 and episode rows: no box on the row rule. */
 .voice-preview-btn { display: inline-grid; flex: none; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); }
 .scenario-link-list { gap: 0; }
-.scenario-link-btn { display: grid; gap: var(--gs-space-1); min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; text-align: left; font-size: var(--gs-text-body); }
+.scenario-link-btn { display: grid; gap: var(--gs-space-1); min-height: var(--gs-control-touch); margin-inline: calc(-1 * var(--gs-space-2)); padding: var(--gs-space-3) var(--gs-space-2); border: 0; border-bottom: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: none; text-align: left; font-size: var(--gs-text-body); }
 .scenario-link-btn:disabled { color: var(--gs-ink-3); cursor: default; }
 .scenario-link-btn span { font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .scenario-link-btn small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 @media (hover: hover) {
-  .limitbreak-item-open:hover strong, .limitbreak-item-open:hover > svg { color: var(--gs-mint-ink); }
+  .limitbreak-item-open:hover { background: var(--gs-btn-primary-hover-bg); box-shadow: 0 2px 8px rgb(19 33 58 / 10%); }
+  .limitbreak-item-open:hover > svg { color: var(--gs-ink); }
   .voice-preview-btn:hover { background: var(--gs-current-bg-inset); color: var(--gs-ink); }
-  .scenario-link-btn:hover:not(:disabled) span { color: var(--gs-mint-ink); }
+  .scenario-link-btn:hover:not(:disabled) { background: var(--gs-hover); }
 }
 
 /* Maintainer asset checklist inside the sources disclosure */
@@ -938,6 +939,8 @@ button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-
 }
 @media (max-width: 760px) {
   .card-detail { gap: var(--gs-space-8); padding: var(--gs-space-5) var(--gs-space-5) var(--gs-space-9); }
+  .release-series-cards { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; }
+  .release-series-cards::-webkit-scrollbar { display: none; }
   .card-identity h3 { font-size: var(--gs-text-section); }
   .authored-text { display: none; }
   .reflowed-text { display: inline; }

@@ -4581,7 +4581,8 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .quality-options strong small { padding: 1px 8px; border-radius: var(--gs-radius-pill); background: var(--gs-mint-wash); color: var(--gs-mint-ink); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
 .quality-options span { color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
 .quality-options button[aria-checked="true"] span { color: inherit; }
-.quality-start { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.quality-start { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-4); border: 1px solid var(--gs-btn-primary-border); border-radius: var(--gs-radius-control); background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font: inherit; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+@media (hover: hover) { .quality-start:not(:disabled):hover { background: var(--gs-btn-surface-hover-bg); } }
 .quality-start:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .quality-tip { display: flex; align-items: center; gap: 6px; margin: 12px 0 4px; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
 .quality-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }

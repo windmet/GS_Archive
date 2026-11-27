@@ -31,3 +31,33 @@ export function reorderStudioLayer(document, id, targetId) {
   rows.splice(to, 0, row)
   return true
 }
+
+/** Clone an actor or sticker layer right above the source with a small horizontal offset. */
+export function duplicateStudioLayer(document, id, newInstanceId) {
+  const kind = ['actors', 'stickers'].find(key => document[key].some(row => row.instanceId === id))
+  if (!kind || document[kind].length >= STUDIO_LIMITS[kind]) return null
+  if (typeof newInstanceId !== 'string' || !/^[-a-z0-9]{1,80}$/i.test(newInstanceId)) return null
+  if ([...document.actors, ...document.stickers].some(row => row.instanceId === newInstanceId)) return null
+  const rows = document[kind]
+  const index = rows.findIndex(row => row.instanceId === id)
+  const copy = JSON.parse(JSON.stringify(rows[index]))
+  delete copy.locked
+  delete copy.hidden
+  copy.instanceId = newInstanceId
+  copy.x = copy.x <= 0.84 ? Number((copy.x + 0.06).toFixed(4)) : Number((copy.x - 0.06).toFixed(4))
+  rows.splice(index + 1, 0, copy)
+  return copy
+}
+
+export function centerStudioLayer(row) {
+  if (!row || row.locked) return false
+  row.x = 0.5
+  if (!row.idolId) row.y = 0.5
+  return true
+}
+
+export function resetStudioLayerRotation(row) {
+  if (!row || row.locked) return false
+  row.rotation = 0
+  return true
+}

@@ -29,15 +29,13 @@
 .story-page .story-tile:disabled { cursor:default; }
 .story-page .story-tile-media { display:grid;place-items:center;overflow:hidden;aspect-ratio:1138 / 553;border-radius:var(--gs-radius-media);background:var(--gs-chrome);color:var(--gs-chrome-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-title);font-style:italic; }
 .story-page .story-tile-media img { width:100%;height:100%;object-fit:cover;transition:transform var(--gs-motion-feedback) var(--gs-motion-ease); }
-.story-page .story-tile:hover:not(:disabled) img { transform:scale(1.02); }
 .story-page .story-tile-copy { display:flex;flex-direction:column;gap:var(--gs-space-1);min-width:0; }
 .story-page .story-tile-copy strong { font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
 .story-page .story-tile-copy small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.story-page .story-tile:hover:not(:disabled) strong { color:var(--gs-mint-ink); }
 
 /* Rows: thumbnail, a two-line title and one line of meta; the whole row is the target. */
 .story-page .story-rows { display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));column-gap:var(--gs-space-8);margin:0;padding:0;list-style:none; }
-.story-page .story-row { --thumb:64px;display:grid;grid-template-columns:var(--thumb) minmax(0,1fr) auto;align-items:center;gap:var(--gs-space-4);width:100%;min-width:0;min-height:var(--gs-control-touch);padding:var(--gs-space-4) 0;border:0;border-bottom:1px solid var(--gs-line);background:none;color:inherit;cursor:pointer;font:inherit;text-align:left;text-decoration:none; }
+.story-page .story-row { --thumb:64px;display:grid;grid-template-columns:var(--thumb) minmax(0,1fr) auto;align-items:center;gap:var(--gs-space-4);width:calc(100% + 2 * var(--gs-space-2));min-width:0;min-height:var(--gs-control-touch);margin-inline:calc(-1 * var(--gs-space-2));padding:var(--gs-space-4) var(--gs-space-2);border:0;border-bottom:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:none;color:inherit;cursor:pointer;font:inherit;text-align:left;text-decoration:none; }
 .story-page .story-row.no-thumb { grid-template-columns:minmax(0,1fr) auto; }
 .story-page .story-row:disabled { cursor:default; }
 .story-page .story-row-thumb { display:grid;place-items:center;overflow:hidden;width:var(--thumb);aspect-ratio:16 / 9;border-radius:var(--gs-radius-media);background:var(--gs-line);color:var(--gs-ink-3); }
@@ -49,22 +47,30 @@
 .story-page .story-row-copy p { display:-webkit-box;overflow:hidden;margin:0;color:var(--gs-ink-2);font-size:var(--gs-text-meta);line-height:1.6;white-space:pre-line;-webkit-box-orient:vertical;-webkit-line-clamp:2; }
 .story-page .story-row > svg { color:var(--gs-ink-3); }
 .story-page .event-year + .event-year { margin-top:var(--gs-space-7); }
-.story-page .story-row:hover:not(:disabled) .story-row-copy strong { color:var(--gs-mint-ink); }
 
 /* Filter chips: one scrolling row, selected fills with ink, counts in small grey. */
 /* Category choices are underline tabs (线框减法册 rule 2, the GsTabs idiom): the row's own rule is the line,
    the current choice is ink with the mint underline; no pills. */
 .story-page .story-chips { display:flex;align-items:stretch;gap:var(--gs-space-6);box-sizing:border-box;height:44px;overflow-x:auto;margin:0 0 var(--gs-space-4);padding:0;border-bottom:1px solid var(--gs-line);scrollbar-width:none; }
+@media (min-width: 761px) {
+  .story-page .story-chips { flex-wrap:wrap;height:auto;min-height:44px;overflow-x:visible; }
+  .story-page .story-chips button { min-height:44px; }
+}
 .story-page .story-chips button { display:inline-flex;flex-shrink:0;align-items:center;gap:6px;margin-bottom:-1px;padding:0 var(--gs-space-1);border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--gs-ink-3);cursor:pointer;font:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-medium);white-space:nowrap; }
 .story-page .story-chips button small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .story-page .story-chips button[aria-pressed=true] { border-bottom-color:var(--gs-selected-line);color:var(--gs-ink);font-weight:var(--gs-weight-semibold); }
 
 /* Actions inside a row: a quiet text button and a bare icon button. */
-.story-page .story-action { display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--gs-control-normal);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:var(--gs-ink);cursor:pointer;font:inherit;font-size:var(--gs-text-ui);text-decoration:none;white-space:nowrap; }
-.story-page .story-action.primary { border-color:var(--gs-action-bg);background:var(--gs-action-bg);color:var(--gs-action-ink); }
+.story-page .story-action { display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--gs-control-normal);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2);cursor:pointer;font:inherit;font-size:var(--gs-text-ui);text-decoration:none;white-space:nowrap; }
+.story-page .story-action.primary { border-color:var(--gs-btn-primary-border);background:var(--gs-btn-primary-bg);color:var(--gs-btn-primary-ink);box-shadow:var(--gs-btn-primary-shadow);font-weight:var(--gs-weight-semibold); }
 .story-page .story-action:disabled { cursor:default;opacity:.45; }
 .story-page .story-icon-action { display:grid;flex-shrink:0;place-items:center;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink-2);cursor:pointer; }
-.story-page .story-icon-action:hover:not(:disabled),.story-page .story-action:hover:not(:disabled):not(.primary) { color:var(--gs-mint-ink); }
+@media (hover: hover) {
+  .story-page .story-tile:hover:not(:disabled) img { transform:scale(1.02); }
+  .story-page .story-row:hover:not(:disabled) { background:var(--gs-hover); }
+  .story-page .story-icon-action:hover:not(:disabled),.story-page .story-action:hover:not(:disabled):not(.primary) { background:var(--gs-hover); color:var(--gs-ink); }
+  .story-page .story-action.primary:hover:not(:disabled) { background:var(--gs-btn-primary-hover-bg); }
+}
 .story-page .story-icon-action:disabled { cursor:default;opacity:.35; }
 .story-page :is(button,a):focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
 
@@ -89,7 +95,6 @@
 .story-page .chapter-identity { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
 .story-page .chapter-identity small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .story-page .chapter-identity strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.story-page .chapter-toggle:hover .chapter-identity strong { color: var(--gs-mint-ink); }
 .story-page .chapter-row.unavailable .chapter-identity strong { color: var(--gs-ink-3); }
 .story-page .chapter-stats { color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .story-page .chapter-panel { padding: 0 0 var(--gs-space-6) 56px; }
@@ -103,8 +108,11 @@
 .story-page .episode-list { margin: 0; padding: 0; border-top: 1px solid var(--gs-line); list-style: none; }
 .story-page .episode-entry { display: flex; align-items: center; min-width: 0; border-bottom: 1px solid var(--gs-line); }
 /* Episode labels carry their own ordinal (EPISODE 01, SMALL TALK 01, 序章), so rows have no number column. */
-.story-page .episode-reading-main { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; color: inherit; text-decoration: none; }
-.story-page a.episode-reading-main:hover strong { color: var(--gs-mint-ink); }
+.story-page .episode-reading-main { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) var(--gs-space-2); margin-left: calc(-1 * var(--gs-space-2)); border-radius: var(--gs-radius-control); color: inherit; text-decoration: none; }
+@media (hover: hover) {
+  .story-page .chapter-toggle:hover { background: var(--gs-hover); }
+  .story-page a.episode-reading-main:hover { background: var(--gs-hover); }
+}
 .story-page .episode-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
 .story-page .episode-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .story-page .episode-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }

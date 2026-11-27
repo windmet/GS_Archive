@@ -4,23 +4,22 @@
          switch for names and descriptions is hidden here so the two do not nest. -->
     <header class="reader-compact-header">
       <button class="icon-button" aria-label="返回来源目录" title="返回来源目录" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
-      <h1 ref="heading" tabindex="-1"><button class="reader-title-button" :disabled="!hasChapters" :aria-expanded="panel === 'chapters'" aria-haspopup="dialog" @click="openPanel('chapters', $event)"><span>{{ chapterLabel ? `${chapterLabel} · ` : '' }}<span :class="{ 'is-title-pending': titlePending }">{{ title || '剧情阅读' }}</span></span><ChevronDown v-if="hasChapters" :size="16" aria-hidden="true" /></button></h1>
+      <div class="reader-header-heading">
+        <h1 ref="heading" tabindex="-1"><button class="reader-title-button" :disabled="!hasChapters" :aria-expanded="panel === 'chapters'" aria-haspopup="dialog" @click="openPanel('chapters', $event)"><span>{{ chapterLabel ? `${chapterLabel} · ` : '' }}<span :class="{ 'is-title-pending': titlePending }">{{ title || '剧情阅读' }}</span></span><ChevronDown v-if="hasChapters" :size="16" aria-hidden="true" /></button></h1>
+        <div v-if="$slots.context" class="reader-context-inline"><slot name="context" /></div>
+      </div>
+      <div class="reader-header-tools">
+        <button v-if="hasDirectory" class="toolbar-directory icon-button" aria-label="本话 EP 目录" title="本话 EP 目录" aria-haspopup="dialog" :aria-expanded="panel === 'directory'" @click="openPanel('directory', $event)"><ListOrdered :size="19" aria-hidden="true" /></button>
+        <div class="compact-languages" role="group" aria-label="正文语言" :style="{'--modes':modes.length,'--mode-index':Math.max(0, modes.findIndex(item => item.id === mode))}"><span v-if="modes.some(item => item.id === mode)" class="mode-thumb" aria-hidden="true"></span><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button></div>
+        <div class="compact-themes" role="group" aria-label="阅读主题"><button v-for="theme in READER_THEMES" :key="theme.id" :title="theme.label" :aria-label="theme.label" :aria-pressed="readerTheme === theme.id" @click="setReaderTheme(theme.id)"><span :style="{background:theme.swatch}" /></button></div>
+        <button class="icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
+        <button class="icon-button" aria-label="P 名字" title="P 名字" @click="openPanel('producer', $event)"><UserRound :size="19" aria-hidden="true" /></button>
+      </div>
     </header>
-    <div v-if="$slots.context" class="reader-context"><slot name="context" /></div>
     <div class="reader-frame">
       <!-- Wide readers: the chapter directory stays on the left (236) and the text column is centred beside it. -->
       <ReaderTocRail v-if="hasDirectory || hasChapters" class="reader-rail" :title="title" :title-pending="titlePending" :chapter-label="chapterLabel" :segments="segments" :active-document-id="activeDocumentId" :chapter-navigation="chapterNavigation" :allow-unlinked="allowUnlinked" @select="emit('select', $event)" @chapter="emit('chapter', $event)" />
       <div class="reader-main" @scroll.capture.passive="onReadingScroll">
-        <!-- Thin toolbar: B-level text language, theme dots, then search and P name; its row is the
-             text column's width and axis, so the eye does not cross the screen to reach the text. -->
-        <div class="reader-desktop-toolbar"><div class="toolbar-column">
-          <button v-if="hasDirectory" class="toolbar-directory icon-button" aria-label="本话 EP 目录" title="本话 EP 目录" aria-haspopup="dialog" :aria-expanded="panel === 'directory'" @click="openPanel('directory', $event)"><ListOrdered :size="19" aria-hidden="true" /></button>
-          <div class="compact-languages" role="group" aria-label="正文语言" :style="{'--modes':modes.length,'--mode-index':Math.max(0, modes.findIndex(item => item.id === mode))}"><span v-if="modes.some(item => item.id === mode)" class="mode-thumb" aria-hidden="true"></span><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button></div>
-          <div class="compact-themes" role="group" aria-label="阅读主题"><button v-for="theme in READER_THEMES" :key="theme.id" :title="theme.label" :aria-label="theme.label" :aria-pressed="readerTheme === theme.id" @click="setReaderTheme(theme.id)"><span :style="{background:theme.swatch}" /></button></div>
-          <span class="toolbar-spacer" aria-hidden="true"></span>
-          <button class="icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
-          <button class="icon-button" aria-label="P 名字" title="P 名字" @click="openPanel('producer', $event)"><UserRound :size="19" aria-hidden="true" /></button>
-        </div></div>
         <slot />
       </div>
     </div>
@@ -126,26 +125,25 @@ defineExpose({openSearch:() => openPanel('search'),closePanel,focusHeading:() =>
 <style scoped>
 /* A title still waiting for its translation keeps its place but stays hidden (no Japanese flash). */
 .is-title-pending { visibility:hidden; }
-.reader-workspace-controls { flex:1; min-height:0; display:flex; flex-direction:column; background:var(--reader-bg-page); padding-top:var(--archive-safe-top); }
+.reader-workspace-controls { flex:1; min-height:0; width:100%; display:flex; flex-direction:column; container-type:inline-size; background:var(--reader-bg-page); padding-top:var(--archive-safe-top); }
 button { min-height:44px; border:0; background:transparent; color:var(--reader-text-main); font:inherit; font-size:13px; cursor:pointer; }
 button:disabled { opacity:.4; cursor:default; }
 button:focus-visible { outline:2px solid var(--reader-accent); outline-offset:-2px; }
-.icon-button { width:44px; flex:none; display:grid; place-items:center; padding:0; border-radius:50%; color:var(--reader-accent-text); }
-.reader-compact-header { flex:none; z-index:10; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:4px max(20px,var(--archive-safe-right)) 4px max(20px,var(--archive-safe-left)); border-bottom:1px solid var(--reader-border); }
-h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:none; }
+.icon-button { width:44px; flex:none; display:grid; place-items:center; padding:0; border-radius:50%; color:var(--reader-text-sub); }
+@media (hover: hover) { .icon-button:not(:disabled):hover { color:var(--reader-text-main); } }
+.reader-compact-header { flex:none; z-index:10; display:flex; flex-wrap:nowrap; align-items:center; justify-content:space-between; gap:10px; min-height:52px; box-sizing:border-box; padding:4px max(20px,var(--archive-safe-right)) 4px max(20px,var(--archive-safe-left)); border-bottom:1px solid var(--reader-border); }
+.reader-header-heading { flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:8px; }
+h1 { flex:0 1 auto; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:none; }
+.reader-header-heading .reader-context-inline { position:relative; flex:0 1 auto; min-width:0; }
 .reader-title-button { display:flex; align-items:center; gap:8px; max-width:100%; text-align:left; font-size:inherit; font-weight:700; }
 .reader-title-button:disabled { opacity:1; }
 .reader-title-button span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .reader-title-button svg { flex:none; }
-.reader-frame { flex:1; min-height:0; display:flex; container-type:inline-size; }
+.reader-header-tools { flex:none; display:flex; align-items:center; gap:10px; }
+.reader-frame { flex:1; min-height:0; display:flex; }
 .reader-rail { display:none; }
 .reader-main { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
 .reader-main > :deep(.story-reader) { flex:1; min-height:0; }
-.reader-desktop-toolbar { flex:none; height:52px; overflow:hidden; scrollbar-gutter:stable; border-bottom:1px solid var(--reader-border); }
-/* Same box as the reading sheet (reading width, 40 inside), and the same scrollbar gutter as the text below. */
-.toolbar-column { box-sizing:border-box; display:flex; align-items:center; gap:12px; height:100%; max-width:var(--gs-reading-width); margin:0 auto; padding:0 40px; }
-.toolbar-column > .icon-button:last-child { margin-right:-10px; }
-.toolbar-spacer { flex:1; }
 /* B-level switch: recessed track, one raised thumb sliding to the chosen text language. */
 .compact-languages { position:relative; display:grid; grid-template-columns:repeat(var(--modes),minmax(0,1fr)); padding:2px; border-radius:var(--gs-radius-control); background:color-mix(in oklab, var(--reader-text-main) 7%, var(--reader-bg-page)); }
 .compact-languages button { position:relative; z-index:1; min-height:32px; min-width:52px; padding:0 12px; color:var(--reader-text-sub); white-space:nowrap; }
@@ -173,9 +171,11 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 .reader-sheet :deep(.reader-producer-name input) { max-width:none; }
 .reader-sheet :deep(.reader-theme-switchers) { margin:0; }
 @media(max-width:760px) {
-  .reader-desktop-toolbar { display:none; }
-  .reader-compact-header { padding:0 max(10px,var(--archive-safe-right)) 0 max(8px,var(--archive-safe-left)); gap:6px; }
-  h1 { font-size:14px; }
+  .reader-header-tools { display:none; }
+  .reader-compact-header { flex-wrap:nowrap; min-height:44px; padding:2px max(10px,var(--archive-safe-right)) 2px max(8px,var(--archive-safe-left)); gap:4px; }
+  .reader-header-heading { flex:1 1 0; min-width:0; flex-direction:column; align-items:flex-start; gap:0; }
+  .reader-header-heading h1 { width:100%; font-size:14px; }
+  .reader-header-heading .reader-context-inline { max-width:100%; margin-top:-6px; }
   .reader-floating-dock { position:absolute; left:50%; bottom:calc(10px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); display:flex; align-items:center; gap:2px; width:min(400px,calc(100% - 24px)); box-sizing:border-box; height:52px; padding:4px 6px; border:1px solid var(--reader-border); border-radius:var(--gs-radius-panel); background:var(--reader-bg-card); box-shadow:0 6px 24px #0002; }
   .reader-floating-dock { transition:transform var(--gs-motion-sheet) var(--gs-ease-out), opacity var(--gs-motion-sheet) var(--gs-ease-out); }
   .reader-floating-dock.is-tucked:not(:focus-within) { transform:translate(-50%, calc(100% + 16px + env(safe-area-inset-bottom,0px))); opacity:0; pointer-events:none; }

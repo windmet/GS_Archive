@@ -14,7 +14,41 @@ import { studioReference } from "../../core/StudioReferences.mjs";
 import { verifiedStudioPreset } from "../../core/PictureStudioPolicy.mjs";
 import { serializeStudioDocument, parseStudioDocument, readStudioDocumentFile } from "../../core/StudioDocumentFile.mjs";
 import { studioTransformPatch } from '../../core/StudioGestures.mjs';
-import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer, reorderStudioLayer } from '../../core/StudioLayerEditing.mjs';
+import {
+  removeStudioLayer,
+  canRestoreStudioLayer,
+  restoreStudioLayer,
+  reorderStudioLayer,
+  duplicateStudioLayer,
+  centerStudioLayer,
+  resetStudioLayerRotation,
+} from '../../core/StudioLayerEditing.mjs';
+
+const MANUAL_SAVE_KEY = 'sidem-studio-document-v1';
+const AUTOSAVE_KEY = 'sidem-studio-autosave-v1';
+const GROUP_X_SLOTS = {
+  1: [0.5],
+  2: [0.35, 0.65],
+  3: [0.26, 0.5, 0.74],
+  4: [0.2, 0.4, 0.6, 0.8],
+  5: [0.16, 0.33, 0.5, 0.67, 0.84],
+  6: [0.14, 0.28, 0.43, 0.57, 0.72, 0.86],
+};
+
+function readStorage(key) {
+  try { return typeof globalThis.localStorage !== 'undefined' ? globalThis.localStorage.getItem(key) : null; }
+  catch { return null; }
+}
+function writeStorage(key, value) {
+  try { if (typeof globalThis.localStorage !== 'undefined') globalThis.localStorage.setItem(key, value); }
+  catch { /* storage unavailable or quota exceeded */ }
+}
+function removeStorage(key) {
+  try { if (typeof globalThis.localStorage !== 'undefined') globalThis.localStorage.removeItem(key); }
+  catch { /* storage unavailable */ }
+}
+const scheduleTimer = typeof globalThis.setTimeout === 'function' ? globalThis.setTimeout.bind(globalThis) : null;
+const cancelTimer = typeof globalThis.clearTimeout === 'function' ? globalThis.clearTimeout.bind(globalThis) : () => {};
 
 export function useStudioComposition(props, canvas) {
   const repository = new DomainRepository(props.client, props.bootstrap),
@@ -38,6 +72,11 @@ export function useStudioComposition(props, canvas) {
     documentLoading = ref(false);
   const lastRemoval = shallowRef(null);
   const interaction = ref(null);
+  const previewMode = ref(false);
+  const cleanSnapshot = ref("");
+  const autoSavedAt = ref(0);
+  const hasUnsavedChanges = ref(false);
+  let autosaveTimer = 0;
   const canUndoDelete = computed(() => canRestoreStudioLayer(draft.value, lastRemoval.value));
   const selected = computed(() => studioObject(draft.value, selectedId.value)),
     selectedActor = computed(() =>
@@ -86,6 +125,60 @@ export function useStudioComposition(props, canvas) {
         })().finally(() => jobs.delete(id)),
       );
     return jobs.get(id);
+  }
+  function markClean() {
+    try {
+      cleanSnapshot.value = serializeStudioDocument(draft.value);
+    } catch {
+      cleanSnapshot.value = "";
+    }
+    hasUnsavedChanges.value = false;
+    cancelTimer(autosaveTimer);
+    autosaveTimer = 0;
+  }
+  function writeAutosave() {
+    autosaveTimer = 0;
+    if (busy.value || disposed) return false;
+    try {
+      const validated = validateStudioDocument(draft.value);
+      const savedAt = Date.now();
+      writeStorage(AUTOSAVE_KEY, JSON.stringify({ savedAt, document: validated }));
+      autoSavedAt.value = savedAt;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function flushAutosave() {
+    cancelTimer(autosaveTimer);
+    autosaveTimer = 0;
+    if (!hasUnsavedChanges.value) return false;
+    return writeAutosave();
+  }
+  function discardAutosave() {
+    cancelTimer(autosaveTimer);
+    autosaveTimer = 0;
+    removeStorage(AUTOSAVE_KEY);
+    autoSavedAt.value = 0;
+  }
+  function syncDirtyAndScheduleAutosave() {
+    if (busy.value || !cleanSnapshot.value) return;
+    let dirty = true;
+    try {
+      dirty = serializeStudioDocument(draft.value) !== cleanSnapshot.value;
+    } catch {
+      dirty = true;
+    }
+    hasUnsavedChanges.value = dirty;
+    cancelTimer(autosaveTimer);
+    autosaveTimer = 0;
+    if (dirty && scheduleTimer) {
+      autosaveTimer = scheduleTimer(() => writeAutosave(), 800);
+    }
+  }
+  function setPreviewMode(on) {
+    previewMode.value = Boolean(on);
+    stage?.setPreviewMode?.(previewMode.value);
   }
   function select(id) {
     selectedId.value = id;
@@ -225,6 +318,7 @@ export function useStudioComposition(props, canvas) {
       renderVersion++;
       clearExport();
       clearDocumentFile();
+      syncDirtyAndScheduleAutosave();
       if (stage && !busy.value && !syncRunning && !error.value && appliedSignature) {
         try {
           const doc = validateStudioDocument(draft.value);
@@ -334,7 +428,7 @@ export function useStudioComposition(props, canvas) {
       zoom: 1,
     };
   }
-  async function replace(input, request) {
+  async function replace(input, request, { clean = false } = {}) {
     const doc = validateStudioDocument(input);
     await Promise.all(doc.actors.map((row) => actorView(row.idolId)));
     validateStudioSources(doc, materials.value, views.value);
@@ -342,7 +436,8 @@ export function useStudioComposition(props, canvas) {
     playing.value = false;
     stage.setPlaying(false);
     draft.value = doc;
-    select(doc.actors.at(-1)?.instanceId || "");
+    if (clean) markClean();
+    select(doc.actors[0]?.instanceId || "");
     return true;
   }
   async function reference(name) {
@@ -357,6 +452,26 @@ export function useStudioComposition(props, canvas) {
     } catch (cause) {
       if (request === documentRequest && !disposed) documentError.value = cause.message;
     }
+  }
+  function duplicateSelected() {
+    const row = selected.value;
+    if (!row) return false;
+    const kind = row.idolId ? 'actor' : 'sticker';
+    const copy = duplicateStudioLayer(draft.value, row.instanceId, `${kind}-${++serial}-${Date.now()}`);
+    if (!copy) {
+      status.value = row.idolId
+        ? `每张构图最多添加 ${STUDIO_LIMITS.actors} 位人物`
+        : `每张构图最多添加 ${STUDIO_LIMITS.stickers} 张贴纸`;
+      return false;
+    }
+    select(copy.instanceId);
+    return true;
+  }
+  function centerSelected() {
+    return centerStudioLayer(selected.value);
+  }
+  function resetRotationSelected() {
+    return resetStudioLayerRotation(selected.value);
   }
   function reset() {
     if (!selected.value || selected.value.locked) return;
@@ -395,14 +510,25 @@ export function useStudioComposition(props, canvas) {
       exporting.value = false;
     }
   }
+  async function downloadPng() {
+    await exportPng();
+    if (!exportUrl.value || typeof globalThis.document === "undefined") return false;
+    const link = globalThis.document.createElement("a");
+    link.href = exportUrl.value;
+    link.download = "sidem-composition.png";
+    globalThis.document.body?.appendChild(link);
+    link.click();
+    link.remove();
+    return true;
+  }
   function save() {
     documentError.value = "";
     try {
       settleFrame();
-      localStorage.setItem(
-        "sidem-studio-document-v1",
-        serializeStudioDocument(draft.value),
-      );
+      const text = serializeStudioDocument(draft.value);
+      writeStorage(MANUAL_SAVE_KEY, text);
+      discardAutosave();
+      markClean();
       documentStatus.value = "构图已保存在此浏览器。";
     } catch (cause) {
       documentStatus.value = "";
@@ -431,7 +557,7 @@ export function useStudioComposition(props, canvas) {
       if (!disposed) documentError.value = `无法复制构图：${cause.message}。可使用「生成构图文件」。`;
     }
   }
-  async function loadDocument(read, label) {
+  async function loadDocument(read, label, { clean = false } = {}) {
     const request = ++documentRequest;
     documentLoading.value = true;
     documentError.value = "";
@@ -439,7 +565,7 @@ export function useStudioComposition(props, canvas) {
     try {
       const doc = await read();
       if (disposed || request !== documentRequest) return;
-      if (await replace(doc, request)) documentStatus.value = label;
+      if (await replace(doc, request, { clean })) documentStatus.value = label;
     } catch (cause) {
       if (request === documentRequest && !disposed)
         documentError.value = `载入失败：${cause.message}。当前构图已保留。`;
@@ -449,10 +575,20 @@ export function useStudioComposition(props, canvas) {
   }
   async function restore() {
     await loadDocument(() => {
-      const value = localStorage.getItem("sidem-studio-document-v1");
+      const value = readStorage(MANUAL_SAVE_KEY);
       if (!value) throw Error("此浏览器尚未保存构图");
       return parseStudioDocument(value);
-    }, "已载入此浏览器保存的构图。");
+    }, "已载入此浏览器保存的构图。", { clean: true });
+  }
+  async function restoreAutosave() {
+    await loadDocument(() => {
+      const raw = readStorage(AUTOSAVE_KEY);
+      if (!raw) throw Error("此浏览器没有暂存的构图");
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch { throw Error("暂存构图格式无效"); }
+      if (typeof parsed?.savedAt === "number") autoSavedAt.value = parsed.savedAt;
+      return parseStudioDocument(JSON.stringify(parsed?.document ?? parsed));
+    }, "已恢复上次自动暂存的构图。", { clean: true });
   }
   async function importDocument(file) {
     if (!file) return;
@@ -479,53 +615,74 @@ export function useStudioComposition(props, canvas) {
       if (disposed) return;
       materials.value = value.materials;
       media.value = value.media;
-      const doc = createStudioDocument();
+      let doc = createStudioDocument();
+      const spotId = Number(props.openSpotId);
+      const hasOpenSpot = Number.isInteger(spotId) && materials.value.sceneIdsBySpotId[spotId]?.length;
+      const initialSpotId = hasOpenSpot ? spotId : materials.value.spots[0].id;
       doc.background = {
-        spotId: materials.value.spots[0].id,
-        sceneId:
-          materials.value.sceneIdsBySpotId[materials.value.spots[0].id][0],
+        spotId: initialSpotId,
+        sceneId: materials.value.sceneIdsBySpotId[initialSpotId][0],
       };
-      const [kind, seed] = props.photoEntity.split(":");
-      // A blank studio starts with the place only; an idol comes in when the visit names one
-      // (from an idol page, or a pose/face of theirs) and is otherwise added from 人物.
-      const castId = props.photoIdol || (seed && ["poses", "faces"].includes(kind) ? actors.value[0].id : ""),
-        view = castId ? await actorView(castId) : null,
-        actor = castId ? defaultActor(castId, view) : null;
-      doc.actors = actor ? [actor] : [];
-      if (seed) {
-        const key = Number(seed);
-        if (["poses", "faces"].includes(kind)) {
-          if (!view.actor[kind].some((row) => row.id === key))
-            throw Error("预设不属于所选偶像");
-          actor[kind === "poses" ? "poseId" : "faceId"] = key;
-        } else if (kind === "spots") {
-          doc.background = {
-            spotId: key,
-            sceneId: materials.value.sceneIdsBySpotId[key]?.[0],
-          };
-        } else if (kind === "scenes") {
-          const pair = Object.entries(materials.value.sceneIdsBySpotId).find(
-            ([, ids]) => ids.includes(key),
-          );
-          if (!pair) throw Error("场景缺少地点关联");
-          doc.background = { spotId: Number(pair[0]), sceneId: key };
-        } else if (kind === "stickers")
-          doc.stickers = [
-            {
-              instanceId: "seed-sticker",
-              stickerId: key,
-              x: 0.5,
-              y: 0.3,
-              scale: 0.8,
-              rotation: 0,
-            },
-          ];
-        else if (["frames", "filters"].includes(kind))
-          doc[kind === "frames" ? "frameId" : "filterId"] = key;
+      const [kind, seed] = (props.photoEntity || "").split(":");
+      const groupIds = Array.isArray(props.photoIdols) ? props.photoIdols.filter(Boolean).slice(0, STUDIO_LIMITS.actors) : [];
+      let initialSelection = "";
+      if (props.openReference === "A" || props.openReference === "B") {
+        await Promise.all((props.openReference === "A" ? [38, 40] : [4, 5, 6]).map(actorView));
+        doc = studioReference(props.openReference, views.value);
+        initialSelection = doc.actors[0]?.instanceId || "";
+      } else if (groupIds.length) {
+        const loadedViews = await Promise.all(groupIds.map((id) => actorView(id)));
+        const slots = GROUP_X_SLOTS[groupIds.length] || GROUP_X_SLOTS[6];
+        doc.actors = groupIds.map((id, index) => {
+          const actor = defaultActor(id, loadedViews[index]);
+          actor.x = slots[index] ?? 0.5;
+          return actor;
+        });
+        initialSelection = doc.actors[0]?.instanceId || "";
+      } else {
+        // A blank studio starts with the place only; an idol comes in when the visit names one
+        // (from an idol page, or a pose/face of theirs) and is otherwise added from 人物.
+        const castId = props.photoIdol || (seed && ["poses", "faces"].includes(kind) ? actors.value[0].id : ""),
+          view = castId ? await actorView(castId) : null,
+          actor = castId ? defaultActor(castId, view) : null;
+        doc.actors = actor ? [actor] : [];
+        if (seed) {
+          const key = Number(seed);
+          if (["poses", "faces"].includes(kind)) {
+            if (!view.actor[kind].some((row) => row.id === key))
+              throw Error("预设不属于所选偶像");
+            actor[kind === "poses" ? "poseId" : "faceId"] = key;
+          } else if (kind === "spots") {
+            doc.background = {
+              spotId: key,
+              sceneId: materials.value.sceneIdsBySpotId[key]?.[0],
+            };
+          } else if (kind === "scenes") {
+            const pair = Object.entries(materials.value.sceneIdsBySpotId).find(
+              ([, ids]) => ids.includes(key),
+            );
+            if (!pair) throw Error("场景缺少地点关联");
+            doc.background = { spotId: Number(pair[0]), sceneId: key };
+          } else if (kind === "stickers")
+            doc.stickers = [
+              {
+                instanceId: "seed-sticker",
+                stickerId: key,
+                x: 0.5,
+                y: 0.3,
+                scale: 0.8,
+                rotation: 0,
+              },
+            ];
+          else if (["frames", "filters"].includes(kind))
+            doc[kind === "frames" ? "frameId" : "filterId"] = key;
+        }
+        initialSelection = actor?.instanceId || "";
       }
       validateStudioSources(doc, materials.value, views.value);
       draft.value = validateStudioDocument(doc);
-      if (actor) select(actor.instanceId);
+      markClean();
+      if (initialSelection) select(initialSelection);
       busy.value = false;
       await sync();
     } catch (cause) {
@@ -537,6 +694,7 @@ export function useStudioComposition(props, canvas) {
   }
   onBeforeUnmount(() => {
     disposed = true;
+    cancelTimer(autosaveTimer);
     controller.abort();
     clearExport();
     clearDocumentFile();
@@ -556,6 +714,7 @@ export function useStudioComposition(props, canvas) {
     selected,
     selectedActor,
     interaction,
+    previewMode,
     playing,
     exportUrl,
     exportStatus,
@@ -564,13 +723,19 @@ export function useStudioComposition(props, canvas) {
     documentStatus,
     documentUrl,
     documentLoading,
+    hasUnsavedChanges,
+    autoSavedAt,
     actorView,
     select,
+    setPreviewMode,
     addActor,
     addSticker,
     adjustSelected,
     cancelInteraction,
     setSnapPreference,
+    duplicateSelected,
+    centerSelected,
+    resetRotationSelected,
     remove,
     canUndoDelete,
     undoDelete,
@@ -582,8 +747,12 @@ export function useStudioComposition(props, canvas) {
     reset,
     togglePlayback,
     exportPng,
+    downloadPng,
     save,
     restore,
+    restoreAutosave,
+    flushAutosave,
+    discardAutosave,
     exportDocument,
     copyDocument,
     importDocument,

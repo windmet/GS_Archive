@@ -46,7 +46,8 @@ defineExpose({ matches, presentationLoading })
 .chapter-reading-segment { scroll-margin-top:20px; outline:none; margin:32px 0; overflow-anchor:auto; }
 header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--reader-border); }
 h2 { margin:0; font-size:20px; color:var(--reader-text-main); }
-button { min-height:40px; padding:6px 14px; border:1px solid var(--reader-border); border-radius:8px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }
+button { min-height:40px; padding:6px 14px; border:1px solid var(--reader-border); border-radius:var(--gs-radius-control); background:var(--reader-bg-card); color:var(--reader-text-main); font:inherit; font-size:var(--gs-text-ui); font-weight:var(--gs-weight-medium); cursor:pointer; }
+@media (hover: hover) { button:not(:disabled):hover { border-color:var(--gs-rule); } }
 button:disabled { opacity:.5; cursor:wait; }
 .segment-placeholder { min-height:240px; padding:20px; background:var(--reader-bg-card); color:var(--reader-text-sub); }
 .segment-notice { color:var(--reader-text-sub); font-size:14px; }

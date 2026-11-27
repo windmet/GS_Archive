@@ -287,7 +287,8 @@ function formatDateTime(timestamp) {
 .ticket-copy small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.5;overflow-wrap:anywhere; }
 .ticket-chevron { color:var(--gs-ink-3); }
 @media (hover: hover) and (pointer: fine) {
-  .ticket-open:hover .ticket-chevron, .ticket-open:hover strong { color:var(--gs-mint-ink); }
+  .ticket-open:hover { background: var(--gs-btn-primary-hover-bg); box-shadow: 0 2px 8px rgb(19 33 58 / 10%); }
+  .ticket-open:hover .ticket-chevron { color: var(--gs-ink); }
 }
 @media (prefers-reduced-motion: reduce) { .ticket-open { transition:none; } }
 .gasha-summary dl { margin: 0; }

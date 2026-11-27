@@ -458,10 +458,10 @@ function formatDate(timestamp) {
 .idol-detail :deep(.relation-labels strong), .idol-detail :deep(.relation-labels small), .idol-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
 
 @media (hover: hover) {
-  .related-grid button:hover strong, .song-links button:hover strong, .honor-plates button:hover .honor-text { color: var(--gs-mint-ink); }
+  .related-grid button:hover, .song-links button:hover, .honor-plates button:hover { background: var(--gs-hover); }
   .honor-plates button:hover img { transform: translateY(-2px); }
   .honor-info:hover { color: var(--gs-ink); }
-  .honor-collapse-toggle:hover { background: var(--gs-hover); color: var(--gs-mint-ink); }
+  .honor-collapse-toggle:hover { background: var(--gs-hover); color: var(--gs-ink); }
   .idol-hero-home:hover { background: var(--gs-paper); }
 }
 @container idol-detail (max-width: 720px) { .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

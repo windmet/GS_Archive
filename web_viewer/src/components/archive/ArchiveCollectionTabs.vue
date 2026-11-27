@@ -29,5 +29,9 @@ const tabs = computed(() => Object.entries(COUNT_KEYS).map(([id, key]) => {
 .collection-tab[aria-current='page'] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .collection-tab:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 @media (hover: hover) and (pointer: fine) { .collection-tab:hover { color: var(--gs-ink); } }
+@media (min-width: 761px) {
+  .collection-tabs { flex-wrap: wrap; height: auto; min-height: 44px; overflow-x: visible; }
+  .collection-tab { min-height: 44px; }
+}
 @media (max-width: 760px) { .collection-tabs { gap: var(--gs-space-6); padding: 0 var(--gs-space-5); } }
 </style>

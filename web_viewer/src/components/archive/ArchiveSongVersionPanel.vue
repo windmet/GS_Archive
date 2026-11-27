@@ -131,9 +131,8 @@ async function pick(code) {
 /* The version panel: on the paper under the head; tabs, then the mode's own choice. */
 .song-version-panel { container: song-version / inline-size; min-width: 0; }
 .song-version-panel .song-block-heading small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.version-tabs { display: flex; gap: var(--gs-space-5); height: 44px; margin-top: var(--gs-space-2); border-bottom: 1px solid var(--gs-line); overflow-x: auto; scrollbar-width: none; }
-.version-tabs::-webkit-scrollbar { display: none; }
-.version-tabs button { flex: none; padding: 0 var(--gs-space-1); border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
+.version-tabs { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-5); min-height: 44px; margin-top: var(--gs-space-2); border-bottom: 1px solid var(--gs-line); }
+.version-tabs button { flex: none; min-height: 44px; padding: 0 var(--gs-space-1); border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); white-space: nowrap; cursor: pointer; }
 .version-tabs button[aria-checked="true"] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 @media (hover: hover) { .version-tabs button:hover { color: var(--gs-ink); } }
 
@@ -170,11 +169,13 @@ async function pick(code) {
 .performer-slot[data-slot-state=loading] .slot-avatar { opacity: .55; }
 .slot-clear { position: absolute; top: var(--gs-space-1); right: 0; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--gs-ink-3); cursor: pointer; }
 .lineup-progress { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
-.lineup-load { margin-left: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.lineup-load { margin-left: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-btn-primary-border); border-radius: var(--gs-radius-control); background: var(--gs-btn-primary-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+@media (hover: hover) { .lineup-load:not(:disabled):hover { background: var(--gs-btn-primary-hover-bg); } }
 @media (hover: hover) { .slot-pick:hover strong { color: var(--gs-mint-ink); } .slot-clear:hover { color: var(--gs-ink); } }
 
 /* Narrow: pills scroll sideways in two rows; slots keep the face and the number. */
 @container song-version (max-width: 519px) {
+  .version-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .version-pills { display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, auto); justify-content: start; overflow-x: auto; scrollbar-width: none; }
   .version-pills::-webkit-scrollbar { display: none; }
   .version-pills button { min-height: var(--gs-control-touch); }

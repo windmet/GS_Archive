@@ -350,8 +350,9 @@ function cycleFocus(event) {
 .drawer-actions .story-action.primary { flex-grow: 2; }
 .seasonal-drawer :is(button, a):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 /* Shared story-page action styles, scoped to the drawer that lives outside the page. */
-.seasonal-drawer .story-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
-.seasonal-drawer .story-action.primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); }
+.seasonal-drawer .story-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
+.seasonal-drawer .story-action.primary { border-color: var(--gs-btn-primary-border); background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font-weight: var(--gs-weight-semibold); }
+@media (hover: hover) { .seasonal-drawer .story-action.primary:not(:disabled):hover { background: var(--gs-btn-surface-hover-bg); } }
 .seasonal-drawer .story-action:disabled { cursor: default; opacity: .45; }
 
 @media (max-width: 760px) {

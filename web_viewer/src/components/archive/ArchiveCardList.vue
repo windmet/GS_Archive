@@ -222,7 +222,7 @@ function fallbackCardIcon(event, resourceId) {
 .card-rarity-tab.active { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 
 .card-archive-list { display: grid; gap: 0 var(--gs-space-7); grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-3) var(--gs-space-8) var(--gs-space-9); }
-.card-archive-row { display: grid; grid-template-columns: 56px 40px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: 72px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.card-archive-row { display: grid; grid-template-columns: 56px 40px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: calc(100% + 2 * var(--gs-space-2)); min-height: 72px; margin-inline: calc(-1 * var(--gs-space-2)); padding: var(--gs-space-3) var(--gs-space-2); border: 0; border-bottom: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
 .card-thumb { grid-column: 1; width: 56px; height: 56px; border-radius: var(--gs-radius-media); background: var(--gs-line); object-fit: cover; }
 .card-thumb.card-image-missing { visibility: hidden; }
 .card-rarity { grid-column: 2; color: var(--gs-ink-2); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-weight: var(--gs-weight-bold); }
@@ -236,13 +236,12 @@ function fallbackCardIcon(event, resourceId) {
 .card-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gs-space-3); max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-9) var(--gs-space-8); text-align: center; }
 .card-empty-title { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-bold); }
 .card-empty-desc { max-width: 420px; margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.5; }
-.card-empty-reset { display: inline-flex; align-items: center; justify-content: center; min-height: var(--gs-control-normal); margin-top: var(--gs-space-2); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
-.card-empty-reset:hover { border-color: var(--gs-selected-line); background: var(--gs-mint-wash); }
+.card-empty-reset { display: inline-flex; align-items: center; justify-content: center; min-height: var(--gs-control-normal); margin-top: var(--gs-space-2); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .card-empty-reset:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 
 /* Grid: the card icon carries the tile; no frame around it. */
 .card-archive-list.layout-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--gs-space-6) var(--gs-space-5); padding-top: var(--gs-space-5); }
-.layout-grid .card-archive-row { display: flex; flex-direction: column; align-items: stretch; gap: var(--gs-space-2); min-height: 0; padding: 0; border: 0; }
+.layout-grid .card-archive-row { display: flex; flex-direction: column; align-items: stretch; gap: var(--gs-space-2); width: calc(100% + 2 * var(--gs-space-2)); min-height: 0; margin: calc(-1 * var(--gs-space-2)); padding: var(--gs-space-2); border: 0; }
 .layout-grid .card-thumb { grid-column: auto; width: 100%; height: auto; aspect-ratio: 1; }
 .layout-grid .card-thumb.card-image-missing { visibility: hidden; }
 .layout-grid .card-rarity { grid-column: auto; font-size: var(--gs-text-ui); }
@@ -250,7 +249,8 @@ function fallbackCardIcon(event, resourceId) {
 .layout-grid .card-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.35; word-break: break-all; }
 .layout-grid .card-counts { grid-column: auto; }
 @media (hover: hover) {
-  .card-archive-row:hover .card-title { color: var(--gs-mint-ink); }
+  .card-empty-reset:hover { border-color: var(--gs-rule); background: var(--gs-hover); color: var(--gs-ink); }
+  .card-archive-row:hover { background: var(--gs-hover); }
   .card-rarity-tab:hover:not(.active) { border-color: var(--gs-ink-3); }
 }
 .card-archive-row:focus-visible, .card-rarity-tab:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }

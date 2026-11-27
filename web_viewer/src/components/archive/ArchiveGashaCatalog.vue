@@ -97,7 +97,7 @@ function formatDate(timestamp) {
 .catalog-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-4); margin-block: 0; padding-block: var(--gs-space-5); color: var(--gs-ink-2); line-height: 1.6; }
 .catalog-status button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; }
 .gasha-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); column-gap: var(--gs-space-8); padding-block: var(--gs-space-2) var(--gs-space-9); }
-.gasha-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) 18px; align-items: center; gap: var(--gs-space-4); min-width: 0; padding: var(--gs-space-4) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: inherit; cursor: pointer; text-align: left; }
+.gasha-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) 18px; align-items: center; gap: var(--gs-space-4); min-width: 0; margin-inline: calc(-1 * var(--gs-space-3)); padding: var(--gs-space-3); border: 0; border-bottom: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: none; color: inherit; cursor: pointer; text-align: left; }
 .gasha-item > svg { color: var(--gs-ink-3); }
 .banner-frame { display: block; overflow: hidden; aspect-ratio: 940 / 510; border-radius: var(--gs-radius-media); background: var(--gs-line); }
 .banner-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -107,7 +107,7 @@ function formatDate(timestamp) {
 .gasha-meta { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .gasha-catalog button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 /* The horizontal rail clips an outer ring; keep this control's ring inside. */
-@media (hover: hover) { .gasha-item:hover strong { color: var(--gs-mint-ink); } }
+@media (hover: hover) { .gasha-item:hover { background: var(--gs-hover); } .gasha-item:hover > svg { color: var(--gs-ink); } }
 @container gasha-catalog (max-width: 560px) {
   .catalog-footprint, .catalog-filter, .catalog-status, .gasha-grid { padding-inline: var(--gs-space-5); }
   .catalog-footprint { padding-top: var(--gs-space-4); }

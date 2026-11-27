@@ -69,8 +69,9 @@ function chooseIdol() {
 .idol-select-summary small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .idol-select-remember { display: flex; align-items: center; gap: var(--gs-space-4); min-height: var(--gs-control-compact); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .idol-select-buttons { display: flex; gap: var(--gs-space-3); }
-.idol-select-buttons button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
-.idol-select-buttons .idol-select-primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); }
+.idol-select-buttons button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); cursor: pointer; }
+.idol-select-buttons .idol-select-primary { border-color: var(--gs-btn-primary-border); background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font-weight: var(--gs-weight-semibold); }
+@media (hover: hover) { .idol-select-buttons .idol-select-primary:not(:disabled):hover { background: var(--gs-btn-surface-hover-bg); } }
 .idol-select-buttons button:disabled { opacity: .45; cursor: default; }
 .idol-select :is(button, input):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @container idol-select (max-width: 560px) {

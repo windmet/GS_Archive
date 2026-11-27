@@ -225,8 +225,7 @@ function formatDate(timestamp) {
 .exchange-card b { color: var(--gs-ink-2); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
 .exchange-card:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (hover: hover) and (pointer: fine) {
-  .exchange-card:hover { background: var(--gs-mint-wash); }
-  .exchange-card:hover strong { color: var(--gs-mint-ink); }
+  .exchange-card:hover { background: var(--gs-hover); }
 }
 .rule-footer { display: grid; justify-items: start; }
 .rule-source { justify-self: stretch; }
