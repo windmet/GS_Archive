@@ -191,7 +191,7 @@ onMounted(() => {
 .drawer-search:focus-within { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .drawer-search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .drawer-search input:focus-visible { outline: none; }
-.drawer-search-go { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-btn-primary-border); border-radius: var(--gs-radius-control); background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.drawer-search-go { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-btn-surface-bg); box-shadow: inset 0 0 0 1px var(--gs-btn-primary-border); color: var(--gs-btn-primary-ink); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .drawer-identity { border-radius: var(--gs-radius-control); background: var(--gs-surface); box-shadow: var(--gs-shadow-1); }
 
 .drawer-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; gap: var(--gs-space-5); padding: 0 max(var(--gs-space-5), env(safe-area-inset-right, 0px)) var(--gs-space-3) max(var(--gs-space-5), env(safe-area-inset-left, 0px)); }
