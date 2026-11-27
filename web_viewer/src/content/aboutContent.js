@@ -40,7 +40,7 @@ export const ABOUT_CONTENT = {
       links: [
         { label: 'GitHub 仓库', url: 'https://github.com/windmet/GS_Archive', description: '源代码与更新记录，点个 ⭐ 支持一下' },
         { label: '问题反馈', url: 'https://github.com/windmet/GS_Archive/issues', description: '报告错误、翻译问题或页面故障' },
-        { label: '开发文档', url: '', description: '建站与资料整理的笔记', note: '【待填写】' },
+        { label: '资料馆馆刊', url: 'https://blog.gs-archive.com/', description: '建馆札记与更新勘误' },
       ],
     },
     {

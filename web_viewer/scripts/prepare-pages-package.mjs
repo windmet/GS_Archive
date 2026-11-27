@@ -107,7 +107,7 @@ const receipt = buildReceipt({ target, budget, acceptance, boot, dataRevision: o
 await fs.writeFile(path.join(dist, RECEIPT_BY_TARGET[target]), JSON.stringify(receipt, null, 2) + '\n')
 await fs.writeFile(path.join(dist, 'robots.txt'), renderRobots({ target, origin: shellOrigin }))
 if (target === 'production') await fs.writeFile(path.join(dist, 'sitemap.xml'), renderSitemap({ origin: shellOrigin, urls: entityShells.map(shell => shell.url) }))
-await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*'], exclude: ['/_app/*', '/_catalog/*', '/translations/*', '/_seasonal-reading/*']}))
+await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*', '/_app/*'], exclude: ['/_catalog/*', '/translations/*', '/_seasonal-reading/*']}))
 await fs.writeFile(path.join(dist, '_headers'), renderHeaders({ target, shellSections }))
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',

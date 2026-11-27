@@ -65,8 +65,9 @@ export async function runSiteChecks({ get, probeOrigin, packageInfo = null, nonc
     add('entry-chunks', bad.length ? 'fail' : 'pass', bad.length ? bad.join('; ') : `${scripts.length} module script(s) served as JavaScript`)
   }
   const missing = await get(`/_app/__gs-missing-${nonce}.js`)
-  add('missing-chunk', missing.status === 404 ? 'pass' : 'warn', missing.status === 404 ? 'a missing chunk is a 404'
-    : `a missing chunk answers ${missing.status} ${missing.type}${isHtml(missing) ? ': the SPA fallback hands stale tabs HTML for old chunks' : ''}`)
+  const cache = missing.headers['cache-control'] || ''
+  add('missing-chunk', missing.status === 404 && /\bno-store\b/i.test(cache) && !/immutable/i.test(cache) ? 'pass' : 'fail',
+    `missing chunk returned ${missing.status} ${missing.type}, Cache-Control: ${cache || '(absent)'}`)
 
   const catalog = json(await get('/_catalog/bootstrap.json'))
   add('catalog-bootstrap', catalog && (!receipt || catalog.release === receipt.release) ? 'pass' : 'fail',
@@ -135,12 +136,17 @@ export function parseHeadersFile(source) {
 }
 export function createPackageFetcher(readFile) {
   const headerRules = parseHeadersFile(readFile('_headers')?.toString('utf8') || '')
+  const routes = JSON.parse(readFile('_routes.json')?.toString('utf8') || '{}')
+  const handlesChunks = routes.include?.includes('/_app/*') && !routes.exclude?.includes('/_app/*')
   return async request => {
     const pathname = decodeURIComponent(request.split('?')[0])
     if (/^\/(data|assets)\//.test(pathname)) return { status: 0, type: '', headers: {}, body: Buffer.alloc(0), skipped: true }
     const relative = pathname.slice(1)
     const candidates = relative === '' ? ['index.html'] : relative.endsWith('/') ? [`${relative}index.html`] : [relative, `${relative}/index.html`]
     let file = candidates.find(name => readFile(name)), status = 200
+    if (!file && handlesChunks && pathname.startsWith('/_app/')) {
+      return { status: 404, type: 'text/plain', headers: { 'cache-control': 'no-store' }, body: Buffer.alloc(0) }
+    }
     if (!file) file = 'index.html'
     const extension = file.slice(file.lastIndexOf('.'))
     const headers = {}
