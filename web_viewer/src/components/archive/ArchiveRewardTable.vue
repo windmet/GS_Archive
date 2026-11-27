@@ -1,7 +1,11 @@
 <template>
   <div class="domain-rewards" :class="{ 'is-sources': sources }">
     <div v-if="rows.length && (!useGroupedSources || scopes.length > 1)" class="domain-table-controls">
-      <GsFilterMenu v-if="scopes.length>1" v-model="scope" label="获取方式" :options="scopeOptions" neutral="" />
+      <div v-if="scopes.length>1" class="domain-scope-tabs" role="group" aria-label="奖励分类">
+        <button v-for="option in scopeOptions" :key="option.value || 'all'" type="button" :aria-pressed="scope === option.value" @click="scope = option.value">
+          <span>{{ option.label }}</span><small>{{ option.count }}</small>
+        </button>
+      </div>
       <span>{{ filtered.length }} 条</span>
     </div>
     <div v-if="useGroupedSources" class="domain-reward-accordions" aria-label="获得来源分组">
@@ -46,15 +50,19 @@
           </div>
           <span v-if="hasAmount(row)" class="domain-reward-quantity" :aria-label="`数量 ${amount(row)}`">× {{ amount(row) }}</span>
         </div>
-        <div v-if="!sources" class="domain-reward-product">
+        <button v-if="!sources && (rewardCollectionKey(row.product) || row.product?.target)" type="button" class="domain-reward-product is-actionable" @click="openProduct(row.product)">
+          <span class="domain-reward-icon" aria-hidden="true">
+            <DomainMediaPreview v-if="row.product?.presentation?.image" :binding="row.product.presentation.image" :name="rewardProductName(row.product)" compact passive />
+            <ImageOff v-else :size="22" aria-hidden="true" />
+          </span>
+          <span class="domain-reward-name"><span><strong>{{ rewardProductName(row.product) }}</strong><small v-if="rewardProductLabel(row.product) !== rewardProductName(row.product)">{{ rewardProductLabel(row.product) }}</small></span><ChevronRight :size="16" aria-hidden="true" /></span>
+        </button>
+        <div v-else-if="!sources" class="domain-reward-product">
           <div class="domain-reward-icon">
-            <DomainMediaPreview v-if="row.product?.presentation?.image" :binding="row.product.presentation.image" :name="rewardProductName(row.product)" compact/>
+            <DomainMediaPreview v-if="row.product?.presentation?.image" :binding="row.product.presentation.image" :name="rewardProductName(row.product)" compact />
             <ImageOff v-else :size="22" aria-label="未绑定图片" />
           </div>
-          <button v-if="rewardCollectionKey(row.product) || row.product?.target" type="button" class="domain-reward-name" @click="openProduct(row.product)">
-            <span><strong>{{ rewardProductName(row.product) }}</strong><small v-if="rewardProductLabel(row.product) !== rewardProductName(row.product)">{{ rewardProductLabel(row.product) }}</small></span><ChevronRight :size="16" />
-          </button>
-          <div v-else class="domain-reward-name"><span><strong>{{ rewardProductName(row.product) }}</strong><small v-if="rewardProductLabel(row.product) !== rewardProductName(row.product)">{{ rewardProductLabel(row.product) }}</small></span></div>
+          <div class="domain-reward-name"><span><strong>{{ rewardProductName(row.product) }}</strong><small v-if="rewardProductLabel(row.product) !== rewardProductName(row.product)">{{ rewardProductLabel(row.product) }}</small></span></div>
         </div>
         <div v-else-if="row.event" class="domain-reward-source">
           <button type="button" class="domain-reward-name" @click="emit('open-event',row.event)"><span><strong>{{ row.event.title }}</strong></span><ChevronRight :size="15" aria-hidden="true" /></button>
@@ -72,13 +80,18 @@ import {ChevronDown,ChevronRight,ImageOff} from '@lucide/vue'
 import {campaignPeriod,number,rewardConditions,rewardScopeLabels,rewardRelationLabel,rewardProductLabel,rewardCollectionKey} from './DomainPresentation.mjs'
 import {presentRewardProductName as rewardProductName} from './useArchiveRewardText.js'
 import DomainMediaPreview from './DomainMediaPreview.vue'
-import GsFilterMenu from '../gs/GsFilterMenu.vue'
 import '../../styles/archive-rewards.css'
 const props=defineProps({rows:{type:Array,default:()=>[]},sources:Boolean})
 const emit=defineEmits(['open-entity','open-event','open-target'])
 const scope=ref(''),page=ref(0),size=25,expandedGroups=ref({})
 const GROUP_INITIAL_LIMIT=12
-const scopes=computed(()=>[...new Set(props.rows.map(row=>row.scope).filter(Boolean))])
+const SCOPE_ORDER=['point','ranking','idol-ranking','panel','repeated','story-in-event-term','story-archive','story-section','seasonal-story','valentine-level']
+const scopes=computed(()=>{
+  const present=new Set(props.rows.map(row=>row.scope).filter(Boolean))
+  const ordered=SCOPE_ORDER.filter(kind=>present.has(kind))
+  for(const kind of present)if(!ordered.includes(kind))ordered.push(kind)
+  return ordered
+})
 const scopeOptions=computed(()=>[{value:'',label:'全部',count:props.rows.length},...scopes.value.map(kind=>({value:kind,label:rewardScopeLabels[kind]||'其他来源',count:props.rows.filter(row=>row.scope===kind).length}))])
 const filtered=computed(()=>props.rows.filter(row=>!scope.value || row.scope===scope.value))
 const sourceGroups=computed(()=>{

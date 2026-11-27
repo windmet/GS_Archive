@@ -216,11 +216,23 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     for(const row of rewards.filter(row=>row.product.kind==='card'&&row.product.target)){
       const card=data.domainCards.find(card=>card.resource_id===row.product.target.card);
       if(!rewardCards.has(card.resource_id))rewardCards.set(card.resource_id,{card_resource_id:card.resource_id,card_title:card.title,character_id:card.character_id,character_name:data.idolUnit.by_idol_code[card.character_id]?.display_name,rarity:card.rarity,image:row.product.presentation.image,methods:[]});
-      rewardCards.get(card.resource_id).methods.push({key:row.key,kind:row.scope.startsWith('story')?'story':'point',label:row.scope.startsWith('story')?`剧情 ${row.episodeId} 阅读报酬${row.scope==='story-in-event-term'?'（活动期内）':''}`:`${row.totalPoint?.toLocaleString('zh-CN') ?? '未记录'} PT 获得卡片`});
+      const methodLabel=row.scope.startsWith('story')
+        ? `剧情 ${row.episodeId} 阅读报酬${row.scope==='story-in-event-term'?'（活动期内）':''}`
+        : row.scope==='panel' && Number.isFinite(row.totalCount)
+          ? `歌曲面板第 ${row.totalCount.toLocaleString('zh-CN')} 轮完成`
+          : `${row.totalPoint?.toLocaleString('zh-CN') ?? '未记录'} PT 获得卡片`;
+      rewardCards.get(card.resource_id).methods.push({key:row.key,kind:row.scope.startsWith('story')?'story':'point',label:methodLabel});
     }
     for(const card of rewardCards.values()){
       const fragments=rewards.filter(row=>row.product.kind==='cardFragment'&&row.product.target?.card===card.card_resource_id);
-      if(fragments.length)card.methods.push({key:`fragments-${card.card_resource_id}`,kind:'point',label:`${fragments[0].totalPoint?.toLocaleString('zh-CN')} PT 起，共 ${fragments.length} 次碎片报酬`});
+      if(fragments.length){
+        const pt=fragments.filter(row=>row.scope==='point'&&Number.isFinite(row.totalPoint));
+        const pnl=fragments.filter(row=>row.scope==='panel'&&Number.isFinite(row.totalCount));
+        const parts=[];
+        if(pt.length)parts.push(`${pt[0].totalPoint.toLocaleString('zh-CN')} PT 起 ${pt.length} 次`);
+        if(pnl.length)parts.push(`歌曲面板第 ${pnl.map(row=>row.totalCount.toLocaleString('zh-CN')).join('、')} 轮`);
+        card.methods.push({key:`fragments-${card.card_resource_id}`,kind:'point',label:parts.length?`专用彩光碎片 ×${fragments.reduce((s,r)=>s+(r.product?.amount||0),0).toLocaleString('zh-CN')}（突破用 · ${parts.join(' + ')}）`:`共 ${fragments.length} 次专用彩光碎片（突破用）`});
+      }
     }
     // Wikiwiki's 限定報酬 list: the reward table must be part of it; the rest are mission or exchange cards.
     const wiki=wikiRewards.get(event.eventCode);

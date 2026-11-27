@@ -1673,8 +1673,8 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .end-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .end-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .end-actions { flex: none; display: flex; gap: var(--gs-space-2); }
-.end-actions button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
-.end-actions button.primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
+.end-actions button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: transparent; color: var(--gs-ink-2); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
+.end-actions button.primary { border-color: var(--gs-btn-primary-border); background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font-weight: var(--gs-weight-semibold); }
 .end-actions button:disabled { opacity: .5; cursor: default; }
 .episode-complete.is-preview .end-actions button { display: inline-flex; align-items: center; gap: var(--gs-space-2); }
 .end-actions button:focus-visible, .audio-tap:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }

@@ -51,6 +51,8 @@ for (const [key, frame] of Object.entries(media.entries).filter(([key]) => key.s
     trimmed++;
   });
   assert.equal(stage.frameLayer.children.length, 2, 'Changing frames releases the previous display objects');
+  assert.equal(stage.frameLayer.children[0], parts[1], `${key} _02 sits behind _01 so corner/badge plaques overlay the border`);
+  assert.equal(stage.frameLayer.children[1], parts[0], `${key} _01 sits in front of _02`);
   count++;
 }
 assert.equal(count, 26);

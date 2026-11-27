@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createStudioDocument, studioObject, moveStudioObject, STUDIO_LIMITS } from '../src/core/StudioDocument.mjs'
-import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer, reorderStudioLayer } from '../src/core/StudioLayerEditing.mjs'
+import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer, reorderStudioLayer, duplicateStudioLayer, centerStudioLayer, resetStudioLayerRotation } from '../src/core/StudioLayerEditing.mjs'
 import { validateStudioDocument } from '../src/core/StudioDocument.mjs'
 
 const doc = createStudioDocument()
@@ -38,4 +38,29 @@ persisted.stickers = [{instanceId:'sticker', stickerId:1, x:.5,y:.3,scale:1,rota
 assert.deepEqual(validateStudioDocument(JSON.parse(JSON.stringify(persisted))), persisted)
 persisted.stickers[0].hidden = 'yes'
 assert.throws(() => validateStudioDocument(persisted), /图层状态/)
-console.log('Layer editing: default actor deletion, exact order restore, later-edit preservation, group order, duplicate/limit and cross-document guards passed')
+const dupDoc = createStudioDocument()
+dupDoc.actors = [{ instanceId: 'a1', idolId: 1, x: 0.4, y: 0.97, scale: 1, rotation: 15, locked: true }, { instanceId: 'a2', idolId: 2, x: 0.88, y: 0.97, scale: 1, rotation: 0 }]
+dupDoc.stickers = [{ instanceId: 's1', stickerId: 1, x: 0.3, y: 0.2, scale: 0.8, rotation: -12, locked: true }]
+const actorCopy = duplicateStudioLayer(dupDoc, 'a1', 'a1-copy')
+assert.equal(actorCopy?.instanceId, 'a1-copy')
+assert.equal(actorCopy?.locked, undefined)
+assert.equal(actorCopy?.x, 0.46)
+assert.deepEqual(dupDoc.actors.map(r => r.instanceId), ['a1', 'a1-copy', 'a2'])
+const edgeCopy = duplicateStudioLayer(dupDoc, 'a2', 'a2-copy')
+assert.equal(edgeCopy?.x, 0.82)
+assert.equal(duplicateStudioLayer(dupDoc, 'a2', 'a2-copy'), null, 'Duplicate instanceId must be rejected')
+const stickerCopy = duplicateStudioLayer(dupDoc, 's1', 's1-copy')
+assert.equal(stickerCopy?.locked, undefined)
+assert.equal(centerStudioLayer(dupDoc.actors[0]), false, 'Locked layer cannot be centered')
+assert.equal(resetStudioLayerRotation(dupDoc.actors[0]), false, 'Locked layer rotation cannot be reset')
+assert.equal(centerStudioLayer(actorCopy), true)
+assert.equal(actorCopy.x, 0.5)
+assert.equal(actorCopy.y, 0.97, 'Actor center preserves vertical framing height')
+assert.equal(resetStudioLayerRotation(actorCopy), true)
+assert.equal(actorCopy.rotation, 0)
+assert.equal(centerStudioLayer(stickerCopy), true)
+assert.equal(stickerCopy.x, 0.5)
+assert.equal(stickerCopy.y, 0.5, 'Sticker center centers both X and Y')
+dupDoc.actors = Array.from({ length: STUDIO_LIMITS.actors }, (_, index) => ({ instanceId: `cap-${index}`, x: 0.5 }))
+assert.equal(duplicateStudioLayer(dupDoc, 'cap-0', 'cap-over'), null, 'Duplicate respects actor limit')
+console.log('Layer editing: default actor deletion, exact order restore, later-edit preservation, group order, duplicate/center/reset, duplicate/limit and cross-document guards passed')

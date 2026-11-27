@@ -3,7 +3,7 @@
     <!-- Mounted only once it may request: Vue mounts an undefined src as `img.src=''`, and WebKit answers that with an
          error event, so a deferred <img> waiting without a src used to fail on iOS before it ever asked for the picture. -->
     <img v-if="binding?.url && !failed && near" ref="imgRef" :key="retryKey" :src="binding.url" :alt="name" decoding="async" @load="onLoad" @error="onError"/>
-    <div v-else-if="!binding?.url || failed" class="domain-resource-empty" :title="binding?.url ? '图片暂时无法读取' : '图片尚未绑定'"><ImageOff v-if="!compact || !binding?.url" :size="compact?18:28"/><span v-if="!compact">{{ binding?.url ? '图片暂时无法读取' : '图片尚未绑定' }}</span><button v-if="binding?.url" type="button" :aria-label="`重试图片 ${name}`" @click="retry">{{ compact?'':'重试图片' }}<RefreshCw v-if="compact" :size="16" aria-hidden="true"/></button></div>
+    <div v-else-if="!binding?.url || failed" class="domain-resource-empty" :title="binding?.url ? '图片暂时无法读取' : '图片尚未绑定'"><ImageOff v-if="passive || !compact || !binding?.url" :size="compact?18:28" aria-hidden="true" /><span v-if="!compact">{{ binding?.url ? '图片暂时无法读取' : '图片尚未绑定' }}</span><button v-if="binding?.url && !passive" type="button" :aria-label="`重试图片 ${name}`" @click="retry">{{ compact?'':'重试图片' }}<RefreshCw v-if="compact" :size="16" aria-hidden="true"/></button></div>
     <figcaption v-if="!compact && binding?.url && !failed && !loaded && near" class="domain-media-pending" role="status">正在读取图片…</figcaption>
   </figure>
 </template>
@@ -11,7 +11,7 @@
 import {onBeforeUnmount,onMounted,ref,watch} from 'vue'
 import {useNearViewport} from './useNearViewport.js'
 import {ImageOff,RefreshCw} from '@lucide/vue'
-const props=defineProps({binding:Object,name:String,effectStatus:String,compact:Boolean,deferred:Boolean})
+const props=defineProps({binding:Object,name:String,effectStatus:String,compact:Boolean,deferred:Boolean,passive:Boolean})
 const failed=ref(false),loaded=ref(false),retryKey=ref(0)
 const figure=ref(null),imgRef=ref(null)
 // deferred: request the image only once it nears the viewport (below-the-fold Portal rows); otherwise at once.

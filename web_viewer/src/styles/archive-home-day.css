@@ -86,7 +86,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .settings-toggle span { display: flex; flex-direction: column; gap: 5px; }.settings-toggle small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .settings-range > div { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; gap: 10px; }.settings-range input { width: 100%; min-height: 34px; accent-color: var(--gs-mint-ink); }.settings-range output { font-size: var(--gs-text-ui); }
 .scene-settings footer button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 15px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); }
-.settings-reset { background: var(--gs-surface); color: var(--gs-ink-2); }.settings-done { border-color: var(--gs-action-bg) !important; background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); min-width: 110px; }
+.settings-reset { background: transparent; color: var(--gs-ink-2); }.settings-done { border-color: var(--gs-btn-primary-border) !important; background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font-weight: var(--gs-weight-semibold); min-width: 110px; }
 @media (max-width: 1100px) { .home-masthead { left: 16px; max-width: 30%; }.idol-heading h2 { font-size: var(--gs-text-section); }.home-dialogue { left: 16px; bottom: 16px; } }
 @media (max-width: 760px) {
   .home-masthead { top: 14px; left: 12px; max-width: calc(100% - 78px); }.idol-heading { padding: 9px 12px; }.idol-heading h2 { font-size: var(--gs-text-section); }.idol-heading small { font-size: var(--gs-text-caption); }

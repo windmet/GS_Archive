@@ -138,8 +138,7 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 .unused-places button { min-width: 88px; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 0; border-bottom: 2px solid transparent; background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-body); cursor: pointer; white-space: nowrap; }
 .unused-places button[aria-pressed='true'] { border-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 /* A scroll container's automatic minimum height is 0, so the page grid would collapse the row without one. */
-.unused-shelves { display: flex; gap: var(--gs-space-3); min-height: var(--gs-control-compact); overflow-x: auto; scrollbar-width: none; }
-.unused-shelves::-webkit-scrollbar { display: none; }
+.unused-shelves { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-4); min-height: var(--gs-control-compact); }
 /* Shelves are the second tier under the place tabs: plain text, the current one ink and bold (no pills on the rule). */
 .unused-shelves button { flex: none; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-1); border: 0; background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
 .unused-shelves button[aria-pressed='true'] { color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
@@ -174,6 +173,8 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
   .unused-page { gap: var(--gs-space-4); padding: var(--gs-space-5) var(--gs-space-4); }
   .unused-places { top: calc(-1 * var(--gs-space-5)); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .unused-places button { min-width: 0; padding: 0; }
+  .unused-shelves { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .unused-shelves::-webkit-scrollbar { display: none; }
   .unused-shelf { padding: var(--gs-space-4); }
   /* One idol per row: the numbered buttons of a family fit on one or two lines instead of a tall column. */
   .unused-speakers { grid-template-columns: 1fr; gap: 6px; }

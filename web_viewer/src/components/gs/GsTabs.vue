@@ -30,4 +30,10 @@ const emit = defineEmits(['update:modelValue'])
 .gs-tab[aria-pressed='true'] { border-bottom-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .gs-tab:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 @media (hover: hover) { .gs-tab:hover { color: var(--gs-ink); } }
+@media (min-width: 761px) {
+  .gs-tabs { flex-wrap: wrap; height: auto; min-height: 44px; overflow-x: visible; }
+  .gs-tabs.is-panel { min-height: 36px; }
+  .gs-tab { min-height: 44px; }
+  .is-panel .gs-tab { min-height: 36px; }
+}
 </style>

@@ -196,7 +196,7 @@ const selectedName = computed(() => availableIdols.value.find(idol => idol.id ==
   min-width: 0;
   min-height: 116px;
   padding: 12px 8px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: var(--gs-radius-control);
   color: inherit;
   background: transparent;
@@ -207,12 +207,12 @@ const selectedName = computed(() => availableIdols.value.find(idol => idol.id ==
 }
 .chibi-picker-idol strong { width: 100%; font-size: var(--gs-text-body, 14px); font-weight: 600; line-height: 1.5; white-space: normal; word-break: normal; overflow-wrap: anywhere; }
 .chibi-picker-idol small { width: 100%; color: var(--gs-ink-3); font-size: var(--gs-text-meta, 12px); line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
-.chibi-picker-idol[aria-pressed=true] { background: var(--gs-mint-wash); box-shadow: inset 0 0 0 2px var(--gs-mint); }
-.chibi-picker-idol:active, .chibi-idol-picker :deep(.terminal-icon-button:active) { background: var(--gs-mint-wash); }
+.chibi-picker-idol[aria-pressed=true] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
+.chibi-picker-idol:active, .chibi-idol-picker :deep(.terminal-icon-button:active) { background: var(--gs-hover); }
 .chibi-picker-current { padding: 0; color: var(--gs-mint-ink); background: transparent; font-size: var(--gs-text-meta, 12px); line-height: 1.5; }
 .chibi-picker-empty { margin: 16px 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body, 14px); line-height: 1.6; }
 @media (hover: hover) and (pointer: fine) {
-  .chibi-picker-idol:hover, .chibi-idol-picker :deep(.terminal-icon-button:hover) { background: var(--gs-paper); }
+  .chibi-picker-idol:not([aria-pressed=true]):hover, .chibi-idol-picker :deep(.terminal-icon-button:hover) { background: var(--gs-hover); }
 }
 @media (max-width: 600px), (pointer: coarse) {
   .chibi-picker-filters input, .chibi-picker-filters select { font-size: 16px; }

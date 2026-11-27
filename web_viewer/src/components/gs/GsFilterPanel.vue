@@ -123,7 +123,8 @@ useSheetDrag(panel, { handle: '.gs-filter-panel-head', onClose: () => close(true
 .gs-filter-panel-foot button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-5); border-radius: var(--gs-radius-control); font: inherit; font-size: var(--gs-text-body); white-space: nowrap; cursor: pointer; }
 .gs-filter-panel-clear { border: 1px solid var(--gs-line); background: transparent; color: var(--gs-ink); }
 .gs-filter-panel-clear:disabled { opacity: .45; cursor: default; }
-.gs-filter-panel-done { border: 0; background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
+.gs-filter-panel-done { border: 1px solid var(--gs-btn-primary-border); background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font-weight: var(--gs-weight-semibold); }
+@media (hover: hover) { .gs-filter-panel-done:not(:disabled):hover { background: var(--gs-btn-surface-hover-bg); } }
 .gs-filter-panel :focus-visible, .gs-filter-panel-surface :focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 /* Phone: a sheet over the dimmed page, chips at touch height, the done button the width of the sheet. */
 .is-sheet { background: rgb(11 20 36 / calc(18% * var(--sheet-backdrop, 1))); }

@@ -66,7 +66,7 @@ export function rewardConditions(row) {
   if (row.intervalPoint!==undefined) values.push(`每 ${number(row.intervalPoint)} PT`);
   if (row.offsetPoint!==undefined) values.push(`起点 ${number(row.offsetPoint)} PT`);
   if (row.limitPoint!==undefined) values.push(`上限 ${number(row.limitPoint)} PT`);
-  if (row.totalCount!==undefined) values.push(`累计 ${number(row.totalCount)} 次`);
+  if (row.totalCount!==undefined) values.push(row.scope==='panel' ? `第 ${number(row.totalCount)} 轮面板` : `累计 ${number(row.totalCount)} 次`);
   if (row.dayCount!==undefined) values.push(`第 ${number(row.dayCount)} 天`);
   if (row.sumFanAmount!==undefined) values.push(`累计粉丝 ${number(row.sumFanAmount)}`);
   if (row.episodeId) values.push('阅读对应分段');
@@ -78,7 +78,7 @@ export const rewardProductName=product=>product?.presentation?.name || product?.
 export const rewardRelationLabel=row=>rewardScopeLabels[row.scope] || (row.relation==='card-awakening-cost'?'觉醒消耗':row.relation==='event-material'?'活动材料':sourceDomainLabels[row.sourceTable] || '其他');
 export function rewardProductLabel(product) {
   if (product?.kind==='scalar' && product.currencyKey) return '货币';
-  return ({item:'道具',honor:'称号',card:'卡片',cardFragment:'卡片碎片',photoFilter:'摄影滤镜',photoSticker:'摄影贴纸',photoSpot:'摄影地点',photoScene:'摄影场景',photoFrame:'摄影相框'})[product?.kind] || product?.typeNameJa || '其他';
+  return ({item:'道具',honor:'称号',card:'卡片',cardFragment:'专用彩光碎片',photoFilter:'摄影滤镜',photoSticker:'摄影贴纸',photoSpot:'摄影地点',photoScene:'摄影场景',photoFrame:'摄影相框'})[product?.kind] || product?.typeNameJa || '其他';
 }
 // A product-type reward (Star Gems, Money) opens its currency entry; items and honors open their own.
 export const rewardCollectionKey=product=>product?.kind==='scalar' ? (/^currency:[a-z]+(?:-[a-z]+)*$/.test(product.currencyKey || '') ? product.currencyKey : '') :

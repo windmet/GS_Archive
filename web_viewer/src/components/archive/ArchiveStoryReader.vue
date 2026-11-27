@@ -164,7 +164,8 @@ button:focus-visible { outline: 3px solid var(--reader-accent-text); outline-off
 .reader-episode-head > div { min-width: 0; }
 .reader-subtitle { font-size: 14px; font-weight: 600; color: var(--reader-text-main); margin: 0; }
 .reader-source-title { font-size:13px; color:var(--reader-text-sub); margin:2px 0 0; }
-.reader-full-play { flex: none; min-height: 40px; padding: 6px 14px; border: 1px solid var(--reader-border); border-radius: 8px; background: var(--reader-bg-card); color: var(--reader-accent-text); font-size: var(--gs-text-body); }
+.reader-full-play { flex: none; min-height: 40px; padding: 6px 14px; border: 1px solid var(--reader-border); border-radius: var(--gs-radius-control); background: var(--reader-bg-card); color: var(--reader-text-main); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); }
+@media (hover: hover) { .reader-full-play:not(:disabled):hover { border-color: var(--gs-rule); } }
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
 .reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: var(--reader-text-sub); }
 .reader-feedback h2 { font-size: 18px; color: var(--reader-text-main); }

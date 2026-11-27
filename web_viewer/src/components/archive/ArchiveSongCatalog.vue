@@ -432,7 +432,7 @@ const filteredSongs = computed(() => {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .song-card:hover { background: var(--gs-mint-wash); }
+  .song-card:hover, .song-unit-song:hover, .song-special-item:hover { background: var(--gs-hover); }
 }
 
 @media (max-width: 760px), (pointer: coarse) {
@@ -459,7 +459,6 @@ const filteredSongs = computed(() => {
 .song-unit-name b { font-size: var(--gs-text-ui); }
 .song-unit-songs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gs-space-3); }
 .song-unit-song, .song-special-item { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-row); padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
-.song-unit-song:hover, .song-special-item:hover { background: var(--gs-hover); }
 .song-unit-song img, .song-special-item img, .song-unit-nojacket { flex: none; width: 56px; height: 56px; border-radius: var(--gs-radius-media); object-fit: cover; background: var(--gs-paper-2); }
 .song-unit-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
 .song-unit-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }

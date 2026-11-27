@@ -484,7 +484,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-search-form input::placeholder { color:var(--gs-ink-3); }
 .overview-search-form input::-webkit-search-cancel-button { display:none; }
 .overview-search-form .overview-icon-button { width:32px;height:38px; }
-.overview-search-submit { min-height:38px;padding:0 var(--gs-space-4);border:0;border-radius:6px;background:var(--gs-action-bg);color:var(--gs-action-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-search-submit { min-height:38px;padding:0 var(--gs-space-4);border:1px solid var(--gs-btn-primary-border);border-radius:6px;background:var(--gs-btn-surface-bg);color:var(--gs-btn-primary-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);cursor:pointer; }
 .overview-search-results { position:absolute;z-index:12;top:52px;right:0;width:min(620px,calc(100vw - 96px));max-height:min(560px,calc(100dvh - 160px));overflow:auto;overscroll-behavior:contain;padding:var(--gs-space-3) var(--gs-space-5);border-radius:var(--gs-radius-panel);background:var(--gs-surface);box-shadow:var(--gs-shadow-float); }
 .overview-search-head { display:flex;align-items:flex-start;justify-content:space-between;gap:var(--gs-space-3);margin-bottom:var(--gs-space-2); }
 .overview-search-head-label { align-self:center;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
@@ -748,7 +748,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-birthdays button:hover strong { color:var(--gs-ink); }
   .overview-icon-button:hover { background:var(--gs-mint-wash); }
   .overview-preferred-actions button:hover { background:var(--gs-hover);color:var(--gs-ink); }
-  .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
+  .overview-search-submit:hover { background:var(--gs-btn-surface-hover-bg);border-color:var(--gs-ink-3); }
   .overview-section-heading button:hover, .overview-personal-meta button:hover, .overview-search-results li > button:hover,
   .overview-story-gateways button:hover strong, .overview-main-index button:hover strong { color:var(--gs-ink); }
   .overview-song-detail:hover strong, .overview-story > button:hover strong, .overview-event > button:hover strong { color:var(--gs-ink); }
@@ -808,6 +808,11 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 }
 
 /* Shell tiers. Middle and phone: tighter gutters, the search on its own row. */
+@media (min-width:761px) {
+  .overview-heading-chips { flex-wrap:wrap;overflow-x:visible; }
+  .overview-heading-chips.has-overflow { -webkit-mask-image:none;mask-image:none; }
+  .overview-story-tabs { flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-5);overflow-x:visible; }
+}
 @media (max-width:1100px) {
   .portal-overview { padding:var(--gs-space-5); }
 }

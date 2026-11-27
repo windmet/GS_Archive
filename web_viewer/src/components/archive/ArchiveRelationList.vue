@@ -76,9 +76,11 @@ function select(item) {
 /* A banner takes 128px of the row, so banner grids use wider cells and the title keeps its line.
    min(100%, …): a cell never outgrows a narrow container (this :has() rule outranks the phone rule below). */
 .relation-list.layout-grid:has(> .relation-row.kind-event > img), .relation-list.layout-grid:has(> .relation-row.kind-gasha > img) { grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); }
-.relation-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 18px; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 72px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; }
+.relation-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 18px; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 72px; margin-inline: calc(-1 * var(--gs-space-3)); padding: var(--gs-space-3); border: 0; border-bottom: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; transition: background-color var(--gs-motion-feedback) var(--gs-ease-out); }
 .relation-row.static { grid-template-columns: 48px minmax(0, 1fr); cursor: default; }
 .relation-row > img { display: block; width: 48px; height: 48px; border-radius: var(--gs-radius-media); background: var(--gs-line); object-fit: contain; }
+.relation-row.kind-song:has(> img) { grid-template-columns: 72px minmax(0, 1fr) 18px; }
+.relation-row.kind-song > img { width: 72px; height: 72px; object-fit: cover; }
 /* Event rows with a banner show it as the archive's event thumbnail (as on the portal), not a square. */
 /* Event and gasha banners share the archive's banner thumbnail. */
 .relation-row.kind-event:has(> img), .relation-row.kind-gasha:has(> img) { grid-template-columns: 128px minmax(0, 1fr) 18px; }
@@ -97,13 +99,16 @@ function select(item) {
 .relation-proof, .relation-copy code { overflow-wrap: anywhere; }
 .relation-copy code { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .relation-arrow { color: var(--gs-ink-3); }
-@media (hover: hover) { .relation-row:not(.static):hover b { color: var(--gs-mint-ink); } }
+@media (hover: hover) { .relation-row:not(.static):hover { background: var(--gs-hover); } .relation-row:not(.static):hover .relation-arrow { color: var(--gs-ink); } }
+@media (prefers-reduced-motion: reduce) { .relation-row { transition: none; } }
 .relation-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (max-width: 560px) {
   .relation-list.layout-grid { grid-template-columns: minmax(0, 1fr); }
   .relation-row { grid-template-columns: 42px minmax(0, 1fr) 16px; }
   .relation-row.static { grid-template-columns: 42px minmax(0, 1fr); }
   .relation-row > img { width: 42px; height: 42px; }
+  .relation-row.kind-song:has(> img) { grid-template-columns: 56px minmax(0, 1fr) 16px; }
+  .relation-row.kind-song > img { width: 56px; height: 56px; }
   .relation-row.kind-event:has(> img), .relation-row.kind-gasha:has(> img) { grid-template-columns: 96px minmax(0, 1fr) 16px; }
   .relation-row.kind-event > img, .relation-row.kind-gasha > img { width: 96px; height: 54px; }
   /* Event names carry their subtitle at the end; let them use two lines instead of losing it. */

@@ -11,7 +11,7 @@
     <p v-if="description" class="domain-description"><DomainInlineText :text="description" /></p>
     <dl class="domain-meta">
       <!-- An idol honor's id names its idol (HonorIdentity), and a costume's model names its wearer, so both link back to the idol. -->
-      <div v-if="ownerIdol"><dt>所属偶像</dt><dd><button v-if="linkIdol" type="button" class="collection-idol-link" :data-archive-focus-id="`collection-${domain}-idol:${detail.entry.id}`" @click="emit('open-idol',ownerIdol.code)"><ArchiveIdolAvatar :idol-code="ownerIdol.code" :size="24" decorative />{{ ownerIdol.name }}<ChevronRight :size="15" aria-hidden="true" /></button><template v-else>{{ ownerIdol.name }}</template></dd></div>
+      <div v-if="ownerIdol"><dt>所属偶像</dt><dd><button v-if="linkIdol" type="button" class="collection-idol-link" :data-archive-focus-id="`collection-${domain}-idol:${detail.entry.id}`" @click="emit('open-idol',ownerIdol.code)"><ArchiveIdolAvatar :idol-code="ownerIdol.code" :size="28" decorative />{{ ownerIdol.name }}<ChevronRight :size="15" aria-hidden="true" /></button><template v-else>{{ ownerIdol.name }}</template></dd></div>
       <div v-if="honorIdol?.kind.startsWith('fes-')"><dt>对应 FES</dt><dd>{{ fesHonorMonth(detail.entry) }} FES 限定卡</dd></div>
       <div v-if="detail.entry.term && period"><dt>开放期间</dt><dd>{{ period }}</dd></div>
       <div v-if="kind === 'costumes' && releaseDate"><dt>实装时间</dt><dd>{{ releaseDate }}</dd></div>
@@ -128,10 +128,11 @@ function cardIdolName(card){const source=IDOL_ID_TO_NAME[card.character_id] || '
 .collection-usage-card strong { font-size:var(--gs-text-body,14px); font-weight:var(--gs-weight-semibold,600); line-height:1.4; overflow-wrap:anywhere; }
 .collection-usage-identity { display:flex; flex-wrap:wrap; align-items:center; gap:var(--gs-space-1,2px) var(--gs-space-3,8px); min-width:0; color:var(--gs-ink-2); font-size:var(--gs-text-meta,12px); line-height:1.4; overflow-wrap:anywhere; }
 .collection-usage-slots { color:var(--gs-ink-3); font-size:var(--gs-text-meta,12px); line-height:1.4; overflow-wrap:anywhere; }
-.collection-usage-go { color:var(--gs-mint-ink); }
+.collection-usage-go { color:var(--gs-ink-3); }
 .collection-usage-identity small { padding:var(--gs-space-1,2px) var(--gs-space-2,4px); border-radius:var(--gs-radius-media); background:var(--gs-mint-wash); color:var(--gs-mint-ink); font-size:inherit; font-weight:var(--gs-weight-semibold,600); }
-.collection-idol-link { display:flex; align-items:center; width:fit-content; gap:var(--gs-space-2,4px); min-height:0; margin:0; padding:0; border:0; background:none; color:var(--gs-mint-ink); font:inherit; font-weight:var(--gs-weight-semibold,600); line-height:1.4; cursor:pointer; }
+.collection-idol-link { display:inline-flex; align-items:center; width:fit-content; gap:var(--gs-space-2,4px); min-height:var(--gs-control-compact,36px); margin:0 0 0 calc(-1 * var(--gs-space-1,4px)); padding:var(--gs-space-1,4px) var(--gs-space-2,8px) var(--gs-space-1,4px) var(--gs-space-1,4px); border:0; border-radius:var(--gs-radius-control); background:transparent; color:var(--gs-ink); font:inherit; font-weight:var(--gs-weight-semibold,600); line-height:1.4; cursor:pointer; }
+.collection-idol-link svg { color:var(--gs-ink-3); }
 .collection-idol-link:focus-visible { outline:var(--gs-focus-ring,3px) solid var(--gs-mint); outline-offset:var(--gs-focus-offset,2px); }
 .collection-usage-card:focus-visible { outline:var(--gs-focus-ring,3px) solid var(--gs-mint); outline-offset:var(--gs-focus-offset,2px); }
-@media (hover:hover) and (pointer:fine) { .collection-usage-card:hover { background:var(--gs-mint-wash); } }
+@media (hover:hover) and (pointer:fine) { .collection-idol-link:hover, .collection-usage-card:hover { background:var(--gs-hover); } .collection-idol-link:hover svg, .collection-usage-card:hover .collection-usage-go { color:var(--gs-ink); } }
 </style>

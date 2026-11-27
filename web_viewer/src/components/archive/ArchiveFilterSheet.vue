@@ -34,5 +34,5 @@ onBeforeUnmount(() => query?.removeEventListener?.('change', sync))
 .filter-sheet-body label { display: grid !important; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .filter-sheet-body label > span { display: inline !important; }
 .filter-sheet-body select, .filter-sheet-body input { width: 100% !important; max-width: none !important; min-height: var(--gs-control-touch) !important; font-size: var(--gs-text-subtitle) !important; }
-.filter-sheet-done { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-6); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.filter-sheet-done { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-6); border: 1px solid var(--gs-btn-primary-border); border-radius: var(--gs-radius-control); background: var(--gs-btn-surface-bg); color: var(--gs-btn-primary-ink); box-shadow: var(--gs-btn-primary-shadow); font: inherit; font-weight: var(--gs-weight-semibold); cursor: pointer; }
 </style>

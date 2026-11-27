@@ -147,7 +147,7 @@
       />
       <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" :shelf="currentVoiceShelf" @shelf="currentVoiceShelf = $event; syncArchiveRoute({ replace: true })" @preview-office-voice="previewOfficeVoice" />
       <ArchiveScoreArchive v-if="view === 'score_archive'" :shelf="currentSoundShelf" :load-stories="loadStoryReadModelCatalog" @shelf="currentSoundShelf = $event; syncArchiveRoute({ replace: true })" @open-story="openStoryDetail($event, 'score_archive')" @open-song="openSong" />
-      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" :songs="stageSongDirectory" :preferred-idol="preferredArchiveIdol" :preferred-name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
+      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" :songs="stageSongDirectory" :preferred-idol="preferredArchiveIdol" :preferred-name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''" :idols="archiveBootstrap.idols" :idol-name="idolDisplayName"
         @charts="openChartTool" @chart-song="openChartSong" @stage="openChibiStage()" @stage-song="openChibiStage({ songCode: $event })" @photo="startPictureStudio" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
@@ -571,7 +571,7 @@
         :songs="chartSongs" :difficulty="chartDifficulty" :status="songReadModelStatus" @select-song="selectChartSong" />
       <p v-else role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
     </ArchiveExperimentFrame>
-    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :restore-on-open="studioRestorePending" :open-materials="studioOpenMaterials" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
+    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-idols="studioPhotoIdols" :photo-entity="currentPhotoEntity" :open-reference="studioOpenReference" :open-spot-id="studioOpenSpotId" :restore-on-open="studioRestorePending" :restore-source="studioRestoreSource" :open-materials="studioOpenMaterials" :preferred-idol="preferredArchiveIdol" :costume-images="homeCostumeImages" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
     <SpineViewer v-if="view === 'spine_lab'" :idol-name="idolDisplayName" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
@@ -2107,18 +2107,31 @@ const { selectPhotoIdol, updatePhotoCatalogQuery, selectPhotoEntity, openPicture
   view, currentPhotoIdol, currentPhotoEntity, filterQuery, syncArchiveRoute, captureDetailSource, commitView,
 })
 
-// The studio's entry page offers three starts: with the 担当 (its photo actor is found in the photos catalogue), from
-// a background (the 地点 drawer opens, on phones too), or the composition this browser saved (the studio loads it itself).
+// The studio's entry page offers starts with the 担当, a full unit, a reference composition, a chosen background,
+// or a locally saved/autosaved composition.
 const studioRestorePending = ref(false)
+const studioRestoreSource = ref('')
 const studioOpenMaterials = ref(false)
-async function startPictureStudio({ idolCode = '', restore = false, background = false } = {}) {
+const studioOpenReference = ref('')
+const studioOpenSpotId = ref(0)
+const studioPhotoIdols = ref([])
+async function startPictureStudio({ idolCode = '', idolCodes = [], reference = '', spotId = 0, restore = false, restoreSource = '', background = false } = {}) {
   studioRestorePending.value = restore
+  studioRestoreSource.value = restore ? (restoreSource || 'saved') : ''
   studioOpenMaterials.value = background
+  studioOpenReference.value = reference
+  studioOpenSpotId.value = Number(spotId) || 0
   currentPhotoIdol.value = ''
-  if (idolCode) {
+  currentPhotoEntity.value = ''
+  studioPhotoIdols.value = []
+  const requestedCodes = Array.isArray(idolCodes) && idolCodes.length ? idolCodes : idolCode ? [idolCode] : []
+  if (requestedCodes.length) {
     try {
       const catalog = await new DomainRepository(readModelClient, archiveBootstrap).catalog('photos')
-      currentPhotoIdol.value = catalog.find(row => row.idolCode === idolCode)?.id || ''
+      const byCode = new Map(catalog.filter(row => row.idolCode).map(row => [row.idolCode, row.id]))
+      const ids = requestedCodes.map(code => byCode.get(code)).filter(Boolean)
+      if (Array.isArray(idolCodes) && idolCodes.length) studioPhotoIdols.value = ids
+      else currentPhotoIdol.value = ids[0] || ''
     } catch (error) { console.error('[Studio] Could not resolve the photo actor of the 担当:', error) }
   }
   openPictureStudio()
@@ -2320,6 +2333,12 @@ function goArchiveBack() {
 
 function closeFullScreenExperiment() {
   if (view.value === 'chart_lab') return closeChartTool()
+  studioRestorePending.value = false
+  studioRestoreSource.value = ''
+  studioOpenMaterials.value = false
+  studioOpenReference.value = ''
+  studioOpenSpotId.value = 0
+  studioPhotoIdols.value = []
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
   commitView('studio')
 }
@@ -2769,10 +2788,10 @@ watch(cardLayout, layout => {
   setLocalStorageValue('sidem-archive-card-layout', layout)
 })
 
-// The home console's costume thumbnails are the collection's own images (the costumes catalogue, read once).
+// The home console and studio costume thumbnails are the collection's own images (the costumes catalogue, read once).
 const homeCostumeImages = shallowRef(null)
 watch(view, nextView => {
-  if (nextView !== 'home' || homeCostumeImages.value) return
+  if (!['home', 'picture_studio'].includes(nextView) || homeCostumeImages.value) return
   new DomainRepository(readModelClient, archiveBootstrap).catalog('costumes', { priority: 'background' })
     .then(rows => { homeCostumeImages.value = new Map(rows.map(row => [row.id, row.image || null])) })
     .catch(error => console.warn('[Home] Costume images unavailable:', error))

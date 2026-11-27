@@ -54,14 +54,15 @@ function advanceImage() {
    boxed mint card. The mint wash appears only on hover, the way rows on paper answer the pointer. */
 .archive-idol-reference { --reference-size: 44px; display: flex; align-items: center; gap: var(--gs-space-3); box-sizing: border-box; width: 100%; min-width: 0; min-height: 52px; padding: 6px 8px; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); font: inherit; text-align: left; }
 button.archive-idol-reference { cursor: pointer; }
-button.archive-idol-reference:hover { background: var(--gs-mint-wash); }
-/* Touch has no hover: a tap must not leave the row tinted. */
-@media (hover: none), (pointer: coarse) { button.archive-idol-reference:hover { background: none; } }
+@media (hover: hover) and (pointer: fine) {
+  button.archive-idol-reference:hover { background: var(--gs-hover); }
+  button.archive-idol-reference:hover .idol-reference-arrow { color: var(--gs-ink); }
+  button.density-face:hover { background: none; opacity: .85; }
+}
 button.archive-idol-reference:focus-visible { outline: 3px solid var(--gs-mint); outline-offset: 2px; }
 .density-face { --reference-size: 30px; width: auto; min-height: 0; padding: 0; border-bottom: 0; border-radius: 50%; }
 .density-face .idol-reference-copy, .density-face .idol-reference-arrow { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-button.density-face:hover { background: none; opacity: .85; }
-.density-identity { --reference-size: 36px; width: auto; min-height: 44px; padding: 3px 5px; border-bottom: 0; border-radius: var(--gs-radius-control); }
+.density-identity { --reference-size: 36px; width: auto; min-height: 44px; padding: 4px 8px 4px 4px; border-bottom: 0; border-radius: var(--gs-radius-control); }
 .density-identity .idol-reference-copy { flex-direction: row; align-items: baseline; gap: 6px; }
 .density-identity .idol-reference-copy small::before { content: '·'; margin-right: 6px; }
 .density-portrait { --reference-size: 64px; min-height: 78px; }

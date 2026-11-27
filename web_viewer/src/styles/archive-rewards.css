@@ -2,6 +2,11 @@
    styled: pages do not reach in with :deep overrides. */
 .domain-rewards { container-type:inline-size; }
 .domain-rewards .domain-table-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--gs-space-3) var(--gs-space-5); margin-bottom:var(--gs-space-5); color:var(--gs-ink-3); font-size:var(--gs-text-meta); }
+.domain-scope-tabs { display:flex; flex-wrap:wrap; flex:1 1 auto; gap:var(--gs-space-2); min-width:0; }
+.domain-scope-tabs button { display:inline-flex; align-items:center; gap:var(--gs-space-2); min-height:var(--gs-control-compact); padding:0 var(--gs-space-3); border:1px solid var(--gs-line); border-radius:var(--gs-radius-pill); background:transparent; color:var(--gs-ink-2); font-size:var(--gs-text-ui); font-weight:var(--gs-weight-medium); white-space:nowrap; cursor:pointer; }
+.domain-scope-tabs button small { color:var(--gs-ink-3); font-family:var(--gs-font-stage); font-size:var(--gs-text-meta); font-variant-numeric:tabular-nums; }
+.domain-scope-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line); background:var(--gs-selected-bg); color:var(--gs-selected-ink); font-weight:var(--gs-weight-semibold); }
+.domain-scope-tabs button[aria-pressed=true] small { color:inherit; }
 .domain-reward-list { display:grid; gap:0; margin:0; padding:0; list-style:none; color:var(--gs-ink); font-size:var(--gs-text-body); }
 /* A run of rows from the same source (累计点数, 排名奖励…) is named once, above its first row. */
 .domain-reward-group { padding:var(--gs-space-5) 0 0; color:var(--gs-ink-3); font-size:var(--gs-text-meta); font-weight:var(--gs-weight-medium); }
@@ -15,17 +20,19 @@
 .domain-reward-condition + .domain-reward-condition::before { content:'·'; margin-right:var(--gs-space-2); color:var(--gs-ink-3); }
 .domain-reward-quantity { grid-column:3; grid-row:1; color:var(--gs-mint-ink); font-size:var(--gs-text-subtitle); font-weight:var(--gs-weight-semibold); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .domain-reward-product { grid-column:2; grid-row:1; display:grid; grid-template-columns:48px minmax(0,1fr); align-items:center; gap:var(--gs-space-4); min-width:0; }
+button.domain-reward-product.is-actionable { width:calc(100% + 2 * var(--gs-space-2)); padding:var(--gs-space-2); margin:calc(-1 * var(--gs-space-2)); border:0; border-radius:var(--gs-radius-control); background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; transition:background-color var(--gs-motion-feedback) var(--gs-ease-out); }
 .domain-reward-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:var(--gs-radius-control); background:var(--gs-paper); color:var(--gs-ink-3); }
 .domain-reward-icon .domain-media-compact { margin:0; padding:0; }
 .domain-reward-icon .domain-media-preview img { min-height:0; }
 .domain-reward-name { display:flex; align-items:center; justify-content:space-between; gap:var(--gs-space-3); min-width:0; min-height:48px; padding:var(--gs-space-2) 0; border:0; background:transparent; color:inherit; font:inherit; text-align:left; text-decoration:none; line-height:1.5; }
+button.domain-reward-product.is-actionable .domain-reward-name { padding:0; }
 /* Rows without a page to open keep the chevron's width, so every name wraps at the same edge. */
 div.domain-reward-name { padding-right:calc(16px + var(--gs-space-3)); }
-button.domain-reward-name { width:100%; border-radius:var(--gs-radius-control); cursor:pointer; }
+button.domain-reward-name { width:100%; border-radius:var(--gs-radius-control); cursor:pointer; transition:background-color var(--gs-motion-feedback) var(--gs-ease-out); }
 .domain-reward-name > span { min-width:0; }
 .domain-reward-name strong { display:block; font-weight:var(--gs-weight-semibold); overflow-wrap:anywhere; }
 .domain-reward-name small { display:inline-block; margin-top:var(--gs-space-1); color:var(--gs-ink-3); font-size:var(--gs-text-meta); }
-.domain-reward-name svg { flex:none; color:var(--gs-mint-ink); }
+.domain-reward-name svg { flex:none; color:var(--gs-ink-3); }
 .domain-reward-source { grid-column:2; grid-row:1; min-width:0; }
 .domain-reward-campaigns { grid-column:1/-1; display:grid; gap:var(--gs-space-1); color:var(--gs-ink-3); font-size:var(--gs-text-meta); line-height:1.6; }
 /* Grouped source disclosures inside narrow collection drawers (matches CurrencyDetailSections). */
@@ -51,12 +58,14 @@ button.domain-reward-name { width:100%; border-radius:var(--gs-radius-control); 
 .domain-rewards .domain-pagination button { min-height:var(--gs-control-normal); padding:var(--gs-space-3) var(--gs-space-4); border-radius:var(--gs-radius-control); font-size:var(--gs-text-ui); font-weight:var(--gs-weight-semibold); }
 /* Touch keeps :hover after a tap, which would read as a selected row; only a real pointer gets the wash. */
 @media (hover:hover) and (pointer:fine) {
-  button.domain-reward-name:hover { background:var(--gs-mint-wash); color:var(--gs-mint-ink); }
+  .domain-scope-tabs button:not([aria-pressed=true]):hover { background:var(--gs-hover); color:var(--gs-ink); }
+  button.domain-reward-product.is-actionable:hover, button.domain-reward-name:hover { background:var(--gs-hover); color:var(--gs-ink); }
+  button.domain-reward-product.is-actionable:hover .domain-reward-name svg, button.domain-reward-name:hover svg { color:var(--gs-ink); }
   .domain-reward-accordion > summary:hover .domain-reward-toggle, .domain-reward-more:hover { background:var(--gs-hover); color:var(--gs-ink); }
 }
-@media (prefers-reduced-motion: reduce) { .domain-reward-toggle svg { transition:none; } }
+@media (prefers-reduced-motion: reduce) { .domain-reward-toggle svg, button.domain-reward-product.is-actionable, button.domain-reward-name { transition:none; } }
 @media (max-width:760px), (pointer:coarse) {
-  .domain-rewards .domain-pagination button { min-height:var(--gs-control-touch); }
+  .domain-scope-tabs button, .domain-rewards .domain-pagination button { min-height:var(--gs-control-touch); }
 }
 @container (max-width:600px) {
   .domain-reward-entry { grid-template-columns:minmax(0,1fr); gap:var(--gs-space-3); }
