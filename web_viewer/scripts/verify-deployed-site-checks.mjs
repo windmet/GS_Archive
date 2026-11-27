@@ -16,6 +16,7 @@ function site(overrides = {}) {
     '_app/index-x.js': 'export {}', '_catalog/bootstrap.json': JSON.stringify(boot), [`_catalog/v/${R}/cards/index.json`]: '{}',
     'production-receipt.json': JSON.stringify(receipt), 'robots.txt': renderRobots({ target: 'production', origin: ORIGIN }),
     'sitemap.xml': renderSitemap({ origin: ORIGIN, urls: [`${ORIGIN}/cards/`] }), '_headers': renderHeaders({ target: 'production', shellSections: ['cards', 'idols'] }),
+    '_routes.json': JSON.stringify({ include: ['/_app/*'] }),
     ...overrides,
   }))
   return createPackageFetcher(name => files.has(name) && files.get(name) !== null ? Buffer.from(files.get(name)) : null)
@@ -26,7 +27,8 @@ const run = (overrides, more = {}) => runSiteChecks({ get: site(overrides), prob
 
 const good = await run({})
 assert.deepEqual(good.rows.filter(row => row.status === 'fail'), [], 'a correct production package passes')
-assert.equal(status(good, 'missing-chunk'), 'warn', 'Pages SPA fallback answers missing chunks with HTML: recorded, not failed')
+assert.equal(status(good, 'missing-chunk'), 'pass')
+assert.equal(status(await run({ '_routes.json': null }), 'missing-chunk'), 'fail')
 assert.equal(status(good, 'r2-samples'), 'skip')
 assert.equal(status(good, 'sitemap'), 'pass')
 
@@ -44,6 +46,6 @@ assert.equal(status(await run({ '_catalog/bootstrap.json': JSON.stringify({ ...b
 assert.equal(status(await run({}, { packageInfo: { receipt: { ...receipt, sourceRevision: 'd'.repeat(40) }, manifest } }), 'receipt'), 'fail', 'receipt drift from the package')
 assert.equal(status(await run({ 'sitemap.xml': renderSitemap({ origin: 'https://other.test', urls: [] }) }), 'sitemap'), 'fail', 'sitemap for another origin')
 const notFound = async request => request.startsWith('/_app/__gs-missing') ? { status: 404, type: 'text/plain', headers: {}, body: Buffer.alloc(0) } : site()(request)
-assert.equal(status(await runSiteChecks({ get: notFound, probeOrigin: reachable }), 'missing-chunk'), 'pass')
+assert.equal(status(await runSiteChecks({ get: notFound, probeOrigin: reachable }), 'missing-chunk'), 'fail')
 assert.deepEqual(parseHeadersFile('/*\n  X-Robots-Tag: noindex\n/a\n  B: c\n'), [{ pattern: '/*', headers: { 'x-robots-tag': 'noindex' } }, { pattern: '/a', headers: { b: 'c' } }])
 console.log(`Deployed-site checks: ${good.rows.length} rows; production and preview fixtures pass, 10 defect fixtures fail their row`)

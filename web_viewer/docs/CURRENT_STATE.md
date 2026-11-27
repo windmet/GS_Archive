@@ -2,19 +2,19 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-11-10（master `7123e47a`，含 #200；发布快照已按 2026-11-10 的 preview 与 production 部署重写；各条线表格仍是 10-30 前后的记录，逐行见下方说明）
+更新：2026-11-22。实施前主干为 b28d1c32（#219），生产与预览回执分别见下表。三站发布及回滚见 [改造记录](THREE_SITE_DEPLOYMENT_20261122.md)。
 
 ## 开发基线
 
 | 项 | 值 |
 |---|---|
-| master | 代码基线 `7123e47a`（#200）。自上一版基线 `97b1a1ae`（#139）以来合入 #140–#200（按首父线），按主题：门户 / 布局减法 #140–#149、#153、#158–#159、#161、#163、#166、#169–#170、#176、#184–#185、#194、#197–#200；歌曲页与谱面 #150–#151、#156、#190–#193；阅读器 / 播放器 #152、#179–#181、#183、#186；舞台 #160、#177–#178、#187；翻译 #162、#167、#172、#174–#175、#188；发布与数据治理 #155、#157、#164–#165、#168、#195–#196（见 [发布契约](RELEASE_CONTRACT.md)、[加固方案](GS_ARCHIVE_RELEASE_HARDENING_PLAN_20261109.md)）；其他 #143、#154、#171、#173、#182、#189。分类是按分支名归并，细节看各 PR |
+| master | 本次发布工作的主干基线 b28d1c32（#219）；门户壁纸已退役，#219 绑定读模型 72169db6 |
 | 谱面 | 无进行中分支。透视轨已是单 WebGL 画布（#192），沉浸锁定与纹理重试（#193）、主屏全屏（#194）已合；渲染审计见 [CHART_RENDER_PERFORMANCE_AUDIT_20261109.md](CHART_RENDER_PERFORMANCE_AUDIT_20261109.md)。早先的基线与交接：[谱面开发基线](CHART_DEVELOPMENT_BASELINE_20261024.md)、[Combo 与线路 V9](CHART_COMBO315_AND_ROUTE_AUDIT_V9_20261026.md) |
-| 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `a15e642d20f5003730751d6227d95b5248f908e473e598bcce5c48a10e0cc160`；data revision `d049f4fa79d4740bdef1f6dd53b59e20a41d030697c443ba2a082c58d7d5adee`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表线上版本（线上见下表） |
+| 开发消费绑定 | 受跟踪 `readmodels/bootstrap.inline.json`：release `72169db6fb5fd79ed1bd25b9fd9eac0e064d95e7b6c5547f2659203e20311bce`；data revision `d049f4fa79d4740bdef1f6dd53b59e20a41d030697c443ba2a082c58d7d5adee`；media epoch `voice64-gzip-all-20260924`。这是源码/dev 消费值，不代表线上版本（线上见下表） |
 | 启动预算 | 单一来源 `readmodels/contracts/startup-policy.json`；当前初始 JS gzip 估计约 197,440 B（上限 216,064 B）；启动守卫另有 `bootGuardGzipLimit` 2,112 B。旧文档里的 204,800 / 215,040 等数字已过时 |
 | 已有阶段 tag | `baseline/2026-10-20`（另保留 `baseline/2026-10-14`）；之后未新增 master 基线 tag（未核实 10-20 之后是否有人另打） |
 
-## 发布快照（2026-11-10）
+## 发布快照（2026-11-22）
 
 发布规则的唯一来源是 [RELEASE_CONTRACT.md](RELEASE_CONTRACT.md)（两个环境、四道门、命令序列、例外发布、回滚、R2 规则）；本页只记事实快照。
 
@@ -22,8 +22,8 @@ Pages 项目 `gs-archive-preview` 同时承载 preview 与 production，共用 R
 
 | 环境 | 值 |
 |---|---|
-| preview（分支 `gs-architecture-device-test`，`https://preview.gs-archive.com`） | 2026-11-10 部署源码 `7123e47a` → Pages 部署 `822161c6`（当天先部署过 `53c3737c` → `109adac3`），用新的 `scripts/prepare-pages-package.mjs --target preview` 打包。read-model release `a15e642d20f5003730751d6227d95b5248f908e473e598bcce5c48a10e0cc160`；data revision `d049f4fa79d4740bdef1f6dd53b59e20a41d030697c443ba2a082c58d7d5adee`；compiled revision `4afb61ee02808965c8149f335b2f246f3afe543423f65fd8b9afa5de2c02fbed`；译文 release `61c373ae`（1665 个包，逐字节比对通过）。`verify-deployed-site` 全 PASS，一条预期 WARN：缺失的 `/_app` chunk 会被 SPA 回退成 200 HTML |
-| production（分支 `master`，`https://gs-archive.com` 与 `gs-archive-preview.pages.dev`） | 2026-11-10 用户授权的例外发布（站长原话“我授权你可以合并，等都做完之后部署”；部署由站长亲手执行）：源码 `7123e47a` → Pages 部署 `0416f1f5`，与 preview 同一 source digest，read-model / data / compiled / 译文 revision 同上行；`canonical_deployment` 已核实。两个 origin 的 `verify-deployed-site` 都全 PASS（gs-archive.com 含 1665 包译文逐字节核对），WARN 同上。回滚目标 `924c79bb`（11-04，源码 `ff69dc7b`）。`gs-archive.com` 顶级域 CNAME 于 2026-11-09 生效。详见 [2026-11-10 发布记录](PRODUCTION_RELEASE_20261110.md)；更早的记录见 [PRODUCTION_RELEASE_20261012.md](PRODUCTION_RELEASE_20261012.md) |
+| preview（gs-architecture-device-test） | preview.gs-archive.com，源码 d9fe4359，部署 f53c0868，读模型 72169db6，译文 bd1b897a（1665 包），数据 d049f4fa / compiled 4afb61ee。门户卡片和馆刊入口、缺失脚本修复已部署。 |
+| production（master） | gs-archive.com 与 gs-archive-preview.pages.dev，源码 7123e47a，部署 0416f1f5，读模型 a15e642d，译文 61c373ae（1665 包），数据 d049f4fa / compiled 4afb61ee。上一个部署 924c79bb。真机例外与回滚详见 [11 月 10 日发布记录](PRODUCTION_RELEASE_20261110.md)。 |
 
 R2 现状：桶用量、各 versions 前缀的清单与最近批次的叠加链未在本次核对（未核实）；批次记录见 [R2 批次记录](GS_ARCHIVE_R2_RELEASE_20261021.md)，上传流程见 [PREVIEW_DEPLOYMENT.md](PREVIEW_DEPLOYMENT.md)，R2 规则见契约第 7 节。部署前后的只读核对见 [RELEASE_PIPELINE_CHECKS_20261109.md](RELEASE_PIPELINE_CHECKS_20261109.md)。
 

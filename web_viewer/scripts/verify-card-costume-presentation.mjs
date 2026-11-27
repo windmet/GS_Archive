@@ -221,6 +221,7 @@ const renderer = Vue.createRenderer({
 const emptyComponent = { render: () => null }
 const imports = {
   vue: Vue,
+  '../../content/animated-card-resources.json': { default: JSON.parse(read('src/content/animated-card-resources.json')) },
   '@lucide/vue': Object.fromEntries(['Activity', 'CheckCircle2', 'ChevronLeft', 'ChevronRight', 'CircleSlash',
     'Expand', 'HeartPulse', 'ImageOff', 'MonitorPlay', 'PackageOpen', 'Play', 'Shirt'].map(name => [name, emptyComponent])),
   '../../presentation/ArchiveText.js': { reflowArchiveText },
