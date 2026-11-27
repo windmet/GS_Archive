@@ -53,10 +53,10 @@ try {
     assert.ok(html.includes('data-idol-code="029ass"') && !html.includes('data-idol-code="001tom"'), query)
     checks++
   }
-  const unit = await render(withState(Picker, { unitFilter: '01jup' }), { idols, ...callbacks })
+  const unit = await render(withState(Picker, { query: 'Jupiter' }), { idols, ...callbacks })
   assert.match(unit, /2 位偶像/)
   assert.ok(!unit.includes('data-idol-code="029ass"'))
-  assert.match(unit, /<button[^>]*aria-pressed="true"[^>]*>Jupiter<\/button>/, 'the unit chip shows its selection')
+  assert.ok(!all.includes('class="idol-picker-units"'), 'unit-chip rail is omitted in favor of search and grouped headings')
   const empty = await render(withState(Picker, { query: '不存在的名字' }), { idols, ...callbacks })
   assert.match(empty, /0 位偶像/)
   assert.ok(empty.includes('没有找到符合条件的偶像'))

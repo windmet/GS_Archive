@@ -159,6 +159,8 @@ function fixture(initial, {saved=null,leaveOnReady=false,disposeOnReady=false,qu
   const parent=vm.createContext({
     ...navigationState,window,nextTick:Vue.nextTick,archiveRouteReady:true,archiveViewRestoreRevision:0,adoptedArchiveView:"",
     activeArchiveViewContext:null,pendingEventCatalogRestore:null,pendingPhotoCatalogRestore:null,
+    studioRestorePending:Vue.ref(false),studioRestoreSource:Vue.ref(''),studioOpenMaterials:Vue.ref(false),
+    studioOpenReference:Vue.ref(''),studioOpenSpotId:Vue.ref(0),studioPhotoIdols:Vue.ref([]),
     buildArchiveViewContext,buildArchiveSourceQuery,readArchiveSourceRoute,ownsArchiveSource,
     loading:{value:false},loadingPurpose:{value:''},playbackController:{reset:()=>{}},primeArchiveRouteComponent:()=>{},
     navigation:{getRevision:()=>revision,invalidate:()=>revision++,isDisposed:()=>disposed,isRestoring:()=>false},console,
